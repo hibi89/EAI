@@ -1,26 +1,32 @@
 # EAI — STATUS (2026-10-31 KST)
 
-## Truthful product state
-Private repository `hibi89/EAI`, branch `feature/local-first-mvp` (no main merge). EAI independently solves a bounded set of tasks; **Qwen is INPUT classification only** when enabled and cannot write user notes or generate final EAI answers. Python >=3.11 stdlib, SQLite, optional Ollama/SearXNG. Backend first, frontend last. Original HAE/LA, SOVIA and other repos untouched.
+## Canonical objective and active branch
+- Private repository `hibi89/EAI`, branch `feature/local-first-mvp`; `main` remains preserved, no force-push.
+- EAI must own solving/verification/response generation; Qwen (optional) is ONLY a natural-language input classifier. GPU is not required for explicit CPU commands. See ADR-0002 and ADR-0003.
+- P2 source milestone: `d903b1247d218e924f956cd630cf45fe8290cf44` (CPU compare and CSV code with 9 changed/new files). Documentation SHA is the current branch HEAD after publication.
+- Existing HAE/LA/SOVIA and deployment settings untouched.
 
-## P1 implemented
-- P0: CPU exact calculation, Qwen IntentSpec v1 input parser and CPU rule fallback, deterministic ResultSpec response, explicit online search and SQLite cache/history.
-- P1: original-text-gated `기억해`/`메모추가`, `메모목록`, `기억검색`; local notes separate from web snippets, idempotent duplicate note insertion, bounded input and parameterized SQL with literal wildcard escaping.
-- Automatic SQLite consistent snapshot `<db>.pre-notes-*.bak` before adding notes table to an **existing** local database; Git ignore prevents database and snapshot uploads.
-- Real loopback HTTP integration tests with fake local Ollama and SearXNG, including a redirect denial case. Does NOT establish real public search or actual Qwen availability.
+## Implemented (P0/P1 preserved + P2)
+- P0: CPU exact arithmetic, strict IntentSpec, optional Qwen parser with CPU rule fallback, permission-gated SearXNG lookup, SQLite history and cache.
+- P1: literal `기억해` note write, note list/recall, duplicates blocked, legacy SQLite snapshot before additive migration.
+- P2: `비교 A=100,B=120,C=114` exact Decimal-based ranking, extrema/gap and sequential changes; invalid or ambiguous inputs rejected. Percentages suppressed when previous value <=0. Explicit recognized commands bypass Qwen even when configured.
+- P2: `python -m eai analyze-csv examples/sample_sales.csv` read-only local CSV summary: rows/columns, missing counts, numeric sum/min/max/mean with UTF-8/CP949 options. File size <=5MiB, rows <=20k, columns <=32, fields <=4096 chars. No file writes/uploads or SQLite storage of CSV rows.
+- Synthetic read-only example CSV provided. UI remains deliberately deferred.
 
 ## Actual verification
-- Container Linux Python 3.13.5: compileall PASS; `python -m unittest discover -s tests -v` **36 PASS / 0 FAIL / 0 SKIP**.
-- Separate CLI processes: note created/retrieved/listed from SQLite, one note and 8 conversation turns persisted; `계산 0.1+0.2 = 0.3` PASS.
-- Remote code verified by file fetch and selected Git blob SHA comparisons; remote `storage.py` is semantically reviewed but formatted differently from local test copy, so a complete byte-identical remote-checkout pass is UNVERIFIED.
+- Local container Linux Python 3.13: `python -m compileall -q eai tests` PASS; `python -m unittest discover -s tests -q` **55 PASS / 0 FAIL / 0 SKIP**.
+- CLI subprocess: compare `2023=100,2024=125,2025=110` gives 25% then -12%; `계산 0.1+0.2` returns 0.3; original note store/retrieve still works; `analyze-csv` sample returns correct sales sum 352, mean 117.333333.
+- All 9 P2 source file blob SHAs compared against local Git and GitHub file readback: exact MATCH. `storage.py` and `tests/test_memory.py` in the local prior P1 package differ in formatting from GitHub, so **full GitHub-checkout 55 PASS is not claimed**.
+- Tests include malformed input, duplicate labels, large exact values, negative/zero baselines, no Qwen for explicit tasks, privacy/no-network, CSV row/field/bounds, UTF-8/CP949 and previous simulated HTTP/SQLite operations.
 
-## GitHub Actions — failure, cause unknown
-- Latest inspected run `41200369167` (commit `bb1814e5a302563f886cd5c20b2c5526b26ae8e5`): completed FAILURE, no job steps, runner_name empty. Job log download gave BlobNotFound. Prior 11 runs had the same ~3-second failure outcome.
-- This is **not a confirmed code test failure** nor CI success. Stop pointless reruns; inspect repository Actions runner/permission/billing setup using authorized UI or effective logs when accessible.
+## GitHub CI / real hardware
+- Latest P2 code run `41202155968`, SHA `d903b124...`: **FAILURE**. Job steps `[]`, runner name empty, started and completed within seconds. Earlier runs similarly failed. Root cause unknown; does not establish code failure or CI PASS. Avoid repeat no-op reruns; inspect GitHub Actions account/repo UI, permissions/billing/runner logs with owner's approval if needed.
+- Actual Windows 10 / Python 3.11, real Ollama/Qwen model, public SearXNG provider, CPU/GPU offloading, full GitHub clone and hosted production **UNVERIFIED**. There is no Vercel project/URL (not applicable).
 
-## Not completed / next
-- Owner Windows 10 Python 3.11, `RUN_EAI.cmd`, real Qwen/Ollama inference, and real SearXNG: NOT VERIFIED.
-- LA adapter, broader independent solvers, RAG, learning, hierarchical reasoning, autonomous GPT-class generation, CPU/GPU optimum, GUI, deployment: NOT IMPLEMENTED.
-- Prioritize owner usage feedback on CLI/memory and one useful independent solver next; verify real Windows only when feasible, no forced model download or paid API. Maintain test, privacy, schema versioning and note backups.
+## Next (priority)
+1. Verify exact remote checkout on Windows Python 3.11 when available; offline test and read-only P2 CSV demo on actual PC. Diagnose GitHub Actions pre-step failure through actionable runner logs rather than speculative code changes.
+2. Extend read-only CSV analysis for actual owner workflows after collecting feedback; do not ingest private files remotely without consent.
+3. Add the next narrow deterministic solver or local document/knowledge retrieval based on real use; retain CPU-first policy and Qwen input-only boundary.
+4. Evaluate SearXNG and Qwen on owner hardware as opt-in external prerequisites, then profile CPU/GPU allocation with real measurements. No fixed ratio claim.
 
-No Production URL, Vercel deployment or public endpoint: N/A.
+Last document update: 2026-10-31 KST. Code SHA as above; documents published on later branch HEAD. All unverified conditions are separate completion gates.

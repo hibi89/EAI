@@ -25,3 +25,9 @@ Persistent SQLite `turns`, `search_cache`, `documents` preserved. New `user_note
 
 ## Future
 RAG/verified evidence, bounded planner/solvers, adaptive CPU/GPU scheduler (ADR-0003), LA integration, user-facing UI after backend stability. Measure success against real tasks rather than LLM-generated fluency.
+
+## P2 extension (2026-10-31)
+- `eai.analysis.compare_numeric_observations` runs Decimal-based bounded numeric ranking and input-order differences on CPU. It is independent of Ollama and LA. A zero/negative previous value disables percentage growth to prevent misleading results.
+- `eai.csv_analysis.inspect_csv` reads only a user-selected local CSV path by a separate CLI subcommand. No filesystem crawls, no write capability, no network, no SQLite persistence of file rows. Read bounds: 5MiB/20k rows/32 columns/4096-char fields.
+- `EAIRunner` now always uses deterministic CPU rule parsing for explicit supported command prefixes; Qwen is requested only for otherwise unsupported conversational input. This avoids GPU/model startup cost for known commands.
+- Text and mixed CSV columns are not aggregated as numbers. CSV numeric means are rounded to six decimal places and explicitly labeled. This is basic descriptive analysis, not statistical inference or independent general intelligence.

@@ -26,3 +26,9 @@ UNVERIFIED = fetched snippet only; VERIFIED = reproducible independent source/ch
 ## Data authority
 
 Conversation, cache, and local knowledge stay on the user's PC. Model files installed separately. Large raw datasets must not enter GitHub. Sensitive user text must not be included in external search queries without explicit approval.
+
+## P2 deterministic CPU interfaces (implemented source)
+- IntentSpec v1 adds `compare` with an unchanged `query` containing 2–16 comma/semicolon-separated `name=decimal` pairs (max 500 chars). Validation bounds and duplicate-name checks are in EAI code.
+- `eai.analysis.compare_numeric_observations(input: str) -> dict`: returns rows, stable sorted ranking, max/min gap and input-order signed changes; percent is `null` when preceding value <= 0. Decimal outputs are strings.
+- `python -m eai analyze-csv PATH [--encoding utf-8-sig|utf-8|cp949]` is explicit file access, no auto-discovery. It invokes `inspect_csv` then a deterministic renderer; no Ollama, SQLite or external APIs.
+- Original prefixed commands skip Qwen; unrecognized natural text may request optional Qwen IntentSpec interpretation but never model-authored answers.

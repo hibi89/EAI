@@ -1,3 +1,9 @@
+> **P2 CPU Analysis (2026-10-31):** EAI can now compare numeric values without Qwen/GPU and analyze an explicitly selected local CSV file, read-only. Examples:
+> `python -m eai ask "비교 2023=100,2024=125,2025=110"`
+> `python -m eai analyze-csv examples/sample_sales.csv`
+> `python -m eai analyze-csv "C:\\path\\data.csv" --encoding cp949`
+> Only 2–16 numeric pairs supported by the compare solver (up to 500 chars); CSV is limited to 5MiB, 20,000 rows, 32 columns, up to 4,096 characters per field. CSV parsing never uploads or modifies source files. Rows are not added to EAI memory. For exact limitations see [P2 acceptance](docs/P2_CPU_ANALYSIS.md). Latest source test: 55 PASS/0 FAIL on local Python 3.13; GitHub CI and Windows/Ollama/SearXNG remain separately unverified.
+
 # EAI — Elice Artificial Intelligence
 
 **Independent CPU-first EAI P1 (local, runnable, not general GPT).** Qwen is optional, strictly input classification only. EAI itself owns computing, task selection, validation, persistent memories and response rendering. Zero required paid APIs. Work stays on `feature/local-first-mvp` until real hardware and CI verification.

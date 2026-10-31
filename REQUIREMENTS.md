@@ -1,3 +1,5 @@
+> **P2 implementation scope, 2026-10-31:** Add CPU-owned exact numeric pair comparison (rank, max/min, difference, sequential absolute/percentage change) plus a strictly opt-in read-only local CSV profiler (rows/columns/missingness/sums/min/max/mean). Existing Qwen remains optional input classification only; no model may synthesize final answers. No cloud data transfer or autonomous file reads. Full acceptance and known limits: [P2_CPU_ANALYSIS](docs/P2_CPU_ANALYSIS.md).
+
 # REQUIREMENTS — EAI local-first independent engine
 
 ## Vision
