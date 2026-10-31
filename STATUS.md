@@ -1,33 +1,42 @@
-> **2026-10-31 P0 SOURCE MIGRATION:** Qwen final answer generation removed from new default implementation; `IntentSpec` and `QwenIntentParser` restricted to input; EAI-owned `CognitiveEngine` solves bounded arithmetic and handles retrieval; `ResponseEngine` formats fixed text, with SQLite stored history. Local package tested on Python 3.13.5: 21/21 PASS, CLI arithmetic and health PASS. All original HAE/LA and main branch untouched. Exact GitHub CI/Windows/Ollama/live search remain UNVERIFIED. See `eai/intent.py`, `eai/cognition.py`, `eai/runner.py`, `eai/__main__.py`, `tests/test_core.py`; EAI is still narrow P0, NOT GPT-class. CPU/GPU study documented but no hardware benchmarks run.
+# EAI — STATUS (2026-10-31 KST)
 
-> **2026-10-31 KST owner architectural correction:** Confirmed final objective: **Qwen interprets/classifies input only**; independent EAI cognitive engine, planning, solvers, verification, memory and EAI-owned result presentation perform the rest. [ADR-0002](docs/ADR-0002_EAI_COGNITIVE_OWNERSHIP.md). Inspected source: `eai/app.py` still calls `self.model.respond(messages)` for final answers; therefore current v0.1 is **NONCONFORMING to target**. Corrective architecture specification committed; source replacement, regression tests and real E2E **NOT YET RUN**. No HAE/LA/source/data changes made in this correction.
+## Product and phase
+EAI (Elice Artificial Intelligence) is a private, CPU-first **independent cognitive engine**: Qwen, if enabled, **only classifies user input** into IntentSpec. EAI itself routes the task, calculates or retrieves evidence, verifies input bounds, renders the answer, and writes SQLite history. Final vision is longer-term research (hierarchical search, strategic ML, independent generalization), **not implemented or claimed at P0**. Canonical direction: ADR-0002; compute research: ADR-0003.
 
-# STATUS — EAI
+## Repository and immutable milestone
+- Owner: hibi89/EAI (private)
+- Branch: feature/local-first-mvp
+- Tested-source publication commit: ed55e7d2918fd576ce587ce330d32e5e5c1c9123
+- Main is the preserved bootstrap branch; existing HAE/LA/DBVORA/SOVIA repositories were not modified.
+- Before a new change, read HANDOFF → STATUS → AGENTS → REQUIREMENTS → actual source.
 
-Updated: 2026-10-31 KST, based on GitHub evidence.
+## Implemented
+- Independent CLI: `python -m eai ask '계산 12*(3+4)'`; `python -m eai chat`; `python -m eai health`.
+- Python 3.11+ standard library: CPU rule parser; optional Ollama/Qwen structured input parser with strict IntentSpec v1 JSON schema; CPU_ECO parser mode uses `num_gpu=0`.
+- Independent CPU CognitiveEngine: bounded exact arithmetic (Fraction/Decimal), fixed answer renderer, honest unsupported responses.
+- Registered, consent-gated `research.web.v1` workflow via optional local SearXNG JSON interface; SQLite cached source list and local recall, all source snippets UNVERIFIED.
+- SQLite local conversation history; token/model/source binaries and database files excluded from Git.
+- Original obsolete OllamaChat answer synthesis path disabled; existing previous commit allows source recovery.
 
-## Project
-EAI / Elice Artificial Intelligence; private repository hibi89/EAI. Chief role accepted by ChatGPT at owner request. Trunk main initialized at 09f3f8be2dab2d1aa8096c0d6d439f8fc6e48960; development branch feature/local-first-mvp. Full architecture is documented in docs/ARCHITECTURE.md. Actual owner usage, not speculative full-vision completion, drives priorities.
+## Verified in this turn
+- Local Python 3.13.5: `python -m compileall -q eai tests` PASS.
+- `python -m unittest discover -s tests -v`: **21 PASS / 0 FAIL / 0 SKIP** (offline mocked provider, not live services).
+- CLI: health PASS; CPU arithmetic `1250000*0.12=150000`, `0.1+0.2=0.3`, `200*(1+0.15)=230` PASS.
+- ZIP independent extraction, 21 tests again PASS; separate CLI processes wrote SQLite with 4 turn records and reopened it PASS.
+- GitHub connector fetch confirmed changed file blobs in P0 commit match local Git hashes; source and ADR-0003 presence verified.
 
-## Confirmed
-- User's private EAI repository exists; branch feature/local-first-mvp created.
-- Initial source baseline a945499f34a0938b2151081651de372d1646da95: local CLI, Ollama loopback chat connector, SQLite memory, opt-in SearXNG search with TTL cache, registry, offline tests and CI YAML.
-- Hardening commit 0d29ab681b3c89c0a45c28cc6bfe6dc808deba3f: disable environment HTTP proxies for loopback, reject malformed source URLs, disclose cache freshness, escape SQL wildcard search, add tests.
-- Reusable workflow commit 47b9efda38c50dc65635d06f70fb5d415d3f512c: fixed research.web.v1 template with explicit online consent, separate workflow unit tests.
-- Reviewed HAE feature/lightning-azent engine and docs: current inspected runtime is local/synthetic and does not support external HTTP request nodes; no LA/HAE source copied or mutated.
+## Unverified / blocked / not implemented
+- GitHub Actions final conclusion UNVERIFIED (combined statuses empty; PR-run lookup empty; this is not a CI failure proof).
+- User's actual Windows 10/Python 3.11 local Ollama Qwen structured classification **UNVERIFIED**; no model is installed automatically.
+- Real SearXNG search / public provider reliability **UNVERIFIED**; network query requires explicit `--online`.
+- General GPT-class reasoning, hierarchical search/ML, RAG, adaptive CPU/GPU golden ratio, LA adapter, graphical UI, production deployment: NOT IMPLEMENTED.
+- Ollama compute profiles: CPU_ECO and OLLAMA_DEFAULT only, **no real performance benchmark**.
 
-## Not yet proved
-- Executed **15 Python unittest PASS / 0 FAIL** and Python compileall/CLI smoke PASS on an independently reconstructed local source mirror (Python 3.13.5); **mirror is not byte-identical with GitHub files**, so exact remote commit test PASS is still **unverified**. GitHub Actions check/run conclusion also unverified with current read capabilities.
-- Real Windows / Ollama / Qwen / SearXNG interactions are not tested in this environment. No deployment or external calls performed.
-- Full RAG, parser-based verification, LA integration, hierarchical search, strategy ML, native frontend and production hardening remain future work.
+## Next actions (priority)
+1. Check GitHub branch check-run/CI result with a tool that actually lists Actions check runs; run a fresh byte-identical checkout on Windows 3.11.
+2. Run the real Qwen input-only path when available, verify strict parse/fallback and no unauthorized answer generation; do not require a GPU purchase.
+3. Only with consent, verify local SearXNG JSON search, cache/staleness, provider limitations and privacy.
+4. Add the next narrow task solver based on actual owner use; do not substitute large model generation or UI work.
+5. Benchmark CPU/GPU parser offload on the owner's hardware, compare static profiles; do not invent a fixed optimal split.
 
-
-**GitHub correction publication integrity:** First ADR docs commit `1319552ac5bffba0ca77dd480b496d8f8be43c00` temporarily omitted the backend source tree due to a missing base tree in the GitHub API write. This was detected with an explicit fetch of `eai/app.py`, and recovery commit `b5149483eadd71783b0f6e4ffbcc415ac2b7d7d6` reconstructed the branch using verified previous source tree `24de577bff29354b60c5472637281b74c7a6ed2b`. Remote fetch verified `eai/app.py`, `eai/providers.py`, `eai/workflows.py`, `tests/test_core.py`, and ADR-0002 are all present and retain their original code blob SHA where applicable. No history rewrite or force-push. This is a Git tree publication error, not a tested runtime defect. Exact CI and real runtime still unverified.
-
-## Next: P0 gate
-1. Verify exact branch HEAD source via GitHub CI or byte-identical local checkout, and inspect the reported test logs; fix any actual failures. Current local mirror (15 PASS) is preliminary, not release evidence.
-2. Verify real Ollama on user's Windows when available, without requiring new GPU purchase; log model/version/hardware and result.
-3. Verify online query only after owner configures and approves local SearXNG setup; never auto-transfer personal prompts.
-4. Use first owner sessions to prioritize basic errors before adding plugins or UI.
-
-See docs/ACCEPTANCE.md for definitions. Deployments: not applicable; no Vercel or public URL.
+Production URL/Vercel: **N/A** (local executable CLI). No paid service or external model/credentials submitted by this run. No promise of unattended two-day work.
