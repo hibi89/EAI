@@ -5,6 +5,7 @@ from pathlib import Path
 
 from .decision_engine import validate_choice_goal, execute_choice_goal
 from .plan_engine import AuditGoal, CPUPlanExecutor
+from .receipt_guard import verify_goal_receipt
 
 MAX_GOAL_BYTES = 64 * 1024
 ROUTER_VERSION = 'eai.goal.dispatch.v1'
@@ -68,8 +69,8 @@ def execute_goal_document(path: str | Path) -> dict:
     if type(kind) is not str or kind not in ROUTED_KINDS:
         raise ValueError('unknown goal kind: allowed choose_options or csv_audit')
     if kind == 'choose_options':
-        validated = validate_choice_goal(data)
-        result = execute_choice_goal(validated)
+        goal = validate_choice_goal(data)
+        result = execute_choice_goal(goal)
         skill_id = 'decision.select.v1'
     else:
         goal = _compile_csv_goal(source_path, data)
@@ -81,10 +82,11 @@ def execute_goal_document(path: str | Path) -> dict:
     _, after = _read_spec(source_path)
     if before != after:
         raise ValueError('goal document changed during execution')
+    verified_receipt = verify_goal_receipt(kind, goal, result)
     return {
         'dispatcher_version': ROUTER_VERSION, 'kind': kind, 'status': result['status'],
         'input': {'filename': source_path.name, 'sha256': before},
-        'route': skill_id,
+        'route': skill_id, 'verification': verified_receipt,
         'steps': [
             {'step': 'classify_goal', 'skill': 'goal.schema_router.v1', 'status': 'PASS'},
             {'step': 'run_domain_solver', 'skill': skill_id, 'status': result['status']},
@@ -100,11 +102,17 @@ def render_goal_document(report: dict) -> str:
     result = report['result']
     lines = [f"EAI P7 목표 실행: {report['status']} / {report['kind']}",
              f"실행 스킬: {report['route']}",
-             f"목표 파일: {report['input']['filename']} / SHA256 {report['input']['sha256']}"]
+             f"목표 파일: {report['input']['filename']} / SHA256 {report['input']['sha256']}",
+             f"결과 독립 검사: {report['verification']['status']} / {report['verification']['version']}"]
     if report['kind'] == 'choose_options':
         from .decision_engine import render_decision
         lines.append(render_decision(result))
     else:
         from .plan_engine import render_plan_report
         lines.append(render_plan_report(result))
+    diag = report['verification']['diagnostics']
+    if diag['type'] != 'NONE':
+        lines.append('추가 확인 필요: ' + diag['type'])
+        if diag.get('hint'):
+            lines.append(diag['hint'])
     return '\n'.join(lines)
