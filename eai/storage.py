@@ -94,10 +94,10 @@ class Store:
         words = [w[:60] for w in query.strip().split() if len(w) >= 3][:5]
         if not words:
             return []
-        conditions = " OR ".join("(title LIKE ? OR snippet LIKE ?)" for _ in words)
+        conditions = " OR ".join("(title LIKE ? ESCAPE '!' OR snippet LIKE ? ESCAPE '!')" for _ in words)
         params: list[object] = []
         for word in words:
-            pattern = "%" + word.replace("%", r"\%").replace("_", r"\_") + "%"
+            pattern = "%" + word.replace("!", "!!").replace("%", "!%").replace("_", "!_") + "%"
             params.extend([pattern, pattern])
         rows = self.db.execute(
             f"SELECT title, url, snippet FROM documents WHERE {conditions} "

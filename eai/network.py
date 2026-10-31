@@ -1,7 +1,7 @@
 """Bounded loopback-only HTTP client for Ollama and local SearXNG."""
 import json
 from urllib.parse import urlsplit
-from urllib.request import Request, build_opener, HTTPRedirectHandler
+from urllib.request import Request, build_opener, HTTPRedirectHandler, ProxyHandler
 
 
 MAX_RESPONSE_BYTES = 1_048_576
@@ -37,7 +37,7 @@ def fetch_json(url: str, *, payload: dict | None = None, timeout: float = 12.0) 
         headers={"Accept": "application/json", "Content-Type": "application/json", "User-Agent": "EAI-local/0.1"},
         method="POST" if body is not None else "GET",
     )
-    with build_opener(NoRedirect).open(request, timeout=timeout) as response:
+    with build_opener(ProxyHandler({}), NoRedirect).open(request, timeout=timeout) as response:
         length = response.headers.get("Content-Length")
         if length is not None and int(length) > MAX_RESPONSE_BYTES:
             raise ValueError("response exceeds maximum size")

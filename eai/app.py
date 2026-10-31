@@ -58,6 +58,12 @@ class EAI:
             warning = ("Live information not checked: online search requires explicit "
                        "--online and a configured local SearXNG endpoint.")
 
+        if needs_fresh and allow_online and not warning:
+            if cache_hit:
+                warning = "Using cached search snippets within TTL; live freshness is not guaranteed."
+            elif not sources:
+                warning = "Search returned no results; live freshness cannot be confirmed."
+
         if not sources:
             sources = self.store.recall(question)
             if needs_fresh and sources:

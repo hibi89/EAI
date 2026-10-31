@@ -113,6 +113,26 @@ class EAITests(unittest.TestCase):
             EAI(self.store, self.llm).ask("")
         self.assertEqual(self.llm.messages, [])
 
+    def test_empty_search_does_not_claim_freshness(self):
+        class EmptySearch:
+            def search(self, query, limit=5):
+                return []
+        result = EAI(self.store, self.llm, EmptySearch()).ask("오늘 뉴스", allow_online=True)
+        self.assertIn("no results", result.warning.lower())
+
+    def test_cached_search_discloses_freshness_limit(self):
+        search = FakeSearch()
+        eai = EAI(self.store, self.llm, search)
+        eai.ask("오늘 뉴스", allow_online=True)
+        second = eai.ask("오늘 뉴스", allow_online=True)
+        self.assertTrue(second.cache_hit)
+        self.assertIn("not guaranteed", second.warning)
+
+    def test_recall_escapes_sql_wildcards(self):
+        self.store.save_search("a", [SearchHit("100% real", "https://example.org/a", "literal")])
+        self.assertEqual(len(self.store.recall("100%")), 1)
+        self.assertEqual(self.store.recall("100_"), [])
+
 
 if __name__ == "__main__":
     unittest.main()

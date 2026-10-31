@@ -48,7 +48,14 @@ class SearxNGSearch:
             if not isinstance(row, dict):
                 continue
             source_url = row.get("url", "")
-            if not isinstance(source_url, str) or urlsplit(source_url).scheme not in {"https", "http"}:
+            if not isinstance(source_url, str) or len(source_url) > 2048:
+                continue
+            try:
+                parts = urlsplit(source_url)
+                if (parts.scheme not in {"https", "http"} or not parts.hostname
+                        or parts.username or parts.password):
+                    continue
+            except ValueError:
                 continue
             title = row.get("title", "")
             snippet = row.get("content", "")
