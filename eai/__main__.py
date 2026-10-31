@@ -10,6 +10,7 @@ from . import __version__
 from .intent import QwenIntentParser
 from .csv_analysis import inspect_csv, render_csv_summary
 from .verify_csv import verify_csv_claims, load_claims, render_verification, METRICS
+from .reconcile_csv import reconcile_csv, render_reconciliation
 from .runner import EAIRunner
 from .storage import Store
 from .tools import SearxNGSearch
@@ -42,6 +43,14 @@ def main(argv: list[str] | None = None) -> int:
     verify_cmd.add_argument('--tolerance', default='0', help='nonnegative absolute decimal tolerance')
     verify_cmd.add_argument('--encoding', choices=['utf-8-sig', 'utf-8', 'cp949'], default='utf-8-sig')
     verify_cmd.add_argument('--json', action='store_true', help='emit structured result as JSON')
+    reconcile_cmd = sub.add_parser('reconcile-csv', help='CPU-only read-only two-CSV keyed cross-verification')
+    reconcile_cmd.add_argument('left', help='first explicitly selected local CSV')
+    reconcile_cmd.add_argument('right', help='second explicitly selected local CSV')
+    reconcile_cmd.add_argument('--key', required=True, help='common unique key column')
+    reconcile_cmd.add_argument('--value', required=True, help='numeric value column')
+    reconcile_cmd.add_argument('--tolerance', default='0', help='nonnegative absolute decimal tolerance')
+    reconcile_cmd.add_argument('--encoding', choices=['utf-8-sig', 'utf-8', 'cp949'], default='utf-8-sig')
+    reconcile_cmd.add_argument('--json', action='store_true', help='structured read-only report')
     args = p.parse_args(argv)
     if args.command == 'health':
         print('EAI independent CPU-first engine v0.1')
@@ -78,6 +87,17 @@ def main(argv: list[str] | None = None) -> int:
             return {'VERIFIED': 0, 'CONFLICT': 2, 'UNAVAILABLE': 3}[report['status']]
         except (ValueError, OSError, UnicodeError, csv.Error) as exc:
             print('EAI VERIFY ERROR:', type(exc).__name__, str(exc), file=sys.stderr)
+            return 1
+    if args.command == 'reconcile-csv':
+        try:
+            report = reconcile_csv(args.left, args.right, key=args.key,
+                                   value=args.value, tolerance=args.tolerance,
+                                   encoding=args.encoding)
+            print(json.dumps(report, ensure_ascii=False, indent=2) if args.json
+                  else render_reconciliation(report))
+            return {'AGREE': 0, 'CONFLICT': 2, 'UNAVAILABLE': 3}[report['status']]
+        except (ValueError, OSError, UnicodeError, csv.Error) as exc:
+            print('EAI RECONCILE ERROR:', type(exc).__name__, str(exc), file=sys.stderr)
             return 1
     try:
         parser = (QwenIntentParser(args.model, args.ollama_url, args.profile)
