@@ -11,6 +11,7 @@ from .intent import QwenIntentParser
 from .csv_analysis import inspect_csv, render_csv_summary
 from .verify_csv import verify_csv_claims, load_claims, render_verification, METRICS
 from .reconcile_csv import reconcile_csv, render_reconciliation
+from .diagnose_csv import diagnose_csv, render_diagnosis
 from .runner import EAIRunner
 from .storage import Store
 from .tools import SearxNGSearch
@@ -51,6 +52,14 @@ def main(argv: list[str] | None = None) -> int:
     reconcile_cmd.add_argument('--tolerance', default='0', help='nonnegative absolute decimal tolerance')
     reconcile_cmd.add_argument('--encoding', choices=['utf-8-sig', 'utf-8', 'cp949'], default='utf-8-sig')
     reconcile_cmd.add_argument('--json', action='store_true', help='structured read-only report')
+    diagnose_cmd = sub.add_parser('diagnose-csv', help='CPU multi-metric discrepancy and candidate-cause analysis')
+    diagnose_cmd.add_argument('left', help='first explicit local CSV')
+    diagnose_cmd.add_argument('right', help='second explicit local CSV')
+    diagnose_cmd.add_argument('--key', required=True, help='unique key in both CSVs')
+    diagnose_cmd.add_argument('--values', nargs='+', required=True, help='1-8 distinct numeric columns')
+    diagnose_cmd.add_argument('--tolerance', default='0', help='shared absolute tolerance applied independently per field')
+    diagnose_cmd.add_argument('--encoding', choices=['utf-8-sig', 'utf-8', 'cp949'], default='utf-8-sig')
+    diagnose_cmd.add_argument('--json', action='store_true', help='structured diagnostic output')
     args = p.parse_args(argv)
     if args.command == 'health':
         print('EAI independent CPU-first engine v0.1')
@@ -87,6 +96,16 @@ def main(argv: list[str] | None = None) -> int:
             return {'VERIFIED': 0, 'CONFLICT': 2, 'UNAVAILABLE': 3}[report['status']]
         except (ValueError, OSError, UnicodeError, csv.Error) as exc:
             print('EAI VERIFY ERROR:', type(exc).__name__, str(exc), file=sys.stderr)
+            return 1
+    if args.command == 'diagnose-csv':
+        try:
+            report = diagnose_csv(args.left, args.right, key=args.key, values=args.values,
+                                  tolerance=args.tolerance, encoding=args.encoding)
+            print(json.dumps(report, ensure_ascii=False, indent=2) if args.json
+                  else render_diagnosis(report))
+            return {'AGREE': 0, 'CONFLICT': 2, 'UNAVAILABLE': 3}[report['status']]
+        except (ValueError, OSError, UnicodeError, csv.Error) as exc:
+            print('EAI DIAGNOSE ERROR:', type(exc).__name__, str(exc), file=sys.stderr)
             return 1
     if args.command == 'reconcile-csv':
         try:
