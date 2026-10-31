@@ -5,6 +5,7 @@
 - EAI.ask(question, allow_online=False) returns Answer(text, sources, warning, cache_hit).
 - OllamaChat.respond(messages) sends bounded non-streaming JSON to localhost Ollama.
 - ToolRegistry.register(name, tool) / get(name) registers prebuilt tools, no per-question code generation.
+- WorkflowRegistry.execute("research.web.v1", registry, query, allow_online=True) executes a fixed consent-gated template; no generated nodes, shell or external writes.
 - SearxNGSearch.search(query, limit<=8) reads an explicitly configured localhost JSON API and returns SearchHit(title,url,snippet).
 - Store.add_turn / recent_turns / read_search_cache / save_search / recall own local SQLite rows. External source results start UNVERIFIED.
 

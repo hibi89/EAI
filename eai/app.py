@@ -3,6 +3,7 @@ from dataclasses import dataclass
 import re
 from .storage import Store
 from .tools import SearchHit, ToolRegistry
+from .workflows import WorkflowRegistry
 
 
 FRESHNESS = re.compile(
@@ -31,6 +32,7 @@ class EAI:
         self.store = store
         self.model = model
         self.registry = ToolRegistry()
+        self.workflows = WorkflowRegistry()
         if search_tool is not None:
             self.registry.register("web.search.v1", search_tool)
 
@@ -50,7 +52,7 @@ class EAI:
                 sources, cache_hit = cached, True
             else:
                 try:
-                    sources = self.registry.get("web.search.v1").search(question, limit=5)
+                    sources = self.workflows.execute("research.web.v1", self.registry, question, allow_online=allow_online)
                     self.store.save_search(question, sources)
                 except Exception as exc:
                     warning = "Online retrieval failed; live facts are unavailable (" + type(exc).__name__ + ")."
