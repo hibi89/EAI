@@ -5,7 +5,9 @@
 - [x] Initialize private GitHub repository + isolated feature branch.
 - [x] Implement local Ollama CLI adapter and SQLite memory source.
 - [x] Implement ToolRegistry + optional SearXNG search/caching path and offline test suite source.
-- [ ] Verify CI, actual Windows Python 3.11 CLI, real Ollama local inference, restart persistence.
+- [x] Implement fixed reusable research.web.v1 workflow template with permission gate.
+- [x] Run preliminary reconstructed-mirror offline tests: 15 PASS / 0 FAIL with Python 3.13.5 (not byte-identical; not CI evidence).
+- [ ] Verify exact GitHub source CI, actual Windows Python 3.11 CLI, real Ollama local inference, restart persistence.
 - [ ] Verify real SearXNG search with user-enabled JSON interface and query privacy.
 
 ## Phase P1: make v0.1 usable every day

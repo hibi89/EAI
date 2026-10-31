@@ -5,7 +5,7 @@
 Command from repository root: python -m unittest discover -s tests -v
 Additional: python -m compileall -q eai tests; python -m eai --version; python -m eai health.
 
-Test targets: no paid services, synthetic conversation and restart memory, unauthorized freshness warning, mock online search + TTL reuse, failed retrieval warning, loopback URL enforcement, rejection of invalid questions/tool duplicates and bounded JSON parsing. These are **synthetic**, not proof of real Ollama or SearXNG operation.
+Test targets: no paid services, synthetic conversation and restart memory, unauthorized freshness warning, mock online search + TTL reuse, failed retrieval warning, loopback URL enforcement, rejection of invalid questions/tool duplicates and bounded JSON parsing. These are **synthetic**, not proof of real Ollama or SearXNG operation. A manually reconstructed local source mirror (not byte-identical to GitHub) executed Python 3.13.5 compileall/CLI smoke and 15/15 unittests successfully on 2026-10-31 KST. Exact GitHub committed source CI conclusion remains unverified.
 
 ## Gate L — real local model (owner Windows only)
 

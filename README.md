@@ -5,8 +5,8 @@
 ## Status (2026-10-31 KST)
 
 - Development branch: `feature/local-first-mvp`; the `main` branch is only an initialization marker. Do not merge without verification.
-- Source has been committed: local Ollama chat, local SQLite conversation/search cache, opt-in local SearXNG search, tool registry, offline tests.
-- **Not yet verified:** GitHub CI conclusion, actual Windows + Ollama/Qwen inference, live SearXNG search. This is not a customer-ready release.
+- Source has been committed: local Ollama chat, local SQLite conversation/search cache, opt-in local SearXNG search, tool registry and a fixed research.web.v1 workflow, offline tests.
+- **Preliminary mirror verification:** 15/15 offline tests PASS and CLI/compileall smoke PASS on Python 3.13.5 local reconstruction (not byte-identical with GitHub source). **Not yet verified:** exact GitHub branch CI conclusion, actual Windows + Ollama/Qwen inference, live SearXNG search. This is not a customer-ready release.
 - No HAE/LA source was copied, modified, or required to run this branch.
 
 ## Start here (Python 3.11+, no Python runtime packages required)
