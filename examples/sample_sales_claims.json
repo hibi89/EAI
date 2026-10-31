@@ -1,0 +1,5 @@
+[
+  {"column": "sales", "metric": "sum", "expected": "352"},
+  {"column": "orders", "metric": "numeric_count", "expected": "3"},
+  {"column": "sales", "metric": "avg", "expected": "117.333333", "tolerance": "0.000001"}
+]

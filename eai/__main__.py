@@ -2,12 +2,14 @@
 import argparse
 import csv
 import os
+import json
 from pathlib import Path
 import sys
 
 from . import __version__
 from .intent import QwenIntentParser
 from .csv_analysis import inspect_csv, render_csv_summary
+from .verify_csv import verify_csv_claims, load_claims, render_verification, METRICS
 from .runner import EAIRunner
 from .storage import Store
 from .tools import SearxNGSearch
@@ -31,6 +33,15 @@ def main(argv: list[str] | None = None) -> int:
     csv_cmd = sub.add_parser('analyze-csv', help='read-only local CSV numeric profile (no model/network)')
     csv_cmd.add_argument('path', help='explicit local CSV path')
     csv_cmd.add_argument('--encoding', choices=['utf-8-sig','utf-8','cp949'], default='utf-8-sig')
+    verify_cmd = sub.add_parser('verify-csv', help='independent read-only numeric claim verification against local CSV')
+    verify_cmd.add_argument('path', help='explicit local CSV path')
+    verify_cmd.add_argument('--claims', help='local JSON array of claims (read-only, maximum 24)')
+    verify_cmd.add_argument('--column', help='CSV column for a single claim')
+    verify_cmd.add_argument('--metric', choices=sorted(METRICS))
+    verify_cmd.add_argument('--expected', help='expected finite decimal as TEXT')
+    verify_cmd.add_argument('--tolerance', default='0', help='nonnegative absolute decimal tolerance')
+    verify_cmd.add_argument('--encoding', choices=['utf-8-sig', 'utf-8', 'cp949'], default='utf-8-sig')
+    verify_cmd.add_argument('--json', action='store_true', help='emit structured result as JSON')
     args = p.parse_args(argv)
     if args.command == 'health':
         print('EAI independent CPU-first engine v0.1')
@@ -46,6 +57,27 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         except (ValueError, OSError, UnicodeError, csv.Error) as exc:
             print('EAI CSV ERROR:', type(exc).__name__, str(exc), file=sys.stderr)
+            return 1
+    if args.command == 'verify-csv':
+        try:
+            if args.claims:
+                if args.column is not None or args.metric is not None or args.expected is not None or args.tolerance != '0':
+                    raise ValueError('--claims cannot be combined with single-claim options')
+                claims = load_claims(args.claims)
+                raw_claims = [dict(column=v['column'], metric=v['metric'],
+                                   expected=format(v['expected'], 'f'),
+                                   tolerance=format(v['tolerance'], 'f')) for v in claims]
+            else:
+                if args.column is None or args.metric is None or args.expected is None:
+                    raise ValueError('single claim requires --column, --metric and --expected')
+                raw_claims = [dict(column=args.column, metric=args.metric,
+                                   expected=args.expected, tolerance=args.tolerance)]
+            report = verify_csv_claims(args.path, raw_claims, encoding=args.encoding)
+            print(json.dumps(report, ensure_ascii=False, indent=2) if args.json
+                  else render_verification(report))
+            return {'VERIFIED': 0, 'CONFLICT': 2, 'UNAVAILABLE': 3}[report['status']]
+        except (ValueError, OSError, UnicodeError, csv.Error) as exc:
+            print('EAI VERIFY ERROR:', type(exc).__name__, str(exc), file=sys.stderr)
             return 1
     try:
         parser = (QwenIntentParser(args.model, args.ollama_url, args.profile)
