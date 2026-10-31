@@ -48,3 +48,16 @@ At each phase: reproducible failing case → minimum code change → unit+integr
 ## P5 milestone (2026-10-31)
 
 CPU read-only multi-metric (`diagnose-csv`) candidate tracing implemented and tested locally (122 PASS); **not** general artificial intelligence. See [P5 contract](P5_MULTI_METRIC_DIAGNOSIS.md). Windows/Qwen/GPU, exact checkout and failed GitHub Actions are open gates.
+
+
+## P6 milestone — independent CPU goal planner (2026-10-31)
+
+- [x] Introduce typed AuditGoal, RuleGoalPlanner and CPUPlanExecutor for a read-only keyed CSV audit.
+- [x] Choose existing P4/P5 skills based on one or multiple metrics and execute a bounded plan with source hashes and final evidence guard.
+- [x] Route single-metric conflicts to detailed diagnosis; route UNAVAILABLE to bounded schema inspection without upgrading the verdict.
+- [x] Add machine-readable trace, safe input limits and CLI exit codes, with 24 P6 tests (146 local PASS total).
+- [ ] Run a byte-identical full GitHub checkout suite, Windows 10 Python 3.11, real optional Ollama/SearXNG and original data validation.
+- [ ] Diagnose GitHub Actions job pre-step failure from actionable runner/account evidence; no speculative permission or billing changes.
+- [ ] Extend the typed goal/skill/evidence contract to a second domain, with write actions disabled by default and eventual human approval if enabled.
+
+See docs/P6_GOAL_PLAN_ENGINE.md. This is one narrow deterministic goal engine, not verified GPT-level general reasoning.
