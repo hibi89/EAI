@@ -1,26 +1,17 @@
-> **OWNER DIRECTIVE / ARCHITECTURE OVERRIDE (2026-10-31):** [ADR-0002](docs/ADR-0002_EAI_COGNITIVE_OWNERSHIP.md) is authoritative: Qwen may only interpret/classify natural-language INPUT. The EAI proprietary engine must own independent planning, exploration, verification and response decisions. Current app.py Qwen final-response flow is architectural debt; create typed intent/result contracts and independent deterministic EAI solver path before coding wide general features. No arbitrary LLM answer generation may be misrepresented as EAI intelligence.
+# AGENTS — EAI chief directive
 
-# AGENTS — EAI chief and engineering contract
+Read `HANDOFF.md` → `STATUS.md` → `AGENTS.md` → `REQUIREMENTS.md` → actual source each new chat.
 
-Date: 2026-10-31 KST. Owner appointed this ChatGPT instance as EAI chief. Continue with `HANDOFF.md` → `STATUS.md` → `AGENTS.md` → `REQUIREMENTS.md` → code.
+## Canonical goal
+[ADR-0002](docs/ADR-0002_EAI_COGNITIVE_OWNERSHIP.md) controls: optional local Qwen parses/classifies **INPUT ONLY**. Independent EAI CPU cognition owns solution planning, tool selection, validation, memory and final deterministic rendering. Do not silently return to a Qwen-generated chatbot or claim GPT-class intelligence. [ADR-0003](docs/ADR-0003_ADAPTIVE_CPU_GPU_RESEARCH.md) is hardware optimization research, not measured results.
 
-## Purpose
-Deliver a useful personal local AI first and evolve over 6–12+ months by actual daily use. Design for extensibility without blocking on speculative deep reasoning, UI polish or network services.
-
-## Execution authority and boundaries
-- EAI is private, independent, and **local-first**. Never claim model weights learn by adding a document to SQLite; distinguish cache, retrieval, tuning and proof of improvement.
-- `main` remains safe; develop on `feature/local-first-mvp`, verify actual HEAD/test output before merge. No force push, no secret files or source-data commits.
-- No changes to HAE/LA/DBVORA/SOVIA repositories without owner approval. Inspect their contracts only. Never copy n8n or third-party code into EAI without license and provenance review.
-- Before significant scope or paid service, system permission, security policy, original-data modification, sensitive external transfer, or model training: compare at least two designs and obtain owner approval.
-- For approved implementation: core logic → safe local tests → real local inference/search checks → stability/security → CLI ergonomics → UI last.
-- Record actual test results with SHA and separate PASS/FAIL/SKIP, synthetic checks and real-model E2E. No fake success; stop-and-pivot after two ineffective approaches.
-- User can type 'ㄱ' to resume the next safe task. After substantive changes, refresh STATUS/HANDOFF together, with concrete next action and blockers.
-
-## Architecture ownership
-- EAI core owns chat, routing, tool contracts, memories and evidence. It must work without LA or HAE.
-- Optional LA integration uses a **versioned adapter**, not a direct dependency or imported unverified network node. HAE is a distinct product and is not the EAI UI.
-- Defaults: no external API fees; no network listener; local filesystem SQLite; offline conversation; explicit opt-in for any online retrieval; bounded GET-only local SearXNG initially.
-- Learn user feedback by recorded signals first, not automatic web-content fine-tuning.
-
-## Acceptance gates
-See docs/ACCEPTANCE.md for offline tests, Windows/Ollama checks, SearXNG live path, crash/restart continuity, privacy, and performance baseline. A code commit is only a *source* milestone.
+## Development agreement
+- User owns private `hibi89/EAI` GitHub as source of truth. Existing main branch and HAE/LA/other project source/data preserved. Work minimally on `feature/local-first-mvp`.
+- Owner's main priority: **actually usable EAI**, starting from CLI and progressively widening proven independent tasks. Design UI last.
+- Compare at least two approaches before significant architecture, external transfer, permissions, data overwrite, paid services, training or original source changes; owner approval where required.
+- Test exact source when possible, separately report mocked unit PASS vs real Ollama/Windows/browser/CI. Do not infer CI success from empty statuses; GitHub Actions runs currently show failure.
+- User types `ㄱ` to continue next safe task. After substantive changes update STATUS/HANDOFF with timestamp, current SHA, reproducible tests, blockers and next steps.
+- No secrets, .env, local databases, backup snapshots, model weights or personal prompts in GitHub. No silent cloud LLM calls or external prompt upload.
+- Every new skill/workflow is versioned, bounded, permission-gated, reversible. Qwen classification may never authorize privileged writes by itself.
+- Existing LA/HAE is optional peer, not dependency. No LA repo changes without approval.
+- Stop and pivot when two retries of the same path yield no verified progress; never force push.

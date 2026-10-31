@@ -1,45 +1,27 @@
-> **SUPERSEDED in part by owner on 2026-10-31:** [ADR-0002](ADR-0002_EAI_COGNITIVE_OWNERSHIP.md) takes precedence over this earlier architecture wherever it describes Qwen/Ollama as the final answer generator. New authoritative flow: Qwen input-only classification → **EAI proprietary cognition/solvers/verification** → EAI ResultSpec → EAI-owned response rendering. Existing app.py is nonconforming and awaits migration/testing; no independent GPT-class capability has been demonstrated.
+# EAI Architecture — canonical CPU-first independent system (2026-10-31)
 
-# EAI canonical architecture / ADR-0001
+The owner clarification [ADR-0002](ADR-0002_EAI_COGNITIVE_OWNERSHIP.md) supersedes the old Qwen-chatbot design.
 
-Date: 2026-10-31 KST. Authority: owner direction to build from minimal executable, backend-first and improve through actual use. **This document captures the final target and implementation order, not a claim that every component already exists.**
+```text
+User text -> CPU rule parser OR Qwen classifier (optional, INPUT only)
+         -> strict IntentSpec v1 validation
+         -> EAI CognitiveEngine (CPU: bounded solver, workflow/search/notes gates)
+         -> ResultSpec (status/data/sources/warnings/trace)
+         -> EAI ResponseEngine (deterministic, no generative LLM)
+         -> local SQLite history and user note/evidence storage
+```
 
-## A / B design review
+Qwen cannot call tools or store notes: original input text must explicitly start with `기억해`/`메모추가` for a note write. Search requires explicit CLI `--online` plus a configured loopback SearXNG; its upstream may receive the query. Fetched material is UNVERIFIED, never executed as instructions.
 
-A — LA-first: embed all EAI workflows and HTTP search as new LA nodes. Benefits: one workflow runtime, persistence and replay parity. Risks: existing LA intentionally disallows external connectors; changing core and HAE dependencies increases testing, blast radius and licensing/scope work.
+## Decision review
+A. LA-first: direct dependence on Lightning Azent workflow runtime, reuse execution but introduces coupled changes in HAE/LA and unimplemented network nodes.
+B. **Independent EAI core + later optional LA adapter**: small CPU-first runtime and measured local workflows, lower integration risk, minimal startup resources. Selected for owner daily-use priority; duplicated adapter contracts are an accepted maintenance cost.
 
-B — EAI-first [selected]: isolated Python core, local Ollama provider, versioned tool registry, independent SQLite memory and opt-in retrieval; LA is an optional adapter after contracts/tests. Benefits: fastest stand-alone real use, protects HAE/LA and allows later reuse. Costs: some orchestration initially duplicated, interface versions to maintain. Expected performance: simpler call path for single-tool chat; costs: no paid API required; maintenance: bounded modules and tests.
+## Current runtime ports
+`RuleIntentParser`, `QwenIntentParser` → `IntentSpec` → `CognitiveEngine` → `ResultSpec` → `ResponseEngine`; `Store` provides existing/history/cache/note DB operations; `WorkflowRegistry` exposes fixed `research.web.v1`. CPU_ECO sets parser `num_gpu=0`. No GPU optimization, separate original model training or full GPT-class reasoning present.
 
-## End-to-end target flow
+## Migration and recovery
+Persistent SQLite `turns`, `search_cache`, `documents` preserved. New `user_notes` table is created additively after consistent local `<db>.pre-notes-*.bak` snapshot when opening an existing legacy DB. Backups and databases stay local and Git-ignored. Original branches/repositories untouched.
 
-User text → classify freshness/sensitivity/intent → local memory/cache → versioned tool/workflow registry → (optional) approved online retrieval or local solver → source parser / dedup / provenance / verification → local LLM synthesis → cited answer → local SQLite history + feedback record.
-
-For privileged work: plan → human preview + approval → narrow tool executor or versioned LA adapter → receipt + audit + safe restart. No executable code derived directly from retrieved pages.
-
-## Layer ownership
-
-1. CLI (v0.1): minimal entrypoint. GUI only after backend E2E.
-2. Provider port (v0.1): Ollama loopback HTTP, model swappable by name; all external cloud LLMs excluded by default.
-3. Router (rule first): local chat vs freshness-sensitive online search; later ML only with measured improvement.
-4. ToolRegistry (v0.1): stable tool IDs; online meta-search is web.search.v1. Later configurable skills, templates and cap-gated execution.
-5. Memory (v0.1): SQLite turns, TTL cache, URL-indexed UNVERIFIED search snippets. Long-term verified knowledge and embedding/RAG are later modules, not weights training.
-6. Validation (v0.1 basic): bounded inputs, loopback-only connectors, freshness warnings, source URL/time and provenance. Verified/conflict states need later independent checkers.
-7. Optional integration (not implemented): Lightning Azent workflow runner behind a versioned adapter, then SOVIA/DBVORA if owner decides. HAE is a separate product.
-8. Experimental future: hierarchical search/decomposition, parallel deterministic solvers, small learned route selection and evaluation benchmarks; do not confuse with LLM training.
-
-## Existing repos verified (no code copied)
-
-HAE main: docs/ECOSYSTEM_CANONICAL.md, Git blob 0d31062b0e3c6a570b37a35ace6fbfbe59ec2116. HAE feature/lightning-azent: packages/lightning-azent/README.md Git blob 6998c890ee6302a492d5f4b7cc825d3587ec4a16; lightning_azent/engine.py Git blob ccfbe6acdd6871b459b4eb859ba02d844989027c. The inspected LA engine supports bounded local operations and rejects unknown HTTP/network steps. Docs report isolated synthetic tests, not a production HTTP connector. Therefore do not import LA internals or pretend reusable HTTP nodes already exist.
-
-## Failure, costs, safety
-
-- Local Ollama absent/model not installed: fail with explicit error. Never silently switch to paid remote inference.
-- SearXNG unavailable, provider blocks, or no consent: warn; use prior knowledge only as dated/unverified, never current fact.
-- Search cache default 30 minutes, user may still require a fresh fetch. Store provenance and mark initial search hits UNVERIFIED.
-- HTTP SearXNG endpoint must be local loopback; no automatic redirects; bounded response and short timeout. Queries sent to SearXNG may reach external public engines; owner must opt in.
-- No unbounded retries; no privileged writes, shell or generalized URL fetching in initial release. Future HTTP adapter needs SSRF, redirects, DNS, size, rate-limit and permission tests.
-- Schema changes and backup/restore will be versioned before additional persistent features are shipped.
-
-## Decisions requiring new explicit approval
-
-HAE/LA repository changes, automatic web→model fine-tuning, adding paid APIs, opening network services, autonomous workspace edits, publishing EAI, or materially changing security/data policy.
+## Future
+RAG/verified evidence, bounded planner/solvers, adaptive CPU/GPU scheduler (ADR-0003), LA integration, user-facing UI after backend stability. Measure success against real tasks rather than LLM-generated fluency.

@@ -1,42 +1,26 @@
 # EAI — STATUS (2026-10-31 KST)
 
-## Product and phase
-EAI (Elice Artificial Intelligence) is a private, CPU-first **independent cognitive engine**: Qwen, if enabled, **only classifies user input** into IntentSpec. EAI itself routes the task, calculates or retrieves evidence, verifies input bounds, renders the answer, and writes SQLite history. Final vision is longer-term research (hierarchical search, strategic ML, independent generalization), **not implemented or claimed at P0**. Canonical direction: ADR-0002; compute research: ADR-0003.
+## Truthful product state
+Private repository `hibi89/EAI`, branch `feature/local-first-mvp` (no main merge). EAI independently solves a bounded set of tasks; **Qwen is INPUT classification only** when enabled and cannot write user notes or generate final EAI answers. Python >=3.11 stdlib, SQLite, optional Ollama/SearXNG. Backend first, frontend last. Original HAE/LA, SOVIA and other repos untouched.
 
-## Repository and immutable milestone
-- Owner: hibi89/EAI (private)
-- Branch: feature/local-first-mvp
-- Tested-source publication commit: ed55e7d2918fd576ce587ce330d32e5e5c1c9123
-- Main is the preserved bootstrap branch; existing HAE/LA/DBVORA/SOVIA repositories were not modified.
-- Before a new change, read HANDOFF → STATUS → AGENTS → REQUIREMENTS → actual source.
+## P1 implemented
+- P0: CPU exact calculation, Qwen IntentSpec v1 input parser and CPU rule fallback, deterministic ResultSpec response, explicit online search and SQLite cache/history.
+- P1: original-text-gated `기억해`/`메모추가`, `메모목록`, `기억검색`; local notes separate from web snippets, idempotent duplicate note insertion, bounded input and parameterized SQL with literal wildcard escaping.
+- Automatic SQLite consistent snapshot `<db>.pre-notes-*.bak` before adding notes table to an **existing** local database; Git ignore prevents database and snapshot uploads.
+- Real loopback HTTP integration tests with fake local Ollama and SearXNG, including a redirect denial case. Does NOT establish real public search or actual Qwen availability.
 
-## Implemented
-- Independent CLI: `python -m eai ask '계산 12*(3+4)'`; `python -m eai chat`; `python -m eai health`.
-- Python 3.11+ standard library: CPU rule parser; optional Ollama/Qwen structured input parser with strict IntentSpec v1 JSON schema; CPU_ECO parser mode uses `num_gpu=0`.
-- Independent CPU CognitiveEngine: bounded exact arithmetic (Fraction/Decimal), fixed answer renderer, honest unsupported responses.
-- Registered, consent-gated `research.web.v1` workflow via optional local SearXNG JSON interface; SQLite cached source list and local recall, all source snippets UNVERIFIED.
-- SQLite local conversation history; token/model/source binaries and database files excluded from Git.
-- Original obsolete OllamaChat answer synthesis path disabled; existing previous commit allows source recovery.
+## Actual verification
+- Container Linux Python 3.13.5: compileall PASS; `python -m unittest discover -s tests -v` **36 PASS / 0 FAIL / 0 SKIP**.
+- Separate CLI processes: note created/retrieved/listed from SQLite, one note and 8 conversation turns persisted; `계산 0.1+0.2 = 0.3` PASS.
+- Remote code verified by file fetch and selected Git blob SHA comparisons; remote `storage.py` is semantically reviewed but formatted differently from local test copy, so a complete byte-identical remote-checkout pass is UNVERIFIED.
 
-## Verified in this turn
-- Local Python 3.13.5: `python -m compileall -q eai tests` PASS.
-- `python -m unittest discover -s tests -v`: **21 PASS / 0 FAIL / 0 SKIP** (offline mocked provider, not live services).
-- CLI: health PASS; CPU arithmetic `1250000*0.12=150000`, `0.1+0.2=0.3`, `200*(1+0.15)=230` PASS.
-- ZIP independent extraction, 21 tests again PASS; separate CLI processes wrote SQLite with 4 turn records and reopened it PASS.
-- GitHub connector fetch confirmed changed file blobs in P0 commit match local Git hashes; source and ADR-0003 presence verified.
+## GitHub Actions — failure, cause unknown
+- Latest inspected run `41200369167` (commit `bb1814e5a302563f886cd5c20b2c5526b26ae8e5`): completed FAILURE, no job steps, runner_name empty. Job log download gave BlobNotFound. Prior 11 runs had the same ~3-second failure outcome.
+- This is **not a confirmed code test failure** nor CI success. Stop pointless reruns; inspect repository Actions runner/permission/billing setup using authorized UI or effective logs when accessible.
 
-## Unverified / blocked / not implemented
-- GitHub Actions final conclusion UNVERIFIED (combined statuses empty; PR-run lookup empty; this is not a CI failure proof).
-- User's actual Windows 10/Python 3.11 local Ollama Qwen structured classification **UNVERIFIED**; no model is installed automatically.
-- Real SearXNG search / public provider reliability **UNVERIFIED**; network query requires explicit `--online`.
-- General GPT-class reasoning, hierarchical search/ML, RAG, adaptive CPU/GPU golden ratio, LA adapter, graphical UI, production deployment: NOT IMPLEMENTED.
-- Ollama compute profiles: CPU_ECO and OLLAMA_DEFAULT only, **no real performance benchmark**.
+## Not completed / next
+- Owner Windows 10 Python 3.11, `RUN_EAI.cmd`, real Qwen/Ollama inference, and real SearXNG: NOT VERIFIED.
+- LA adapter, broader independent solvers, RAG, learning, hierarchical reasoning, autonomous GPT-class generation, CPU/GPU optimum, GUI, deployment: NOT IMPLEMENTED.
+- Prioritize owner usage feedback on CLI/memory and one useful independent solver next; verify real Windows only when feasible, no forced model download or paid API. Maintain test, privacy, schema versioning and note backups.
 
-## Next actions (priority)
-1. Check GitHub branch check-run/CI result with a tool that actually lists Actions check runs; run a fresh byte-identical checkout on Windows 3.11.
-2. Run the real Qwen input-only path when available, verify strict parse/fallback and no unauthorized answer generation; do not require a GPU purchase.
-3. Only with consent, verify local SearXNG JSON search, cache/staleness, provider limitations and privacy.
-4. Add the next narrow task solver based on actual owner use; do not substitute large model generation or UI work.
-5. Benchmark CPU/GPU parser offload on the owner's hardware, compare static profiles; do not invent a fixed optimal split.
-
-Production URL/Vercel: **N/A** (local executable CLI). No paid service or external model/credentials submitted by this run. No promise of unattended two-day work.
+No Production URL, Vercel deployment or public endpoint: N/A.

@@ -1,49 +1,64 @@
-> **EAI P0 independent solver (2026-10-31):** source migration is in progress on feature/local-first-mvp: Qwen is OPTIONAL and used ONLY for structured input classification. CPU RuleIntentParser, Fraction arithmetic solver, consent-gated SearXNG search, SQLite recall, fixed EAI response renderer and CLI now have a local tested implementation (21/21 offline unit tests on Python 3.13.5). Until exact GitHub commit CI and Windows/Ollama tests complete, do not claim production readiness. Usage: `python -m eai ask "계산 12*(3+4)"`, `python -m eai health`. For Qwen input only: `python -m eai --use-qwen-intent --profile CPU_ECO ask "계산 2+2"`. No GPU needed for rule-mode arithmetic; current coverage is intentionally narrow. [ADR-0002](docs/ADR-0002_EAI_COGNITIVE_OWNERSHIP.md), [CPU/GPU research](docs/ADR-0003_ADAPTIVE_CPU_GPU_RESEARCH.md).
-
-> **2026-10-31 architecture correction — read first:** [ADR-0002: Qwen is only the input parser/classifier; EAI itself owns problem-solving, planning, verification and final response.](docs/ADR-0002_EAI_COGNITIVE_OWNERSHIP.md) The existing Ollama-chat-generates-the-answer implementation is a provisional *nonconforming* baseline; do not claim it matches the final EAI design. No code was changed by the correction.
-
 # EAI — Elice Artificial Intelligence
 
-**Local-first personal AI**. Private owner-led long-term project. This repository starts with a deliberately small, executable **Python CLI**, not a web UI or a self-trained foundation model.
+**Independent CPU-first EAI P1 (local, runnable, not general GPT).** Qwen is optional, strictly input classification only. EAI itself owns computing, task selection, validation, persistent memories and response rendering. Zero required paid APIs. Work stays on `feature/local-first-mvp` until real hardware and CI verification.
 
-## Status (2026-10-31 KST)
+## Quick start — Windows 10 / Python 3.11+
 
-- Development branch: `feature/local-first-mvp`; the `main` branch is only an initialization marker. Do not merge without verification.
-- Source has been committed: local Ollama chat, local SQLite conversation/search cache, opt-in local SearXNG search, tool registry and a fixed research.web.v1 workflow, offline tests.
-- **Preliminary mirror verification:** 15/15 offline tests PASS and CLI/compileall smoke PASS on Python 3.13.5 local reconstruction (not byte-identical with GitHub source). **Not yet verified:** exact GitHub branch CI conclusion, actual Windows + Ollama/Qwen inference, live SearXNG search. This is not a customer-ready release.
-- No HAE/LA source was copied, modified, or required to run this branch.
-
-## Start here (Python 3.11+, no Python runtime packages required)
-
-1. Install Ollama through its official installer; explicitly download the model before first use: `ollama pull qwen2.5:3b`. This download consumes network bandwidth/disk; there is no paid API requirement.
-2. Ensure local Ollama responds at `http://127.0.0.1:11434`; run `ollama serve` if needed, without opening it to your LAN.
-3. From this branch's repository root:
+From the project root run:
 
 ```powershell
 python -m eai health
-python -m eai ask "안녕, 너는 누구야?"
+python -m eai ask "계산 0.1+0.2"
+python -m eai ask "기억해: EAI는 로컬 독립 엔진"
+python -m eai ask "기억검색 EAI"
+python -m eai ask "메모목록"
 python -m eai chat
+```
+
+Or run `RUN_EAI.cmd` (launcher provided, **Windows execution not yet verified**). Commands above work without Ollama, GPU, keys or internet. Python default database location: `%USERPROFILE%\.eai\eai.sqlite3`. Use `--db .\scratch.sqlite3` before `ask` for an isolated local test.
+
+### Supported tasks
+
+- `계산 12*(3+4)`: CPU bounded exact Fraction/Decimal arithmetic.
+- `기억해: 내용` / `메모추가 내용`: explicit user note stored in SQLite, maximum 2,000 characters; duplicates do not create new rows.
+- `기억검색 프로젝트` / `기억 프로젝트`: local note search plus saved source snippets (sources are **UNVERIFIED**).
+- `메모목록`: up to 10 recent personal notes.
+- `검색 최신 AI 모델`: only if explicitly enabled, requires externally configured local SearXNG service.
+- `도움말`: the supported narrow capabilities; unsupported general GPT requests return limitations rather than fabricated answers.
+
+Before adding the `user_notes` table to an existing SQLite DB, EAI creates a consistent local backup named `<db>.pre-notes-*.bak` in the same directory. Both the database and backup contain private conversation content and are Git-ignored. New user notes are additive, kept separate from unverified web snippets. No automatic model training.
+
+### Optional local Qwen input-only classification
+
+Ollama must be installed separately with a compatible locally downloaded, licensed model; EAI does not download or configure it:
+
+```powershell
+python -m eai --use-qwen-intent --profile CPU_ECO ask "7 곱하기 6은?"
+```
+
+`CPU_ECO` requests `num_gpu=0` for Qwen classification. `OLLAMA_DEFAULT` uses Ollama's default offloading. Neither is an empirically selected hardware optimum. The Qwen output is a strictly validated IntentSpec, never the authored final answer.
+
+### Optional online lookup
+
+A user-operated local SearXNG endpoint must support JSON; queries **may leave the PC** through its external search providers:
+
+```powershell
+python -m eai --searxng-url http://127.0.0.1:8080 --online ask "검색 최신 AI 모델"
+```
+
+No `--online` = no search requests. Search cache expires and stale data must not be described as live.
+
+### Tests / actual status
+
+```powershell
+python -m compileall -q eai tests
 python -m unittest discover -s tests -v
 ```
 
-Old PCs can choose a smaller, locally installed model by passing `--model <model-tag>` before `ask` or `chat`. CPU inference may be slow. A machine without Ollama/model cannot perform real inference; this is **not an offline fallback model**.
+Local Python 3.13.5 verification: **36 PASS / 0 FAIL**, including simulated loopback HTTP integration and legacy SQLite backup. Separate CLI process note/recall/math/SQLite reopen PASS. **Not verified:** exact remote CI success, Windows user PC, real Qwen inference, actual SearXNG service, GPU/CPU performance. GitHub Actions has 12 completed runs with failure and zero job steps; cause not yet established. Do not infer a code defect or CI PASS.
 
-## Optional free online lookup (not enabled by default)
+### Design
 
-Start a trusted **local** SearXNG instance with JSON output enabled, then opt in per CLI session:
+[ADR-0002: EAI owns intelligence](docs/ADR-0002_EAI_COGNITIVE_OWNERSHIP.md) · [ADR-0003: CPU/GPU R&D](docs/ADR-0003_ADAPTIVE_CPU_GPU_RESEARCH.md) · [STATUS](STATUS.md) · [HANDOFF](HANDOFF.md)
 
-```powershell
-python -m eai --searxng-url http://127.0.0.1:8080 --online ask "오늘 발표된 AI 모델은?"
-```
-
-SearXNG must be set up separately. The local SearXNG service may forward the search query to external engines, so it **is not an offline/private lookup**. The CLI does not install or enable it on your behalf. Sources are labeled UNVERIFIED; cached snippets are not independent fact checking. Search may fail because of provider throttling, instances, missing JSON API support, or network connectivity.
-
-## Long-term objective
-
-- Reusable tool / skill registry, templated workflows, safe optional Lightning Azent adapters.
-- Offline/online retrieval, provenance, semantic RAG memory, cross-source deterministic validation.
-- Hierarchical problem decomposition, bounded parallel solvers, small learned strategy router evaluated against explicit baselines.
-- Approval-based local automation; original data preservation; no silent uploads, model retraining, or privileged system changes.
-- Native local UI after backend functionality and tests; not an early blocker.
-
-Primary documents: [Architecture](docs/ARCHITECTURE.md) · [Interfaces](docs/INTERFACES.md) · [Roadmap](docs/ROADMAP.md) · [Acceptance](docs/ACCEPTANCE.md) · [Security](docs/SECURITY.md) · [Requirements](REQUIREMENTS.md) · [Handoff](HANDOFF.md).
+No LA/HAE changes, frontend, public service, deployment or Vercel project. EAI's GPT-class ambition remains long-term research, not current functionality.
