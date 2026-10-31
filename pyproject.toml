@@ -1,0 +1,16 @@
+[project]
+name = "eai-local"
+version = "0.1.0.dev0"
+description = "Local-first personal AI with opt-in retrieval and memory"
+requires-python = ">=3.11"
+dependencies = []
+
+[build-system]
+requires = ["setuptools>=65"]
+build-backend = "setuptools.build_meta"
+
+[project.scripts]
+eai = "eai.__main__:main"
+
+[tool.setuptools.packages.find]
+include = ["eai*"]
