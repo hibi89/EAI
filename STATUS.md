@@ -1,32 +1,19 @@
-# STATUS — EAI P6 (2026-10-31 KST)
+# EAI STATUS — P8 (2026-10-31 KST)
 
-## Source of truth
-Private hibi89/EAI, branch **feature/local-first-mvp**; main unchanged. P6 source commit **d203eeeb8b7c6de4acc5a64fdf12043962df3326**. The latest branch HEAD after documentation publication is read from GitHub. Architecture ADR-0002: optional Qwen input parsing ONLY; EAI CPU code selects, computes, verifies and renders. No claim of GPT-class autonomy.
+## GitHub and architectural truth
+Private hibi89/EAI, branch feature/local-first-mvp; main preserved. P7 source SHA 63eabb69dac8ff498126eef85bfcc1f1b7368b2b; P8 source SHA e33cdd2c6100c781e01257b311726cfd8a21b11e. Final document HEAD must be checked after publication. Qwen optional input parser only, never reasoning or final author (ADR-0002). EAI currently supports narrow deterministic CPU tasks, not general GPT-class intelligence. HAE/LA untouched.
 
-## Implemented
-- P0 exact arithmetic, tool registry, strict intent, opt-in local SearXNG and SQLite history/cache.
-- P1 explicit user notes, local recall and pre-schema SQLite backup.
-- P2 bounded numerical comparisons / read-only CSV inspection.
-- P3 one-source typed claim verification and file hash evidence.
-- P4 two-source keyed reconciliation for same-total/different-row mismatches.
-- P5 per-metric differences and sampled candidate inspection priorities.
-- **P6** validated AuditGoal -> RuleGoalPlanner (single/multi strategy selection) -> CPUPlanExecutor (up to five fixed read-only skills, usually three or four execution steps) -> conditional diagnosis or schema fallback -> final source-hash guard -> EAI-owned receipt. CLI: **solve-csv**. Existing functionality and data kept intact, HAE/LA unaffected.
+## Delivered
+P0 CPU arithmetic/search/cache; P1 local notes; P2 CSV profiling/numerical comparison; P3 CSV claims; P4 keyed reconciliation; P5 multi-metric diagnostics; P6 fixed CSV goal planner; P7 strict two-domain JSON goal dispatcher and option scoring; P8 shared evidence receipt guard. The P8 guard revalidates feasibility, weighted scores, unrounded rank, Pareto, winners, CSV source SHA256, strategy and allowlisted step trace. Valid but unresolved results yield limited advisory review; no automatic repair.
 
-## Local evidence
-- Linux Python **3.13.5**: compileall PASS; **146 unittest PASS / 0 FAIL / 0 SKIP**, comprising 122 prior tests and 24 new P6 tests.
-- Real local CLI calls to solve-csv produced expected CONFLICT/exit 2 with both single metric escalation and multi metric direct diagnosis. Explicit missing schema is UNAVAILABLE; no output upgrades it to AGREE. Input test CSV files unchanged.
-- Exact 3 P6 file Git blob SHA match local tested code: eai/plan_engine.py, eai/__main__.py, tests/test_plan_engine.py. Full byte-identical repo checkout still UNVERIFIED because six unchanged files in historic local working copy differ from GitHub versions.
-- Stage budget 1–120 seconds is checked before each stage; **not a hard-stop per-scan timeout**. Current execution plan is deterministic, limited to a single CSV audit domain.
+## Actual tests and integrity
+Linux Python 3.13.5 locally reconstructed tree: python -m compileall -q eai tests PASS; python -m unittest discover -s tests -q: 201 PASS / 0 FAIL / 0 SKIP (P0-P7 180 + P8 21). Local solve-goal CLI for synthetic choices DECIDED; synthetic CSV CONFLICT; receipt verifications PASS. P8 3 source/test Git Blob SHAs exact match remote. Several historical locally formatted files differ bytewise from GitHub, so full byte-identical remote checkout test remains UNVERIFIED.
 
-## CI and external environment
-- GitHub Actions **run 41207577469** for source commit d203eeeb = **FAILURE**, job steps=[], runner_name empty. No evidence Python tests executed; root cause UNKNOWN, do not rerun identical workflows blindly or alter billing/security without approval.
-- Owner Windows 10/Python 3.11 and RUN_EAI.cmd; actual Ollama/Qwen, live SearXNG, CPU/GPU performance and real private data: UNVERIFIED.
-- Vercel Production URL, deployment and frontend: NOT APPLICABLE / NOT IMPLEMENTED.
+## Known blocker
+GitHub Actions P8 source run 41210358928: FAILURE with empty runner name / no visible job steps, consistent with previous runs. No proof Python tests even started; root cause UNKNOWN. Do not rerun identical CI pointlessly or alter permissions/billing without permission. Native Windows 10/Python 3.11, real Ollama/Qwen, SearXNG, GPU benchmark, private data usage unverified. Production/Vercel N/A for local CLI.
 
 ## Next
-1. Verify exact GitHub tree on usable Python 3.11 / owner Windows; obtain actionable Actions runner failure evidence, not speculative fixes.
-2. Expand typed goal planning to a **second distinct real-use domain**, keeping whitelisted tools, bounded budgets, immutable read-only tasks and explicit approval for any write capability.
-3. Use actual owner tasks to prioritize new solvers, evidence quality and memory; do not misrepresent scripted planning as general intelligence.
-4. Update HANDOFF and STATUS after each substantive verified development. Never commit secrets, user CSVs, models or SQLite databases.
-
-See docs/P6_GOAL_PLAN_ENGINE.md and HANDOFF.md. Read actual branch HEAD for final documentation commit SHA.
+1. Verify exact remote source with Python 3.11 and native Windows when available; preserve original data.
+2. Diagnose GitHub Actions runner pre-step failure from actionable evidence only.
+3. Expand measured, read-only EAI skill repertoire using actual user tasks; no frontend priority or GPT-equivalence claims.
+4. Update STATUS/HANDOFF and source SHA after substantive changes.

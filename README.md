@@ -1,37 +1,25 @@
 # EAI — Elice Artificial Intelligence
 
-**Current development: P6 independent CPU-owned goal planner** (2026-10-31 KST). Private local-first project, Python >=3.11, standard library only for core tasks, SQLite for local conversation/notes. Qwen/Ollama, when explicitly enabled, is **only an INPUT interpreter**, not the reasoning/verification/answer-authoring engine. GPT-class general intelligence remains a long-term, unproven research goal.
+Private, local-first, CPU-first personal EAI. Qwen is optional INPUT classification only. EAI-owned deterministic solvers perform execution, scoring, evidence checks and response rendering. Broad GPT-level reasoning remains a long-term research target, not a completed capability.
 
-## Run today
-
+## Quick start — Python 3.11+
 ~~~powershell
 python -m eai health
 python -m eai ask "계산 0.1+0.2"
-python -m eai ask "비교 A=100,B=120,C=114"
-python -m eai ask "기억해: EAI는 CPU 중심"
+python -m eai ask "기억해: EAI 테스트"
 python -m eai ask "기억검색 EAI"
 python -m eai analyze-csv examples/sample_sales.csv
 python -m eai verify-csv examples/sample_sales.csv --column sales --metric sum --expected 352
-python -m eai reconcile-csv examples/sample_sales.csv examples/sample_sales_source_b.csv --key year --value sales
-python -m eai diagnose-csv examples/sample_sales.csv examples/sample_sales_multi_drift.csv --key year --values sales orders
-python -m eai solve-csv examples/sample_sales.csv examples/sample_sales_multi_drift.csv --key year --values sales orders --json
-python -m eai chat
+python -m eai solve-csv examples/sample_sales.csv examples/sample_sales_source_b.csv --key year --values sales --json
+python -m eai solve-goal examples/sample_hardware_decision.json --json
+python -m eai solve-goal examples/sample_csv_audit_goal.json --json
+python -m unittest discover -s tests -q
 ~~~
 
-### P6 goal planning
+P7 supports two typed JSON goals: choose_options (hard constraints, weighted scoring and Pareto validation) and csv_audit (existing read-only P6 plan). P8 verifies the resulting receipt against original goals or source CSV hashes and permitted skills. It fails closed on false winners, tampered scores/hashes, missing provenance and unsupported execution traces. Valid ties/unknowns get bounded advisory hints, never silent criteria relaxation.
 
-The new **solve-csv** command chooses a fixed CPU skill path. It anchors input hashes, selects single-metric reconciliation or multi-metric diagnosis, conditionally escalates conflicts or inspects missing columns, verifies hash continuity, and reports a structured plan receipt. No Python scripts are generated on the fly, no source CSVs are modified, and no network or GPU is required.
+Actual local test mirror: Linux Python 3.13.5, 201 PASS / 0 FAIL through P8. The three P8 modified/new Git blobs match local tested code. Whole exact GitHub checkout, actual user Windows Python 3.11, Ollama/Qwen, SearXNG, GPU tuning and GitHub Actions success remain UNVERIFIED. GitHub Actions fails before visible job steps; cause unknown. No Vercel/Production deployment applies.
 
-The example synthetic data deliberately disagrees at individual keys; CONFLICT (exit 2) is expected. Codes: 0 = AGREE, 1 = invalid/error, 2 = CONFLICT, 3 = UNAVAILABLE. The result proves only internal consistency between those two CSVs, not real-world authenticity.
+Default operations require neither GPU, paid API nor cloud services. Online lookup requires explicit --online with a separately configured SearXNG localhost server; that service may send queries externally. No HAE/LA/main modification.
 
-### P0–P5 preserved
-
-P0 exact arithmetic, optional Qwen intent parser and permission-gated local SearXNG search; P1 SQLite user notes and migration snapshot; P2 numerical comparison and bounded read-only CSV profile; P3 one-file typed claim verification; P4 two-source keyed reconciliation; P5 multi-metric discrepancy candidates. Original HAE/LA/other repositories are not touched.
-
-Optional Qwen requires a locally installed model and local Ollama; optional online retrieval requires explicit --online and a user-configured local SearXNG service which **may forward queries externally**. Neither is automatically installed. No paid API dependency.
-
-### Verification
-
-Local Linux Python 3.13.5: compileall PASS; **146 offline tests PASS / 0 FAIL** with 24 new P6 cases; verified isolated local CLI routes and no source-file writes. The three new/modified P6 source Git Blob SHAs match the tested local source exactly. A full byte-identical remote checkout and Windows 10 Python 3.11/real Qwen/SearXNG are UNVERIFIED. GitHub Actions source run 41207577469 FAILED before visible job steps (runner name blank). No production deployment or Vercel URL applies.
-
-[Status](STATUS.md) · [10-point handoff](HANDOFF.md) · [P6 planner contract](docs/P6_GOAL_PLAN_ENGINE.md) · [P5 diagnosis](docs/P5_MULTI_METRIC_DIAGNOSIS.md) · [ADR-0002 cognitive ownership](docs/ADR-0002_EAI_COGNITIVE_OWNERSHIP.md) · [ADR-0003 CPU/GPU research](docs/ADR-0003_ADAPTIVE_CPU_GPU_RESEARCH.md).
+Docs: STATUS.md, HANDOFF.md, docs/P7_MULTI_DOMAIN_GOAL_ROUTING.md, docs/P8_VERIFIED_GOAL_RECEIPTS.md, docs/ADR-0002_EAI_COGNITIVE_OWNERSHIP.md, docs/ADR-0003_ADAPTIVE_CPU_GPU_RESEARCH.md.
