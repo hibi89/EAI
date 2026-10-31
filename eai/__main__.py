@@ -13,6 +13,7 @@ from .verify_csv import verify_csv_claims, load_claims, render_verification, MET
 from .reconcile_csv import reconcile_csv, render_reconciliation
 from .diagnose_csv import diagnose_csv, render_diagnosis
 from .plan_engine import AuditGoal, CPUPlanExecutor, render_plan_report
+from .goal_dispatch import execute_goal_document, render_goal_document
 from .runner import EAIRunner
 from .storage import Store
 from .tools import SearxNGSearch
@@ -70,6 +71,9 @@ def main(argv: list[str] | None = None) -> int:
     solve_cmd.add_argument('--encoding', choices=['utf-8-sig', 'utf-8', 'cp949'], default='utf-8-sig')
     solve_cmd.add_argument('--max-seconds', type=int, default=60, help='maximum elapsed seconds before starting each stage')
     solve_cmd.add_argument('--json', action='store_true', help='structured plan, trace, evidence and fallback')
+    goal_cmd = sub.add_parser('solve-goal', help='P7 strict CPU two-domain goal router: CSV audit or option decision')
+    goal_cmd.add_argument('spec', help='explicit local goal JSON file, <=64KiB')
+    goal_cmd.add_argument('--json', action='store_true', help='structured receipt and source hash')
     args = p.parse_args(argv)
     if args.command == 'health':
         print('EAI independent CPU-first engine v0.1')
@@ -79,6 +83,16 @@ def main(argv: list[str] | None = None) -> int:
         print('SearXNG configured:', bool(args.searxng_url))
         print('SQLite:', args.db)
         return 0
+    if args.command == 'solve-goal':
+        try:
+            report = execute_goal_document(args.spec)
+            print(json.dumps(report, ensure_ascii=False, indent=2) if args.json
+                  else render_goal_document(report))
+            return {'DECIDED': 0, 'TIE': 0, 'AGREE': 0,
+                    'CONFLICT': 2, 'UNAVAILABLE': 3}[report['status']]
+        except (ValueError, OSError, UnicodeError, csv.Error, TimeoutError) as exc:
+            print('EAI GOAL ERROR:', type(exc).__name__, str(exc), file=sys.stderr)
+            return 1
     if args.command == 'analyze-csv':
         try:
             print(render_csv_summary(inspect_csv(args.path, encoding=args.encoding)))

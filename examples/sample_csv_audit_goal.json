@@ -1,0 +1,10 @@
+{
+ "version": 1,
+ "kind": "csv_audit",
+ "left": "sample_sales.csv",
+ "right": "sample_sales_source_b.csv",
+ "key": "year",
+ "values": ["sales"],
+ "tolerance": "0",
+ "max_seconds": 60
+}

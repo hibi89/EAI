@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "kind": "choose_options",
+  "goal": "로컬 개발용 노트북 후보 선택 (임의 합성 수치)",
+  "criteria": [
+    {"id":"price", "unit":"KRW", "direction":"min", "weight":"4", "score_min":"0", "score_max":"2000000", "hard_max":"1600000"},
+    {"id":"memory", "unit":"GB", "direction":"max", "weight":"3", "score_min":"8", "score_max":"64", "hard_min":"16"},
+    {"id":"cpu", "unit":"points", "direction":"max", "weight":"3", "score_min":"0", "score_max":"100"}
+  ],
+  "options": [
+    {"id":"budget", "values":{"price":"1100000", "memory":"16", "cpu":"65"}},
+    {"id":"balanced", "values":{"price":"1400000", "memory":"32", "cpu":"90"}},
+    {"id":"over_budget", "values":{"price":"1750000", "memory":"64", "cpu":"95"}},
+    {"id":"missing_spec", "values":{"price":"1300000", "memory":"32"}}
+  ]
+}
