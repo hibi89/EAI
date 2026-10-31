@@ -1,26 +1,30 @@
-# STATUS — EAI P3 (2026-10-31 KST)
+# STATUS — EAI P4 (2026-10-31 KST)
 
-## Canonical state
-Private hibi89/EAI, development branch feature/local-first-mvp, main preserved. P3 source milestone **c108648b0e153b8252e8ff0faf715518a75d4440**. EAI independently performs CPU calculation, lookup, explicit local note storage, CSV statistics and claim verification. Qwen may **only classify input**; no model writes the final answer. Broad GPT-class generality/ML/adaptive GPU split remain research, not implemented. HAE/LA/SOVIA unaffected.
+## Product / scope
+Private `hibi89/EAI`, development branch `feature/local-first-mvp`; `main` and HAE/LA/other project sources preserved. Final goal: independent EAI CPU reasoning/planning/verifying/answer engine, optional Qwen used for **input parsing only**; GPT-class autonomy remains future research, not current capability. No paid API, GPU or remote service required for P4.
 
-## Delivered
-- P0: rule parser + optional Qwen IntentSpec-only port, exact arithmetic, opt-in local SearXNG lookup, SQLite history/cache.
-- P1: literal opt-in notes and local search, legacy SQLite backup prior to notes migration.
-- P2: bounded Decimal comparison and explicitly selected read-only CSV numeric profile.
-- **P3:** read-only `verify-csv`, 1 or up to 24 JSON claims, SHA256 before and after reading, per-claim VERIFIED/CONFLICT/UNAVAILABLE, actual vs asserted number, tolerance, exit codes 0/1/2/3 and machine-readable JSON; no external calls or model.
-- No frontend/hosted server/LA integration/weights training.
+## Source milestone
+- `18da5701ae0262607f397b54e873b4b50cfeff2f`: added `eai/reconcile_csv.py`, `reconcile-csv` CLI, `tests/test_reconcile_csv.py`, and synthetic `examples/sample_sales_source_b.csv`.
+- This document's publication is a later commit. Read the real GitHub branch HEAD before resuming; never guess the final SHA.
 
-## Tests and integrity
-- Local Linux Python 3.13: `compileall` PASS and `unittest discover -s tests -v` **74 PASS / 0 FAIL / 0 SKIP**, 19 new P3 tests. Real CLI success/mismatch/unknown column and batch sample PASS. Source CSV unchanged.
-- GitHub readback confirms the **four P3 changed/new source files match local Git Blob SHA**. Whole byte-identical remote checkout tests still UNVERIFIED due older mirror formatting differences.
-- GitHub Actions P3 source run **41203228592 FAILURE**, zero job steps, empty runner name, ~2 seconds from start to completion. Previous 15 runs showed similar pre-step failure. Root cause UNKNOWN, neither a proven code error nor CI success. Stop repeated no-op reruns; only inspect effective logs/config with authorized access.
+## Delivered and verified
+- P0 exact arithmetic, Qwen IntentSpec-only optional parser, opt-in SearXNG/SQLite cache.
+- P1 CPU-authorized local notes, SQLite persistence and pre-migration backups.
+- P2 bounded CPU numeric comparison + read-only CSV profile.
+- P3 single-file CSV numeric claim VERIFIED/CONFLICT/UNAVAILABLE with source SHA256.
+- **P4 keyed two-source CPU reconciliation**, counts equal/mismatched keys, left-only/right-only, nonnumeric values; absolute tolerance, SHA256 before/after, 20-detail bounded output, JSON, exit 0 AGREE / 1 ERROR / 2 CONFLICT / 3 UNAVAILABLE. Duplicate content hashes explicitly not independent evidence.
+- Local Linux Python 3.13.5: `python -m compileall -q eai tests` PASS; `python -m unittest discover -s tests -v` **97 PASS / 0 FAIL / 0 SKIP**. Example two files total 352 each but individual yearly values differ and produce CONFLICT.
+- P4 four source Git Blob SHA values exactly match GitHub readback. P3 zip/remote has five older blob differences: **whole byte-identical checkout not verified**.
 
-## Outstanding
-Windows 10 Python 3.11 owner's actual PC, real Ollama/Qwen, SearXNG, CPU/GPU benchmarking: UNVERIFIED. Vercel Production: NOT APPLICABLE to local CLI. No existing originals or user data changed. No paid API or externally transferred personal content.
+## Blockers and unknowns
+- GitHub Actions run `41204686535` for P4 source `18da5701`: completed **FAILURE**, job has no steps and runner_name empty; ~2 second execution. Root cause unproven; same pre-step failure repeats. Do not call CI green, and do not trigger pointless identical reruns.
+- User Windows 10/Python 3.11 native execution, real Ollama/Qwen structured input, real SearXNG, CPU/GPU benchmarks: UNVERIFIED.
+- There is no deployment or Vercel Production URL (NOT APPLICABLE).
 
-## Next
-1. Verify byte-identical remote checkout/Windows Python 3.11 and P3 real CLI as soon as the actual runtime is accessible; preserve user CSV originals.
-2. Diagnose GitHub Actions pre-step failure only from actionable runner/permission evidence; no unauthorized account changes.
-3. Expand one independent solver based on user work (group claims/typed units/provenance), keeping CPU-first design and small verified increments.
+## Next priorities
+1. Verify complete exact-remote tree in a native environment (full 97+ suite) and Windows CLI when possible.
+2. Diagnose missing GitHub Actions runner steps from meaningful job/account evidence; do not modify billing or security settings without approval.
+3. Improve source matching based on real user data (additional metrics/provenance, user-controlled keyed aggregation) with fresh regression tests.
+4. Extend EAI cognitive solver library only when it proves independent usefulness; frontend and LA integration remain later phases.
 
-Document details: docs/P3_CSV_CLAIM_VERIFICATION.md. GitHub HEAD after documentation commit must be verified; P3 source milestone above is pinned.
+This STATUS accurately distinguishes local synthetic evidence from live real services, original-data authentication, and general intelligence.

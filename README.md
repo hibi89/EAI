@@ -1,3 +1,10 @@
+> **P4 CPU 교차검증 (2026-10-31):** 두 로컬 CSV의 공통 고유 키와 숫자 열을 비교하는 `reconcile-csv` 명령이 추가됐습니다. 합계가 같아도 행별 수치가 다른 경우를 탐지하며, 결과는 `AGREE/CONFLICT/UNAVAILABLE`로 표시합니다. **실세계 사실이나 자료 독립성의 증거는 아닙니다.** [사용법·제약](docs/P4_KEYED_CSV_RECONCILIATION.md). GitHub CI는 여전히 실패하며, 실제 Windows/모델은 미검증입니다.
+
+```powershell
+python -m eai reconcile-csv examples/sample_sales.csv examples/sample_sales_source_b.csv --key year --value sales --json
+```
+위 명령은 의도적으로 `CONFLICT`(종료 코드 2)를 출력합니다. 두 파일의 sales 합계는 352로 같지만 2024·2025년 값이 다릅니다. CPU·SQLite·Qwen 설치 없이 실행 가능합니다.
+
 # EAI — Elice Artificial Intelligence
 
 Private, **local-first and CPU-first** independent EAI engine. Qwen is optional and restricted to user-input intent classification. The EAI-owned code selects and executes bounded calculations, searches, evidence verification and deterministic answer rendering. GPT-class general intelligence remains a research goal, not a current capability.
