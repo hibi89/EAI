@@ -1,3 +1,5 @@
+> **2026-10-31 KST owner architectural correction:** Confirmed final objective: **Qwen interprets/classifies input only**; independent EAI cognitive engine, planning, solvers, verification, memory and EAI-owned result presentation perform the rest. [ADR-0002](docs/ADR-0002_EAI_COGNITIVE_OWNERSHIP.md). Inspected source: `eai/app.py` still calls `self.model.respond(messages)` for final answers; therefore current v0.1 is **NONCONFORMING to target**. Corrective architecture specification committed; source replacement, regression tests and real E2E **NOT YET RUN**. No HAE/LA/source/data changes made in this correction.
+
 # STATUS — EAI
 
 Updated: 2026-10-31 KST, based on GitHub evidence.

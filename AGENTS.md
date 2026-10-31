@@ -1,3 +1,5 @@
+> **OWNER DIRECTIVE / ARCHITECTURE OVERRIDE (2026-10-31):** [ADR-0002](docs/ADR-0002_EAI_COGNITIVE_OWNERSHIP.md) is authoritative: Qwen may only interpret/classify natural-language INPUT. The EAI proprietary engine must own independent planning, exploration, verification and response decisions. Current app.py Qwen final-response flow is architectural debt; create typed intent/result contracts and independent deterministic EAI solver path before coding wide general features. No arbitrary LLM answer generation may be misrepresented as EAI intelligence.
+
 # AGENTS — EAI chief and engineering contract
 
 Date: 2026-10-31 KST. Owner appointed this ChatGPT instance as EAI chief. Continue with `HANDOFF.md` → `STATUS.md` → `AGENTS.md` → `REQUIREMENTS.md` → code.

@@ -1,3 +1,5 @@
+> **Owner corrected target, 2026-10-31:** [ADR-0002](ADR-0002_EAI_COGNITIVE_OWNERSHIP.md). The existing 'Implemented Python v0.1' below describes legacy code, not compliant architecture. Planned mandatory ports: `IntentPort.parse(text)->IntentSpec` (Qwen only parse/classify), `CognitiveEngine.solve(IntentSpec)->ResultSpec` (independent EAI reasoning & decisions), `ResponseEngine.render(ResultSpec)->str` (EAI-owned deterministic output). No Qwen final synthesis. Versioned strict schemas and offline tests required prior to source migration.
+
 # EAI interfaces — stable-contract intent
 
 ## Implemented Python v0.1

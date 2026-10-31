@@ -1,3 +1,5 @@
+> **2026-10-31 architecture correction — read first:** [ADR-0002: Qwen is only the input parser/classifier; EAI itself owns problem-solving, planning, verification and final response.](docs/ADR-0002_EAI_COGNITIVE_OWNERSHIP.md) The existing Ollama-chat-generates-the-answer implementation is a provisional *nonconforming* baseline; do not claim it matches the final EAI design. No code was changed by the correction.
+
 # EAI — Elice Artificial Intelligence
 
 **Local-first personal AI**. Private owner-led long-term project. This repository starts with a deliberately small, executable **Python CLI**, not a web UI or a self-trained foundation model.

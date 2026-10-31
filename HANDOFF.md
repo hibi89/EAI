@@ -1,3 +1,5 @@
+> **OWNER DIRECTIVE / NEXT CHAT READ FIRST (2026-10-31 KST):** [ADR-0002](docs/ADR-0002_EAI_COGNITIVE_OWNERSHIP.md). Qwen = input interpretation/classification ONLY. EAI = independently designed cognitive core (plan/solvers/memory/verification/conclusions) and EAI-owned result renderer. Existing eai/app.py incorrectly lets Ollama/Qwen generate final answers; it is *NOT* compliant with the final EAI goal. This turn changed architecture/requirement/roadmap/status/handoff docs **ONLY**, not code. Next work: versioned IntentSpec/ResultSpec, one original deterministic task solver, separate parser and renderer, tests proving Qwen is never used for answer synthesis. GPT-class all-domain performance is a research aspiration, not proven capability. Existing 15 PASS mirror tests were for the former architecture and do not validate this new one.
+
 # HANDOFF — EAI, 2026-10-31 KST
 
 1. **Goal / confirmed tech:** EAI is a free-to-run local-first personal assistant evolving by owner use over 6–12+ months. Python 3.11+, stdlib, local Ollama (Qwen 3B suggested), SQLite, optional local SearXNG JSON search. Interface and frontend intentionally minimal.

@@ -1,3 +1,5 @@
+> **MANDATORY, owner correction 2026-10-31:** EAI's goal is independently built GPT-class *problem-solving capability*, not an Ollama/Qwen chatbot wrapped in tools. Qwen is ONLY a natural-language question interpreter/classifier. The rest is an original EAI cognitive/solver/validator/memory/response architecture. Broad GPT-class language generation by a custom engine remains an unproven long-term R&D objective; the first independent engine can only handle narrow verifiable tasks and must disclose limitations. [Canonical architecture decision](docs/ADR-0002_EAI_COGNITIVE_OWNERSHIP.md). Prior 'Qwen CLI chat' implementation is a nonconforming provisional source and not proof of target architecture.
+
 # REQUIREMENTS — EAI final vision and minimal executable
 
 **Priority:** actual personal use. Backend functionality first; design/polish after demonstrated function. Six months to one year or longer is an evolution horizon, not a promised implementation deadline.

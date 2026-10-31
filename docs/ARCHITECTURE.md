@@ -1,3 +1,5 @@
+> **SUPERSEDED in part by owner on 2026-10-31:** [ADR-0002](ADR-0002_EAI_COGNITIVE_OWNERSHIP.md) takes precedence over this earlier architecture wherever it describes Qwen/Ollama as the final answer generator. New authoritative flow: Qwen input-only classification → **EAI proprietary cognition/solvers/verification** → EAI ResultSpec → EAI-owned response rendering. Existing app.py is nonconforming and awaits migration/testing; no independent GPT-class capability has been demonstrated.
+
 # EAI canonical architecture / ADR-0001
 
 Date: 2026-10-31 KST. Authority: owner direction to build from minimal executable, backend-first and improve through actual use. **This document captures the final target and implementation order, not a claim that every component already exists.**
