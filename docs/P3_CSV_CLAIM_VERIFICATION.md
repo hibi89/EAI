@@ -13,13 +13,13 @@ B. Specialized new streaming query/verifier: potentially richer predicates/group
 
 ## Use
 
-\`\`\`powershell
+```powershell
 python -m eai verify-csv examples/sample_sales.csv --column sales --metric sum --expected 352
 python -m eai verify-csv examples/sample_sales.csv --column sales --metric sum --expected 300 --json
 python -m eai verify-csv examples/sample_sales.csv --claims examples/sample_sales_claims.json --json
-\`\`\`
+```
 
-Claims JSON = array of 1–24 objects, e.g. \`{"column":"sales","metric":"sum","expected":"352","tolerance":"0"}\`. Decimal numbers must be JSON strings. Strict schema, <=32KiB, no extra/duplicate keys, NaN/Infinity/exponent not accepted; tolerance must be nonnegative. Metrics: sum, min, max, avg, missing, numeric_count, text_count. Aggregation of text/mixed columns is UNAVAILABLE, not silently zero.
+Claims JSON = array of 1–24 objects, e.g. `{"column":"sales","metric":"sum","expected":"352","tolerance":"0"}`. Decimal numbers must be JSON strings. Strict schema, <=32KiB, no extra/duplicate keys, NaN/Infinity/exponent not accepted; tolerance must be nonnegative. Metrics: sum, min, max, avg, missing, numeric_count, text_count. Aggregation of text/mixed columns is UNAVAILABLE, not silently zero.
 
 Exit codes: 0 VERIFIED, 1 input/IO error, 2 CONFLICT, 3 UNAVAILABLE. Overall CONFLICT takes precedence over UNAVAILABLE, then VERIFIED. This contract is suitable for scripted workflows with no generated nodes.
 
