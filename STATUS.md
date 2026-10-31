@@ -19,6 +19,9 @@ EAI / Elice Artificial Intelligence; private repository hibi89/EAI. Chief role a
 - Real Windows / Ollama / Qwen / SearXNG interactions are not tested in this environment. No deployment or external calls performed.
 - Full RAG, parser-based verification, LA integration, hierarchical search, strategy ML, native frontend and production hardening remain future work.
 
+
+**GitHub correction publication integrity:** First ADR docs commit `1319552ac5bffba0ca77dd480b496d8f8be43c00` temporarily omitted the backend source tree due to a missing base tree in the GitHub API write. This was detected with an explicit fetch of `eai/app.py`, and recovery commit `b5149483eadd71783b0f6e4ffbcc415ac2b7d7d6` reconstructed the branch using verified previous source tree `24de577bff29354b60c5472637281b74c7a6ed2b`. Remote fetch verified `eai/app.py`, `eai/providers.py`, `eai/workflows.py`, `tests/test_core.py`, and ADR-0002 are all present and retain their original code blob SHA where applicable. No history rewrite or force-push. This is a Git tree publication error, not a tested runtime defect. Exact CI and real runtime still unverified.
+
 ## Next: P0 gate
 1. Verify exact branch HEAD source via GitHub CI or byte-identical local checkout, and inspect the reported test logs; fix any actual failures. Current local mirror (15 PASS) is preliminary, not release evidence.
 2. Verify real Ollama on user's Windows when available, without requiring new GPU purchase; log model/version/hardware and result.
