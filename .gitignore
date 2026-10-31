@@ -10,3 +10,6 @@ __pycache__/
 data/
 .cache/
 *.log
+
+# Local SQLite migration snapshots contain private notes and conversations
+*.pre-notes-*.bak
