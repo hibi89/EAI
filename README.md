@@ -1,3 +1,5 @@
+> **P5 CPU 다중 지표 교차진단 (2026-10-31):** 최대 8개 수치 지표를 동시에 키별로 비교해 충돌 항목과 조사할 원인 *후보*를 제시합니다. `python -m eai diagnose-csv examples/sample_sales.csv examples/sample_sales_multi_drift.csv --key year --values sales orders --json`. 실제 원인이나 어느 CSV가 맞는지 단정하지 않습니다. 로컬 122 PASS, GitHub Actions FAILURE, Windows 실기기 미검증. [설계·제약](docs/P5_MULTI_METRIC_DIAGNOSIS.md).
+
 > **P4 CPU 교차검증 (2026-10-31):** 두 로컬 CSV의 공통 고유 키와 숫자 열을 비교하는 `reconcile-csv` 명령이 추가됐습니다. 합계가 같아도 행별 수치가 다른 경우를 탐지하며, 결과는 `AGREE/CONFLICT/UNAVAILABLE`로 표시합니다. **실세계 사실이나 자료 독립성의 증거는 아닙니다.** [사용법·제약](docs/P4_KEYED_CSV_RECONCILIATION.md). GitHub CI는 여전히 실패하며, 실제 Windows/모델은 미검증입니다.
 
 ```powershell

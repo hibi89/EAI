@@ -1,30 +1,30 @@
-# STATUS — EAI P4 (2026-10-31 KST)
+# STATUS — EAI P5 (2026-10-31 KST)
 
-## Product / scope
-Private `hibi89/EAI`, development branch `feature/local-first-mvp`; `main` and HAE/LA/other project sources preserved. Final goal: independent EAI CPU reasoning/planning/verifying/answer engine, optional Qwen used for **input parsing only**; GPT-class autonomy remains future research, not current capability. No paid API, GPU or remote service required for P4.
+## Current canonical branch
+- Private repository: `hibi89/EAI`, branch `feature/local-first-mvp`, main remains preserved. P5 code milestone `bd1055cd5b06d9862a1541bb9acfcf546252b894`; read latest branch SHA after docs commit.
+- Owner-approved design ADR-0002: Qwen classifies user input **only**. CPU EAI code owns calculation, search permission, validation, data comparison and final deterministic response. GPT-class general cognition is a long-term aspiration, **not achieved**. No LA/HAE source or settings changes.
 
-## Source milestone
-- `18da5701ae0262607f397b54e873b4b50cfeff2f`: added `eai/reconcile_csv.py`, `reconcile-csv` CLI, `tests/test_reconcile_csv.py`, and synthetic `examples/sample_sales_source_b.csv`.
-- This document's publication is a later commit. Read the real GitHub branch HEAD before resuming; never guess the final SHA.
+## Implemented
+- P0 exact arithmetic, strict IntentSpec, optional local Qwen input parser, opt-in SearXNG, SQLite history/cache.
+- P1 user-authorized local notes, recall and pre-migration database snapshots.
+- P2 exact numeric comparison and bounded read-only CSV profiling.
+- P3 CSV numerical claim vs local source: VERIFIED/CONFLICT/UNAVAILABLE.
+- P4 two-source keyed CSV reconciliation, hash evidence and missing/nonnumeric distinctions.
+- **P5** `diagnose-csv` multi-field (1–8) keyed discrepancy diagnostics, per-field full counts, 20-key bounded candidate evidence, suspected data-coverage/version/value-format categories. **No proof of real causal origin or source correctness**. Explicitly selected read-only files; no cloud/LLM/GPU dependency.
 
-## Delivered and verified
-- P0 exact arithmetic, Qwen IntentSpec-only optional parser, opt-in SearXNG/SQLite cache.
-- P1 CPU-authorized local notes, SQLite persistence and pre-migration backups.
-- P2 bounded CPU numeric comparison + read-only CSV profile.
-- P3 single-file CSV numeric claim VERIFIED/CONFLICT/UNAVAILABLE with source SHA256.
-- **P4 keyed two-source CPU reconciliation**, counts equal/mismatched keys, left-only/right-only, nonnumeric values; absolute tolerance, SHA256 before/after, 20-detail bounded output, JSON, exit 0 AGREE / 1 ERROR / 2 CONFLICT / 3 UNAVAILABLE. Duplicate content hashes explicitly not independent evidence.
-- Local Linux Python 3.13.5: `python -m compileall -q eai tests` PASS; `python -m unittest discover -s tests -v` **97 PASS / 0 FAIL / 0 SKIP**. Example two files total 352 each but individual yearly values differ and produce CONFLICT.
-- P4 four source Git Blob SHA values exactly match GitHub readback. P3 zip/remote has five older blob differences: **whole byte-identical checkout not verified**.
+## Actual verification
+- Python 3.13.5 Linux: compileall **PASS**; 122 offline unittests **PASS / 0 FAIL / 0 SKIP** (97 preserved + 25 P5). P5 CLI returns CONFLICT/exit 2 for sample files sharing totals 352/35 but differing 2024/2025.
+- New/modified 4 P5 source files have GitHub blobs matching local Git SHA; full historical repository byte-identical tests still UNVERIFIED because unchanged local P4 mirror differs from some GitHub blobs.
+- Synthetic performance: 20k rows × 8 numeric columns, ~3.1s **in this container only**, no device-wide CPU/GPU tuning claims. Original sample file bytes unchanged.
+- GitHub Actions P5 source run `41206281818` completed **FAILURE** (no runner name, zero job steps, ~2s). Prior runs same pattern; cause unproven, no claimed CI PASS and no blind reruns.
 
-## Blockers and unknowns
-- GitHub Actions run `41204686535` for P4 source `18da5701`: completed **FAILURE**, job has no steps and runner_name empty; ~2 second execution. Root cause unproven; same pre-step failure repeats. Do not call CI green, and do not trigger pointless identical reruns.
-- User Windows 10/Python 3.11 native execution, real Ollama/Qwen structured input, real SearXNG, CPU/GPU benchmarks: UNVERIFIED.
-- There is no deployment or Vercel Production URL (NOT APPLICABLE).
+## Remaining
+Actual owner's Windows 10 + Python 3.11 environment, real optional Qwen/Ollama, optional SearXNG, source authenticity and real user CSV datasets: UNVERIFIED. Independent broad cognition, RAG, ML strategy learning, LA adapter, GPU scheduler and frontend: NOT IMPLEMENTED. Vercel Production URL and project: NOT APPLICABLE (local CLI).
 
-## Next priorities
-1. Verify complete exact-remote tree in a native environment (full 97+ suite) and Windows CLI when possible.
-2. Diagnose missing GitHub Actions runner steps from meaningful job/account evidence; do not modify billing or security settings without approval.
-3. Improve source matching based on real user data (additional metrics/provenance, user-controlled keyed aggregation) with fresh regression tests.
-4. Extend EAI cognitive solver library only when it proves independent usefulness; frontend and LA integration remain later phases.
+## Next
+1. Verify a complete byte-identical remote checkout and actual Windows 3.11 CLI when accessible.
+2. CI failure: inspect actionable GitHub Actions account/runner evidence; do not change permissions/billing or repeatedly trigger same failing job without reason.
+3. Add next independent CPU reasoning/verification capability based on user usefulness, without pretending that specialized tools imply universal GPT-class intelligence.
+4. Update STATUS/HANDOFF after verified code changes; preserve data and original branches.
 
-This STATUS accurately distinguishes local synthetic evidence from live real services, original-data authentication, and general intelligence.
+Docs: `docs/P5_MULTI_METRIC_DIAGNOSIS.md`. This status records measured local results and unknowns, not a production signoff.

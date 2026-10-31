@@ -43,3 +43,8 @@
 ## Execution discipline
 
 At each phase: reproducible failing case → minimum code change → unit+integration tests → remote SHA/CI status → actual owner environment verification when possible → STATUS/HANDOFF. If a task reveals genuine user friction, reprioritize instead of following a speculative feature list.
+
+
+## P5 milestone (2026-10-31)
+
+CPU read-only multi-metric (`diagnose-csv`) candidate tracing implemented and tested locally (122 PASS); **not** general artificial intelligence. See [P5 contract](P5_MULTI_METRIC_DIAGNOSIS.md). Windows/Qwen/GPU, exact checkout and failed GitHub Actions are open gates.
