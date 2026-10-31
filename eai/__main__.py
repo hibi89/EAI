@@ -1,83 +1,76 @@
-"""Minimal CLI; no browser/server exposed to the local network."""
+"""EAI independent engine CLI: works without Ollama for known narrow tasks."""
 import argparse
 import os
 from pathlib import Path
 import sys
 
 from . import __version__
-from .app import EAI
-from .providers import OllamaChat
+from .intent import QwenIntentParser
+from .runner import EAIRunner
 from .storage import Store
 from .tools import SearxNGSearch
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(prog="eai", description="EAI local-first AI (CLI MVP)")
-    parser.add_argument("--version", action="version", version=__version__)
-    parser.add_argument("--db", default=os.getenv("EAI_DB", str(Path.home() / ".eai" / "eai.sqlite3")))
-    parser.add_argument("--model", default=os.getenv("EAI_MODEL", "qwen2.5:3b"))
-    parser.add_argument("--ollama-url", default=os.getenv("EAI_OLLAMA_URL", "http://127.0.0.1:11434"))
-    parser.add_argument("--searxng-url", default=os.getenv("EAI_SEARXNG_URL", ""))
-    parser.add_argument("--online", action="store_true", help="explicit opt-in to local metasearch (forwards query externally)")
-    sub = parser.add_subparsers(dest="command", required=True)
-    sub.add_parser("chat", help="interactive chat (quit to exit)")
-    ask = sub.add_parser("ask", help="ask one question")
-    ask.add_argument("question")
-    sub.add_parser("health", help="show configuration, without making network requests")
-    args = parser.parse_args(argv)
-
-    if args.command == "health":
-        print("EAI local-only configuration")
-        print("model:", args.model)
-        print("Ollama:", args.ollama_url)
-        print("online permitted:", args.online)
-        print("SearXNG configured:", bool(args.searxng_url))
-        print("database:", args.db)
+    p = argparse.ArgumentParser(prog='eai', description='Independent, CPU-first EAI MVP')
+    p.add_argument('--version', action='version', version=__version__)
+    p.add_argument('--db', default=os.environ.get('EAI_DB', str(Path.home() / '.eai' / 'eai.sqlite3')))
+    p.add_argument('--model', default=os.environ.get('EAI_MODEL', 'qwen2.5:3b'))
+    p.add_argument('--ollama-url', default=os.environ.get('EAI_OLLAMA_URL', 'http://127.0.0.1:11434'))
+    p.add_argument('--searxng-url', default=os.environ.get('EAI_SEARXNG_URL', ''))
+    p.add_argument('--use-qwen-intent', action='store_true', help='Qwen parses intent ONLY; otherwise CPU rule parser')
+    p.add_argument('--profile', choices=['CPU_ECO', 'OLLAMA_DEFAULT'], default='CPU_ECO')
+    p.add_argument('--online', action='store_true', help='consent: forward search query via local SearXNG')
+    sub = p.add_subparsers(dest='command', required=True)
+    sub.add_parser('chat', help='interactive narrow-task CLI')
+    a = sub.add_parser('ask', help='one task')
+    a.add_argument('question')
+    sub.add_parser('health', help='display offline-only configuration')
+    args = p.parse_args(argv)
+    if args.command == 'health':
+        print('EAI independent CPU-first engine v0.1')
+        print('parser:', 'Qwen input-only' if args.use_qwen_intent else 'CPU rules')
+        print('profile:', args.profile)
+        print('search:', 'enabled by consent' if args.online else 'disabled')
+        print('SearXNG configured:', bool(args.searxng_url))
+        print('SQLite:', args.db)
         return 0
-
     try:
-        model = OllamaChat(args.model, args.ollama_url)
+        parser = (QwenIntentParser(args.model, args.ollama_url, args.profile)
+                  if args.use_qwen_intent else None)
         search = SearxNGSearch(args.searxng_url) if args.searxng_url else None
         store = Store(args.db)
         try:
-            eai = EAI(store, model, search)
-            if args.command == "ask":
+            runner = EAIRunner(store, parser, search)
+            if args.command == 'ask':
                 questions = [args.question]
             else:
                 questions = None
-                print("EAI CLI — type 'quit' to exit")
+                print('EAI independent engine (help: 도움말 / exit: quit)')
             while True:
                 if questions is not None:
-                    if not questions:
-                        break
+                    if not questions: break
                     question = questions.pop()
                 else:
-                    try:
-                        question = input("You> ").strip()
+                    try: question = input('You> ').strip()
                     except (EOFError, KeyboardInterrupt):
                         print()
                         break
-                    if question.lower() in {"quit", "exit"}:
-                        break
-                    if not question:
-                        continue
-                answer = eai.ask(question, allow_online=args.online)
-                print("EAI>", answer.text)
-                if answer.warning:
-                    print("NOTICE:", answer.warning)
-                for i, item in enumerate(answer.sources, 1):
-                    print(f"SOURCE {i}: {item.title} — {item.url}")
-                if answer.cache_hit:
-                    print("CACHE: reused search results")
-                if questions is not None:
-                    break
+                    if question.lower() in ('quit', 'exit'): break
+                    if not question: continue
+                answer = runner.ask(question, allow_online=args.online)
+                print('EAI>', answer.text)
+                for note in answer.result.warnings:
+                    if note not in answer.text:
+                        print('NOTICE:', note)
+                if questions is not None: break
         finally:
             store.close()
     except Exception as exc:
-        print(f"EAI ERROR: {type(exc).__name__}: {exc}", file=sys.stderr)
+        print('EAI ERROR:', type(exc).__name__, str(exc), file=sys.stderr)
         return 1
     return 0
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     raise SystemExit(main())

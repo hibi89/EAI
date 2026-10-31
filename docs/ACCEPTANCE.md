@@ -1,3 +1,5 @@
+> **2026-10-31 P0 new gate:** Independent EAI engine local-source suite 21 PASS/0 FAIL/0 SKIP (Python 3.13.5). CLI `python -m eai --db /tmp/eai_p0_demo2.sqlite ask '계산 0.1+0.2'` returned `0.3` without Qwen. Stubbed structured Qwen response never synthesized final answers; out-of-schema data rejected. Search consent/cache and restart history covered in offline tests. **GitHub exact-commit CI, actual Windows 3.11, actual Qwen and SearXNG are NOT tested.** No numeric CPU/GPU 'golden ratio' measured.
+
 # EAI acceptance gates and test matrix
 
 ## Gate S — source test (no network or model)

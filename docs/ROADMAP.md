@@ -1,3 +1,5 @@
+> **P0 implementation evidence — 2026-10-31:** Locally implemented IntentSpec + CPU rule fallback + QwenIntentParser (input only), independent CognitiveEngine, exact bounded arithmetic, evidence retrieval, deterministic renderer, CLI. The local Python 3.13.5 working tree passed 21/21 offline tests and CLI calculation smoke. Next gates: exact remote SHA CI; owner's Windows Python 3.11 and Ollama structured-parse smoke; live SearXNG only with explicit permission. Adaptive CPU/GPU remains an unmeasured R&D candidate [ADR-0003](ADR-0003_ADAPTIVE_CPU_GPU_RESEARCH.md). Frontend remains later.
+
 > **Priority override, 2026-10-31:** [ADR-0002](ADR-0002_EAI_COGNITIVE_OWNERSHIP.md) changes the next development task: before treating v0.1 as usable independent EAI, implement IntentSpec parser boundary (Qwen solely here), EAI ProblemSpec/TaskGraph/ResultSpec independent solver on one narrow task, and EAI deterministic renderer. Existing general Ollama-chat MVP source is nonconforming and must not be shown as completed EAI intelligence. Keep offline acceptance and backward-compatible data preservation.
 
 # EAI roadmap — use-driven, backend-first

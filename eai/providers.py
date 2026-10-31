@@ -1,19 +1,11 @@
-"""Local Ollama connector. Never forwards questions to cloud APIs."""
-from .network import fetch_json, local_base_url
+"""Compatibility boundary: use QwenIntentParser for input, not output."""
+from .intent import QwenIntentParser
 
 
 class OllamaChat:
-    def __init__(self, model: str = "qwen2.5:3b", url: str = "http://127.0.0.1:11434"):
-        self.model = model
-        self.url = local_base_url(url)
+    """Deprecated unsafe API; retained to fail visibly instead of silently synthesizing."""
+    def __init__(self, *args, **kwargs):
+        raise RuntimeError('Qwen is input-only. Use QwenIntentParser.parse instead.')
 
-    def respond(self, messages: list[dict[str, str]]) -> str:
-        result = fetch_json(
-            self.url + "/api/chat",
-            payload={"model": self.model, "messages": messages, "stream": False},
-            timeout=120.0,
-        )
-        message = result.get("message")
-        if not isinstance(message, dict) or not isinstance(message.get("content"), str):
-            raise ValueError("Ollama returned an invalid chat response")
-        return message["content"]
+
+__all__ = ['QwenIntentParser']
