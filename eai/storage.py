@@ -34,6 +34,12 @@ class Store:
                 fetched_at INTEGER NOT NULL,
                 evidence_status TEXT NOT NULL DEFAULT 'UNVERIFIED'
             );
+            CREATE TABLE IF NOT EXISTS user_notes (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                content_hash TEXT NOT NULL UNIQUE,
+                content TEXT NOT NULL,
+                created_at INTEGER NOT NULL
+            );
         """)
         self.db.commit()
 
@@ -104,3 +110,41 @@ class Store:
             "ORDER BY fetched_at DESC LIMIT ?", (*params, limit)
         ).fetchall()
         return [SearchHit(*row) for row in rows]
+
+    def add_note(self, content: str, now: int | None = None) -> tuple[int, bool]:
+        """Explicit user note, local only, idempotent and additive (no overwrites)."""
+        if not isinstance(content, str):
+            raise ValueError('note content must be text')
+        note = content.strip()
+        if not 1 <= len(note) <= 2000 or '\x00' in note:
+            raise ValueError('note must contain 1-2000 safe characters')
+        digest = hashlib.sha256(note.encode('utf-8')).hexdigest()
+        stamp = int(time.time()) if now is None else now
+        with self.db:
+            cur = self.db.execute(
+                'INSERT OR IGNORE INTO user_notes(content_hash, content, created_at) VALUES (?, ?, ?)',
+                (digest, note, stamp),
+            )
+            created = cur.rowcount == 1
+            row = self.db.execute('SELECT id FROM user_notes WHERE content_hash=?', (digest,)).fetchone()
+        return int(row[0]), created
+
+    def search_notes(self, query: str, limit: int = 5) -> list[dict]:
+        """Literal substring query; never interprets text as SQL or a command."""
+        if not isinstance(query, str) or not 1 <= len(query.strip()) <= 300 or not 1 <= limit <= 20:
+            raise ValueError('invalid note query or limit')
+        pattern = ('%' + query.strip().replace('!', '!!').replace('%', '!%')
+                   .replace('_', '!_') + '%')
+        rows = self.db.execute(
+            "SELECT id, content, created_at FROM user_notes "
+            "WHERE content LIKE ? ESCAPE '!' ORDER BY id DESC LIMIT ?", (pattern, limit)
+        ).fetchall()
+        return [{'id': int(row[0]), 'content': row[1], 'created_at': int(row[2])} for row in rows]
+
+    def list_notes(self, limit: int = 10) -> list[dict]:
+        if not isinstance(limit, int) or not 1 <= limit <= 20:
+            raise ValueError('invalid note limit')
+        rows = self.db.execute(
+            'SELECT id, content, created_at FROM user_notes ORDER BY id DESC LIMIT ?', (limit,)
+        ).fetchall()
+        return [{'id': int(row[0]), 'content': row[1], 'created_at': int(row[2])} for row in rows]

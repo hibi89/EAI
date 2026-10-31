@@ -22,12 +22,19 @@ class EAIRunner:
 
     def ask(self, question: str, *, allow_online: bool = False) -> Answer:
         fallback = False
-        try:
-            intent = self.parser.parse(question)
-        except (ValueError, OSError, TimeoutError, ConnectionError, KeyError, TypeError) as exc:
-            intent = self.rules.parse(question)
-            fallback = True
-        result = self.cognition.solve(intent, online_consent=allow_online)
+        # A model's classification is NEVER sufficient authority to save user data.
+        # Explicit note commands are parsed directly from the original text on CPU.
+        literal = self.rules.parse(question)
+        if literal.task == 'remember':
+            intent = literal
+        else:
+            try:
+                intent = self.parser.parse(question)
+            except (ValueError, OSError, TimeoutError, ConnectionError, KeyError, TypeError):
+                intent = literal
+                fallback = True
+        result = self.cognition.solve(intent, online_consent=allow_online,
+                                      note_consent=(literal.task == 'remember'))
         if fallback:
             result.warnings.append('Qwen 입력 분류 실패: 규칙 기반 CPU 분류기로 전환했습니다.')
         rendered = self.renderer.render(result)

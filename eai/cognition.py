@@ -79,7 +79,7 @@ class CognitiveEngine:
         if search_tool is not None:
             self.tools.register('web.search.v1', search_tool)
 
-    def solve(self, intent: IntentSpec, *, online_consent: bool = False) -> ResultSpec:
+    def solve(self, intent: IntentSpec, *, online_consent: bool = False, note_consent: bool = False) -> ResultSpec:
         if intent.version != 1:
             raise ValueError('unsupported intent contract version')
         if intent.task == 'calculate':
@@ -91,10 +91,27 @@ class CognitiveEngine:
                 return ResultSpec('ERROR', 'calculate', warnings=[str(exc)], trace=['CPU: validation rejected'])
         if intent.task == 'help':
             return ResultSpec('OK', 'help', trace=['CPU: fixed capability listing'])
+        if intent.task == 'remember':
+            if not note_consent:
+                return ResultSpec('DENIED', 'remember',
+                                  warnings=['메모 저장은 명시적 기억해/메모추가 명령이 필요합니다.'],
+                                  trace=['CPU: note write permission denied'])
+            try:
+                note_id, new = self.store.add_note(intent.query)
+                return ResultSpec('OK', 'remember', {'note_id': note_id, 'created': new},
+                                  trace=['CPU: authorized SQLite note write'])
+            except ValueError as exc:
+                return ResultSpec('ERROR', 'remember', warnings=[str(exc)])
+        if intent.task == 'notes':
+            notes = self.store.list_notes()
+            return ResultSpec('OK' if notes else 'UNAVAILABLE', 'notes', {'notes': notes},
+                              trace=['CPU: SQLite note list'])
         if intent.task == 'recall':
+            notes = self.store.search_notes(intent.query)
             hits = self.store.recall(intent.query)
-            return ResultSpec('OK' if hits else 'UNAVAILABLE', 'recall',
-                              sources=hits, trace=['CPU: local SQLite keyword lookup'])
+            return ResultSpec('OK' if hits or notes else 'UNAVAILABLE', 'recall',
+                              {'notes': notes}, sources=hits,
+                              trace=['CPU: local SQLite note/source lookup'])
         if intent.task == 'search':
             if not online_consent:
                 return ResultSpec('UNAVAILABLE', 'search',
@@ -122,7 +139,7 @@ class CognitiveEngine:
                                   warnings=[f'온라인 조회 실패: {type(exc).__name__}'],
                                   trace=['CPU: provider failed safely'])
         return ResultSpec('UNSUPPORTED', 'unsupported',
-                          warnings=['현재 독립 EAI 엔진은 계산·검색·기억 조회만 지원합니다.'],
+                          warnings=['현재 독립 EAI 엔진은 계산·검색·기억 조회·로컬 메모 저장만 지원합니다.'],
                           trace=['CPU: unsupported task, no model-written answer'])
 
 
@@ -133,8 +150,24 @@ class ResponseEngine:
         if result.task == 'calculate' and result.status == 'OK':
             return f"계산 결과: {result.data['expression']} = {result.data['value']}"
         if result.task == 'help':
-            return ('EAI 독립 엔진 v0.1: 계산 12*(3+4) / 검색 최신 AI 모델 / '
-                    '기억 AI 모델 / 도움말. 검색은 --online 및 로컬 SearXNG 설정이 필요합니다.')
+            return ('EAI CPU 독립 엔진: 계산 12*(3+4) / 기억해 프로젝트 목표 / 메모목록 / '
+                    '기억검색 목표 / 검색 최신 AI 모델 / 도움말. 온라인 검색은 --online '
+                    '및 별도 실행 중인 로컬 SearXNG가 필요합니다.')
+        if result.task == 'remember' and result.status == 'OK':
+            nid = result.data['note_id']
+            return (f'로컬 메모 저장됨: #{nid}' if result.data['created']
+                    else f'동일한 로컬 메모가 이미 있습니다: #{nid}')
+        if result.task in {'notes', 'recall'} and result.data.get('notes'):
+            lines = ['사용자 로컬 메모 (사용자 입력, 사실 검증 아님):']
+            for item in result.data['notes']:
+                lines.append(f"#{item['id']}: {item['content'][:600]}")
+            if result.sources:
+                lines.append('이전 웹 검색 자료 (원문 미검증):')
+                for i, hit in enumerate(result.sources, 1):
+                    lines.append(f'{i}. {hit.title}\n   {hit.url}\n   {hit.snippet[:320]}')
+            return '\n'.join(lines)
+        if result.task == 'notes' and not result.data.get('notes'):
+            return '저장된 로컬 메모가 없습니다.'
         if result.task in {'search', 'recall'} and result.sources:
             lines = ['검색 결과 (원문 미검증):' if result.task == 'search' else '저장된 자료 (원문 미검증):']
             for i, hit in enumerate(result.sources, 1):
