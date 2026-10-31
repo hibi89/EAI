@@ -82,8 +82,11 @@ class Tests(unittest.TestCase):
         class BrokenParser:
             def parse(self, question): raise OSError('Qwen down')
         result = EAIRunner(self.store, parser=BrokenParser()).ask('계산 10-3')
-        self.assertTrue(result.parser_fallback)
+        self.assertFalse(result.parser_fallback)  # explicit calculation never invokes Qwen
         self.assertEqual(result.result.data['value'], '7')
+        unclear = EAIRunner(self.store, parser=BrokenParser()).ask('10 빼기 3은?')
+        self.assertTrue(unclear.parser_fallback)
+        self.assertEqual(unclear.result.status, 'UNSUPPORTED')
 
     def test_qwen_parser_not_used_for_answer(self):
         class SpyParser:
@@ -100,7 +103,7 @@ class Tests(unittest.TestCase):
     def test_unsupported_task_no_hallucinated_answer(self):
         result = EAIRunner(self.store).ask('양자물리학을 자세히 설명해 줘')
         self.assertEqual(result.result.status, 'UNSUPPORTED')
-        self.assertIn('계산·검색·기억', result.text)
+        self.assertIn('계산·수치 비교·검색·기억', result.text)
 
     def test_persistence_after_restart(self):
         runner = EAIRunner(self.store)

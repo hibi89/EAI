@@ -25,7 +25,9 @@ class EAIRunner:
         # A model's classification is NEVER sufficient authority to save user data.
         # Explicit note commands are parsed directly from the original text on CPU.
         literal = self.rules.parse(question)
-        if literal.task == 'remember':
+        # Explicit structured commands are CPU-parsed without even loading Qwen.
+        # This keeps simple tasks fast and preserves exact user-entered numbers.
+        if literal.task != 'unsupported':
             intent = literal
         else:
             try:

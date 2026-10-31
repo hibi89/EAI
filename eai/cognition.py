@@ -6,6 +6,7 @@ from fractions import Fraction
 from typing import Any
 
 from .intent import IntentSpec
+from .analysis import compare_numeric_observations
 from .storage import Store
 from .tools import SearchHit, ToolRegistry
 from .workflows import WorkflowRegistry
@@ -89,6 +90,12 @@ class CognitiveEngine:
                                   trace=['CPU: fraction arithmetic', 'CPU: decimal render'])
             except (ValueError, OverflowError, ArithmeticError) as exc:
                 return ResultSpec('ERROR', 'calculate', warnings=[str(exc)], trace=['CPU: validation rejected'])
+        if intent.task == 'compare':
+            try:
+                compared = compare_numeric_observations(intent.query)
+                return ResultSpec('OK', 'compare', compared, trace=['CPU: strict numeric input parsing', 'CPU: Decimal ranking and changes'])
+            except (ValueError, ArithmeticError) as exc:
+                return ResultSpec('ERROR', 'compare', warnings=[str(exc)], trace=['CPU: rejected comparison input'])
         if intent.task == 'help':
             return ResultSpec('OK', 'help', trace=['CPU: fixed capability listing'])
         if intent.task == 'remember':
@@ -139,7 +146,7 @@ class CognitiveEngine:
                                   warnings=[f'온라인 조회 실패: {type(exc).__name__}'],
                                   trace=['CPU: provider failed safely'])
         return ResultSpec('UNSUPPORTED', 'unsupported',
-                          warnings=['현재 독립 EAI 엔진은 계산·검색·기억 조회·로컬 메모 저장만 지원합니다.'],
+                          warnings=['현재 독립 EAI 엔진은 계산·수치 비교·검색·기억 조회·로컬 메모 저장만 지원합니다.'],
                           trace=['CPU: unsupported task, no model-written answer'])
 
 
@@ -149,8 +156,20 @@ class ResponseEngine:
     def render(result: ResultSpec) -> str:
         if result.task == 'calculate' and result.status == 'OK':
             return f"계산 결과: {result.data['expression']} = {result.data['value']}"
+        if result.task == 'compare' and result.status == 'OK':
+            data = result.data
+            lines = ['EAI 독립 수치 비교 (입력 순서 기준):']
+            for index, row in enumerate(data['rows'], 1):
+                lines.append(f"{index}. {row['name']}: {row['value']}")
+            lines.append('순위: ' + ' > '.join(item['name'] for item in data['ranked']))
+            lines.append(f"최댓값 {data['max']['name']}={data['max']['value']}, 최솟값 {data['min']['name']}={data['min']['value']}, 격차 {data['gap']}")
+            for change in data['changes']:
+                pct = f" ({change['percent']}%)" if change['percent'] is not None else ' (증감률 미표시)'
+                lines.append(f"{change['from']} → {change['to']}: {change['absolute']}{pct}")
+            lines.extend(data['notes'])
+            return '\n'.join(lines)
         if result.task == 'help':
-            return ('EAI CPU 독립 엔진: 계산 12*(3+4) / 기억해 프로젝트 목표 / 메모목록 / '
+            return ('EAI CPU 독립 엔진: 계산 12*(3+4) / 비교 A=100,B=120 / 기억해 프로젝트 목표 / 메모목록 / '
                     '기억검색 목표 / 검색 최신 AI 모델 / 도움말. 온라인 검색은 --online '
                     '및 별도 실행 중인 로컬 SearXNG가 필요합니다.')
         if result.task == 'remember' and result.status == 'OK':

@@ -1,11 +1,13 @@
 """EAI independent engine CLI: works without Ollama for known narrow tasks."""
 import argparse
+import csv
 import os
 from pathlib import Path
 import sys
 
 from . import __version__
 from .intent import QwenIntentParser
+from .csv_analysis import inspect_csv, render_csv_summary
 from .runner import EAIRunner
 from .storage import Store
 from .tools import SearxNGSearch
@@ -26,6 +28,9 @@ def main(argv: list[str] | None = None) -> int:
     a = sub.add_parser('ask', help='one task')
     a.add_argument('question')
     sub.add_parser('health', help='display offline-only configuration')
+    csv_cmd = sub.add_parser('analyze-csv', help='read-only local CSV numeric profile (no model/network)')
+    csv_cmd.add_argument('path', help='explicit local CSV path')
+    csv_cmd.add_argument('--encoding', choices=['utf-8-sig','utf-8','cp949'], default='utf-8-sig')
     args = p.parse_args(argv)
     if args.command == 'health':
         print('EAI independent CPU-first engine v0.1')
@@ -35,6 +40,13 @@ def main(argv: list[str] | None = None) -> int:
         print('SearXNG configured:', bool(args.searxng_url))
         print('SQLite:', args.db)
         return 0
+    if args.command == 'analyze-csv':
+        try:
+            print(render_csv_summary(inspect_csv(args.path, encoding=args.encoding)))
+            return 0
+        except (ValueError, OSError, UnicodeError, csv.Error) as exc:
+            print('EAI CSV ERROR:', type(exc).__name__, str(exc), file=sys.stderr)
+            return 1
     try:
         parser = (QwenIntentParser(args.model, args.ollama_url, args.profile)
                   if args.use_qwen_intent else None)
