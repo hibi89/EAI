@@ -12,6 +12,7 @@ from .csv_analysis import inspect_csv, render_csv_summary
 from .verify_csv import verify_csv_claims, load_claims, render_verification, METRICS
 from .reconcile_csv import reconcile_csv, render_reconciliation
 from .diagnose_csv import diagnose_csv, render_diagnosis
+from .plan_engine import AuditGoal, CPUPlanExecutor, render_plan_report
 from .runner import EAIRunner
 from .storage import Store
 from .tools import SearxNGSearch
@@ -60,6 +61,15 @@ def main(argv: list[str] | None = None) -> int:
     diagnose_cmd.add_argument('--tolerance', default='0', help='shared absolute tolerance applied independently per field')
     diagnose_cmd.add_argument('--encoding', choices=['utf-8-sig', 'utf-8', 'cp949'], default='utf-8-sig')
     diagnose_cmd.add_argument('--json', action='store_true', help='structured diagnostic output')
+    solve_cmd = sub.add_parser('solve-csv', help='CPU-owned goal planning, verification and fallback on two local CSVs')
+    solve_cmd.add_argument('left', help='explicit local CSV A')
+    solve_cmd.add_argument('right', help='explicit local CSV B')
+    solve_cmd.add_argument('--key', required=True, help='unique key column')
+    solve_cmd.add_argument('--values', nargs='+', required=True, help='one to eight numeric columns')
+    solve_cmd.add_argument('--tolerance', default='0', help='absolute numeric tolerance')
+    solve_cmd.add_argument('--encoding', choices=['utf-8-sig', 'utf-8', 'cp949'], default='utf-8-sig')
+    solve_cmd.add_argument('--max-seconds', type=int, default=60, help='maximum elapsed seconds before starting each stage')
+    solve_cmd.add_argument('--json', action='store_true', help='structured plan, trace, evidence and fallback')
     args = p.parse_args(argv)
     if args.command == 'health':
         print('EAI independent CPU-first engine v0.1')
@@ -96,6 +106,18 @@ def main(argv: list[str] | None = None) -> int:
             return {'VERIFIED': 0, 'CONFLICT': 2, 'UNAVAILABLE': 3}[report['status']]
         except (ValueError, OSError, UnicodeError, csv.Error) as exc:
             print('EAI VERIFY ERROR:', type(exc).__name__, str(exc), file=sys.stderr)
+            return 1
+    if args.command == 'solve-csv':
+        try:
+            goal = AuditGoal(args.left, args.right, args.key, args.values,
+                             tolerance=args.tolerance, encoding=args.encoding,
+                             max_seconds=args.max_seconds)
+            report = CPUPlanExecutor().execute(goal)
+            print(json.dumps(report, ensure_ascii=False, indent=2) if args.json
+                  else render_plan_report(report))
+            return {'AGREE': 0, 'CONFLICT': 2, 'UNAVAILABLE': 3}[report['status']]
+        except (ValueError, OSError, UnicodeError, csv.Error, TimeoutError) as exc:
+            print('EAI PLAN ERROR:', type(exc).__name__, str(exc), file=sys.stderr)
             return 1
     if args.command == 'diagnose-csv':
         try:
