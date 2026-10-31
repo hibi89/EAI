@@ -1,7 +1,9 @@
 """Local SQLite conversation, search cache and unverified source memory."""
 import hashlib
 import json
+import os
 import sqlite3
+import tempfile
 import time
 from pathlib import Path
 from .tools import SearchHit
@@ -14,6 +16,8 @@ class Store:
         self.db = sqlite3.connect(self.path)
         self.db.execute("PRAGMA journal_mode=WAL")
         self.db.execute("PRAGMA busy_timeout=3000")
+        if self.path.stat().st_size > 0 and self._has_table('turns') and not self._has_table('user_notes'):
+            self._backup_before_note_migration()
         self.db.executescript("""
             CREATE TABLE IF NOT EXISTS turns (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -42,6 +46,24 @@ class Store:
             );
         """)
         self.db.commit()
+
+    def _has_table(self, name: str) -> bool:
+        return self.db.execute(
+            "SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", (name,)
+        ).fetchone() is not None
+
+    def _backup_before_note_migration(self) -> None:
+        """A consistent SQLite snapshot before adding the user_notes table."""
+        fd, name = tempfile.mkstemp(prefix=self.path.name + '.pre-notes-', suffix='.bak',
+                                   dir=str(self.path.parent))
+        os.close(fd)
+        backup_path = Path(name)
+        try:
+            with sqlite3.connect(backup_path) as target:
+                self.db.backup(target)
+        except Exception:
+            backup_path.unlink(missing_ok=True)
+            raise
 
     def close(self) -> None:
         self.db.close()

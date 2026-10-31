@@ -107,3 +107,26 @@ class MemoryTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class LegacyMigrationTests(unittest.TestCase):
+    def test_existing_store_is_backed_up_before_notes_schema(self):
+        import sqlite3
+        with tempfile.TemporaryDirectory() as d:
+            db_path = Path(d) / 'original.sqlite3'
+            with sqlite3.connect(db_path) as legacy:
+                legacy.execute('CREATE TABLE turns (id INTEGER PRIMARY KEY, role TEXT, content TEXT, created_at INTEGER)')
+                legacy.execute("INSERT INTO turns VALUES (1, 'user', 'original record', 1)")
+            opened = Store(db_path)
+            try:
+                self.assertEqual(opened.recent_turns()[0]['content'], 'original record')
+                self.assertEqual(opened.list_notes(), [])
+                backups = list(Path(d).glob('original.sqlite3.pre-notes-*.bak'))
+                self.assertEqual(len(backups), 1)
+                with sqlite3.connect(backups[0]) as old:
+                    self.assertEqual(old.execute('SELECT content FROM turns').fetchone()[0], 'original record')
+                    self.assertIsNone(old.execute(
+                        "SELECT 1 FROM sqlite_master WHERE type='table' AND name='user_notes'"
+                    ).fetchone())
+            finally:
+                opened.close()
