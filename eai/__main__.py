@@ -17,6 +17,7 @@ from .goal_dispatch import execute_goal_document, render_goal_document
 from .goal_batch import execute_batch_document, render_batch
 from .offline_doctor import run_offline_doctor, render_doctor
 from .goal_pipeline import execute_pipeline_document, render_pipeline
+from .manifest_builder import build_goal_manifest
 from .runner import EAIRunner
 from .storage import Store
 from .tools import SearxNGSearch
@@ -86,6 +87,12 @@ def main(argv: list[str] | None = None) -> int:
     pipeline_cmd = sub.add_parser('pipeline-goals', help='bounded dependency-gated offline goals')
     pipeline_cmd.add_argument('manifest', help='versioned goal pipeline manifest')
     pipeline_cmd.add_argument('--json', action='store_true', help='structured verified pipeline')
+    manifest_cmd = sub.add_parser('make-manifest', help='stdout-only pinned manifest builder')
+    manifest_cmd.add_argument('--mode', choices=['batch','pipeline'], required=True)
+    manifest_cmd.add_argument('--root', default='.', help='local directory containing goal JSON files')
+    manifest_cmd.add_argument('--goal', action='append', required=True, help='ID=relative.json (repeat 1-6)')
+    manifest_cmd.add_argument('--requires', action='append', default=[], help='child=parent1,parent2 (pipeline only)')
+    manifest_cmd.add_argument('--stop-on-error', action='store_true')
     args = p.parse_args(argv)
     if args.command == 'health':
         print('EAI independent CPU-first engine v0.1')
@@ -95,6 +102,16 @@ def main(argv: list[str] | None = None) -> int:
         print('SearXNG configured:', bool(args.searxng_url))
         print('SQLite:', args.db)
         return 0
+    if args.command == 'make-manifest':
+        try:
+            manifest = build_goal_manifest(
+                args.mode, args.root, args.goal, args.requires,
+                continue_on_error=not args.stop_on_error)
+            print(json.dumps(manifest,ensure_ascii=True,indent=2))
+            return 0
+        except (ValueError,OSError,UnicodeError) as exc:
+            print('EAI MANIFEST ERROR:',type(exc).__name__,str(exc),file=sys.stderr)
+            return 1
     if args.command == 'pipeline-goals':
         try:
             output=execute_pipeline_document(args.manifest)
