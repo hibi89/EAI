@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "kind": "csv_quality",
+  "goal": "Synthetic invoice CSV quality",
+  "source": "sample_quality.csv",
+  "encoding": "utf-8-sig",
+  "required": [
+    "rowid",
+    "amount"
+  ],
+  "unique_by": [
+    "rowid"
+  ],
+  "numeric_rules": [
+    {
+      "column": "amount",
+      "min": "0",
+      "max": "1000"
+    }
+  ]
+}

@@ -13,6 +13,8 @@ from .receipt_evidence import verify_choice_display_evidence
 from .task_portfolio import TaskGoal, verify_task_receipt
 from .task_schedule import ScheduleGoal
 from .schedule_receipt import verify_schedule_receipt
+from .csv_quality import QualityGoal
+from .quality_receipt import verify_quality_receipt
 
 GUARD_VERSION = 'eai.receipt.guard.v1'
 ALLOWED_STATUS = {
@@ -20,6 +22,7 @@ ALLOWED_STATUS = {
     'csv_audit': frozenset({'AGREE', 'CONFLICT', 'UNAVAILABLE'}),
     'plan_tasks': frozenset({'DECIDED', 'TIE', 'UNAVAILABLE'}),
     'schedule_tasks': frozenset({'DECIDED', 'UNAVAILABLE'}),
+    'csv_quality': frozenset({'AGREE', 'CONFLICT', 'UNAVAILABLE'}),
 }
 MAX_DIAGNOSTIC_OPTIONS = 12
 
@@ -210,7 +213,7 @@ def _verify_csv(goal: AuditGoal, report: dict) -> tuple[list[str], dict]:
     return ['plan_version','strategy','provenance','skills','status'],diag
 
 
-def verify_goal_receipt(kind: str, goal: ChoiceGoal | AuditGoal | TaskGoal | ScheduleGoal, report: object) -> dict:
+def verify_goal_receipt(kind: str, goal: ChoiceGoal | AuditGoal | TaskGoal | ScheduleGoal | QualityGoal, report: object) -> dict:
     """Fail closed on inconsistent receipt; do not silently retry with weaker rules."""
     _check(kind in ALLOWED_STATUS and type(report) is dict, '지원하지 않는 판정 영수증')
     _check(report.get('status') in ALLOWED_STATUS[kind], '목표에 맞지 않는 상태 코드')
@@ -223,8 +226,11 @@ def verify_goal_receipt(kind: str, goal: ChoiceGoal | AuditGoal | TaskGoal | Sch
     elif kind == 'plan_tasks':
         _check(type(goal) is TaskGoal, '작업 포트폴리오 원본 계약 오류')
         checks, diag = verify_task_receipt(goal, report)
-    else:
+    elif kind == 'schedule_tasks':
         _check(type(goal) is ScheduleGoal, '임계 경로 원본 계약 오류')
         checks, diag = verify_schedule_receipt(goal, report)
+    else:
+        _check(type(goal) is QualityGoal, 'CSV 품질 원본 계약 오류')
+        checks, diag = verify_quality_receipt(goal, report)
     return {'version': GUARD_VERSION, 'status': 'PASS', 'checks': checks,
             'diagnostics': diag, 'policy': 'READ_ONLY;NO_REMOTE;NO_AUTOMATIC_REPAIR'}

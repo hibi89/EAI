@@ -1,0 +1,8 @@
+rowid,amount,category
+A,10,ok
+B,-1,ok
+B,10,ok
+C,NaN,ok
+D,,ok
+E,1200,ok
+,2,ok
