@@ -51,7 +51,7 @@ def _file_sha256(source: Path, root: Path) -> str:
 
 
 def run_offline_doctor(project_root: str | Path | None = None) -> dict:
-    """Test all six typed goal classes + batch and pipeline from a single command."""
+    """Test six bundled text-fixture goals + batch and pipeline; SQLite-file P18 is covered by CI."""
     root = (Path(project_root) if project_root is not None else
             Path(__file__).resolve().parent.parent).expanduser().resolve()
     checks = []
