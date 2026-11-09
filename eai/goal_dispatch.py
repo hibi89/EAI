@@ -11,10 +11,11 @@ from .task_schedule import validate_schedule_goal, execute_schedule_goal, render
 from .csv_quality import validate_quality_goal, execute_quality_goal, render_quality
 from .csv_schema_drift import validate_drift_goal, execute_drift_goal, render_drift
 from .sqlite_table_audit import validate_sqlite_goal, execute_sqlite_goal, render_sqlite
+from .csv_relationships import validate_relationship_goal, execute_relationship_goal, render_relationships
 
 MAX_GOAL_BYTES = 64 * 1024
 ROUTER_VERSION = 'eai.goal.dispatch.v1'
-ROUTED_KINDS = frozenset({'choose_options', 'csv_audit', 'plan_tasks', 'schedule_tasks', 'csv_quality', 'csv_schema_drift', 'sqlite_table_audit'})
+ROUTED_KINDS = frozenset({'choose_options', 'csv_audit', 'plan_tasks', 'schedule_tasks', 'csv_quality', 'csv_schema_drift', 'sqlite_table_audit', 'csv_relationships'})
 
 
 def _read_spec(path: Path) -> tuple[dict, str]:
@@ -97,10 +98,14 @@ def execute_goal_document(path: str | Path) -> dict:
         goal = validate_drift_goal(data, source_path)
         result = execute_drift_goal(goal)
         skill_id = 'csv.schema_drift.v1'
-    else:
+    elif kind == 'sqlite_table_audit':
         goal = validate_sqlite_goal(data, source_path)
         result = execute_sqlite_goal(goal)
         skill_id = 'sqlite.table_audit.v1'
+    else:
+        goal = validate_relationship_goal(data, source_path)
+        result = execute_relationship_goal(goal)
+        skill_id = 'csv.relationships.v1'
     if not isinstance(result, dict) or type(result.get('status')) is not str:
         raise ValueError('solver did not produce a valid decision receipt')
     # Detect a spec changed on disk during the original decision; no file writes.
@@ -118,7 +123,7 @@ def execute_goal_document(path: str | Path) -> dict:
             {'step': 'verify_goal_document', 'skill': 'goal.sha256.v1', 'status': 'PASS'},
         ],
         'result': result,
-        'scope': ('정해진 일곱 도메인 목표만 CPU에서 처리합니다. 사용자 제공 숫자와 원본 데이터의 '
+        'scope': ('정해진 여덟 도메인 목표만 CPU에서 처리합니다. 사용자 제공 숫자와 원본 데이터의 '
                   '실세계 진실성이나 작성자의 신뢰성은 검증하지 않습니다.'),
     }
 
@@ -143,8 +148,10 @@ def render_goal_document(report: dict) -> str:
         lines.append(render_quality(result))
     elif report['kind'] == 'csv_schema_drift':
         lines.append(render_drift(result))
-    else:
+    elif report['kind'] == 'sqlite_table_audit':
         lines.append(render_sqlite(result))
+    else:
+        lines.append(render_relationships(result))
     diag = report['verification']['diagnostics']
     if diag['type'] != 'NONE':
         lines.append('추가 확인 필요: ' + diag['type'])

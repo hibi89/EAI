@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "kind": "csv_relationships",
+  "goal": "Synthetic numeric association review",
+  "source": "sample_relationships.csv",
+  "encoding": "utf-8-sig",
+  "columns": ["ads", "sales", "refunds"],
+  "min_rows": 5
+}
