@@ -1,3 +1,5 @@
+> **2026-11-10 KST — EAI P9 가장 최근 인수인계:** `feature/local-first-mvp`에서 P8 영수증의 표시용 상세 근거 변조 공백을 좁히는 `eai/receipt_evidence.py`/P8 guard 연결/10개 신규 통합 테스트를 추가. 별도 격리 Python3.13.5 9/9 PASS만 실행; **전체 GitHub-exact 201+10 테스트 및 새 통합 10건, Windows Python3.11, 실제 CI, 사용자 데이터·유료 API/배포는 미검증**. 기존 CI 실패는 테스트 시작 증거 없는 별도 차단. [P9 근거](docs/P9_RECEIPT_DISPLAY_INTEGRITY.md). 다음은 실제 checkout에 `python -m unittest discover -s tests -q`와 Windows 소스 일치 확인 후 제품 범위 확장. `main`·HAE/LA·사용자 자료는 보존. 커밋 SHA는 원격에서 확인할 것.
+
 # HANDOFF — EAI P8, updated 2026-10-31 KST
 
 1. Goal/confirmed requirements/stack: Truly independent local-first EAI. Optional Qwen/Ollama only interprets INPUT; CPU EAI owns reasoning-related bounded tasks, evidence verification and deterministic rendering. Python >=3.11 stdlib, SQLite, optional opt-in local SearXNG. Real daily usability/backend first; general GPT-level capability long-term research.

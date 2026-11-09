@@ -9,6 +9,7 @@ from pathlib import Path
 from .decision_engine import ChoiceGoal
 from .plan_engine import AuditGoal, PLAN_VERSION
 from .verify_csv import _file_digest
+from .receipt_evidence import verify_choice_display_evidence
 
 GUARD_VERSION = 'eai.receipt.guard.v1'
 ALLOWED_STATUS = {
@@ -154,7 +155,8 @@ def _verify_choice(goal: ChoiceGoal, report: dict) -> tuple[list[str], dict]:
         _check(set(winners) == expected_winners, '원시 정밀도 가중치 점수와 우승 후보가 다릅니다')
     _check(ranking == sorted(feasible, key=lambda k: (-expected_scores[k], k)),
            '원시 가중치 순위 불일치')
-    return (['schema', 'feasibility', 'ranking', 'pareto', 'status'],
+    verify_choice_display_evidence(goal, report)
+    return (['schema', 'feasibility', 'ranking', 'pareto', 'detail_evidence', 'status'],
             _choice_diagnostics(goal, indexed, status))
 
 

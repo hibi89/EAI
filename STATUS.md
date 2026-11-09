@@ -1,3 +1,5 @@
+> **2026-11-10 KST — P9 표시 영수증 무결성 보강 (검증 제한):** 기존 P8가 검증하지 않던 공개 평가기준, 세부 정규화값/제약 수치, dominated_by, 실행 단계 기록을 원본 ChoiceGoal에서 독립 재계산해 불일치 시 PASS 거부. `eai/receipt_evidence.py` 신규, P8 guard 최소 연결, `tests/test_receipt_evidence_p9.py` 회귀 10건 작성. 로컬 Python 3.13.5 *격리 모듈* compileall 및 합성 9/9 PASS. **원격 전체 소스/새 통합 10건/기존 201건/Windows/CI는 미실행·미검증**. Actions 기존 runner/step 차단 계속. `main`/HAE/LA/외부 배포/원본 데이터 무수정. [P9 설계와 검증 범위](docs/P9_RECEIPT_DISPLAY_INTEGRITY.md). 완성률 자동 상승 아님. 최종 SHA는 GitHub 브랜치 재조회.
+
 # EAI STATUS — P8 (2026-10-31 KST)
 
 ## GitHub and architectural truth
