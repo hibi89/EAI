@@ -1,5 +1,5 @@
 """Independent P11 schedule receipt guard: recursive path lengths, not CPM traversal."""
-from decimal import Decimal
+from decimal import Decimal, localcontext
 from functools import lru_cache
 
 from .analysis import _render_decimal
@@ -7,6 +7,13 @@ from .task_schedule import ScheduleGoal, SCHEDULE_VERSION, SCOPE
 
 
 def verify_schedule_receipt(goal: ScheduleGoal, receipt: dict) -> tuple[list[str], dict]:
+    """Recompute all path and slack values without losing 12-place decimal fractions."""
+    with localcontext() as ctx:
+        ctx.prec = 90
+        return _verify_schedule_receipt_precise(goal, receipt)
+
+
+def _verify_schedule_receipt_precise(goal: ScheduleGoal, receipt: dict) -> tuple[list[str], dict]:
     if type(goal) is not ScheduleGoal or type(receipt) is not dict:
         raise ValueError('EAI 영수증 검증 실패: invalid schedule receipt')
     data = {item.id: item for item in goal.tasks}

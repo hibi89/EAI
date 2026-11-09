@@ -4,7 +4,7 @@ This is CPM under unlimited parallel capacity, not a worker-constrained schedule
 It does not perform tasks, infer actual durations or contact any external service.
 """
 from dataclasses import dataclass
-from decimal import Decimal
+from decimal import Decimal, localcontext
 
 from .analysis import _render_decimal
 from .decision_engine import ID_RE, _num
@@ -89,7 +89,14 @@ def validate_schedule_goal(raw: object) -> ScheduleGoal:
 
 
 def execute_schedule_goal(goal: ScheduleGoal) -> dict:
-    """Forward/backward CPM over a bounded DAG with exact Decimal arithmetic."""
+    """Use 90 decimal digits to preserve all admissible 24-digit+12-place inputs."""
+    with localcontext() as ctx:
+        ctx.prec = 90
+        return _execute_schedule_goal_precise(goal)
+
+
+def _execute_schedule_goal_precise(goal: ScheduleGoal) -> dict:
+    """Forward/backward CPM over a bounded DAG."""
     if type(goal) is not ScheduleGoal:
         raise ValueError('unvalidated schedule goal')
     lookup = {task.id: task for task in goal.tasks}

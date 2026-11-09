@@ -182,5 +182,19 @@ class ScheduleTaskTests(unittest.TestCase):
         self.assertEqual(example.read_bytes(),before)
 
 
+    def test_max_precision_critical_path_not_rounded(self):
+        raw=goal_fixture()
+        raw['deadline_hours']='100000000000000000000000.000000000003'
+        raw['tasks']=[
+            {'id':'a','hours':'100000000000000000000000.000000000001','requires':[]},
+            {'id':'b','hours':'0.000000000001','requires':['a']},
+        ]
+        out=self.run_goal(raw)
+        self.assertEqual(out['status'],'DECIDED')
+        self.assertEqual(out['result']['minimum_finish_hours'],
+                         '100000000000000000000000.000000000002')
+        self.assertEqual(out['result']['deadline_margin_hours'],'0.000000000001')
+        self.assertEqual(out['verification']['status'],'PASS')
+
 if __name__ == '__main__':
     unittest.main()

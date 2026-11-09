@@ -1,6 +1,6 @@
 """P10 bounded exact offline task-portfolio planning, with independently checked receipt."""
 from dataclasses import dataclass
-from decimal import Decimal
+from decimal import Decimal, localcontext
 from itertools import combinations
 
 from .analysis import _render_decimal
@@ -81,7 +81,14 @@ def validate_task_goal(raw: object) -> TaskGoal:
 
 
 def execute_task_goal(goal: TaskGoal) -> dict:
-    """Enumerate at most 4095 nonempty subsets; exact Decimal, no side effects."""
+    """Enumerate at most 4095 subsets with enough Decimal precision for all legal inputs."""
+    with localcontext() as ctx:
+        ctx.prec = 90
+        return _execute_task_goal_precise(goal)
+
+
+def _execute_task_goal_precise(goal: TaskGoal) -> dict:
+    """No side effects, network, external model or worker execution."""
     if type(goal) is not TaskGoal:
         raise ValueError('unvalidated task goal')
     n = len(goal.tasks)
@@ -116,7 +123,14 @@ def execute_task_goal(goal: TaskGoal) -> dict:
 
 
 def verify_task_receipt(goal: TaskGoal, report: dict) -> tuple[list[str], dict]:
-    """Independent combinations enumeration rechecks optimality, ties, budgets and receipt."""
+    """Independently check full precision of schedule values and recommendations."""
+    with localcontext() as ctx:
+        ctx.prec = 90
+        return _verify_task_receipt_precise(goal, report)
+
+
+def _verify_task_receipt_precise(goal: TaskGoal, report: dict) -> tuple[list[str], dict]:
+    """Use combination enumeration distinct from bitmask solver."""
     if type(goal) is not TaskGoal or type(report) is not dict:
         raise ValueError('EAI 영수증 검증 실패: invalid task receipt')
     best, candidates = Decimal(0), []

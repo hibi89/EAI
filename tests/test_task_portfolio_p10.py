@@ -126,5 +126,21 @@ class TaskPortfolioTests(unittest.TestCase):
         self.assertEqual(path.read_bytes(),before)
 
 
+    def test_max_precision_decimal_resources_not_rounded(self):
+        raw=fixture()
+        raw['max_hours']='100000000000000000000000.000000000002'
+        raw['max_cost']='0'
+        raw['tasks']=[
+            {'id':'a','hours':'100000000000000000000000.000000000001',
+             'cost':'0','value':'1','requires':[]},
+            {'id':'b','hours':'0.000000000001','cost':'0','value':'1','requires':[]},
+        ]
+        result=self.run_goal(raw)
+        self.assertEqual(result['status'],'DECIDED')
+        self.assertEqual(result['result']['selected'],['a','b'])
+        self.assertEqual(result['result']['candidates'][0]['hours'],
+                         '100000000000000000000000.000000000002')
+        self.assertEqual(result['verification']['status'],'PASS')
+
 if __name__=='__main__':
     unittest.main()
