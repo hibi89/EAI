@@ -18,3 +18,9 @@ Run tests: python -m compileall -q eai tests; python -m unittest discover -s tes
 ## P13 hardening follow-up (implementation; CI unverified until executed)
 - Local doctor now runs eight checks including the P14 DAG pipeline sample and requires the exact expected domain statuses (including a deliberately CONFLICTing CSV fixture), not merely a PASS receipt for any status.
 - Two regression tests cover false-positive status acceptance and the pipeline smoke guard. Existing customer Windows, external model, and full source suite evidence are still separate gates.
+
+## GitHub exact-source acceptance (2026-11-10 KST)
+
+- Code/test SHA `bbd01576eed2573ffeab5a70eec0662fcb40bad0`: [Actions 42675220982](https://github.com/hibi89/EAI/actions/runs/42675220982) Linux Python3.11 301/301 PASS, Syntax check + CLI smoke PASS.
+- Offline doctor checks **8** synthetic operations (Python, SQLite :memory:, four typed goals, batch, DAG pipeline). Its acceptance now rejects a valid-but-unexpected status and checks the pipeline's verified output. Related test module **14 tests PASS**.
+- Native Windows .cmd/CPU hardware and user-private data still NOT VERIFIED.

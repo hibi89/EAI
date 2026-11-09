@@ -1,3 +1,18 @@
+# EAI P13/P14 검증 후 최신 HANDOFF — 2026-11-10 KST
+
+1. **목표·용도·확정 요구·기술**: 사용자 로컬에서 입력을 선택적으로 Qwen/Ollama로 분류하되 CPU EAI가 제한된 도메인 계산·검증·출력 소유. Python>=3.11, stdlib/SQLite, 명시적 로컬 목표만 실행, 읽기 전용. 전체 범용 GPT/자율 에이전트라고 주장 금지.
+2. **완료 기능·변경·결정 근거**: P12 SHA256 고정 최대 6개 목표 배치, P13 `python -m eai doctor --json` 오프라인 8개 검증(정확한 합성 목표 기대 상태, Python·SQLite·4 도메인·배치·DAG), `RUN_EAI_DOCTOR.cmd` 제공, P14 `python -m eai pipeline-goals examples/sample_goal_pipeline.json --json` 의존 DAG/검증 상태 경계·SHA256 pin·원본 결속·토폴로지 순서 확인. A 서브프로세스 반복/단순 health vs B 표준 라이브러리 타입화·기존 검증 솔버 직접 호출 비교 후 B 채택(비용/속도/유지보수/보안). 관련 신규 및 보강 테스트 검증 완료.
+3. **테스트·성공/실패 수·검증/미검증**: 최종 정확 소스+테스트 SHA `bbd01576eed2573ffeab5a70eec0662fcb40bad0`; [Actions #42675220982](https://github.com/hibi89/EAI/actions/runs/42675220982) GitHub Ubuntu Python 3.11, **301 tests PASS / 0 FAIL / 0 SKIP**, syntax check·CLI smoke PASS. P13 14개/P14 18개 관련 테스트 모두 PASS; 실제 doctor CLI/파이프라인 CLI도 Python Linux 테스트 안에서 검증. Windows·실 local Qwen/Ollama·사용자 데이터/서비스 배포는 미검증.
+4. **완료/진행/대기/차단·중단점**: P13/P14 GitHub 원격 소스/회귀·CI 통과. 크몽 최종상품 완성률 기존 **38%→40% (+2%p, 잠정)**; 50% 목표 미달(10%p 잔여). 제품 실제 납품·범용 사고/LLM, 설치 패키지, Windows QA, 상업권 RELEASE HOLD.
+5. **오류 근거·원인·시도·재시도 금지·대안**: 초기 P13 [CI #42671534452](https://github.com/hibi89/EAI/actions/runs/42671534452)/P14 [#42672478578](https://github.com/hibi89/EAI/actions/runs/42672478578)는 FAILURE / Job 0, Python 단계 시작 없음. 원인 미확정, 동일 runner 빈 재실행 하지 않음. 실제 코드 보강 SHA `3fcd9f16995e6cb92e26afd03a009f7e75ead46d`에서 CI가 구문 PASS 후 **301 중 299 PASS, 2 FAIL**, 원인은 doctor의 마지막 검사 항목이 batch에서 pipeline으로 늘었는데 테스트 2개가 마지막 원소를 batch라고 단정한 것. 테스트 전용 최소 수정 SHA `bbd01576eed2573ffeab5a70eec0662fcb40bad0` 이후 301/301 PASS. 이 테스트 실패는 확인·수정되어 현재 차단 아님.
+6. **저장소·브랜치·SHA·주요 경로**: private `hibi89/EAI@feature/local-first-mvp`, 검증 기능 소스 SHA `bbd01576eed2573ffeab5a70eec0662fcb40bad0`; main 확인 SHA `09f3f8be2dab2d1aa8096c0d6d439f8fc6e48960`. 경로 `eai/offline_doctor.py`, `eai/goal_pipeline.py`, `eai/goal_batch.py`, `tests/test_offline_doctor_p13.py`, `tests/test_goal_pipeline_p14.py`, `RUN_EAI_DOCTOR.cmd`, `docs/P13_OFFLINE_DOCTOR.md`, `docs/P14_DEPENDENCY_PIPELINE.md`.
+7. **Production URL·Vercel 프로젝트·실행 명령·환경**: 로컬 Python CLI 제품, Vercel/Production URL **미적용**. `python -m unittest discover -s tests -q`, `python -m eai doctor --json`, `python -m eai pipeline-goals examples/sample_goal_pipeline.json --json`, `python -m eai batch-goals examples/sample_goal_batch.json --json`. CI Linux Python3.11 검증; 고객 Windows10/11 native Python3.11 동작/설치 안 됨.
+8. **원본 위치·백업·인증 관리·수정 금지**: GitHub private 소스와 원본 각 커밋이 복구 기준; main, 고객 CSV/SQLite, 외부 API·설정·모델·비밀번호/.env, HAE/LA/PayPal/KIC/UGREEN 무수정. 별도 유료 계정·원격 API 호출/외부 데이터 업로드 없음. 커밋 신원 확인 및 fast-forward만, force push 없음.
+9. **다음 작업·우선순위·완료 기준·승인**: 가장 큰 미검증 경로는 실제 Windows10/11 사용자 설치 및 독립 Qwen 입력 해석, 실사용 업무 연결. 다음은 한 번에 Windows P13 doctor / CLI / 전체 회귀, 모델 선택 사용/실패 복구·RAG/일반 작업 확장 중 사용자 편익이 큰 범위. 유료·원본 자료 변경·외부 업로드·권한·보안/배포 변경은 사전 승인. 테스트 성공=제품 판매 가능 주장 금지.
+10. **갱신 일시(KST)·확인 시점·검증 범위·문서 기준 커밋**: 2026-11-10 KST GitHub Actions 301/301 exact SHA `bbd01576eed2573ffeab5a70eec0662fcb40bad0` 및 Job 로그 직접 조회 확인. 문서 후속 `[skip ci]` HEAD는 별도 조회로 기록. Windows/실 Qwen/SearXNG/실 고객 데이터·Production은 미검증.
+
+---
+
 # EAI P12–P14 최신 인수인계 (2026-11-10 KST)
 
 1. **목표/확정 요구/스택**: Private local-first EAI 독립 CPU 사고 영역 확장. Qwen/Ollama는 선택적으로 입력 분류에만 사용. Python>=3.11 stdlib, read-only, opt-in local SearXNG, 사용자 자료 보존.

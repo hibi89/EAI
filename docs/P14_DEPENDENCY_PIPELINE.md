@@ -21,3 +21,9 @@ Open gates: real Windows, Ollama/Qwen intent parser, customer workload, continuo
 ## P14 receipt integrity follow-up (implementation; CI unverified until executed)
 - In-pipeline verification binds manifest SHA256 to the original bytes and separately rechecks canonical topological execution order; forged digest, swapped independent order and unhashable order records are fail-closed.
 - The external optional postcondition helper accepts an expected SHA256 when original bytes are available; do not assert a SHA binding from a bare caller-supplied manifest object alone.
+
+## GitHub exact-source acceptance (2026-11-10 KST)
+
+- Code/test SHA `bbd01576eed2573ffeab5a70eec0662fcb40bad0`: [Actions 42675220982](https://github.com/hibi89/EAI/actions/runs/42675220982) Linux Python3.11 301/301 PASS, Syntax check + CLI smoke PASS.
+- P14 rejects an unpinned original manifest SHA mismatch and reorders under an independent canonical dependency pass in the receipt verifier. Test module **18 tests PASS** including forged output and dependency holds.
+- Original input data and customer Windows are NOT VERIFIED; no model/remote tool calls or automated real task execution.

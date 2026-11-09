@@ -1,5 +1,25 @@
 # EAI — Elice Artificial Intelligence
 
+## Current verified development status — 2026-11-10 KST
+
+**Provisional whole-product completion: 40% / 100%.** P0–P14 typed CPU-local engine has four goal types (choice, CSV audit, task portfolio, dependency CPM), SHA256-pinned batch and dependency pipeline, and an 8-check offline doctor. Optional Qwen/Ollama parses INPUT only; there is no GPT-class general agent. Feature+tests SHA `bbd01576eed2573ffeab5a70eec0662fcb40bad0` [GitHub Actions #42675220982](https://github.com/hibi89/EAI/actions/runs/42675220982) **Python3.11 Linux 301 PASS / 0 FAIL; compileall & CLI smoke PASS**.
+
+```powershell
+python -m eai doctor --json
+python -m eai solve-goal examples/sample_task_portfolio_goal.json --json
+python -m eai solve-goal examples/sample_task_schedule_goal.json --json
+python -m eai batch-goals examples/sample_goal_batch.json --json
+python -m eai pipeline-goals examples/sample_goal_pipeline.json --json
+python -m unittest discover -s tests -q
+```
+
+Windows double-click offline diagnostic: `RUN_EAI_DOCTOR.cmd`. The software cannot claim Windows native, real Ollama/Qwen, live SearXNG, actual customer data, paid distribution or general AI verification based only on this Linux CI. **Retail release HOLD.**
+
+Historical P0–P8 README below is a dated archive; its original statements about 201 tests and Actions failure were correct only at the time, not the present status.
+
+---
+
+
 Private, local-first, CPU-first personal EAI. Qwen is optional INPUT classification only. EAI-owned deterministic solvers perform execution, scoring, evidence checks and response rendering. Broad GPT-level reasoning remains a long-term research target, not a completed capability.
 
 ## Quick start — Python 3.11+

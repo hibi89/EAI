@@ -1,3 +1,14 @@
+## Current acceptance gates — 2026-11-10 KST
+
+- **Gate S (CI exact source): PASS** at `bbd01576eed2573ffeab5a70eec0662fcb40bad0`, [Actions #42675220982](https://github.com/hibi89/EAI/actions/runs/42675220982); Linux Python3.11 `compileall` + **301/301 unittest PASS, 0 FAIL, 0 SKIP**, CLI smoke PASS. Includes P13 doctor 8-sample tests and P14 pipeline positive/negative, forged receipt, path/sha checks.
+- **Gate W native Windows10/11 and owner hardware: NOT TESTED.** `RUN_EAI_DOCTOR.cmd` exists but was not run on owner's system; manual observation still needed.
+- **Gate L real local Ollama/Qwen model (input classification only): NOT TESTED.** Stubbed model responses are not live proof.
+- **Gate R optional local SearXNG or real customer source: NOT TESTED.** No remote search or private data sent.
+- **Gate P customer release, packaging, rights, paid distribution: HOLD**, not a Vercel/Production site.
+- Historical source run 42675080093 was **301 tests executed / 2 failure**, outdated test assertions indexed the previous last diagnostic; corrected by the exact successful SHA above. Old P13/P14 Job 0 runs were pre-step infrastructure evidence, not latest code regression.
+
+---
+
 > **2026-10-31 P0 new gate:** Independent EAI engine local-source suite 21 PASS/0 FAIL/0 SKIP (Python 3.13.5). CLI `python -m eai --db /tmp/eai_p0_demo2.sqlite ask '계산 0.1+0.2'` returned `0.3` without Qwen. Stubbed structured Qwen response never synthesized final answers; out-of-schema data rejected. Search consent/cache and restart history covered in offline tests. **GitHub exact-commit CI, actual Windows 3.11, actual Qwen and SearXNG are NOT tested.** No numeric CPU/GPU 'golden ratio' measured.
 
 # EAI acceptance gates and test matrix
