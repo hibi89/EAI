@@ -15,6 +15,7 @@ from .diagnose_csv import diagnose_csv, render_diagnosis
 from .plan_engine import AuditGoal, CPUPlanExecutor, render_plan_report
 from .goal_dispatch import execute_goal_document, render_goal_document
 from .goal_batch import execute_batch_document, render_batch
+from .offline_doctor import run_offline_doctor, render_doctor
 from .runner import EAIRunner
 from .storage import Store
 from .tools import SearxNGSearch
@@ -78,6 +79,9 @@ def main(argv: list[str] | None = None) -> int:
     batch_cmd = sub.add_parser('batch-goals', help='offline SHA256-pinned sequence of 1-6 goals')
     batch_cmd.add_argument('manifest', help='explicit local batch manifest')
     batch_cmd.add_argument('--json', action='store_true', help='structured verified batch receipt')
+    doctor_cmd = sub.add_parser('doctor', help='no-network self-test of bundled typed goals')
+    doctor_cmd.add_argument('--root', help='optional installed project root to inspect')
+    doctor_cmd.add_argument('--json', action='store_true', help='structured offline evidence')
     args = p.parse_args(argv)
     if args.command == 'health':
         print('EAI independent CPU-first engine v0.1')
@@ -87,6 +91,11 @@ def main(argv: list[str] | None = None) -> int:
         print('SearXNG configured:', bool(args.searxng_url))
         print('SQLite:', args.db)
         return 0
+    if args.command == 'doctor':
+        report = run_offline_doctor(args.root)
+        print(json.dumps(report, ensure_ascii=False, indent=2) if args.json
+              else render_doctor(report))
+        return 0 if report['status'] == 'PASS' else 4
     if args.command == 'batch-goals':
         try:
             output = execute_batch_document(args.manifest)
