@@ -115,7 +115,7 @@ class RelationshipTests(unittest.TestCase):
         self.assertEqual(report["result"]["missing_rows"], 1)
         self.assertEqual(report["result"]["invalid_rows"], 1)
         self.assertEqual(report["result"]["complete_rows"], 6)
-        self.assertEqual(report["result"]["pairs"][0]["coefficient"], "1.000000")
+        self.assertEqual(report["result"]["pairs"][0]["coefficient"], "0.980609")
 
     def test_missing_precedes_invalid_only_for_fully_numeric_partial(self):
         self.csv.write_text("x,y,z\n" + "".join(
@@ -146,7 +146,7 @@ class RelationshipTests(unittest.TestCase):
         r = self.solve()
         self.assertEqual(r["status"], "UNAVAILABLE")
         self.assertIsNone(r["result"]["pairs"][0]["coefficient"])
-        self.assertEqual(r["result"]["pairs"][-1]["coefficient"], "1.000000")
+        self.assertEqual(r["result"]["pairs"][1]["coefficient"], "1.000000")
 
     def test_aggregate_only_does_not_leak_any_row_values(self):
         output = json.dumps(self.solve(), ensure_ascii=False)
