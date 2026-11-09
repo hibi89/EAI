@@ -1,3 +1,18 @@
+# P10 최신 인수인계 — 2026-11-10 KST
+
+1. **목표/기술:** 독립 EAI 로컬 CPU 목표 솔버 확장. 범위 제한 task portfolio, Python3.11+ stdlib, Ollama/Qwen은 선택적 입력 해석에 한정.
+2. **구현:** `plan_tasks` 3번째 도메인, 최대12개 작업의 시간/비용/가치/의존성 검증과 정확 최대가치 조합, 선택 보류 TIE/UNAVAILABLE, 정해진 영수증. `eai/task_portfolio.py`, `eai/goal_dispatch.py`, `eai/receipt_guard.py`, `eai/__main__.py`, 샘플/18 신규 테스트. 임의 greedy 정렬 대신 <=4095 부분집합 정확 계산 채택(유지보수/비용 최소·최적성 확인).
+3. **테스트:** 검증 코드 SHA **`843a1426ac4c2dcb4c0e957768bc94ea04078f02`**, [Actions #42664669185](https://github.com/hibi89/EAI/actions/runs/42664669185) Python3.11 Linux `compileall`/오프라인 unittest **229 PASS / 0 FAIL / 0 SKIP 기록**(기존 211+신규18)/CLI health smoke 성공. CI 로그 `Ran 229 tests in 4.748s`, `OK`. `python -m unittest discover -s tests -v` 및 `python -m eai solve-goal examples/sample_task_portfolio_goal.json --json`로 재현 가능.
+4. **진행/중단:** P10 기능·동일 소스 CI 완료. 최종상품 완성률 **35%→36% (잠정 +1%p)**; 일반 GPT 수준·비구조화 자동 계획/행동 기능 미달. TIE는 인간 결정, 자율작업 실행 없음.
+5. **오류/재시도:** 최초 코드 조립 시 삽입 확인 정규식의 예상 횟수 오류로 **원격 무변경 중단**. 검사 조건 정정 및 테스트 의존성 예산 변경 후 1회 안전 재시도 성공. GitHub P10 CI 성공; 과거 P8 Actions pre-step 실패는 현재 장애 아님. 임의 force-push/CI 반복 금지.
+6. **GitHub/경로:** Private `hibi89/EAI@feature/local-first-mvp`, 소스 테스트 SHA `843a1426ac4c2dcb4c0e957768bc94ea04078f02`; `main`은 `09f3f8be2dab2d1aa8096c0d6d439f8fc6e48960` 당시 보존. 신규 주요 파일 `eai/task_portfolio.py`, `tests/test_task_portfolio_p10.py`, `docs/P10_TASK_PORTFOLIO.md`. 문서-only HEAD는 GitHub 최신 조회.
+7. **서비스/환경:** 오프라인 CLI `python -m eai solve-goal examples/sample_task_portfolio_goal.json --json`; 웹 Production/Vercel **미적용**. GitHub Actions Linux Python 3.11 성공, 사용자 Windows 10/11 미검증.
+8. **원본/보안:** 제품 `main`, HAE/LA, 실제 CSV/SQLite, 로컬 모델/토큰/개인 데이터 무수정. 로컬 입력 JSON만 읽기. 타사 API/LLM/유료 서비스/클라우드 호출·배포 없음. 복구 시 이 기능 소스 SHA 직전 `8c5a2a9f7c8229efeb320f435ca2f0d45181f47c`에서 정상 재구성; 이력 강제 수정 금지.
+9. **다음 작업:** 고객이 직접 쓰는 Windows Python3.11 CLI 테스트 → 실제 업무에서 작업 시간·예산/선행조건 유효성 검증 → 근거 있는 도메인 확대. 법적/보안/권한/외부 전송/상용 배포는 별도 승인. 완성 기준은 실제 user workflow 및 도메인 테스트/패키징·기능 검증.
+10. **확인 시점:** 2026-11-10 KST GitHub Actions의 exact source SHA와 실행 로그 직접 확인. 신규 기능 229 PASS 외 Windows/Ollama/실데이터/Production/판매는 미검증. 본 문서는 코드 검증 후 작성되어 후속 docs-only 커밋 SHA는 별도 조회.
+
+---
+
 > **2026-11-10 KST — EAI P9 최종 CI 확인:** `feature/local-first-mvp` 기능 소스/테스트 SHA **`da48d1764f8a369905ef34bd6810cb738efb8a2b`**의 [Actions #42659433939](https://github.com/hibi89/EAI/actions/runs/42659433939)에서 Linux Python3.11 `compileall` + **211/211 unittest PASS** + CLI smoke PASS, 정확 HEAD SHA 매칭 확인. P9 표시 판단 영수증 세부 근거/실행 추적 변조 방지 신규 구현은 원격 실테스트를 통과했음. 앞선 P8 CI pre-step 실패는 해당 과거 실행에 한정되며 현재 P9 소스 코드 장애 주장의 근거가 아님. 원인은 미확정; 유료/권한 변경이나 동일 runner 재시도는 하지 않았음. 실제 Windows10/11, Ollama/Qwen, SearXNG, 고객 데이터 및 보안 배포는 계속 미검증; 최종상품 완성률 자동 인상 금지. `main`/HAE/LA 보존. 이 문서 후속 커밋은 docs-only이므로 **기능 검증 SHA `da48d1764f8a369905ef34bd6810cb738efb8a2b`**와 HEAD 문서 SHA를 분리. 자세한 범위 [P9 설계](docs/P9_RECEIPT_DISPLAY_INTEGRITY.md).
 
 > **2026-11-10 KST — EAI P9 가장 최근 인수인계:** `feature/local-first-mvp`에서 P8 영수증의 표시용 상세 근거 변조 공백을 좁히는 `eai/receipt_evidence.py`/P8 guard 연결/10개 신규 통합 테스트를 추가. 별도 격리 Python3.13.5 9/9 PASS만 실행; **전체 GitHub-exact 201+10 테스트 및 새 통합 10건, Windows Python3.11, 실제 CI, 사용자 데이터·유료 API/배포는 미검증**. 기존 CI 실패는 테스트 시작 증거 없는 별도 차단. [P9 근거](docs/P9_RECEIPT_DISPLAY_INTEGRITY.md). 다음은 실제 checkout에 `python -m unittest discover -s tests -q`와 Windows 소스 일치 확인 후 제품 범위 확장. `main`·HAE/LA·사용자 자료는 보존. 커밋 SHA는 원격에서 확인할 것.

@@ -1,3 +1,5 @@
+> **2026-11-10 P10 3rd goal skill implemented / final product estimate 36%:** 정확 리소스 제약 task portfolio `plan_tasks` (12개 작업·선행조건·양의 가치 조합·동점 보류·독립 검증). 코드 SHA `843a1426ac4c2dcb4c0e957768bc94ea04078f02` [Linux Python3.11 Actions 229/229 PASS](https://github.com/hibi89/EAI/actions/runs/42664669185); 외부 API 없음. 기존 35%에 실기능 1%p 잠정 증가. Windows, 실제 고객 사용, 일반 AI 역량, 판매권/출시 조건은 미검증. 기존 P0–P9 계약 보존.
+
 > **2026-11-10 P9 delivered with exact-code CI:** P8의 선택지 영수증 검증에 독립적인 표시 근거 재계산(`eai/receipt_evidence.py`) 및 10개 신규 회귀를 추가했다. 검증 소스 SHA `da48d1764f8a369905ef34bd6810cb738efb8a2b`, GitHub Actions [#42659433939](https://github.com/hibi89/EAI/actions/runs/42659433939) Linux Python3.11 **211/211 PASS, compileall/CLI smoke PASS**. 제품 최종상용화/실 Windows/LLM 검증은 별도이며 범용 GPT 수준 미달. 기존 P8 201건 상태와 CI pre-step failure는 과거 이력으로 보존.
 
 # EAI REQUIREMENTS — P8, 2026-10-31 KST

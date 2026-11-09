@@ -12,3 +12,8 @@ Goal v1 kind `plan_tasks`, `goal`, `max_hours`, `max_cost`, and `tasks` with `id
 CLI: `python -m eai solve-goal examples/sample_task_portfolio_goal.json --json`.
 Tests: `python -m unittest discover -s tests -v` and `python -m compileall -q eai tests`.
 Windows 10/11 local testing, real Qwen/Ollama, model generalization, customer data and commercial distribution are separate unverified gates.
+
+## Current executable evidence — 2026-11-10 KST
+- Feature+test SHA `843a1426ac4c2dcb4c0e957768bc94ea04078f02` [GitHub Actions #42664669185](https://github.com/hibi89/EAI/actions/runs/42664669185) **completed/success**, Python 3.11 Linux, exact-source 229 unittest PASS (18 new P10), 0 FAIL, compileall & CLI health smoke PASS.
+- Budget, dependencies, tie/hold, Decimal, forged receipts, read-only local files and CLI have regression tests; source/Windows/customer deployment independent acceptance remains open.
+- Final full product 35→36% is a provisional management estimate reflecting the **new task planning domain**, not CI pass percentage or GPT-level capability.
