@@ -1,3 +1,11 @@
+## P18 exact-source acceptance — 2026-11-10 KST
+
+- GitHub `feature/local-first-mvp` feature+tests SHA **`ef220a017c3f7a14d20aaadfdbcdb40bd3feec28`**, [Actions #42688535530](https://github.com/hibi89/EAI/actions/runs/42688535530) **completed/success** at Linux Python 3.11: compileall PASS, **395/395 unittest PASS/0 FAIL/0 SKIP**, CLI smoke PASS. Previous P17 baseline 375/375 PASS. P18 adds 20 targeted synthetic SQLite tests (DB unchanged, source/hash tamper rejection, duplicate/null and empty, read-only/authorizer-bound schema, path escape, 20K row guard, CLI 0/1/2/3, batch & DAG block).
+- P18 validation: read-only actual on-disk synthetic SQLite created in temporary CI workspace. Independent receipt recheck PASS; no actual customer DB or original values uploaded. `doctor` remains a 10-check bundle for six committed text example goals; P18 is tested by dedicated P18 tests instead of doctor.
+- Product-wide **44% provisional** (+1%p from 43) for genuinely new SQLite data skill. Not evidence of general intelligence or retail readiness. **Windows owner native, real Qwen/Ollama, live SearXNG, paid/customer usage, installed package and Production UNVERIFIED; RELEASE HOLD.**
+
+---
+
 ## P16/P17 validated acceptance — 2026-11-10 KST
 
 - **Test source gate PASS:** `9b0b7438cd0e8756e87c7ca4d03d23a731773d91` [GitHub Actions 42680542935](https://github.com/hibi89/EAI/actions/runs/42680542935) Linux Python3.11 compileall PASS, **375/375 unittest PASS/0 FAIL**, CLI smoke PASS. P16 generated 28 new tests, P17 generated 27 new tests; batch/pipeline gating, forged evidence, SHA source changes, size/row/column caps, CP949, status codes, synthetic doctor included.

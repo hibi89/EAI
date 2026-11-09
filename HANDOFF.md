@@ -1,3 +1,18 @@
+# EAI P18 verified handoff — 2026-11-10 KST
+
+1. **목표·확정 요구·기술:** CPU 독립 사고·로컬 데이터 처리 확장. 새로운 일곱 번째 `sqlite_table_audit` 타입은 Python 3.11 stdlib/sqlite3, read-only local-first, 실데이터 유출·임의 SQL 금지, Qwen은 입력 분류 선택 사항에 한함.
+2. **완료 기능·결정 근거:** A(임의 read-only SQL 실행의 유연성) vs B(타입화된 일반 SQLite 테이블 검사/독립 검증)의 위험·비용·유지보수 비교 후 B. NULL/공백 필수값, 단일/복합 키 반복을 표본 순번·합산 수치만으로 보고; source SHA256 pre/post, 컬럼 중심 Counter 독립 영수증, 읽기 전용 URI, 로컬 SQL authorizer. 16MiB/20k행/32열, WAL/저널·가상/뷰/생성 컬럼 차단. 기존 6개 typed goal 및 P12/14/15 보존·배치/파이프라인 차단 연동.
+3. **실행 테스트·성공/실패·검증 범위:** GitHub exact code+test SHA `ef220a017c3f7a14d20aaadfdbcdb40bd3feec28` [CI run 42688535530](https://github.com/hibi89/EAI/actions/runs/42688535530) Linux Python3.11 `python -m compileall -q eai tests` SUCCESS, `python -m unittest discover -s tests -v` **395 PASS/0 FAIL/0 SKIP**, CLI `--version`/`health` success. 신규 P18 단위/통합 20개 포함 CLI 0/1/2/3, 원본 불변, 위조영수증, P12/14. P13 doctor 10개 기존 fixture 체크 계속 PASS. 실 Windows·Ollama/Qwen·SearXNG·고객 DB 미검증.
+4. **완료/진행/대기/차단:** P18 기능+GitHub exact CI 완료, 최종상품 **43→44%(+1%p 잠정)**, 목표 50%까지 **6%p**. 실제 사용자 Windows DB 실측, 모델 연결, 설치·상용 RELEASE HOLD.
+5. **오류 근거·원인·시도·재시도 제한·대안:** P18 신규 CI 오류 없음, 395/395 완료. 과거 P17 중간 두 테스트 기대값 실패는 역사적 기록. immutable SQLite에 WAL/저널/뷰를 강제 검사하면 안전상 입력 오류이며 자동 복구나 재시도 하지 않음; 사용자 승인 후 오프라인 frozen copy로 진단하거나 원본 스키마를 검토할 것. 임의 SQL 풀기/권한 변경 금지.
+6. **저장소·브랜치·SHA·주요 경로:** `hibi89/EAI@feature/local-first-mvp` feature+tests `ef220a017c3f7a14d20aaadfdbcdb40bd3feec28`, 원본 main 보존. `eai/sqlite_table_audit.py`, `eai/sqlite_receipt.py`, `tests/test_sqlite_table_audit_p18.py`, `eai/goal_dispatch.py`, `eai/receipt_guard.py`, `docs/P18_SQLITE_TABLE_AUDIT.md`, `README.md`.
+7. **Production/Vercel·실행·환경:** 로컬 CLI, Production URL/Vercel **미적용**. 사용자가 로컬 DB와 같은 폴더에 버전1 JSON 계약을 준비한 다음 `python -m eai solve-goal goal.json --json` 실행. Python3.11 Linux CI verified. Windows native/다운로드 배포 미검증.
+8. **원본·백업·인증·수정금지:** Git SHA ef220a017c3f7a14d20aaadfdbcdb40bd3feec28가 직전 검증 백업; 사용자 SQLite/CSV, 비밀 환경/토큰, 모델 가중치 GitHub 불포함. main/HAE/LA 및 KIC/PayPal/UGREEN/타 상품, 설정·과금·권한·배포 무수정. `mode=ro&immutable=1`과 바이너리 해시 검사로 원본 변경 없음(합성 임시 DB 한정).
+9. **다음 우선순위·완료 기준·승인:** P19는 의미 있는 독립 CPU 기능 (예: SQLite 읽기 전용 안전 집계/검증 또는 일반 작업 문제 해결)로 확대. 동일 도메인 테스트 숫자만 증가시키지 말 것. Windows 실제 사용/모델 연결/패키징은 마지막에 모아서 승인·실측. 유료/외부전송/원본 변경/판매 출시 전 사전 승인.
+10. **KST 갱신·확인·문서 기준 커밋:** 2026-11-10 KST, run 42688535530 Job 129401796005에서 `Ran 395 tests in 8.158s ... OK` 직접 확인, Syntax/CLI 모두 success; 정확 검증된 기능 소스 `ef220a017c3f7a14d20aaadfdbcdb40bd3feec28`. 후속 문서-only SHA는 기능 검증 소스와 구별하고 GitHub에서 재확인. 현재 판매 HOLD.
+
+---
+
 # EAI P16–P17 최신 인수인계 — 2026-11-10 KST
 
 1. **목표·용도·확정 요구·기술:** 독립 local-first EAI의 실제 CPU 사고/자료 검증 능력을 확장. 선택적 Ollama/Qwen은 INPUT 분류만, 계산·근거 검증·보고는 EAI CPU 담당. Python>=3.11 stdlib, 파일 읽기 전용, 5MiB/20,000레코드/32컬럼/4,096셀 문자 상한, 영수증 검증, 무단 외부전송·결제 없음.

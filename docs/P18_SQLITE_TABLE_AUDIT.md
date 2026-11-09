@@ -38,6 +38,6 @@ Statuses: `AGREE` exit 0 if nonempty and all rules hold; `CONFLICT` exit 2 if re
 
 ## Verification gates
 
-At initial feature commit: **pending exact-source GitHub Actions**. Check `python -m compileall -q eai tests`, `python -m unittest discover -s tests -v`, `python -m eai doctor --json`, and a synthetic P18 CLI test. Record the verified code SHA and GitHub Actions run in `STATUS.md`/`HANDOFF.md` only after seeing the logs.
+**PASS:** exact-source SHA `ef220a017c3f7a14d20aaadfdbcdb40bd3feec28` [GitHub Actions 42688535530](https://github.com/hibi89/EAI/actions/runs/42688535530) Linux Python 3.11 `compileall` PASS, **395/395 unittest PASS, 0 FAIL, 0 SKIP**, CLI smoke PASS. Twenty new P18 tests validate an actual synthetic on-disk SQLite database, read-only behavior, independent receipt tamper rejection, and batch/DAG review gates. Doctor's pre-existing ten text-fixture checks remain included in the full regression suite; P18 uses a temporary SQLite fixture rather than committing a binary DB.
 
 Unverified: customer database correctness, Windows native, Ollama/Qwen, SearXNG, installing/retail release. Production/Vercel not applicable. RELEASE HOLD.

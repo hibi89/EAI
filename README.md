@@ -1,3 +1,17 @@
+## Current P18 exact-source verification — 2026-11-10 KST
+
+**Provisional whole-product completion: 44% (RELEASE HOLD).** P18 adds the seventh independently verified CPU goal `sqlite_table_audit`: owner-selected local SQLite table, missing required values and duplicate keys, SHA-256 + independent guarded receipt. Never runs owner-provided SQL or emits row values. P12 batch/P14 DAG review-gating is supported.
+
+Create a local goal JSON beside the SQLite file (no customer DB is included in GitHub):
+
+```json
+{"version":1,"kind":"sqlite_table_audit","goal":"Inspect invoices","source":"invoices.sqlite3","table":"invoices","required":["id","amount"],"unique_by":["id"]}
+```
+
+Then run `python -m eai solve-goal path/to/goal.json --json`. Exit 0/2/3 means AGREE/CONFLICT/UNAVAILABLE; invalid source or contract returns 1. See [P18 contract](docs/P18_SQLITE_TABLE_AUDIT.md). Synthetic exact-source commit `ef220a017c3f7a14d20aaadfdbcdb40bd3feec28` passed [GitHub Actions 42688535530](https://github.com/hibi89/EAI/actions/runs/42688535530): **395/395 PASS, syntax/CLI smoke PASS** on Linux Python3.11 (+20 P18 tests). P13 doctor remains 10 fixture checks. Actual user Windows/Qwen/SearXNG/customer database/product packaging/paid release **not verified**. All 43% P16/P17 notes below are historical snapshots.
+
+---
+
 # EAI — Elice Artificial Intelligence
 
 ## Latest exact-source verification — 2026-11-10 KST
