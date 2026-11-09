@@ -51,3 +51,11 @@ unchanged and P8 returned PASS.
   `python -m eai solve-goal examples/sample_csv_audit_goal.json --json`.
 - No release or completion-rate increase without passing integration on exact
   source and further customer-level readiness.
+
+## 2026-11-10 verified remote-source acceptance (supersedes pre-CI caveat)
+- **Code + test SHA:** `da48d1764f8a369905ef34bd6810cb738efb8a2b` on `feature/local-first-mvp`.
+- **Actions:** [offline-checks #42659433939](https://github.com/hibi89/EAI/actions/runs/42659433939), completed/success. Checked job steps: actions/checkout@v4, setup-python@v5, compileall, full `python -m unittest discover -s tests -v`, `python -m eai --version`, `python -m eai health`, all success.
+- **Actual test log:** `Ran 211 tests in 4.645s`, `OK` (**211 pass, 0 fail**). New P9 tests 10 are included in this exact-source complete suite.
+- Original earlier Actions runner failure did not establish a product-code error; the next commit's green runner does not diagnose the historical failure root cause. No permission/billing change was made.
+- **Not verified:** local owner's Windows10/11 and real Qwen/Ollama/SearXNG, any private customer material, installer and customer release gates. No source/write/network/production changes.
+- This note may be committed as documentation-only `[skip ci]`; in that case a later HEAD without Actions is not a regression because the tested code and tests remain at the SHA above. Compare diffs before treating them as identical.
