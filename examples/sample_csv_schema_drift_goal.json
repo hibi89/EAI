@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "kind": "csv_schema_drift",
+  "goal": "Synthetic schema change",
+  "baseline": "sample_drift_baseline.csv",
+  "current": "sample_drift_current.csv",
+  "encoding": "utf-8-sig"
+}

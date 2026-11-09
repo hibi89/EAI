@@ -19,6 +19,7 @@ SAMPLES = (
     ('plan_tasks','sample_task_portfolio_goal.json'),
     ('schedule_tasks','sample_task_schedule_goal.json'),
     ('csv_quality','sample_csv_quality_goal.json'),
+    ('csv_schema_drift','sample_csv_schema_drift_goal.json'),
 )
 EXPECTED_STATUS = {
     'choose_options': 'DECIDED',
@@ -26,6 +27,7 @@ EXPECTED_STATUS = {
     'plan_tasks': 'DECIDED',
     'schedule_tasks': 'DECIDED',
     'csv_quality': 'CONFLICT',
+    'csv_schema_drift': 'CONFLICT',
     'goal_batch': 'COMPLETE',
     'goal_pipeline': 'COMPLETE',
 }
@@ -49,7 +51,7 @@ def _file_sha256(source: Path, root: Path) -> str:
 
 
 def run_offline_doctor(project_root: str | Path | None = None) -> dict:
-    """Test all five typed goal classes + batch and pipeline from a single command."""
+    """Test all six typed goal classes + batch and pipeline from a single command."""
     root = (Path(project_root) if project_root is not None else
             Path(__file__).resolve().parent.parent).expanduser().resolve()
     checks = []

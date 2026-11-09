@@ -14,7 +14,7 @@ class OfflineDoctorTests(unittest.TestCase):
     def test_full_install_bundle_smoke_passes(self):
         report=run_offline_doctor()
         self.assertEqual(report['status'],'PASS',report)
-        self.assertEqual(report['summary'],{'passed':9,'failed':0,'total':9})
+        self.assertEqual(report['summary'],{'passed':10,'failed':0,'total':10})
         self.assertEqual(report['checks'][-1]['name'],'goal_pipeline')
         self.assertEqual(report['checks'][-1]['observed'],'COMPLETE')
 
@@ -29,7 +29,7 @@ class OfflineDoctorTests(unittest.TestCase):
             report=run_offline_doctor(temp)
         self.assertEqual(report['status'],'FAIL')
         self.assertEqual(report['summary']['passed'],2)
-        self.assertEqual(report['summary']['failed'],7)
+        self.assertEqual(report['summary']['failed'],8)
 
     def test_fake_goal_guard_fails_diagnostic(self):
         with patch('eai.offline_doctor.execute_goal_document',
@@ -37,8 +37,8 @@ class OfflineDoctorTests(unittest.TestCase):
                                  'verification':{'status':'FAIL'}}):
             report=run_offline_doctor()
         self.assertEqual(report['status'],'FAIL')
-        self.assertEqual(report['summary']['failed'],5)
-        self.assertTrue(all(x['error']=='ValueError' for x in report['checks'][2:7]))
+        self.assertEqual(report['summary']['failed'],6)
+        self.assertTrue(all(x['error']=='ValueError' for x in report['checks'][2:8]))
 
     def test_fake_batch_guard_failure_reports_fail(self):
         with patch('eai.offline_doctor.execute_batch_document',
