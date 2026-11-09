@@ -214,7 +214,7 @@ class CsvSchemaDriftTests(unittest.TestCase):
                 self.left.write_text(self.left.read_text()+' ')
             return raw
         with patch('eai.csv_schema_drift.source_snapshot',side_effect=mutate):
-            with self.assertRaisesRegex(ValueError,'source changed'):self.run_goal()
+            with self.assertRaisesRegex(ValueError,'input changed during scan'):self.run_goal()
 
     def test_independent_guard_detects_source_changed(self):
         goal=validate_drift_goal(drift_spec(),self.spec)

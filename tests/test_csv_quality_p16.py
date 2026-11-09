@@ -292,7 +292,7 @@ class CsvQualityTests(unittest.TestCase):
                               cwd=root,text=True,capture_output=True,timeout=35)
         self.assertEqual(doctor.returncode,0,doctor.stderr)
         parsed=json.loads(doctor.stdout)
-        self.assertEqual(parsed['summary'],{'passed':9,'failed':0,'total':9})
+        self.assertEqual(parsed['summary'],{'passed':10,'failed':0,'total':10})
         self.assertIn('csv_quality',[x['name'] for x in parsed['checks']])
 
 
