@@ -1,3 +1,18 @@
+# EAI P12–P14 최신 인수인계 (2026-11-10 KST)
+
+1. **목표/확정 요구/스택**: Private local-first EAI 독립 CPU 사고 영역 확장. Qwen/Ollama는 선택적으로 입력 분류에만 사용. Python>=3.11 stdlib, read-only, opt-in local SearXNG, 사용자 자료 보존.
+2. **기능/변경/근거**: P12 최대 6개 SHA256 고정 goal 배치 실행·에러 격리 (검증 완료). P13 doctor 검사 및 Windows RUN_EAI_DOCTOR.cmd, P14 DAG 선행 검증에 의존하는 목표 파이프라인 (둘 다 코드 구현, 검증 대기). Shell 반복 실행보다 프로세스 내 기존 검증 솔버 호출의 비용·재시도·보안 비용이 낮아 선택.
+3. **테스트/성공/실패**: P12 기능 SHA `d5f9287837041bfd552d5857b10b6a45164bda9f`, [GitHub CI #42670939944](https://github.com/hibi89/EAI/actions/runs/42670939944) **269/269 PASS/0 FAIL**, compileall 및 CLI smoke 성공. P13 SHA `06e54b87daa92dc985786ab08e9096052f3438c6`, [CI #42671534452](https://github.com/hibi89/EAI/actions/runs/42671534452) FAIL (Jobs 0); P14 SHA `d18dec6dfca729b83c311361502256901dd387d8`, [CI #42672478578](https://github.com/hibi89/EAI/actions/runs/42672478578) FAIL (Jobs 0). Python 테스트가 실행된 근거 없음. 새 12+15 테스트는 작성만 확인. 296 PASS라고 말하면 안 됨.
+4. **상태/중단 지점**: P12 source+CI DONE, 최종상품 **37%→38%**. P13/P14 기능 code committed but tests UNVERIFIED; 39/40% 승격 HOLD. Windows 실제 설치·LLM·사용자 데이터·상용 납품 미검증.
+5. **실패 근거·원인·대안**: P13/P14 두 연속 Actions FAILURE, Job 0; 원인 미확정. Runner/워크플로·계정·청구 중 무엇인지 진단 불가. 동일 CI blind retry/권한·결제 변경 금지. 사설 GitHub 소스에 대한 작업 컨테이너 접근은 DNS resolution error. 대안: A) 기존 Windows 체크아웃 pull 후 단일 전체 테스트 + doctor; B) CI runner Job 생성 차단 계층 증거 조사 후 승인 하에 해결.
+6. **저장소/브랜치/SHA/경로**: `hibi89/EAI@feature/local-first-mvp`, 최신 기능 HEAD `d18dec6dfca729b83c311361502256901dd387d8`; 검증된 P12 `d5f9287837041bfd552d5857b10b6a45164bda9f`; main `09f3f8be2dab2d1aa8096c0d6d439f8fc6e48960` 보존. `eai/goal_batch.py`, `eai/offline_doctor.py`, `eai/goal_pipeline.py` 및 3개 해당 테스트 파일, sample 목표 파일.
+7. **서비스/URL/명령/환경**: Native CLI, Production/Vercel 미적용. `python -m unittest discover -s tests -v`, `python -m eai doctor --json`, `python -m eai batch-goals examples/sample_goal_batch.json --json`, `python -m eai pipeline-goals examples/sample_goal_pipeline.json --json`. P12만 GitHub Ubuntu3.11 exact SHA에서 확인, 현재 HEAD는 미검증.
+8. **원본/백업/인증**: GitHub main과 이전 정확 SHA를 복구 기준으로 보존, no force push. 고객 CSV/SQLite, 모델 가중치, 토큰·.env GitHub 미업로드. HAE/LA/KIC/PayPal/UGREEN 및 외부 배포/결제/권한 무변경.
+9. **다음 우선순위·완료 기준/승인**: 현재 P13/P14 새 HEAD에서 전체 Python 3.11 269+12+15 unit 회귀와 CLI 실제 검증 통과가 우선. Ubuntu runner 실패 2회 반복 금지. native Windows 결과는 사용자 환경에서 가능할 때 한 번에 점검. 모든 최신소스 테스트 통과시만 잠정 39–40% 재평가; 50% 목표는 미달. 외부전송, 유료, 보안권한/배포, 범위축소 사전 승인.
+10. **갱신·근거(KST)**: 2026-11-10 KST, GitHub exact source P12 CI 로그 269 PASS, P13/P14 GitHub run과 Jobs 0 직접 확인, Windows·실 Qwen·판매 환경 확인 안됨. 최종 문서 SHA는 이후 브랜치 재조회.
+
+---
+
 # Latest EAI P11 HANDOFF — 2026-11-10 KST
 
 1. **Goal / confirmed requirements / stack.** Private, local-first independent CPU reasoning for explicitly typed tasks. Qwen/Ollama optionally classifies input ONLY; CPU EAI plans/solves/validates/renders. Python 3.11+ stdlib, no default network or GPU cost.
