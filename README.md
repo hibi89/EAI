@@ -1,3 +1,23 @@
+## Latest source-verified milestone — P20/P21/P22, 2026-11-10 KST
+
+**Provisional whole-product completion: 50% / 100%; retail RELEASE HOLD.** Three new independent CPU skills:
+
+- `local_evidence_search`: explicit TXT/MD exact-token line matching with SHA256 source provenance, no snippets by default.
+- `resource_schedule`: bounded exact minimum-duration schedule with shared resource capacity + predecessors, independent capacity/optimality verification.
+- `csv_robust_outliers`: local CSV median/MAD anomalies, complete-case input quality, independent raw-data proof; not an ML or fraud verdict.
+
+```powershell
+python -m eai solve-goal examples/sample_local_evidence_goal.json --json
+python -m eai solve-goal examples/sample_resource_schedule_goal.json --json
+python -m eai solve-goal examples/sample_robust_outliers_goal.json --json
+python -m eai doctor --json
+python -m unittest discover -s tests -q
+```
+
+The first two synthetic goals expect `AGREE`/`DECIDED` (exit 0); P22 deliberately flags an outlier (CONFLICT/exit 2). Linux Python3.11 GitHub full regression **475/475 PASS**, compileall + CLI smoke PASS at code/test SHA `88af3412d59dad8ea848322bdb75292adb7db9e4` [Actions #42696296697](https://github.com/hibi89/EAI/actions/runs/42696296697). Historical tests 437 (P20) and 456 (P21) also passed at their exact SHAs. Demo goals above are documented but CI smoke step only directly calls version/health; tests exercise temporary synthetic scenarios through CLI. Current 11 bounded goal kinds, P13 doctor 10 probes. Real owner Windows, Ollama/Qwen/SearXNG, customer files and retail release **not verified**. Past 45% notes below are historical.
+
+---
+
 ## Latest verified feature — P19 CPU relationships (2026-11-10 KST)
 
 **Estimated whole-product completion: 45% / 100%; retail RELEASE HOLD.** P19 adds the eighth independent typed CPU goal `csv_relationships`: bounded local 2-6 numeric CSV columns, complete-case Pearson associations and a separate independent source-backed evidence guard, with SHA256. Sample:

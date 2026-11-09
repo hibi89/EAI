@@ -37,3 +37,8 @@ Example: `python -m eai solve-goal examples/sample_robust_outliers_goal.json --j
 ## Acceptance
 
 Commit exact feature/test SHA, perform Python 3.11 Linux `compileall`, full unittest suite and CLI smoke. P22 synthetic fake data unit/integration tests cover outlier/normal/zero-MAD, shape, privacy, provenance, CLI status, batch/pipeline, tamper rejection and encoding. Do not increase completion on source-only commits; evaluate only after full CI succeeds.
+
+## Exact-source verification record
+
+- First source `623089274393a5a86ce323a26877608f143b15b5` [Actions 42696138434](https://github.com/hibi89/EAI/actions/runs/42696138434): 475 tests attempted / 11 ERROR + 1 FAIL. Root cause: primary scanner destructured a `tuple[Decimal,...]` as if one Decimal; TypeError in `abs(value-center)`. All failures followed this bug.
+- Corrected and verified exact source+tests SHA **`88af3412d59dad8ea848322bdb75292adb7db9e4`** [Actions 42696296697](https://github.com/hibi89/EAI/actions/runs/42696296697) Ubuntu Python3.11 **475/475 PASS / 0 FAIL / 0 SKIP**, syntax/CLI smoke PASS, P22 +19 tests. Do not infer actual customer dataset validity or Windows/retail release.

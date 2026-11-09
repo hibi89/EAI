@@ -34,3 +34,8 @@ Save `goal.json` alongside explicitly selected files and call `python -m eai sol
 ## Acceptance
 
 After writing source: exact SHA Actions `compileall`, whole unittest regression, CLI smoke, no model required; separate synthetic sample CLI result may be exercised manually. No real customer files or user Windows/Qwen/Ollama/SearXNG tested yet. Product remains RELEASE HOLD until explicit owner release approval.
+
+## Exact-source verification record
+
+- Initial SHA `60493c71ae3d091a8359b908b81aad238f150f33` [Actions 42693891473](https://github.com/hibi89/EAI/actions/runs/42693891473): 437 tests attempted / 2 ERROR (unsupported extension resolved before path/extension rejection).
+- Corrected exact P20 SHA `f73e97e5951549c72872b4d3213c159abecaa095` [Actions 42694085666](https://github.com/hibi89/EAI/actions/runs/42694085666): Linux Python3.11 **437/437 PASS / 0 FAIL**, syntax + CLI smoke PASS. P20 adds 20 tests. Later P21/P22 regression at `88af3412d59dad8ea848322bdb75292adb7db9e4` **475/475 PASS**. Do not infer Windows/real owner documents tested.

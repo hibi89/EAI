@@ -32,3 +32,7 @@ Run `python -m eai solve-goal examples/sample_resource_schedule_goal.json --json
 ## Verification criteria
 
 GitHub exact commit: compileall, full unittest, CLI smoke and dedicated synthetic P21 tests for dependent scheduling, insufficient capacity, forged optimality, cycles, resource overload, CLI exit codes, batch and DAG gating. Windows10/11 native, actual human resource estimates, Qwen/SearXNG and commercial release remain **UNVERIFIED/HOLD**.
+
+## Exact-source verification record
+
+- P21 exact feature/test SHA `82acf93e73279cd3e3cc5c676cc8b6dbce04b32b` [Actions 42695135188](https://github.com/hibi89/EAI/actions/runs/42695135188) Linux Python3.11 **456/456 PASS / 0 FAIL**, compileall/CLI smoke PASS (P21 adds 19 tests). Subsequent P22 full regression `88af3412d59dad8ea848322bdb75292adb7db9e4` **475/475 PASS**. Actual real staff/time estimation and OS Windows integration are unverified; CLI does not book resources.
