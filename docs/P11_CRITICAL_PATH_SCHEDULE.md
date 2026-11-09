@@ -22,3 +22,10 @@ The EAI receipt guard separately computes longest predecessor and successor dist
 
 ## Remaining gates
 GitHub-exact Python 3.11 CI, real Windows 10/11 CLI, owner-provided workload calibration, Qwen/Ollama intent-only integration, product packaging and launch rights are separate gates. Do not count feature tests as Windows/customer acceptance.
+
+## Verified acceptance — 2026-11-10 KST
+
+- Source and tests SHA: `42d6b53400fd841d6f5f4e3db0e97583bf3996cd`. [GitHub Actions #42666810963](https://github.com/hibi89/EAI/actions/runs/42666810963) completed/success, Python 3.11, exact-source compileall and 249/249 unittest PASS, CLI health smoke PASS. Includes 18 P11 tests and a later critical fixed-point precision regression.
+- Earlier P11 first SHA `7e625cd356cc579634ca0b8842cb2e1e9893f8d3` passed 247/247 tests but predated the Decimal high-precision hardening. It is historic, not the final verified source.
+- The P10 resource solver and guard also use a shared 90-digit evaluation context, validated by a 24-integer/12-fraction digit extreme input regression test.
+- Owner Windows/local model, customer scheduling, actual workforce/timezone constraints and commercial release remain UNVERIFIED. This is an explanatory, bounded mathematical schedule and not a real-world task executor.
