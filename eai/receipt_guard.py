@@ -21,6 +21,8 @@ from .sqlite_table_audit import SqliteTableGoal
 from .sqlite_receipt import verify_sqlite_receipt
 from .csv_relationships import RelationshipGoal
 from .relationship_receipt import verify_relationship_receipt
+from .local_evidence_search import EvidenceSearchGoal
+from .evidence_search_receipt import verify_search_receipt
 
 GUARD_VERSION = 'eai.receipt.guard.v1'
 ALLOWED_STATUS = {
@@ -32,6 +34,7 @@ ALLOWED_STATUS = {
     'csv_schema_drift': frozenset({'AGREE', 'CONFLICT', 'UNAVAILABLE'}),
     'sqlite_table_audit': frozenset({'AGREE', 'CONFLICT', 'UNAVAILABLE'}),
     'csv_relationships': frozenset({'AGREE', 'CONFLICT', 'UNAVAILABLE'}),
+    'local_evidence_search': frozenset({'AGREE', 'UNAVAILABLE'}),
 }
 MAX_DIAGNOSTIC_OPTIONS = 12
 
@@ -222,7 +225,7 @@ def _verify_csv(goal: AuditGoal, report: dict) -> tuple[list[str], dict]:
     return ['plan_version','strategy','provenance','skills','status'],diag
 
 
-def verify_goal_receipt(kind: str, goal: ChoiceGoal | AuditGoal | TaskGoal | ScheduleGoal | QualityGoal | DriftGoal | SqliteTableGoal | RelationshipGoal, report: object) -> dict:
+def verify_goal_receipt(kind: str, goal: ChoiceGoal | AuditGoal | TaskGoal | ScheduleGoal | QualityGoal | DriftGoal | SqliteTableGoal | RelationshipGoal | EvidenceSearchGoal, report: object) -> dict:
     """Fail closed on inconsistent receipt; do not silently retry with weaker rules."""
     _check(kind in ALLOWED_STATUS and type(report) is dict, '지원하지 않는 판정 영수증')
     _check(report.get('status') in ALLOWED_STATUS[kind], '목표에 맞지 않는 상태 코드')
@@ -247,8 +250,11 @@ def verify_goal_receipt(kind: str, goal: ChoiceGoal | AuditGoal | TaskGoal | Sch
     elif kind == 'sqlite_table_audit':
         _check(type(goal) is SqliteTableGoal, 'SQLite 원본 계약 오류')
         checks, diag = verify_sqlite_receipt(goal, report)
-    else:
+    elif kind == 'csv_relationships':
         _check(type(goal) is RelationshipGoal, 'CSV 상관관계 원본 계약 오류')
         checks, diag = verify_relationship_receipt(goal, report)
+    else:
+        _check(type(goal) is EvidenceSearchGoal, '로컬 증거 검색 계약 오류')
+        checks, diag = verify_search_receipt(goal, report)
     return {'version': GUARD_VERSION, 'status': 'PASS', 'checks': checks,
             'diagnostics': diag, 'policy': 'READ_ONLY;NO_REMOTE;NO_AUTOMATIC_REPAIR'}

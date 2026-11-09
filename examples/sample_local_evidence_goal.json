@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "kind": "local_evidence_search",
+  "goal": "Find explicit synthetic risk mitigation evidence",
+  "sources": ["sample_evidence_notes.md", "sample_evidence_policy.txt"],
+  "terms": ["risk", "mitigation"],
+  "max_results": 5,
+  "include_snippets": false
+}
