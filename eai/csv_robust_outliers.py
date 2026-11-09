@@ -138,7 +138,8 @@ def execute_outlier_goal(goal: OutlierGoal) -> dict:
                 spread = median([abs(v - center) for v in values])
                 count = 0
                 if spread > 0:
-                    for index, value in valid:
+                    for index, row_values in valid:
+                        value = row_values[col_no]
                         if abs(value - center) / spread > goal.threshold:
                             count += 1
                             if len(flags) < 10:
