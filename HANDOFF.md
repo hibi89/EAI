@@ -1,3 +1,18 @@
+# EAI P16–P17 최신 인수인계 — 2026-11-10 KST
+
+1. **목표·용도·확정 요구·기술:** 독립 local-first EAI의 실제 CPU 사고/자료 검증 능력을 확장. 선택적 Ollama/Qwen은 INPUT 분류만, 계산·근거 검증·보고는 EAI CPU 담당. Python>=3.11 stdlib, 파일 읽기 전용, 5MiB/20,000레코드/32컬럼/4,096셀 문자 상한, 영수증 검증, 무단 외부전송·결제 없음.
+2. **완료 기능·변경·결정 근거:** P16 `csv_quality`(required/unique_by/numeric_rules 규칙을 고정 계약으로 입력, row-based 단독 검사와 column-based 독립 receipt validator, 파일 SHA/위반건수·레코드 인덱스만 표시). P17 `csv_schema_drift`(2개 로컬 CSV 열 추가/삭제/순서·numeric/text/mixed/empty 추정 유형과 필드 결측 카운트, 독립 DictReader 재검증). 단순 CSV profiler/헤더만 비교하는 대안보다 원본 기반 이중 검증을 선택. 여섯 typed goal + P12 batch/P14 DAG/P15 builder/P13 doctor 10체크 지원. 실제 원본 값/고유 키 미노출.
+3. **테스트 명령·성공/실패·검증/미검증:** `python -m compileall -q eai tests`, `python -m unittest discover -s tests -v`, `python -m eai solve-goal examples/sample_csv_quality_goal.json --json`, `python -m eai solve-goal examples/sample_csv_schema_drift_goal.json --json`. GitHub Linux Python3.11 P16 `954b72737338082d1d5ce5c327f5be29c96732ef` [run 42679425913](https://github.com/hibi89/EAI/actions/runs/42679425913) **348/348 PASS** (+28); P17 최종 코드+테스트 SHA **`9b0b7438cd0e8756e87c7ca4d03d23a731773d91`** [run 42680542935](https://github.com/hibi89/EAI/actions/runs/42680542935) **375/375 PASS, 0 FAIL**, Syntax check·Offline unit·CLI smoke 모두 success (+27). 두 샘플은 의도적으로 CONFLICT/exit2; doctor 10/10 PASS. Windows/실 LLM/실 고객 데이터 미검증.
+4. **완료/진행/대기/차단 상태:** P16/P17 구현+모든 회귀·Linux CI DONE. 제품 최종상품 완성률 **41→43%(+2%p 잠정)**, 사용자 목표 50%까지 **7%p**. 실사용 Windows/패키징/모델 접속/상업권 판매 HOLD.
+5. **오류 근거·원인·시도·재시도 금지·대안:** P17 최초 SHA `eb522c34b4890198e3cb23196f32e1abcd56a946` [run 42680350342](https://github.com/hibi89/EAI/actions/runs/42680350342)는 375 중 373 PASS/2 FAIL: P16 doctor 최신 10개 체크를 기존 9개로 단언한 시험 및 실제 입력 변조 차단 문구('input changed during scan')가 테스트가 기대한 문구와 달랐음. 소스 기능 실패가 아니라 두 테스트 문자열 단언만 수정, 후속 최종 375 PASS. 같은 실패 무의미 반복 금지; GitHub 비공개 소스 컨테이너 직접 clone/Windows QA 불가 시 CI 근거로 제한 표기.
+6. **저장소·브랜치·SHA·주요 경로:** `hibi89/EAI@feature/local-first-mvp`; 최종 실행 검증 소스 SHA **`9b0b7438cd0e8756e87c7ca4d03d23a731773d91`**, main `09f3f8be2dab2d1aa8096c0d6d439f8fc6e48960` unchanged. P16 `eai/csv_quality.py`, `eai/quality_receipt.py`, `tests/test_csv_quality_p16.py`; P17 `eai/csv_schema_drift.py`, `eai/drift_receipt.py`, `tests/test_csv_schema_drift_p17.py`; `eai/goal_dispatch.py`, `eai/receipt_guard.py`, `eai/offline_doctor.py`, `examples/sample_csv_quality_goal.json`, `examples/sample_csv_schema_drift_goal.json`.
+7. **Production·Vercel·환경·실행:** Local Python CLI만; Production URL/Vercel **미적용**. CI Ubuntu Python3.11 exact-source verified; owner Windows10/11, real Ollama/Qwen CPU/GPU, SearXNG/API 외부 접속 미실행·미검증. 샘플 점검은 P13 doctor `python -m eai doctor --json` (10 probes).
+8. **원본·백업·인증·수정 금지:** owner CSV/SQLite/.env, 토큰, 모델 가중치 GitHub 미업로드. Git 커밋 SHA가 이전 복구 기준; main/HAE/LA 및 다른 상품/해커톤, 배포, 권한, 과금 설정 미수정. SHA256/합성 샘플만, 사용자 실제 데이터는 로컬에서만.
+9. **다음 작업 우선순위·완료기준·승인:** native Windows 한 번에 `python -m unittest discover -s tests -q` 및 `python -m eai doctor --json`, 실제 사용자 지정 CSV를 (외부전송 없이) 검증, Windows CMD 인코딩/파일 경로 검증. 후속 실제 가치 중심은 로컬 CSV 다중 파일 규칙 진단/SQL 안전 조회/선택 모델 입력 연결 등 기능 확장. 유료 결제, 외부 민감 자료 업로드, 권한·보안 변경/원본 수정/공개 배포 전 승인 필수. 50% 목표는 **미달**.
+10. **2026-11-10 KST 갱신·확인 시점·문서 기준 커밋:** GitHub exact SHA `9b0b7438cd0e8756e87c7ca4d03d23a731773d91`, Actions 42680542935 Job 로그 `Ran 375 tests ... OK`, compileall/CLI smoke 성공 확인. 후속 docs-only HEAD는 테스트 소스 SHA와 별도 원격 조회 필요. Windows/customer/production/모델 실측 없음.
+
+---
+
 # EAI P15 최신 인수인계 — 2026-11-10 KST
 
 1. **목표/확정 요구/기술**: 사용자 로컬 CPU EAI 독립 작업기; 입력을 선택적으로 Qwen/Ollama로 해석하지만 최종 계산·검증·출력은 EAI만 담당. Python3.11+ stdlib, SQLite와 CPU, 수동 허용 범위 내 read-only, no paid API/cloud transfer.

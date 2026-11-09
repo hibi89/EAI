@@ -25,3 +25,8 @@ Tests: `python -m unittest discover -s tests -v`; `python -m compileall -q eai t
 
 ## Unverified / next gates
 Real Windows 10/11, owner-provided customer CSV, actual Qwen/Ollama, local SearXNG, GUI, field semantics and commercial release remain unverified. All input constraints are owner-entered and must be validated against domain expectations.
+
+## P16 CI acceptance (2026-11-10 KST)
+
+- Initial final P16 code/test SHA `954b72737338082d1d5ce5c327f5be29c96732ef` [Actions 42679425913](https://github.com/hibi89/EAI/actions/runs/42679425913) **348/348 PASS**; final subsequent P17 code/test SHA `9b0b7438cd0e8756e87c7ca4d03d23a731773d91` [Actions 42680542935](https://github.com/hibi89/EAI/actions/runs/42680542935) **375/375 PASS**, same P16 28 tests retained and full regression green. Doctor checks 9 then 10 after P17.
+- Customer CSV semantics and Windows native execution remain unverified, and sample values are synthetic. No general truth claims.

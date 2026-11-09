@@ -1,5 +1,23 @@
 # EAI — Elice Artificial Intelligence
 
+## Latest exact-source verification — 2026-11-10 KST
+
+**Estimated whole-product completion: 43% / 100% (retail RELEASE HOLD).** New P16/P17 independent typed CPU skills: CSV quality rule audit and two-file schema drift detection. Both read only local CSV, bound each to <=5MiB / <=20,000 data records, preserve original SHA256 and use a separate independent receipt re-evaluation.
+
+```powershell
+python -m eai solve-goal examples/sample_csv_quality_goal.json --json
+python -m eai solve-goal examples/sample_csv_schema_drift_goal.json --json
+python -m eai doctor --json
+python -m unittest discover -s tests -v
+```
+
+The two synthetic sample goals deliberately return `CONFLICT` (CLI exit code 2), which does **not** mean the CLI broke; it proves the rules detected supplied data discrepancies. Doctor now performs 10 synthetic checks. Linux Python3.11 exact feature+test SHA `9b0b7438cd0e8756e87c7ca4d03d23a731773d91`: [Actions 42680542935](https://github.com/hibi89/EAI/actions/runs/42680542935) **375/375 PASS, 0 FAIL, syntax and CLI smoke PASS**. Real Windows, customer datasets, installed Ollama/Qwen/SearXNG, general AI and commercial launch still unverified. This is not an AI general intelligence claim.
+
+Earlier 41%/320-pass and 42%/348-pass descriptions below are historical snapshots.
+
+---
+
+
 ## Latest source-verified acceptance — 2026-11-10 KST
 
 **Whole product completion provisional: 41% / 100%.** P15 adds **read-only manifest generator** to make P12/P14 usable without manually calculating SHA256:

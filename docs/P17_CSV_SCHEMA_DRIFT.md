@@ -21,3 +21,9 @@ Expected sample status CONFLICT and exit 2. `python -m unittest discover -s test
 
 ## Caveats
 Inferred types are derived only from currently observed values; missing or synthetic data can mislead. Actual Windows10/11, real customer files, Qwen/Ollama, SearXNG and commercial release remain unverified.
+
+## P17 CI acceptance (2026-11-10 KST)
+
+- Final code+tests SHA `9b0b7438cd0e8756e87c7ca4d03d23a731773d91` [Actions 42680542935](https://github.com/hibi89/EAI/actions/runs/42680542935) Ubuntu Python3.11 **375/375 PASS, 0 FAIL**, syntax+CLI smoke PASS. P17 27 new tests including two-source SHA, true status calculation, real batch/pipeline review gating, forged report, tampering and doctor 10 checks.
+- Intermediate SHA `eb522c34b4890198e3cb23196f32e1abcd56a946` had 2 obsolete expectation failures (375 suite), corrected without changing the feature engine.
+- Windows native / real user files, semantic schema contracts and commercial distribution still unverified.

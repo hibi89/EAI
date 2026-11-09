@@ -24,3 +24,8 @@ Run tests: python -m compileall -q eai tests; python -m unittest discover -s tes
 - Code/test SHA `bbd01576eed2573ffeab5a70eec0662fcb40bad0`: [Actions 42675220982](https://github.com/hibi89/EAI/actions/runs/42675220982) Linux Python3.11 301/301 PASS, Syntax check + CLI smoke PASS.
 - Offline doctor checks **8** synthetic operations (Python, SQLite :memory:, four typed goals, batch, DAG pipeline). Its acceptance now rejects a valid-but-unexpected status and checks the pipeline's verified output. Related test module **14 tests PASS**.
 - Native Windows .cmd/CPU hardware and user-private data still NOT VERIFIED.
+
+## Updated doctor coverage after P17 (2026-11-10 KST)
+
+- `python -m eai doctor --json` now runs **10** synthetic checks: Python, SQLite-memory, six independently verified typed goals, P12 batch, P14 pipeline. Checks require exact expected statuses; synthetic quality and schema drift are deliberately CONFLICT and still count as diagnostic PASS if verified.
+- Linux Python3.11 [375/375 exact-source Actions 42680542935](https://github.com/hibi89/EAI/actions/runs/42680542935) successful. Native Windows launcher remains unverified.

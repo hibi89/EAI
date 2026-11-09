@@ -1,3 +1,12 @@
+## P16/P17 validated acceptance — 2026-11-10 KST
+
+- **Test source gate PASS:** `9b0b7438cd0e8756e87c7ca4d03d23a731773d91` [GitHub Actions 42680542935](https://github.com/hibi89/EAI/actions/runs/42680542935) Linux Python3.11 compileall PASS, **375/375 unittest PASS/0 FAIL**, CLI smoke PASS. P16 generated 28 new tests, P17 generated 27 new tests; batch/pipeline gating, forged evidence, SHA source changes, size/row/column caps, CP949, status codes, synthetic doctor included.
+- **CLI expected sample result:** `csv_quality` and `csv_schema_drift` checked-in fixtures show `CONFLICT`, therefore `solve-goal ... --json` returns exit **2 by design**; `doctor --json` requires their expected CONFLICT and returns exit **0** when all **10/10** checks pass.
+- **Previous intermediate P17 CI:** SHA `eb522c34b4890198e3cb23196f32e1abcd56a946` two obsolete test assertions failed (375 total, 373 PASS). Follow-up SHA above contains test-only updates and proved total 375 PASS.
+- **Still UNVERIFIED:** actual Windows/owner hardware, customer data, live Qwen/Ollama, SearXNG, permissions/business workflow, installation, commercial/release rights. **Product READY/HOLD: HOLD**.
+
+---
+
 ## Latest exact-source gate — P15 2026-11-10 KST
 
 - **Gate S PASS:** `c35269299f0cdfaa42c51eb8351db50b9e7ec93d`, [GitHub Actions #42676269100](https://github.com/hibi89/EAI/actions/runs/42676269100); Linux Python3.11 **320/320 unittest PASS, 0 FAIL**; syntax, CLI smoke PASS. P15 19 integration/regression tests include CLI output and explicit saved-manifest execution via batch/pipeline.
