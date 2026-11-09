@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "kind": "resource_schedule",
+  "goal": "Offline synthetic shared-resource plan",
+  "horizon_hours": 8,
+  "capacities": {"cpu": 1, "qa": 1},
+  "tasks": [
+    {"id":"ingest", "hours":2, "requires":[], "resources":{"cpu":1}},
+    {"id":"prepare", "hours":2, "requires":[], "resources":{"cpu":1}},
+    {"id":"verify", "hours":1, "requires":["ingest","prepare"], "resources":{"qa":1}}
+  ]
+}
