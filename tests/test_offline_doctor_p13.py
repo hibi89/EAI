@@ -15,7 +15,7 @@ class OfflineDoctorTests(unittest.TestCase):
         report=run_offline_doctor()
         self.assertEqual(report['status'],'PASS',report)
         self.assertEqual(report['summary'],{'passed':8,'failed':0,'total':8})
-        self.assertEqual(report['checks'][-1]['name'],'goal_batch')
+        self.assertEqual(report['checks'][-1]['name'],'goal_pipeline')
         self.assertEqual(report['checks'][-1]['observed'],'COMPLETE')
 
     def test_report_avoids_home_and_customer_paths(self):
@@ -45,7 +45,7 @@ class OfflineDoctorTests(unittest.TestCase):
                    return_value={'status':'COMPLETE','verification':{'status':'FAIL'}}):
             result=run_offline_doctor()
         self.assertEqual(result['summary']['failed'],1)
-        self.assertEqual(result['checks'][-1]['error'],'ValueError')
+        self.assertEqual(next(x for x in result['checks'] if x['name']=='goal_batch')['error'], 'ValueError')
 
     def test_sqlite_failure_is_isolated(self):
         with patch('eai.offline_doctor.sqlite3.connect',
