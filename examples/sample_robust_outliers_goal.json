@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "kind": "csv_robust_outliers",
+  "goal": "Find anomalies in synthetic metrics",
+  "source": "sample_robust_metrics.csv",
+  "encoding": "utf-8-sig",
+  "columns": ["revenue", "expenses"],
+  "min_rows": 5,
+  "threshold": "3"
+}

@@ -14,10 +14,11 @@ from .sqlite_table_audit import validate_sqlite_goal, execute_sqlite_goal, rende
 from .csv_relationships import validate_relationship_goal, execute_relationship_goal, render_relationships
 from .local_evidence_search import validate_search_goal, execute_search_goal, render_search
 from .resource_schedule import validate_resource_goal, execute_resource_goal, render_resource_plan
+from .csv_robust_outliers import validate_outlier_goal, execute_outlier_goal, render_outliers
 
 MAX_GOAL_BYTES = 64 * 1024
 ROUTER_VERSION = 'eai.goal.dispatch.v1'
-ROUTED_KINDS = frozenset({'choose_options', 'csv_audit', 'plan_tasks', 'schedule_tasks', 'csv_quality', 'csv_schema_drift', 'sqlite_table_audit', 'csv_relationships', 'local_evidence_search', 'resource_schedule'})
+ROUTED_KINDS = frozenset({'choose_options', 'csv_audit', 'plan_tasks', 'schedule_tasks', 'csv_quality', 'csv_schema_drift', 'sqlite_table_audit', 'csv_relationships', 'local_evidence_search', 'resource_schedule', 'csv_robust_outliers'})
 
 
 def _read_spec(path: Path) -> tuple[dict, str]:
@@ -112,10 +113,14 @@ def execute_goal_document(path: str | Path) -> dict:
         goal = validate_search_goal(data, source_path)
         result = execute_search_goal(goal)
         skill_id = 'local.evidence_search.v1'
-    else:
+    elif kind == 'resource_schedule':
         goal = validate_resource_goal(data)
         result = execute_resource_goal(goal)
         skill_id = 'task.resource_schedule.v1'
+    else:
+        goal = validate_outlier_goal(data, source_path)
+        result = execute_outlier_goal(goal)
+        skill_id = 'csv.robust_outliers.v1'
     if not isinstance(result, dict) or type(result.get('status')) is not str:
         raise ValueError('solver did not produce a valid decision receipt')
     # Detect a spec changed on disk during the original decision; no file writes.
@@ -133,7 +138,7 @@ def execute_goal_document(path: str | Path) -> dict:
             {'step': 'verify_goal_document', 'skill': 'goal.sha256.v1', 'status': 'PASS'},
         ],
         'result': result,
-        'scope': ('정해진 열 도메인 목표만 CPU에서 처리합니다. 사용자 제공 숫자와 원본 데이터의 '
+        'scope': ('정해진 열한 도메인 목표만 CPU에서 처리합니다. 사용자 제공 숫자와 원본 데이터의 '
                   '실세계 진실성이나 작성자의 신뢰성은 검증하지 않습니다.'),
     }
 
@@ -164,8 +169,10 @@ def render_goal_document(report: dict) -> str:
         lines.append(render_relationships(result))
     elif report['kind'] == 'local_evidence_search':
         lines.append(render_search(result))
-    else:
+    elif report['kind'] == 'resource_schedule':
         lines.append(render_resource_plan(result))
+    else:
+        lines.append(render_outliers(result))
     diag = report['verification']['diagnostics']
     if diag['type'] != 'NONE':
         lines.append('추가 확인 필요: ' + diag['type'])

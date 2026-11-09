@@ -25,6 +25,8 @@ from .local_evidence_search import EvidenceSearchGoal
 from .evidence_search_receipt import verify_search_receipt
 from .resource_schedule import ResourceGoal
 from .resource_schedule_receipt import verify_resource_receipt
+from .csv_robust_outliers import OutlierGoal
+from .outlier_receipt import verify_outlier_receipt
 
 GUARD_VERSION = 'eai.receipt.guard.v1'
 ALLOWED_STATUS = {
@@ -38,6 +40,7 @@ ALLOWED_STATUS = {
     'csv_relationships': frozenset({'AGREE', 'CONFLICT', 'UNAVAILABLE'}),
     'local_evidence_search': frozenset({'AGREE', 'UNAVAILABLE'}),
     'resource_schedule': frozenset({'DECIDED', 'UNAVAILABLE'}),
+    'csv_robust_outliers': frozenset({'AGREE', 'CONFLICT', 'UNAVAILABLE'}),
 }
 MAX_DIAGNOSTIC_OPTIONS = 12
 
@@ -228,7 +231,7 @@ def _verify_csv(goal: AuditGoal, report: dict) -> tuple[list[str], dict]:
     return ['plan_version','strategy','provenance','skills','status'],diag
 
 
-def verify_goal_receipt(kind: str, goal: ChoiceGoal | AuditGoal | TaskGoal | ScheduleGoal | QualityGoal | DriftGoal | SqliteTableGoal | RelationshipGoal | EvidenceSearchGoal | ResourceGoal, report: object) -> dict:
+def verify_goal_receipt(kind: str, goal: ChoiceGoal | AuditGoal | TaskGoal | ScheduleGoal | QualityGoal | DriftGoal | SqliteTableGoal | RelationshipGoal | EvidenceSearchGoal | ResourceGoal | OutlierGoal, report: object) -> dict:
     """Fail closed on inconsistent receipt; do not silently retry with weaker rules."""
     _check(kind in ALLOWED_STATUS and type(report) is dict, '지원하지 않는 판정 영수증')
     _check(report.get('status') in ALLOWED_STATUS[kind], '목표에 맞지 않는 상태 코드')
@@ -259,8 +262,11 @@ def verify_goal_receipt(kind: str, goal: ChoiceGoal | AuditGoal | TaskGoal | Sch
     elif kind == 'local_evidence_search':
         _check(type(goal) is EvidenceSearchGoal, '로컬 증거 검색 계약 오류')
         checks, diag = verify_search_receipt(goal, report)
-    else:
+    elif kind == 'resource_schedule':
         _check(type(goal) is ResourceGoal, '자원 제약 일정 계약 오류')
         checks, diag = verify_resource_receipt(goal, report)
+    else:
+        _check(type(goal) is OutlierGoal, '강건 이상치 원본 계약 오류')
+        checks, diag = verify_outlier_receipt(goal, report)
     return {'version': GUARD_VERSION, 'status': 'PASS', 'checks': checks,
             'diagnostics': diag, 'policy': 'READ_ONLY;NO_REMOTE;NO_AUTOMATIC_REPAIR'}
