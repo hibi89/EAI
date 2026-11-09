@@ -27,3 +27,7 @@ Run `python -m eai solve-goal examples/sample_csv_relationships_goal.json --json
 Feature + full test evidence must be checked at exact GitHub commit: `python -m compileall -q eai tests`; `python -m unittest discover -s tests -v`; `python -m eai solve-goal examples/sample_csv_relationships_goal.json --json` (expected AGREE / exit 0); `python -m eai doctor --json` (existing 10 bundled probes). P19 dedicated tests use synthesized temporary files; no customer file is checked in.
 
 Windows10/11 native, installed Qwen/Ollama, SearXNG, real customer source, packaging and commercial release **not yet verified**. Retail RELEASE HOLD.
+
+## Latest exact-source acceptance
+
+At `d376a4dda5595385bd6a2f189b5e20e6090e4b27` [GitHub Actions 42691179558](https://github.com/hibi89/EAI/actions/runs/42691179558) Linux Python3.11 compileall PASS; full **417/417 unittest PASS / 0 FAIL** (+22 P19 tests); CLI version/health PASS. The bundled P19 CLI sample is checked into the repository but is not separately executed in the workflow smoke step; synthetic temporary P19 CLI scenarios are tested in the unittest suite. Initial P19 test assertions failed twice at `c01d9f4` and were corrected without changing the numeric engine. Windows/Qwen/SearXNG/customer/retail tests remain unverified.

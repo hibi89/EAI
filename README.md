@@ -1,3 +1,17 @@
+## Latest verified feature — P19 CPU relationships (2026-11-10 KST)
+
+**Estimated whole-product completion: 45% / 100%; retail RELEASE HOLD.** P19 adds the eighth independent typed CPU goal `csv_relationships`: bounded local 2-6 numeric CSV columns, complete-case Pearson associations and a separate independent source-backed evidence guard, with SHA256. Sample:
+
+```powershell
+python -m eai solve-goal examples/sample_csv_relationships_goal.json --json
+python -m eai doctor --json
+python -m unittest discover -s tests -q
+```
+
+The synthetic example is expected to report AGREE (exit 0), +1 and -1 correlations; see [P19 contract](docs/P19_CPU_RELATIONSHIP_DISCOVERY.md). Real customer data, row values and other sources are not uploaded. Exact feature/test SHA `d376a4dda5595385bd6a2f189b5e20e6090e4b27` [CI 42691179558](https://github.com/hibi89/EAI/actions/runs/42691179558) Linux Python3.11 **417/417 PASS / 0 FAIL, syntax and CLI smoke PASS** (+22 P19 tests); earlier failed P19 CI was corrected by test expectations only. Offline doctor still has 10 existing checks. Windows native, live Qwen/Ollama, SearXNG, commercial validation/packaging/production remain unverified.
+
+---
+
 ## Current P18 exact-source verification — 2026-11-10 KST
 
 **Provisional whole-product completion: 44% (RELEASE HOLD).** P18 adds the seventh independently verified CPU goal `sqlite_table_audit`: owner-selected local SQLite table, missing required values and duplicate keys, SHA-256 + independent guarded receipt. Never runs owner-provided SQL or emits row values. P12 batch/P14 DAG review-gating is supported.

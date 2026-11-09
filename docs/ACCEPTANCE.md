@@ -1,3 +1,11 @@
+## P19 exact-source gate — 2026-11-10 KST
+
+- Feature+test SHA **`d376a4dda5595385bd6a2f189b5e20e6090e4b27`** [GitHub Actions 42691179558](https://github.com/hibi89/EAI/actions/runs/42691179558) **completed/success**, Python3.11 Ubuntu: `python -m compileall -q eai tests` PASS, `python -m unittest discover -s tests -v` **417/417 PASS, 0 FAIL/0 SKIP**, CLI `python -m eai --version` and `health` PASS. Includes 22 new P19 tests with actual temporary CSV, strong +/-/zero associations, high precision, incomplete data, no-causation warning, raw-value non-disclosure, SHA/tamper, forged receipts, source size/row limits, CP949/BOM, CLI status codes, P12 batch and P14 dependent HOLD. Doctor 10 legacy checks covered in full unit suite; no dedicated P19 doctor sample added.
+- First source SHA `c01d9f432aa261cd7dd00ad3d288de79dc3fa06c` [Actions 42690998979](https://github.com/hibi89/EAI/actions/runs/42690998979) **417 executed / 2 FAIL** caused by incorrect test expectation for nonlinear synthetic x-y correlation (0.980609, not 1.0), and checking zero-variance y-z instead of x-z. Feature solver + verifier unchanged; updated expectations passed full rerun at SHA above.
+- Independent CPU result is descriptive **Pearson correlation only**, no significance/causality/forecasting, and no real user workload or native Windows evidence. Estimated total product 45%; retail release HOLD, Windows/Qwen/Ollama/SearXNG/customer/production unverified.
+
+---
+
 ## P18 exact-source acceptance — 2026-11-10 KST
 
 - GitHub `feature/local-first-mvp` feature+tests SHA **`ef220a017c3f7a14d20aaadfdbcdb40bd3feec28`**, [Actions #42688535530](https://github.com/hibi89/EAI/actions/runs/42688535530) **completed/success** at Linux Python 3.11: compileall PASS, **395/395 unittest PASS/0 FAIL/0 SKIP**, CLI smoke PASS. Previous P17 baseline 375/375 PASS. P18 adds 20 targeted synthetic SQLite tests (DB unchanged, source/hash tamper rejection, duplicate/null and empty, read-only/authorizer-bound schema, path escape, 20K row guard, CLI 0/1/2/3, batch & DAG block).

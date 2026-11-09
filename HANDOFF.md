@@ -1,3 +1,18 @@
+# EAI P19 verified handoff — 2026-11-10 KST
+
+1. **목표·용도·요구·기술:** Qwen은 선택적 INPUT 파싱 전용, CPU EAI가 독자적으로 분석·판정·검증 소유. P19 `csv_relationships` 여덟 번째 엄격한 타입 목표. Python3.11 stdlib/Decimal, 로컬 원본 읽기 전용, 비인가 API/임의 코드/원본 수정 금지.
+2. **완료 기능·설계 판단:** A 사용자가 임의 Python/SQL 수식을 제출하는 통계 엔진 vs B 2~6개 명시 숫자 열의 고정 Pearson 계산·독립 수학 재검증 중 B 선택 (권한·비용·보안·검증 비용 최소화). 원본 5MiB/20,000행/32열, 완전 관측행만 계산, 결측/비숫자 CONFLICT, 표본 부족/상수 열 UNAVAILABLE, 계산 가능 AGREE. 소수 여섯 자리/방향 라벨, 셀값 미출력, source SHA-256. P12 batch/P14 dependency gate/P15 매니페스트 호환. 10개 P13 doctor 기존 체크 유지.
+3. **테스트 명령·PASS/FAIL/미검증:** `python -m compileall -q eai tests`, `python -m unittest discover -s tests -v`, `python -m eai solve-goal examples/sample_csv_relationships_goal.json --json`, `python -m eai doctor --json`. 정확 code/test SHA **`d376a4dda5595385bd6a2f189b5e20e6090e4b27`** [Actions 42691179558](https://github.com/hibi89/EAI/actions/runs/42691179558) Linux Python3.11 전체 **417 PASS/0 FAIL/0 SKIP**, syntax check·CLI smoke PASS, 신규 22개 P19 독립 CPU/가드/통합 테스트. 실제 사용자 Windows10/11, local Qwen/Ollama, SearXNG, 고객 dataset 검증 없음. 샘플 CLI 자체는 이번 CI smoke step에서 직접 실행되지 않았으므로 그 점은 구분.
+4. **완료·진행·대기·차단:** P19 기능·회귀·원격 CI 완료. 최종상품 잠정 **44→45%(+1%p)**, 목표 50%까지 5%p. Customer/Windows/release 검증 HOLD; 범용 AI 완성 주장 불가.
+5. **오류 근거·원인·재시도·대안:** 최초 SHA `c01d9f432aa261cd7dd00ad3d288de79dc3fa06c` [Actions 42690998979](https://github.com/hibi89/EAI/actions/runs/42690998979)는 417 중 2 FAIL: 테스트 입력 y 값의 비직선관계를 놓치고 r=1로 단정(실제 0.980609); 상수 y 열을 가진 y-z 쌍을 x-z로 착각. 오직 tests/test_csv_relationships_p19.py 두 단언 수정, 기능 코드 불변, 이후 full CI PASS. 같은 구형 테스트 기대값 반복 금지. 로그/검증 없는 재배포 금지.
+6. **저장소/브랜치/SHAs/주요 경로:** `hibi89/EAI@feature/local-first-mvp`, 검증 소스 SHA `d376a4dda5595385bd6a2f189b5e20e6090e4b27`, main 보존. 신규 `eai/csv_relationships.py`, `eai/relationship_receipt.py`, `tests/test_csv_relationships_p19.py`, `examples/sample_relationships.csv`, `examples/sample_csv_relationships_goal.json`, `docs/P19_CPU_RELATIONSHIP_DISCOVERY.md`; 연동 `eai/goal_dispatch.py`, `eai/receipt_guard.py`, `eai/__main__.py`.
+7. **Production·Vercel·실행 환경:** local CLI only; Vercel/Production URL **미적용**. Linux Python3.11 CI 417 PASS. 실제 배포/Windows 실기기/사용자 환경 미검증. 샘플 synthetic는 AGREE 예상, 결과 출력은 상관계수이지 예측·인과/통계적 유의성 증거 아님.
+8. **원본 위치·백업·인증·수정 금지:** 직전 기능/문서 HEAD `de2d02b1cf28310b2b234c10b9aceff5181b98aa` 및 현재 정확 검증 SHA로 복구 가능. 원본 고객 데이터, 인증 토큰/.env, 모델 가중치 GitHub 미업로드. main, HAE/LA, 타 제품, KIC/PayPal/UGREEN, 배포/권한/과금 변경 없음.
+9. **다음 작업 우선순위·승인:** P20부터 실용적인 EAI 독립 CPU 문제 해결 도메인을 추가. 동일 CSV 상관 분석 코드만 증식시키지 말고 근거·사용성·테스트 매트릭스 평가. Windows 실기기·로컬 Qwen·설치·고객 예제는 맨 마지막에 일괄 검증; 외부 데이터 전송/유료/원본 변경/보안 권한/출시 전 승인.
+10. **기준 일시 KST·확인 범위·문서 commit:** 2026-11-10 KST, GitHub Actions 42691179558 Job 129410996216 `Ran 417 tests in 8.292s ... OK`, Syntax PASS, CLI smoke PASS, exact test SHA `d376a4dda5595385bd6a2f189b5e20e6090e4b27`. 문서-only commit HEAD는 GitHub push 후 별도로 확인; 이 기능 SHA가 소스/테스트 검증 기준. 외부 서비스·Windows/상용 미검증.
+
+---
+
 # EAI P18 verified handoff — 2026-11-10 KST
 
 1. **목표·확정 요구·기술:** CPU 독립 사고·로컬 데이터 처리 확장. 새로운 일곱 번째 `sqlite_table_audit` 타입은 Python 3.11 stdlib/sqlite3, read-only local-first, 실데이터 유출·임의 SQL 금지, Qwen은 입력 분류 선택 사항에 한함.
