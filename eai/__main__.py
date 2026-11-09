@@ -16,6 +16,7 @@ from .plan_engine import AuditGoal, CPUPlanExecutor, render_plan_report
 from .goal_dispatch import execute_goal_document, render_goal_document
 from .goal_batch import execute_batch_document, render_batch
 from .offline_doctor import run_offline_doctor, render_doctor
+from .goal_pipeline import execute_pipeline_document, render_pipeline
 from .runner import EAIRunner
 from .storage import Store
 from .tools import SearxNGSearch
@@ -82,6 +83,9 @@ def main(argv: list[str] | None = None) -> int:
     doctor_cmd = sub.add_parser('doctor', help='no-network self-test of bundled typed goals')
     doctor_cmd.add_argument('--root', help='optional installed project root to inspect')
     doctor_cmd.add_argument('--json', action='store_true', help='structured offline evidence')
+    pipeline_cmd = sub.add_parser('pipeline-goals', help='bounded dependency-gated offline goals')
+    pipeline_cmd.add_argument('manifest', help='versioned goal pipeline manifest')
+    pipeline_cmd.add_argument('--json', action='store_true', help='structured verified pipeline')
     args = p.parse_args(argv)
     if args.command == 'health':
         print('EAI independent CPU-first engine v0.1')
@@ -91,6 +95,15 @@ def main(argv: list[str] | None = None) -> int:
         print('SearXNG configured:', bool(args.searxng_url))
         print('SQLite:', args.db)
         return 0
+    if args.command == 'pipeline-goals':
+        try:
+            output=execute_pipeline_document(args.manifest)
+            print(json.dumps(output,ensure_ascii=False,indent=2) if args.json
+                  else render_pipeline(output))
+            return {'COMPLETE':0,'REVIEW':2,'PARTIAL':3,'FAILED':1}[output['status']]
+        except (ValueError,OSError,UnicodeError,csv.Error,TimeoutError) as exc:
+            print('EAI PIPELINE ERROR:',type(exc).__name__,str(exc),file=sys.stderr)
+            return 1
     if args.command == 'doctor':
         report = run_offline_doctor(args.root)
         print(json.dumps(report, ensure_ascii=False, indent=2) if args.json
