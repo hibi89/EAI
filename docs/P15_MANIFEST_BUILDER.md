@@ -26,3 +26,8 @@ Then:
 `python -m eai pipeline-goals examples/my_pipeline.json --json`
 
 Run full test suite: `python -m unittest discover -s tests -v`. Real Windows/PowerShell redirection, native packaging, live Qwen/Ollama, SearXNG and commercial use remain unverified until separately tested.
+
+## Exact remote acceptance (2026-11-10 KST)
+
+- New manifest builder code/test SHA `c35269299f0cdfaa42c51eb8351db50b9e7ec93d`: [GitHub Actions 42676269100](https://github.com/hibi89/EAI/actions/runs/42676269100) Linux Python3.11 **320/320 PASS, 0 FAIL**, compileall/CLI smoke PASS. 19 P15 tests successfully exercised CLI stdout, explicit temp-directory manifest save, and subsequent P12/P14 real solver execution.
+- Customer Windows10/11, PowerShell native redirection, installed model and commercial readiness remain unverified. This is a documented, read-only utility only.

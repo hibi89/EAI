@@ -1,3 +1,11 @@
+## Latest exact-source gate — P15 2026-11-10 KST
+
+- **Gate S PASS:** `c35269299f0cdfaa42c51eb8351db50b9e7ec93d`, [GitHub Actions #42676269100](https://github.com/hibi89/EAI/actions/runs/42676269100); Linux Python3.11 **320/320 unittest PASS, 0 FAIL**; syntax, CLI smoke PASS. P15 19 integration/regression tests include CLI output and explicit saved-manifest execution via batch/pipeline.
+- **Gate Windows native / installed Qwen / local SearXNG / real customer source / retail release:** NOT VERIFIED and HOLD. A CI green status proves only the tested scope. `make-manifest` itself is stdout-only/read-only.
+- Historical 301/301 CI at P13/P14 SHA `bbd01576eed2573ffeab5a70eec0662fcb40bad0` remains a valid past proof, not the current source SHA.
+
+---
+
 ## Current acceptance gates — 2026-11-10 KST
 
 - **Gate S (CI exact source): PASS** at `bbd01576eed2573ffeab5a70eec0662fcb40bad0`, [Actions #42675220982](https://github.com/hibi89/EAI/actions/runs/42675220982); Linux Python3.11 `compileall` + **301/301 unittest PASS, 0 FAIL, 0 SKIP**, CLI smoke PASS. Includes P13 doctor 8-sample tests and P14 pipeline positive/negative, forged receipt, path/sha checks.

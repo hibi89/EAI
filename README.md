@@ -1,5 +1,23 @@
 # EAI — Elice Artificial Intelligence
 
+## Latest source-verified acceptance — 2026-11-10 KST
+
+**Whole product completion provisional: 41% / 100%.** P15 adds **read-only manifest generator** to make P12/P14 usable without manually calculating SHA256:
+
+```powershell
+python -m eai make-manifest --mode batch --root examples --goal choose=sample_batch_choice.json --goal schedule=sample_batch_schedule.json
+python -m eai make-manifest --mode pipeline --root examples --goal choose=sample_batch_choice.json --goal schedule=sample_batch_schedule.json --requires schedule=choose
+```
+
+Output is JSON on stdout only; user-initiated redirection to a file is required before running `batch-goals` or `pipeline-goals`. The builder does not execute goals or modify files.
+
+Source+tests SHA `c35269299f0cdfaa42c51eb8351db50b9e7ec93d` [GitHub Actions #42676269100](https://github.com/hibi89/EAI/actions/runs/42676269100) Linux Python3.11 **320/320 PASS, compileall/CLI smoke PASS**, including 19 P15 new tests and 301 prior regressions. Native Windows, live Qwen/Ollama, customer data, actual production and distribution are NOT verified; retail release HOLD.
+
+Historical preceding 40% and 301-test notes below remain dated records and must not be read as the latest status.
+
+---
+
+
 ## Current verified development status — 2026-11-10 KST
 
 **Provisional whole-product completion: 40% / 100%.** P0–P14 typed CPU-local engine has four goal types (choice, CSV audit, task portfolio, dependency CPM), SHA256-pinned batch and dependency pipeline, and an 8-check offline doctor. Optional Qwen/Ollama parses INPUT only; there is no GPT-class general agent. Feature+tests SHA `bbd01576eed2573ffeab5a70eec0662fcb40bad0` [GitHub Actions #42675220982](https://github.com/hibi89/EAI/actions/runs/42675220982) **Python3.11 Linux 301 PASS / 0 FAIL; compileall & CLI smoke PASS**.

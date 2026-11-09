@@ -1,3 +1,18 @@
+# EAI P15 최신 인수인계 — 2026-11-10 KST
+
+1. **목표/확정 요구/기술**: 사용자 로컬 CPU EAI 독립 작업기; 입력을 선택적으로 Qwen/Ollama로 해석하지만 최종 계산·검증·출력은 EAI만 담당. Python3.11+ stdlib, SQLite와 CPU, 수동 허용 범위 내 read-only, no paid API/cloud transfer.
+2. **완료 기능/변경/결정 근거**: P0–P14 4종 타입 목표 CPU 추론/CSV 검증/예산 조합/일정 임계경로/해시 고정 배치/검증 의존 DAG/오프라인 doctor. **P15 새 `eai/manifest_builder.py`**, `python -m eai make-manifest --mode batch|pipeline --root examples --goal ID=file.json [--requires child=parent]`를 통해 수동 SHA 작성의 사용성 병목 제거. A 원본/OS를 편집하는 GUI vs B stdout-only 생성기 비교 후 B 선택: 비용·유지보수·무단 쓰기/인증 위험 최소화. 사용자 명시적 stdout 리디렉션만 파일 저장 가능.
+3. **테스트 명령/성공/실패 수/검증 범위**: 정확 코드/테스트 SHA `c35269299f0cdfaa42c51eb8351db50b9e7ec93d` [GitHub Actions #42676269100](https://github.com/hibi89/EAI/actions/runs/42676269100) Linux Python3.11 **320 PASS/0 FAIL**, `compileall -q eai tests`/CLI smoke PASS. P15 19 신규 테스트(매니페스트 실제 배치·파이프라인 실행, checksum·경로탈출·symlink·중복·DAG·실패 안전). P13/P14 32건 유지. Python 테스트 내 CLI subprocess 성공. 실 Windows/실 Qwen/SearXNG 미검증.
+4. **완료/진행/대기/차단·중단점**: P15 구현+테스트+원격 GitHub 검증 완료. 관리상 전체 최종상품 **40→41% (+1%p)**. 크몽 고객 설치/실사용/진정한 범용 AI·제품 패키징/판매는 HOLD. 오늘 50% 목표는 9%p 남음.
+5. **오류 근거·원인·시도·재시도 금지·대안**: P13/P14 구형 SHA의 pre-job Actions FAIL은 후속 Job 완전 실행 301 PASS로 해결되었고, 당시 전체 301 중 2 테스트 assertion index mismatch는 실제 수정됨. P15 신규 소스 SHA `c35269299f0cdfaa42c51eb8351db50b9e7ec93d` CI 320/320 PASS, 신규 오류 없음. 무의미한 CI 반복·Git 이력 강제 변경/권한·유료 청구 변경 금지.
+6. **저장소/브랜치/SHA/주요 경로**: private `hibi89/EAI@feature/local-first-mvp` 검증 소스 SHA `c35269299f0cdfaa42c51eb8351db50b9e7ec93d`, `main@09f3f8be2dab2d1aa8096c0d6d439f8fc6e48960` 보존. P15 `eai/manifest_builder.py`, `tests/test_manifest_builder_p15.py`, `docs/P15_MANIFEST_BUILDER.md`, CLI route `eai/__main__.py`. 기능 백업은 Git history SHA.
+7. **Production URL·프로젝트·실행 명령·환경**: 로컬 CLI, Vercel/Production 미적용. `python -m eai make-manifest --mode pipeline --root examples --goal choose=sample_batch_choice.json --goal schedule=sample_batch_schedule.json --requires schedule=choose` stdout JSON → 명시적 사용자 저장 후 `python -m eai pipeline-goals PATH --json`. 전체 검증 `python -m unittest discover -s tests -v`. GitHub Ubuntu3.11 PASS; Windows owner native unverified.
+8. **원본/백업/인증 관리/수정 금지**: 고객 데이터/토큰/.env/모델 가중치/SQLite는 GitHub 미저장, main/HAE/LA 및 다른 제품 보존. 유료 결제·외부 API 호출·로컬 파일 편집·권한/보안 변경 없음. 별도 사용자 생성 파일 생성 자동화 금지, 명시적인 사용자 stdout 리디렉션만 가능.
+9. **다음 우선순위·완료 기준/승인**: 실제 Windows10/11 CLI+doctor+P15 사용 사례를 한번에 검증. 후속은 CSV 다중 파일 품질/오류복구/로컬 개인 지식 검증과 GUI 편의 중 범용 독립 인지 역량에 더 실용적인 과제를 우선. 실제 고객 data/GPU/Qwen 네트워크 공급자/상용 출시 각각 승인/검증 분리. 50%까지 9%p, 검증 없이 증가 불가.
+10. **2026-11-10 KST 갱신/확인 범위/문서 기준 커밋**: exact source SHA `c35269299f0cdfaa42c51eb8351db50b9e7ec93d` [Actions #42676269100](https://github.com/hibi89/EAI/actions/runs/42676269100)의 Job 로그 **Ran 320 tests ... OK**, 빌드·CLI smoke 검증. 사용자 Windows, 실 Ollama/Qwen, 고객/Production, 권리 미검증. 후속 docs-only SHA 실제 GitHub 확인.
+
+---
+
 # EAI P13/P14 검증 후 최신 HANDOFF — 2026-11-10 KST
 
 1. **목표·용도·확정 요구·기술**: 사용자 로컬에서 입력을 선택적으로 Qwen/Ollama로 분류하되 CPU EAI가 제한된 도메인 계산·검증·출력 소유. Python>=3.11, stdlib/SQLite, 명시적 로컬 목표만 실행, 읽기 전용. 전체 범용 GPT/자율 에이전트라고 주장 금지.
