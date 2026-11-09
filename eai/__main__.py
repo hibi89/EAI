@@ -14,6 +14,7 @@ from .reconcile_csv import reconcile_csv, render_reconciliation
 from .diagnose_csv import diagnose_csv, render_diagnosis
 from .plan_engine import AuditGoal, CPUPlanExecutor, render_plan_report
 from .goal_dispatch import execute_goal_document, render_goal_document
+from .goal_batch import execute_batch_document, render_batch
 from .runner import EAIRunner
 from .storage import Store
 from .tools import SearxNGSearch
@@ -74,6 +75,9 @@ def main(argv: list[str] | None = None) -> int:
     goal_cmd = sub.add_parser('solve-goal', help='CPU goal router: CSV audit, options, task portfolio or critical-path schedule')
     goal_cmd.add_argument('spec', help='explicit local goal JSON file, <=64KiB')
     goal_cmd.add_argument('--json', action='store_true', help='structured receipt and source hash')
+    batch_cmd = sub.add_parser('batch-goals', help='offline SHA256-pinned sequence of 1-6 goals')
+    batch_cmd.add_argument('manifest', help='explicit local batch manifest')
+    batch_cmd.add_argument('--json', action='store_true', help='structured verified batch receipt')
     args = p.parse_args(argv)
     if args.command == 'health':
         print('EAI independent CPU-first engine v0.1')
@@ -83,6 +87,15 @@ def main(argv: list[str] | None = None) -> int:
         print('SearXNG configured:', bool(args.searxng_url))
         print('SQLite:', args.db)
         return 0
+    if args.command == 'batch-goals':
+        try:
+            output = execute_batch_document(args.manifest)
+            print(json.dumps(output, ensure_ascii=False, indent=2) if args.json
+                  else render_batch(output))
+            return {'COMPLETE':0, 'REVIEW':2, 'PARTIAL':3, 'FAILED':1}[output['status']]
+        except (ValueError, OSError, UnicodeError, csv.Error, TimeoutError) as exc:
+            print('EAI BATCH ERROR:', type(exc).__name__, str(exc), file=sys.stderr)
+            return 1
     if args.command == 'solve-goal':
         try:
             report = execute_goal_document(args.spec)

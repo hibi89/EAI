@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "kind": "choose_options",
+  "goal": "Choose offline analysis profile",
+  "criteria": [
+    {
+      "id": "cost",
+      "direction": "min",
+      "unit": "USD",
+      "weight": "1",
+      "score_min": "0",
+      "score_max": "100"
+    }
+  ],
+  "options": [
+    {
+      "id": "local",
+      "values": {
+        "cost": "0"
+      }
+    },
+    {
+      "id": "cloud",
+      "values": {
+        "cost": "20"
+      }
+    }
+  ]
+}

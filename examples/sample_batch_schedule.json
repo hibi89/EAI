@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "kind": "schedule_tasks",
+  "goal": "Offline release sequence",
+  "deadline_hours": "3",
+  "tasks": [
+    {
+      "id": "build",
+      "hours": "2",
+      "requires": []
+    },
+    {
+      "id": "verify",
+      "hours": "1",
+      "requires": [
+        "build"
+      ]
+    }
+  ]
+}

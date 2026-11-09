@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "kind": "goal_batch",
+  "continue_on_error": true,
+  "items": [
+    {
+      "id": "choose",
+      "goal": "sample_batch_choice.json",
+      "sha256": "93d56254c5bfeb2c56bb73cf4eac3a24964e0e95f2623fc059f0040ef004eef5"
+    },
+    {
+      "id": "schedule",
+      "goal": "sample_batch_schedule.json",
+      "sha256": "e11cebae760f1ef6b01d7c6e0398554019e24ce2a87850ed80cecebd321826ba"
+    }
+  ]
+}
