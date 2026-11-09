@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "kind": "plan_tasks",
+  "goal": "Offline portfolio demo",
+  "max_hours": "6",
+  "max_cost": "100",
+  "tasks": [
+    {
+      "id": "backend",
+      "hours": "2",
+      "cost": "10",
+      "value": "5",
+      "requires": []
+    },
+    {
+      "id": "demo",
+      "hours": "4",
+      "cost": "30",
+      "value": "8",
+      "requires": [
+        "backend"
+      ]
+    },
+    {
+      "id": "qa",
+      "hours": "2",
+      "cost": "15",
+      "value": "6",
+      "requires": [
+        "backend"
+      ]
+    },
+    {
+      "id": "docs",
+      "hours": "1",
+      "cost": "0",
+      "value": "3",
+      "requires": []
+    }
+  ]
+}

@@ -71,7 +71,7 @@ def main(argv: list[str] | None = None) -> int:
     solve_cmd.add_argument('--encoding', choices=['utf-8-sig', 'utf-8', 'cp949'], default='utf-8-sig')
     solve_cmd.add_argument('--max-seconds', type=int, default=60, help='maximum elapsed seconds before starting each stage')
     solve_cmd.add_argument('--json', action='store_true', help='structured plan, trace, evidence and fallback')
-    goal_cmd = sub.add_parser('solve-goal', help='P7 strict CPU two-domain goal router: CSV audit or option decision')
+    goal_cmd = sub.add_parser('solve-goal', help='CPU goal router: CSV audit, option decision or bounded task portfolio')
     goal_cmd.add_argument('spec', help='explicit local goal JSON file, <=64KiB')
     goal_cmd.add_argument('--json', action='store_true', help='structured receipt and source hash')
     args = p.parse_args(argv)

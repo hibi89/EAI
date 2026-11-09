@@ -6,10 +6,11 @@ from pathlib import Path
 from .decision_engine import validate_choice_goal, execute_choice_goal
 from .plan_engine import AuditGoal, CPUPlanExecutor
 from .receipt_guard import verify_goal_receipt
+from .task_portfolio import validate_task_goal, execute_task_goal, render_task_plan
 
 MAX_GOAL_BYTES = 64 * 1024
 ROUTER_VERSION = 'eai.goal.dispatch.v1'
-ROUTED_KINDS = frozenset({'choose_options', 'csv_audit'})
+ROUTED_KINDS = frozenset({'choose_options', 'csv_audit', 'plan_tasks'})
 
 
 def _read_spec(path: Path) -> tuple[dict, str]:
@@ -67,15 +68,19 @@ def execute_goal_document(path: str | Path) -> dict:
     data, before = _read_spec(source_path)
     kind = data.get('kind')
     if type(kind) is not str or kind not in ROUTED_KINDS:
-        raise ValueError('unknown goal kind: allowed choose_options or csv_audit')
+        raise ValueError('unknown goal kind: allowed choose_options, csv_audit or plan_tasks')
     if kind == 'choose_options':
         goal = validate_choice_goal(data)
         result = execute_choice_goal(goal)
         skill_id = 'decision.select.v1'
-    else:
+    elif kind == 'csv_audit':
         goal = _compile_csv_goal(source_path, data)
         result = CPUPlanExecutor().execute(goal)
         skill_id = 'csv.audit_plan.v1'
+    else:
+        goal = validate_task_goal(data)
+        result = execute_task_goal(goal)
+        skill_id = 'task.portfolio.v1'
     if not isinstance(result, dict) or type(result.get('status')) is not str:
         raise ValueError('solver did not produce a valid decision receipt')
     # Detect a spec changed on disk during the original decision; no file writes.
@@ -93,7 +98,7 @@ def execute_goal_document(path: str | Path) -> dict:
             {'step': 'verify_goal_document', 'skill': 'goal.sha256.v1', 'status': 'PASS'},
         ],
         'result': result,
-        'scope': ('정해진 두 도메인 목표만 CPU에서 처리합니다. 사용자 제공 숫자와 원본 데이터의 '
+        'scope': ('정해진 세 도메인 목표만 CPU에서 처리합니다. 사용자 제공 숫자와 원본 데이터의 '
                   '실세계 진실성이나 작성자의 신뢰성은 검증하지 않습니다.'),
     }
 
@@ -107,9 +112,11 @@ def render_goal_document(report: dict) -> str:
     if report['kind'] == 'choose_options':
         from .decision_engine import render_decision
         lines.append(render_decision(result))
-    else:
+    elif report['kind'] == 'csv_audit':
         from .plan_engine import render_plan_report
         lines.append(render_plan_report(result))
+    else:
+        lines.append(render_task_plan(result))
     diag = report['verification']['diagnostics']
     if diag['type'] != 'NONE':
         lines.append('추가 확인 필요: ' + diag['type'])
