@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "kind": "schedule_tasks",
+  "goal": "Sample project release",
+  "deadline_hours": "10",
+  "tasks": [
+    {
+      "id": "extract",
+      "hours": "2",
+      "requires": []
+    },
+    {
+      "id": "models",
+      "hours": "3",
+      "requires": [
+        "extract"
+      ]
+    },
+    {
+      "id": "tests",
+      "hours": "4",
+      "requires": [
+        "models"
+      ]
+    },
+    {
+      "id": "docs",
+      "hours": "1",
+      "requires": [
+        "extract"
+      ]
+    },
+    {
+      "id": "ship",
+      "hours": "1",
+      "requires": [
+        "docs",
+        "tests"
+      ]
+    }
+  ]
+}
