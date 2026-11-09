@@ -14,7 +14,7 @@ class OfflineDoctorTests(unittest.TestCase):
     def test_full_install_bundle_smoke_passes(self):
         report=run_offline_doctor()
         self.assertEqual(report['status'],'PASS',report)
-        self.assertEqual(report['summary'],{'passed':7,'failed':0,'total':7})
+        self.assertEqual(report['summary'],{'passed':8,'failed':0,'total':8})
         self.assertEqual(report['checks'][-1]['name'],'goal_batch')
         self.assertEqual(report['checks'][-1]['observed'],'COMPLETE')
 
@@ -29,7 +29,7 @@ class OfflineDoctorTests(unittest.TestCase):
             report=run_offline_doctor(temp)
         self.assertEqual(report['status'],'FAIL')
         self.assertEqual(report['summary']['passed'],2)
-        self.assertEqual(report['summary']['failed'],5)
+        self.assertEqual(report['summary']['failed'],6)
 
     def test_fake_goal_guard_fails_diagnostic(self):
         with patch('eai.offline_doctor.execute_goal_document',
@@ -97,6 +97,29 @@ class OfflineDoctorTests(unittest.TestCase):
         self.assertIn('py -3.11',cmd)
         self.assertNotIn('curl',cmd)
 
+
+    def test_wrong_but_guarded_sample_status_is_not_health_pass(self):
+        from eai.offline_doctor import execute_goal_document as original
+        def altered(path):
+            output = original(path)
+            if path.name == 'sample_hardware_decision.json':
+                output['status'] = 'UNAVAILABLE'
+            return output
+        with patch('eai.offline_doctor.execute_goal_document', side_effect=altered):
+            result = run_offline_doctor()
+        self.assertEqual(result['status'], 'FAIL')
+        self.assertEqual(result['summary']['failed'], 1)
+        self.assertEqual(next(x for x in result['checks'] if x['name'] == 'choose_options')['error'],
+                         'ValueError')
+
+    def test_pipeline_failure_reports_one_failed_check(self):
+        with patch('eai.offline_doctor.execute_pipeline_document',
+                   return_value={'status':'COMPLETE','verification':{'status':'FAIL'}}):
+            result = run_offline_doctor()
+        self.assertEqual(result['status'], 'FAIL')
+        self.assertEqual(result['summary']['failed'], 1)
+        self.assertEqual(result['checks'][-1]['name'], 'goal_pipeline')
+        self.assertEqual(result['checks'][-1]['error'], 'ValueError')
 
 if __name__=='__main__':
     unittest.main()

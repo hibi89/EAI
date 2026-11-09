@@ -14,3 +14,7 @@ Reports Python version, coarse OS platform, 7 checks (Python >=3.11, SQLite :mem
 Exit code 0 if all checks pass, 4 if any check fails. No claim that Linux CI tests Windows, real Ollama/Qwen, real SearXNG, user data, install packaging or release security. Owners should run this on actual Windows and share only the diagnostic result if requested.
 
 Run tests: python -m compileall -q eai tests; python -m unittest discover -s tests -v.
+
+## P13 hardening follow-up (implementation; CI unverified until executed)
+- Local doctor now runs eight checks including the P14 DAG pipeline sample and requires the exact expected domain statuses (including a deliberately CONFLICTing CSV fixture), not merely a PASS receipt for any status.
+- Two regression tests cover false-positive status acceptance and the pipeline smoke guard. Existing customer Windows, external model, and full source suite evidence are still separate gates.

@@ -17,3 +17,7 @@ Exit 0 COMPLETE, 2 REVIEW, 3 PARTIAL, 1 FAILED or invalid manifest.
 Unit/CLI validation: python -m unittest discover -s tests -v; python -m compileall -q eai tests.
 
 Open gates: real Windows, Ollama/Qwen intent parser, customer workload, continuous task orchestration, commercial distribution, external service permissions and actual project completion.
+
+## P14 receipt integrity follow-up (implementation; CI unverified until executed)
+- In-pipeline verification binds manifest SHA256 to the original bytes and separately rechecks canonical topological execution order; forged digest, swapped independent order and unhashable order records are fail-closed.
+- The external optional postcondition helper accepts an expected SHA256 when original bytes are available; do not assert a SHA binding from a bare caller-supplied manifest object alone.

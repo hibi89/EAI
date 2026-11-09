@@ -202,5 +202,32 @@ class PipelineTests(unittest.TestCase):
         self.assertEqual(out['verification']['status'],'PASS')
 
 
+    def test_postcondition_manifest_digest_mutation_rejected(self):
+        spec = self.write()
+        out = execute_pipeline_document(self.manifest)
+        original_sha = hashlib.sha256(self.manifest.read_bytes()).hexdigest()
+        out['manifest']['sha256'] = '0'*64
+        with self.assertRaisesRegex(ValueError, 'original manifest SHA256'):
+            verify_pipeline_receipt(spec, out, original_sha256=original_sha)
+
+    def test_noncanonical_independent_order_rejected(self):
+        self.entries = []
+        self.add('zeta', 'z.json', options(), [])
+        self.add('alpha', 'a.json', options(), [])
+        spec = self.write()
+        out = execute_pipeline_document(self.manifest)
+        self.assertEqual(out['execution_order'], ['alpha', 'zeta'])
+        out['execution_order'].reverse()
+        out['items'].reverse()
+        with self.assertRaisesRegex(ValueError, 'noncanonical execution order'):
+            verify_pipeline_receipt(spec, out)
+
+    def test_nonstring_execution_order_is_fail_closed(self):
+        spec = self.write()
+        out = execute_pipeline_document(self.manifest)
+        out['execution_order'][0] = []
+        with self.assertRaisesRegex(ValueError, 'execution order'):
+            verify_pipeline_receipt(spec, out)
+
 if __name__=='__main__':
     unittest.main()

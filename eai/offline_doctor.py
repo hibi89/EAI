@@ -10,6 +10,7 @@ import sys
 
 from .goal_dispatch import execute_goal_document
 from .goal_batch import execute_batch_document
+from .goal_pipeline import execute_pipeline_document
 
 DOCTOR_VERSION = 'eai.offline_doctor.v1'
 SAMPLES = (
@@ -18,6 +19,15 @@ SAMPLES = (
     ('plan_tasks','sample_task_portfolio_goal.json'),
     ('schedule_tasks','sample_task_schedule_goal.json'),
 )
+EXPECTED_STATUS = {
+    'choose_options': 'DECIDED',
+    'csv_audit': 'CONFLICT',
+    'plan_tasks': 'DECIDED',
+    'schedule_tasks': 'DECIDED',
+    'goal_batch': 'COMPLETE',
+    'goal_pipeline': 'COMPLETE',
+}
+
 DOCTOR_SCOPE = ('오프라인 샘플, Python 및 임시 메모리 SQLite만 검사했습니다. '
                 '실제 Windows PC, 사용자 데이터, Ollama/Qwen, SearXNG, GPU, '
                 '외부 연결, 설치 프로그램과 상용 준비 상태는 검증하지 않습니다.')
@@ -57,24 +67,26 @@ def run_offline_doctor(project_root: str | Path | None = None) -> dict:
     except (ValueError,OSError,sqlite3.Error) as exc:
         checks.append({'name':'sqlite_memory','status':'FAIL','observed':None,
                        'source_sha256':None,'error':type(exc).__name__})
-    for kind,filename in (*SAMPLES,('goal_batch','sample_goal_batch.json')):
+    for kind,filename in (*SAMPLES,('goal_batch','sample_goal_batch.json'),
+                          ('goal_pipeline','sample_goal_pipeline.json')):
         entry = {'name':kind,'status':'FAIL','observed':None,
                  'source_sha256':None,'error':None}
         source = root/'examples'/filename
         try:
             before = _file_sha256(source,root)
             result = (execute_batch_document(source) if kind == 'goal_batch'
+                      else execute_pipeline_document(source) if kind == 'goal_pipeline'
                       else execute_goal_document(source))
             after = _file_sha256(source,root)
             verification = result.get('verification')
             if type(verification) is not dict or verification.get('status') != 'PASS':
                 raise ValueError('sample independent receipt guard did not PASS')
-            if kind == 'goal_batch':
-                if result.get('status') != 'COMPLETE':
-                    raise ValueError('bundled batch did not complete')
-            elif (result.get('kind') != kind or
-                  result.get('status') not in {'DECIDED','TIE','AGREE','CONFLICT','UNAVAILABLE'} or
-                  result.get('input',{}).get('sha256') != before):
+            if result.get('status') != EXPECTED_STATUS[kind]:
+                raise ValueError('bundled sample status does not match its acceptance contract')
+            if kind not in {'goal_batch','goal_pipeline'} and (
+                result.get('kind') != kind or
+                result.get('input',{}).get('sha256') != before
+            ):
                 raise ValueError('typed goal result or source provenance mismatch')
             if before != after:
                 raise ValueError('sample file changed during diagnosis')

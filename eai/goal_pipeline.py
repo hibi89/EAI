@@ -3,7 +3,7 @@ import csv
 from pathlib import Path
 
 from .decision_engine import ID_RE
-from .goal_batch import _validate, _hash_file, GOOD, REVIEW
+from .goal_batch import _validate, _hash_file, GOOD, REVIEW, SHA_RE
 from .goal_dispatch import _read_spec, execute_goal_document, ROUTED_KINDS
 
 VERSION = 'eai.goal_pipeline.v1'
@@ -68,7 +68,7 @@ def _aggregate(rows):
             'review':review,'errors':errors,'skipped':skipped}
 
 
-def verify_pipeline_receipt(manifest: dict, report: dict) -> dict:
+def verify_pipeline_receipt(manifest: dict, report: dict, *, original_sha256: str | None = None) -> dict:
     """Validate DAG gates, status, immutable provenance and aggregate claims."""
     mandatory={'version','status','manifest','continue_on_error','execution_order',
                'items','summary','scope','verification'}
@@ -79,16 +79,39 @@ def verify_pipeline_receipt(manifest: dict, report: dict) -> dict:
         raise ValueError('EAI pipeline receipt mismatch: contract')
     if type(report['manifest']) is not dict or set(report['manifest']) != {
         'filename','sha256'
-    } or type(report['manifest']['sha256']) is not str:
+    } or type(report['manifest']['sha256']) is not str or (
+        not SHA_RE.fullmatch(report['manifest']['sha256']) or
+        type(report['manifest']['filename']) is not str or
+        not 1 <= len(report['manifest']['filename']) <= 512
+    ):
         raise ValueError('EAI pipeline receipt mismatch: manifest')
+    if original_sha256 is not None and (
+        type(original_sha256) is not str or
+        not SHA_RE.fullmatch(original_sha256) or
+        report['manifest']['sha256'] != original_sha256
+    ):
+        raise ValueError('EAI pipeline receipt mismatch: original manifest SHA256')
     specification = {item['id']:item for item in manifest['items']}
     order = report['execution_order']
     rows = report['items']
-    if type(order) is not list or len(order) != len(specification) or (
-        len(set(order)) != len(order) or set(order) != set(specification) or
-        type(rows) is not list or len(rows) != len(order)
+    if type(order) is not list or any(type(key) is not str for key in order) or (
+        len(order) != len(specification) or len(set(order)) != len(order) or
+        set(order) != set(specification) or type(rows) is not list or
+        len(rows) != len(order)
     ):
         raise ValueError('EAI pipeline receipt mismatch: execution order')
+    # The verifier separately reconstructs the canonical topological layers.
+    remaining, confirmed, canonical = set(specification), set(), []
+    while remaining:
+        ready = sorted(key for key in remaining
+                       if set(specification[key]['requires']) <= confirmed)
+        if not ready:
+            raise ValueError('EAI pipeline receipt mismatch: cyclic dependencies')
+        canonical.extend(ready)
+        confirmed.update(ready)
+        remaining.difference_update(ready)
+    if order != canonical:
+        raise ValueError('EAI pipeline receipt mismatch: noncanonical execution order')
     processed = {}
     aborted = False
     for key,row in zip(order,rows):
@@ -195,7 +218,8 @@ def execute_pipeline_document(manifest_file: str | Path) -> dict:
             'continue_on_error':manifest['continue_on_error'],
             'execution_order':list(order),'items':outputs,'summary':summary,
             'scope':SCOPE,'verification':None}
-    report['verification']=verify_pipeline_receipt(manifest,report)
+    report['verification']=verify_pipeline_receipt(manifest,report,
+                                                   original_sha256=original_sha)
     return report
 
 
