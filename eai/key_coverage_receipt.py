@@ -36,7 +36,10 @@ def _independent(path, column, encoding):
                     None in record or any(type(x) is not str or
                     len(x) > MAX_FIELD_CHARS for x in record.values())):
                 raise ValueError("invalid independent CSV row")
-            keys.append(record[column].strip())
+            key = record[column].strip()
+            if any(ord(c) < 32 or ord(c) == 127 for c in key):
+                raise ValueError("independent key contains control characters")
+            keys.append(key)
     finally:
         csv.field_size_limit(old)
     if source_snapshot(path)[1] != digest:
