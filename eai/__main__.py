@@ -16,6 +16,7 @@ from .plan_engine import AuditGoal, CPUPlanExecutor, render_plan_report
 from .goal_dispatch import execute_goal_document, render_goal_document
 from .csv_advisor import advise_csv, render_csv_advice
 from .goal_selector import select_goal, render_selection
+from .report_export import build_report, render_report_html
 from .goal_batch import execute_batch_document, render_batch
 from .offline_doctor import run_offline_doctor, render_doctor
 from .goal_pipeline import execute_pipeline_document, render_pipeline
@@ -105,7 +106,22 @@ def main(argv: list[str] | None = None) -> int:
     select_cmd.add_argument('--request', required=True, help='1-500 character user request')
     select_cmd.add_argument('--qwen-select', action='store_true', help='explicit local Qwen INPUT-only classification')
     select_cmd.add_argument('--json', action='store_true')
+    export_cmd = sub.add_parser('export-report', help='static verified local report to stdout only')
+    export_cmd.add_argument('spec', help='explicit goal, batch or pipeline JSON')
+    export_cmd.add_argument('--format', choices=['html','json'], default='html')
     args = p.parse_args(argv)
+    if args.command == 'export-report':
+        try:
+            summary = build_report(args.spec)
+            print(json.dumps(summary, ensure_ascii=False, indent=2) if args.format == 'json'
+                  else render_report_html(summary))
+            return {'AGREE': 0, 'DECIDED': 0, 'COMPLETE': 0,
+                    'TIE': 2, 'CONFLICT': 2, 'REVIEW': 2,
+                    'UNAVAILABLE': 3, 'PARTIAL': 3,
+                    'FAILED': 1}[summary['status']]
+        except (ValueError, OSError, UnicodeError, csv.Error, TimeoutError) as exc:
+            print('EAI EXPORT ERROR:', type(exc).__name__, str(exc), file=sys.stderr)
+            return 1
     if args.command == 'select-goal':
         try:
             report = select_goal(args.manifest, args.request,
