@@ -78,7 +78,7 @@ class KeyCoverageTests(unittest.TestCase):
         report = self.solve()
         self.assertEqual("AGREE", report["status"])
         self.assertEqual(1, report["result"]["detail_missing_reference_rows"])
-        self.assertFalse("missing" in json.dumps(report["result"]))
+        self.assertNotIn("2,missing", json.dumps(report["result"]))
 
     def test_rounding_not_silently_passing_threshold(self):
         self.detail.write_text("line,item_ref\n1,a\n2,missing\n3,c\n", encoding="utf-8")
