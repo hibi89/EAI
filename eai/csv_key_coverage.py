@@ -20,7 +20,7 @@ from .decision_engine import _num
 VERSION = "eai.goal.csv_key_coverage.v1"
 SCOPE = (
     "두 로컬 CSV에서 마스터 고유키·상세 참조키의 누락, 중복, 참조 부재를 검사했습니다. "
-    "개별 키·원본 행 값·레코드 본문은 보고하지 않습니다. 참조 일치가 실세계 진실성을 "
+    "개별 키·원본 행 값·레코드 본문은 보고하지 않습니다. 미매칭 참조가 1건이라도 있으면 임계치와 무관하게 충돌로 표시합니다. 참조 일치가 실세계 진실성을 "
     "의미하지 않으며 파일 수정, 자동 복구, 외부 전송을 수행하지 않습니다."
 )
 
@@ -167,7 +167,7 @@ def execute_key_coverage_goal(goal: KeyCoverageGoal) -> dict:
     threshold_met = (None if checked == 0 else
                      Decimal(matched) * 100 >=
                      goal.min_coverage_percent * Decimal(checked))
-    violation = bool(empty_master or duplicate or empty_detail or (
+    violation = bool(empty_master or duplicate or empty_detail or missing or (
         threshold_met is False))
     status = ("CONFLICT" if violation else
               "UNAVAILABLE" if not master_keys or checked == 0 else "AGREE")

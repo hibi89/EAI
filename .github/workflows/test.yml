@@ -22,3 +22,17 @@ jobs:
         run: |
           python -m eai --version
           python -m eai health
+      - name: Build and independently verify unsigned offline candidate
+        run: |
+          python -c "from pathlib import Path; Path('dist').mkdir(exist_ok=True)"
+          python scripts/build_customer_candidate.py --output dist/EAI-Offline-Review-0.1.0-beta.zip
+          python scripts/verify_customer_candidate.py --archive dist/EAI-Offline-Review-0.1.0-beta.zip --checksum dist/EAI-Offline-Review-0.1.0-beta.zip.sha256
+      - name: Upload synthetic offline review candidate (NOT retail)
+        uses: actions/upload-artifact@v4
+        with:
+          name: eai-offline-review-synthetic-beta
+          path: |
+            dist/EAI-Offline-Review-0.1.0-beta.zip
+            dist/EAI-Offline-Review-0.1.0-beta.zip.sha256
+          if-no-files-found: error
+          retention-days: 7

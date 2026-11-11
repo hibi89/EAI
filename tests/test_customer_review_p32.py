@@ -136,6 +136,43 @@ class CustomerReviewTests(unittest.TestCase):
             self.assertEqual(0, confirmed.returncode, confirmed.stderr)
             self.assertIn("REVIEW_CONSISTENT_UNSIGNED", confirmed.stdout)
 
+
+    def test_existing_pinned_batch_report_is_minimized(self):
+        with TemporaryDirectory() as tmp:
+            out = Path(tmp) / "batch-review"
+            source = ROOT / "examples/sample_goal_batch.json"
+            before = source.read_bytes()
+            report = create_review(source, out, acknowledge=True)
+            self.assertEqual("COMPLETE", report["decision_status"])
+            self.assertEqual(before, source.read_bytes())
+            payload = json.loads((out / "review.json").read_text("utf-8"))
+            self.assertEqual(2, len(payload["items"]))
+            self.assertNotIn('"tasks":', json.dumps(payload))
+            self.assertEqual("REVIEW_CONSISTENT_UNSIGNED",
+                             verify_review(out)["status"])
+
+    def test_conflicting_keys_review_stays_conflict_and_no_values(self):
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "master.csv").write_text("id\\na\\n", encoding="utf-8")
+            (root / "detail.csv").write_text("ref\\na\\nprivate_orphan_991\\n",
+                                              encoding="utf-8")
+            goal = {
+                "version": 1, "kind": "csv_key_coverage",
+                "goal": "Synthetic owner check", "master": "master.csv",
+                "detail": "detail.csv", "master_key": "id",
+                "detail_key": "ref", "encoding": "utf-8-sig",
+                "min_coverage_percent": "40"
+            }
+            source = root / "goal.json"
+            source.write_text(json.dumps(goal), encoding="utf-8")
+            out = root / "review"
+            done = create_review(source, out, acknowledge=True)
+            self.assertEqual("CONFLICT", done["decision_status"])
+            data = (out / "review.json").read_text("utf-8")
+            self.assertNotIn("private_orphan_991", data)
+            self.assertEqual("CONFLICT", verify_review(out)["decision_status"])
+
     def test_unapproved_spec_unknown_kind_does_not_create_bundle(self):
         with TemporaryDirectory() as tmp:
             root = Path(tmp)

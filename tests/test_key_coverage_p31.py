@@ -72,11 +72,12 @@ class KeyCoverageTests(unittest.TestCase):
         self.assertEqual("RELATIONAL_INTEGRITY_REVIEW",
                          self.solve()["verification"]["diagnostics"]["type"])
 
-    def test_orphans_with_explicit_lower_threshold_pass_but_count_visible(self):
+    def test_orphans_with_lower_threshold_still_conflict(self):
         self.detail.write_text("line,item_ref\n1,a\n2,missing\n3,c\n", encoding="utf-8")
         self.raw["min_coverage_percent"] = "60"
         report = self.solve()
-        self.assertEqual("AGREE", report["status"])
+        self.assertEqual("CONFLICT", report["status"])
+        self.assertTrue(report["result"]["coverage_threshold_met"])
         self.assertEqual(1, report["result"]["detail_missing_reference_rows"])
         self.assertNotIn("2,missing", json.dumps(report["result"]))
 

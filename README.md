@@ -1,3 +1,19 @@
+## 2026-11-12 — P31–P34 customer-facing offline engineering development (85% target, provisional, validation pending)
+
+A new 13th bounded CPU goal `csv_key_coverage` checks parent/child CSV key integrity via an independent SHA-backed receipt. All missing references remain `CONFLICT` even when a lower user threshold is met. Source keys and rows never appear in the report. `customer-review` creates a NEW local HTML/JSON/manifest folder only after `--ack-authorized-local`; `verify-review` independently checks unsigned SHA and report consistency. An isolated source-only customer candidate ZIP contains `eai.pyz`, `RUN_EAI_REVIEW.cmd`, fabricated samples and verifier, not a Python runtime or customer records.
+
+```powershell
+python -m eai solve-goal examples/sample_key_coverage_goal.json --json
+python -m eai customer-review --spec examples/sample_key_coverage_goal.json --output-dir ..\\EAI-NEW-REVIEW --ack-authorized-local
+python -m eai verify-review --output-dir ..\\EAI-NEW-REVIEW
+python scripts/build_customer_candidate.py --output dist/EAI-Offline-Review-0.1.0-beta.zip
+python -m unittest discover -s tests -v
+```
+
+CI and retail acceptance must be judged on exact final source SHA, not this preliminary note. Source `feature/local-first-mvp`, `main`, other product repositories, customer files and all Production destinations remain untouched. Actual customer Windows, genuine Qwen/Ollama, legal rights, signing and paid distribution remain **UNVERIFIED / RELEASE HOLD**.
+
+---
+
 ## 2026-11-11 — Latest provisional engineering milestone: **70%**, retail RELEASE HOLD
 
 [GitHub Actions exact P23–P30 feature/test SHA `8cdad74...`](https://github.com/hibi89/EAI/actions/runs/42960081154): Ubuntu Python3.11 `compileall`, **582/582 full unittest PASS**, CLI smoke and real portable-`.pyz` synthetic journey PASS. New P23–P30: source-first CSV Advisor, SHA-pinned CPU/optional **local** Qwen input-only goal selector, independent user SHA approval, private-value-minimized HTML report, deterministic portable Python `.pyz`, direct no-JSON CSV/text analysis, new verified `csv_distribution_shift` (12 bounded goal kinds), packaged E2E. Actual Qwen model, Windows/user data/customer installation and commercial release are **NOT VERIFIED**. [Milestone, exact scope and blockers](docs/P23_P30_MILESTONE_70_20261111.md).

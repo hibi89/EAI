@@ -68,7 +68,7 @@ def verify_key_coverage_receipt(goal: KeyCoverageGoal, receipt: object):
             met = exact >= goal.min_coverage_percent
     else:
         percent, met = None, None
-    violated = bool(duplicates or empties or empty_detail or met is False)
+    violated = bool(duplicates or empties or empty_detail or missing or met is False)
     status = ("CONFLICT" if violated else
               "UNAVAILABLE" if not master_rows or checked == 0 else "AGREE")
     expected = {
