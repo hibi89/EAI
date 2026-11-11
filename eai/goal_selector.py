@@ -46,14 +46,16 @@ def _literal_hit(request: str, word: str) -> bool:
                           r"(?![A-Za-z0-9_-])", request, re.IGNORECASE))
 
 
-def _choose_cpu(request: str, catalog: tuple[dict, ...]) -> str | None:
+def _choose_cpu(request: str, catalog: tuple[dict, ...]) -> tuple[str | None, bool]:
     ids = {entry["id"] for entry in catalog if _literal_hit(request, entry["id"])}
     if len(ids) == 1:
-        return next(iter(ids))
-    if ids:
-        return None
+        return next(iter(ids)), False
+    if len(ids) > 1:
+        return None, True
     kinds = {entry["id"] for entry in catalog if _literal_hit(request, entry["kind"])}
-    return next(iter(kinds)) if len(kinds) == 1 else None
+    if len(kinds) == 1:
+        return next(iter(kinds)), False
+    return None, len(kinds) > 1
 
 
 def _select_local_model(request: str, catalog: tuple[dict, ...], *,
@@ -121,9 +123,11 @@ def select_goal(manifest_file: str | Path, request: str, *,
     if type(use_qwen) is not bool:
         raise ValueError("use_qwen must be boolean")
     source, manifest_sha, catalog = _read_catalog(manifest_file)
-    selected_id = _choose_cpu(request, catalog)
+    selected_id, ambiguous = _choose_cpu(request, catalog)
     method, notice = "CPU_LITERAL", ""
-    if selected_id is None and use_qwen:
+    if ambiguous:
+        notice = "Multiple approved goal identifiers matched; review required."
+    if selected_id is None and not ambiguous and use_qwen:
         method = "LOCAL_MODEL_INPUT_ONLY"
         try:
             selected_id = _select_local_model(

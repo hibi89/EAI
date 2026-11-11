@@ -57,6 +57,12 @@ class GoalSelectorP24Tests(unittest.TestCase):
         report = select_goal(self.manifest, "quality and schedule")
         self.assertIsNone(report["selected"])
 
+    def test_ambiguous_ids_never_delegated_to_model(self):
+        with patch("eai.goal_selector.fetch_json", side_effect=AssertionError):
+            report = select_goal(self.manifest, "quality plus schedule", use_qwen=True)
+        self.assertEqual(report["status"], "REVIEW_REQUIRED")
+        self.assertIn("Multiple", report["notice"])
+
     def test_goal_kind_unique_match(self):
         report = select_goal(self.manifest, "Please do csv_quality")
         self.assertEqual(report["selected"]["id"], "quality")
@@ -94,7 +100,7 @@ class GoalSelectorP24Tests(unittest.TestCase):
             self.assertIn("quality", payload["format"]["properties"]["selected_id"]["enum"])
             return {"message": {"content": '{"version":1,"selected_id":"quality"}'}}
         with patch("eai.goal_selector.fetch_json", side_effect=fake):
-            report = select_goal(self.manifest, "please find quality problems",
+            report = select_goal(self.manifest, "please inspect a potential issue",
                                  use_qwen=True)
         self.assertEqual(report["selected"]["id"], "quality")
         self.assertEqual(report["method"], "LOCAL_MODEL_INPUT_ONLY")
