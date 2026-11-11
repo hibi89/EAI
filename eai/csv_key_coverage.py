@@ -117,7 +117,10 @@ def _read_keys(path: Path, column: str, encoding: str) -> tuple[dict, list[str]]
                 len(cell) > MAX_FIELD_CHARS for cell in row
             ):
                 raise ValueError("CSV row count/width/cell limit exceeded")
-            keys.append(row[index].strip())
+            key = row[index].strip()
+            if any(ord(c) < 32 or ord(c) == 127 for c in key):
+                raise ValueError("source key contains unsupported control characters")
+            keys.append(key)
     finally:
         csv.field_size_limit(old_limit)
     if source_snapshot(path)[1] != digest:
