@@ -1,3 +1,21 @@
+## 2026-11-11 — Latest provisional engineering milestone: **70%**, retail RELEASE HOLD
+
+[GitHub Actions exact P23–P30 feature/test SHA `8cdad74...`](https://github.com/hibi89/EAI/actions/runs/42960081154): Ubuntu Python3.11 `compileall`, **582/582 full unittest PASS**, CLI smoke and real portable-`.pyz` synthetic journey PASS. New P23–P30: source-first CSV Advisor, SHA-pinned CPU/optional **local** Qwen input-only goal selector, independent user SHA approval, private-value-minimized HTML report, deterministic portable Python `.pyz`, direct no-JSON CSV/text analysis, new verified `csv_distribution_shift` (12 bounded goal kinds), packaged E2E. Actual Qwen model, Windows/user data/customer installation and commercial release are **NOT VERIFIED**. [Milestone, exact scope and blockers](docs/P23_P30_MILESTONE_70_20261111.md).
+
+```powershell
+python -m eai advise-csv --root examples --source sample_relationships.csv --json
+python -m eai quick-goal --kind csv_relationships --root examples --source sample_relationships.csv --columns ads sales refunds --json
+python -m eai solve-goal examples/sample_csv_relationships_goal.json --json
+python -m eai export-report examples/sample_csv_relationships_goal.json --format html
+python scripts/build_portable.py --output eai-local.pyz
+python eai-local.pyz --version
+python -m unittest discover -s tests -q
+```
+
+`build_portable.py` refuses to overwrite an existing `.pyz`, contains only EAI Python source, does not bundle Python runtime or a model. `export-report` prints HTML only: user redirecting to a new file is explicit. `select-goal` alone never runs a task; `run-approved` requires independent owner ID plus both SHA256 strings. These are local CPU-only read-only workflows. Any customer data, paid usage, remote transmission or publication requires authorization.
+
+---
+
 ## Latest source-verified milestone — P20/P21/P22, 2026-11-10 KST
 
 **Provisional whole-product completion: 50% / 100%; retail RELEASE HOLD.** Three new independent CPU skills:
