@@ -1,16 +1,13 @@
-## 2026-11-12 — P31–P34 customer-facing offline engineering development (85% target, provisional, validation pending)
+## 2026-11-12 — Verified P31–P34: provisional engineering **85%** / RELEASE HOLD
 
-A new 13th bounded CPU goal `csv_key_coverage` checks parent/child CSV key integrity via an independent SHA-backed receipt. All missing references remain `CONFLICT` even when a lower user threshold is met. Source keys and rows never appear in the report. `customer-review` creates a NEW local HTML/JSON/manifest folder only after `--ack-authorized-local`; `verify-review` independently checks unsigned SHA and report consistency. An isolated source-only customer candidate ZIP contains `eai.pyz`, `RUN_EAI_REVIEW.cmd`, fabricated samples and verifier, not a Python runtime or customer records.
+At exact [source SHA `736dcf017aed`](https://github.com/hibi89/EAI/commit/736dcf017aed3144121d6b30c800575dc2599863), [CI #43115273614](https://github.com/hibi89/EAI/actions/runs/43115273614) Linux Python3.11 **623 discovered / 622 PASS / 1 Windows-only SKIP / 0 FAIL**, compiled CLI and real clean-unpacked portable ZIP journeys PASS. Seven-file candidate SHA256 `d2df7b5bc4737f6b0a6262587be2f032f96e3b391272524552c7538592b7443f` ([private Actions artifact #13896909925](https://github.com/hibi89/EAI/actions/runs/43115273614/artifacts/13896909925)); this is **unsigned / not commercial**. Scope weighting 70+5 P31 new relational key engine+independent source receipt +4 P32 source-free owner HTML/JSON integrity +4 P33 offline candidate ZIP/Windows synthetic runner +2 P34 extracted packaged E2E = **85% provisional engineering**. Real customer Windows, genuine Qwen, authorized customer sources/PII, legal/signing/support/buyer launch remain UNVERIFIED and release HOLD.
 
 ```powershell
 python -m eai solve-goal examples/sample_key_coverage_goal.json --json
 python -m eai customer-review --spec examples/sample_key_coverage_goal.json --output-dir ..\\EAI-NEW-REVIEW --ack-authorized-local
 python -m eai verify-review --output-dir ..\\EAI-NEW-REVIEW
 python scripts/build_customer_candidate.py --output dist/EAI-Offline-Review-0.1.0-beta.zip
-python -m unittest discover -s tests -v
 ```
-
-CI and retail acceptance must be judged on exact final source SHA, not this preliminary note. Source `feature/local-first-mvp`, `main`, other product repositories, customer files and all Production destinations remain untouched. Actual customer Windows, genuine Qwen/Ollama, legal rights, signing and paid distribution remain **UNVERIFIED / RELEASE HOLD**.
 
 ---
 
