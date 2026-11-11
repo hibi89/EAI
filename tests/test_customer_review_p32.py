@@ -154,8 +154,8 @@ class CustomerReviewTests(unittest.TestCase):
     def test_conflicting_keys_review_stays_conflict_and_no_values(self):
         with TemporaryDirectory() as tmp:
             root = Path(tmp)
-            (root / "master.csv").write_text("id\\na\\n", encoding="utf-8")
-            (root / "detail.csv").write_text("ref\\na\\nprivate_orphan_991\\n",
+            (root / "master.csv").write_text("id\na\n", encoding="utf-8")
+            (root / "detail.csv").write_text("ref\na\nprivate_orphan_991\n",
                                               encoding="utf-8")
             goal = {
                 "version": 1, "kind": "csv_key_coverage",
