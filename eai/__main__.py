@@ -18,6 +18,7 @@ from .csv_advisor import advise_csv, render_csv_advice
 from .goal_selector import select_goal, render_selection
 from .report_export import build_report, render_report_html
 from .approved_run import run_approved
+from .quick_goal import quick_goal, render_quick
 from .goal_batch import execute_batch_document, render_batch
 from .offline_doctor import run_offline_doctor, render_doctor
 from .goal_pipeline import execute_pipeline_document, render_pipeline
@@ -116,7 +117,33 @@ def main(argv: list[str] | None = None) -> int:
     approved_cmd.add_argument('--manifest-sha256', required=True)
     approved_cmd.add_argument('--goal-sha256', required=True)
     approved_cmd.add_argument('--json', action='store_true')
+    quick_cmd = sub.add_parser('quick-goal', help='run existing read-only CPU goal from explicit flags')
+    quick_cmd.add_argument('--kind',choices=['csv_relationships','csv_robust_outliers','local_evidence_search'],required=True)
+    quick_cmd.add_argument('--root',default='.')
+    quick_cmd.add_argument('--source')
+    quick_cmd.add_argument('--sources',nargs='+')
+    quick_cmd.add_argument('--columns',nargs='+')
+    quick_cmd.add_argument('--terms',nargs='+')
+    quick_cmd.add_argument('--encoding',choices=['utf-8-sig','utf-8','cp949'],default='utf-8-sig')
+    quick_cmd.add_argument('--min-rows',type=int,default=5)
+    quick_cmd.add_argument('--threshold',default='3')
+    quick_cmd.add_argument('--max-results',type=int,default=10)
+    quick_cmd.add_argument('--include-snippets',action='store_true')
+    quick_cmd.add_argument('--json',action='store_true')
     args = p.parse_args(argv)
+    if args.command == 'quick-goal':
+        try:
+            report=quick_goal(args.kind,args.root,source=args.source,sources=args.sources,
+                              columns=args.columns,terms=args.terms,encoding=args.encoding,
+                              min_rows=args.min_rows,threshold=args.threshold,
+                              max_results=args.max_results,
+                              include_snippets=args.include_snippets)
+            print(json.dumps(report,ensure_ascii=False,indent=2) if args.json
+                  else render_quick(report))
+            return {'AGREE':0,'CONFLICT':2,'UNAVAILABLE':3}[report['status']]
+        except (ValueError,OSError,UnicodeError,csv.Error,TimeoutError) as exc:
+            print('EAI QUICK ERROR:',type(exc).__name__,str(exc),file=sys.stderr)
+            return 1
     if args.command == 'run-approved':
         try:
             report = run_approved(args.manifest, args.id,
