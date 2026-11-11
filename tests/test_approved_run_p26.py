@@ -41,7 +41,7 @@ class ApprovedRunP26Tests(unittest.TestCase):
         result = select_goal(self.manifest, "release")
         return result["manifest"]["sha256"], result["selected"]["sha256"]
 
-    def run(self):
+    def execute_approved(self):
         manifest_sha, goal_sha = self.select()
         return run_approved(self.manifest, "release", manifest_sha, goal_sha)
 
@@ -49,7 +49,7 @@ class ApprovedRunP26Tests(unittest.TestCase):
         item = select_goal(self.manifest, "release")
         self.assertTrue(item["requires_explicit_execution"])
         self.assertFalse("receipt" in item)
-        report = self.run()
+        report = self.execute_approved()
         self.assertTrue(report["verified"])
         self.assertEqual(report["receipt"]["verification"]["status"], "PASS")
         self.assertEqual(report["status"], "DECIDED")
@@ -130,7 +130,7 @@ class ApprovedRunP26Tests(unittest.TestCase):
     def test_no_network_or_file_creation(self):
         before = {p.name:p.read_bytes() for p in self.root.iterdir()}
         with patch("eai.goal_selector.fetch_json",side_effect=AssertionError):
-            self.run()
+            self.execute_approved()
         self.assertEqual(before,{p.name:p.read_bytes() for p in self.root.iterdir()})
 
     def test_cli_explicit_approval(self):
