@@ -14,6 +14,7 @@ from .reconcile_csv import reconcile_csv, render_reconciliation
 from .diagnose_csv import diagnose_csv, render_diagnosis
 from .plan_engine import AuditGoal, CPUPlanExecutor, render_plan_report
 from .goal_dispatch import execute_goal_document, render_goal_document
+from .csv_advisor import advise_csv, render_csv_advice
 from .goal_batch import execute_batch_document, render_batch
 from .offline_doctor import run_offline_doctor, render_doctor
 from .goal_pipeline import execute_pipeline_document, render_pipeline
@@ -93,7 +94,21 @@ def main(argv: list[str] | None = None) -> int:
     manifest_cmd.add_argument('--goal', action='append', required=True, help='ID=relative.json (repeat 1-6)')
     manifest_cmd.add_argument('--requires', action='append', default=[], help='child=parent1,parent2 (pipeline only)')
     manifest_cmd.add_argument('--stop-on-error', action='store_true')
+    advisor_cmd = sub.add_parser('advise-csv', help='read-only source-first CSV goal draft advisor')
+    advisor_cmd.add_argument('--root', default='.', help='explicit local source directory')
+    advisor_cmd.add_argument('--source', required=True, help='single relative CSV path inside root')
+    advisor_cmd.add_argument('--encoding', choices=['utf-8-sig','utf-8','cp949'], default='utf-8-sig')
+    advisor_cmd.add_argument('--json', action='store_true', help='print editable typed goal drafts')
     args = p.parse_args(argv)
+    if args.command == 'advise-csv':
+        try:
+            report = advise_csv(args.root, args.source, encoding=args.encoding)
+            print(json.dumps(report, ensure_ascii=False, indent=2) if args.json
+                  else render_csv_advice(report))
+            return 0 if report['status'] == 'DRAFT_READY' else 3
+        except (ValueError, OSError, UnicodeError, csv.Error) as exc:
+            print('EAI ADVISOR ERROR:', type(exc).__name__, str(exc), file=sys.stderr)
+            return 1
     if args.command == 'health':
         print('EAI independent CPU-first engine v0.1')
         print('parser:', 'Qwen input-only' if args.use_qwen_intent else 'CPU rules')
