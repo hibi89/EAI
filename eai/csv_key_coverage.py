@@ -159,8 +159,11 @@ def execute_key_coverage_goal(goal: KeyCoverageGoal) -> dict:
             missing += 1
     checked = matched + missing
     coverage = _pct(matched, checked)
-    threshold_met = (None if coverage is None else
-                     Decimal(coverage) >= goal.min_coverage_percent)
+    # Use unrounded exact coverage for the policy gate; the six-decimal
+    # percentage is display only and must never clear a borderline deficit.
+    threshold_met = (None if checked == 0 else
+                     Decimal(matched) * 100 >=
+                     goal.min_coverage_percent * Decimal(checked))
     violation = bool(empty_master or duplicate or empty_detail or (
         threshold_met is False))
     status = ("CONFLICT" if violation else
