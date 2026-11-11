@@ -15,6 +15,7 @@ from .diagnose_csv import diagnose_csv, render_diagnosis
 from .plan_engine import AuditGoal, CPUPlanExecutor, render_plan_report
 from .goal_dispatch import execute_goal_document, render_goal_document
 from .csv_advisor import advise_csv, render_csv_advice
+from .goal_selector import select_goal, render_selection
 from .goal_batch import execute_batch_document, render_batch
 from .offline_doctor import run_offline_doctor, render_doctor
 from .goal_pipeline import execute_pipeline_document, render_pipeline
@@ -99,7 +100,23 @@ def main(argv: list[str] | None = None) -> int:
     advisor_cmd.add_argument('--source', required=True, help='single relative CSV path inside root')
     advisor_cmd.add_argument('--encoding', choices=['utf-8-sig','utf-8','cp949'], default='utf-8-sig')
     advisor_cmd.add_argument('--json', action='store_true', help='print editable typed goal drafts')
+    select_cmd = sub.add_parser('select-goal', help='propose a SHA-pinned owner-selected goal; never execute')
+    select_cmd.add_argument('--manifest', required=True)
+    select_cmd.add_argument('--request', required=True, help='1-500 character user request')
+    select_cmd.add_argument('--qwen-select', action='store_true', help='explicit local Qwen INPUT-only classification')
+    select_cmd.add_argument('--json', action='store_true')
     args = p.parse_args(argv)
+    if args.command == 'select-goal':
+        try:
+            report = select_goal(args.manifest, args.request,
+                                 use_qwen=args.qwen_select, model=args.model,
+                                 ollama_url=args.ollama_url)
+            print(json.dumps(report, ensure_ascii=False, indent=2) if args.json
+                  else render_selection(report))
+            return 0 if report['status'] == 'PROPOSED' else 3
+        except (ValueError, OSError, UnicodeError, csv.Error) as exc:
+            print('EAI SELECT ERROR:', type(exc).__name__, str(exc), file=sys.stderr)
+            return 1
     if args.command == 'advise-csv':
         try:
             report = advise_csv(args.root, args.source, encoding=args.encoding)
