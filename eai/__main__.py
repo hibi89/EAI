@@ -17,6 +17,7 @@ from .goal_dispatch import execute_goal_document, render_goal_document
 from .csv_advisor import advise_csv, render_csv_advice
 from .goal_selector import select_goal, render_selection
 from .report_export import build_report, render_report_html
+from .approved_run import run_approved
 from .goal_batch import execute_batch_document, render_batch
 from .offline_doctor import run_offline_doctor, render_doctor
 from .goal_pipeline import execute_pipeline_document, render_pipeline
@@ -109,7 +110,24 @@ def main(argv: list[str] | None = None) -> int:
     export_cmd = sub.add_parser('export-report', help='static verified local report to stdout only')
     export_cmd.add_argument('spec', help='explicit goal, batch or pipeline JSON')
     export_cmd.add_argument('--format', choices=['html','json'], default='html')
+    approved_cmd = sub.add_parser('run-approved', help='explicit SHA-bound owner run; no model execution authority')
+    approved_cmd.add_argument('--manifest', required=True)
+    approved_cmd.add_argument('--id', required=True)
+    approved_cmd.add_argument('--manifest-sha256', required=True)
+    approved_cmd.add_argument('--goal-sha256', required=True)
+    approved_cmd.add_argument('--json', action='store_true')
     args = p.parse_args(argv)
+    if args.command == 'run-approved':
+        try:
+            report = run_approved(args.manifest, args.id,
+                                  args.manifest_sha256, args.goal_sha256)
+            print(json.dumps(report,ensure_ascii=False,indent=2) if args.json
+                  else render_goal_document(report['receipt']))
+            return {'DECIDED':0,'TIE':0,'AGREE':0,
+                    'CONFLICT':2,'UNAVAILABLE':3}[report['status']]
+        except (ValueError,OSError,UnicodeError,csv.Error,TimeoutError) as exc:
+            print('EAI APPROVAL ERROR:',type(exc).__name__,str(exc),file=sys.stderr)
+            return 1
     if args.command == 'export-report':
         try:
             summary = build_report(args.spec)
