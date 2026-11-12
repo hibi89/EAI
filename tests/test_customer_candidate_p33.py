@@ -106,6 +106,28 @@ class CandidatePackageTests(unittest.TestCase):
         with self.assertRaisesRegex(CandidateError, "CHECKSUM_MISMATCH"):
             verify_archive(self.archive, other)
 
+    def test_hidden_zip_prefix_suffix_and_comment_rejected(self):
+        # zipfile accepts ordinary ZIP payloads with invisible bytes, even if
+        # the caller recomputes the unsigned detached digest.
+        from io import BytesIO
+        original = self.archive.read_bytes()
+        commented = BytesIO(original)
+        with ZipFile(commented, "a") as archive:
+            archive.comment = b"INVISIBLE-UNDECLARED-CONTENT"
+        variants = {
+            "prefix": b"MZ" + original,
+            "suffix": original + b"UNDECLARED-TRAILER",
+            "comment": commented.getvalue(),
+        }
+        for label, raw in variants.items():
+            with self.subTest(label=label):
+                candidate = self.root / (label + ".zip")
+                candidate.write_bytes(raw)
+                with ZipFile(candidate) as archive:
+                    self.assertEqual(8, len(archive.namelist()))
+                with self.assertRaisesRegex(CandidateError, "ARCHIVE_NONCANONICAL"):
+                    verify_archive(candidate)
+
     def test_package_no_overwrite(self):
         original = self.archive.read_bytes()
         with self.assertRaisesRegex(ValueError, "NEW file"):
