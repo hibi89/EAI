@@ -1,3 +1,5 @@
+> **[OWNER-FINAL-BLUEPRINT-100 | 2026-11-13 KST | 사용자 확정]** 공식 최종완성률은 **사용자 최종설계도 전체 = 100%** 기준으로만 산정. 작업자·총괄이 임의 설계 범위·가중치·수용조건 축소/수정 금지. 해커톤 MVP, 합성/CI, P85/P95 같은 기술 마일스톤을 공식 최종완성률로 부르면 안 된다. 최종설계 요구 ID→소스→정확 SHA 검증·미검증→승인 가중치 100점 추적표와 대조. 근거가 없으면 공식 `UNASSESSED(재산정 대기)`; 과거 수치는 내부 역사 지표로 보존. 해총 `kmong-productization` 최종완성률 원장에 결과 동기화. 기존 [작업중]/등록이력·RELEASE HOLD 변경 금지. [공통 정본](https://github.com/hibi89/hackathon-command-center-2026/blob/kmong-productization/docs/strategy/FINAL_BLUEPRINT_COMPLETION_STANDARD_20261113.md). 정책 커밋은 기능 완료나 점수 확정이 아니다.
+
 # AGENTS — EAI chief directive
 
 Read `HANDOFF.md` → `STATUS.md` → `AGENTS.md` → `REQUIREMENTS.md` → actual source each new chat.
