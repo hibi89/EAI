@@ -17,6 +17,7 @@ from .goal_dispatch import execute_goal_document, render_goal_document
 from .csv_advisor import advise_csv, render_csv_advice
 from .goal_selector import select_goal, render_selection
 from .report_export import build_report, render_report_html
+from .customer_review import create_review, verify_review, CustomerReviewError
 from .approved_run import run_approved
 from .quick_goal import quick_goal, render_quick
 from .goal_batch import execute_batch_document, render_batch
@@ -130,7 +131,31 @@ def main(argv: list[str] | None = None) -> int:
     quick_cmd.add_argument('--max-results',type=int,default=10)
     quick_cmd.add_argument('--include-snippets',action='store_true')
     quick_cmd.add_argument('--json',action='store_true')
+    review_cmd = sub.add_parser('customer-review', help='create a NEW offline HTML/JSON integrity-checked review folder')
+    review_cmd.add_argument('--spec', required=True, help='owner-authorized local goal/manifest JSON')
+    review_cmd.add_argument('--output-dir', required=True, help='unused local output directory')
+    review_cmd.add_argument('--ack-authorized-local', action='store_true', help='explicit source handling acknowledgement; not provenance proof')
+    check_cmd = sub.add_parser('verify-review', help='read-only verify existing review folder (unsigned)')
+    check_cmd.add_argument('--output-dir', required=True)
     args = p.parse_args(argv)
+    if args.command == 'customer-review':
+        try:
+            result = create_review(args.spec, args.output_dir,
+                                   acknowledge=args.ack_authorized_local)
+            print(json.dumps(result, ensure_ascii=False, indent=2))
+            return 0
+        except (CustomerReviewError, OSError, ValueError, UnicodeError) as exc:
+            code = str(exc) if isinstance(exc, CustomerReviewError) else 'CUSTOMER_REVIEW_REJECTED'
+            print(json.dumps({'status':'REJECTED','error_code':code}), file=sys.stderr)
+            return 1
+    if args.command == 'verify-review':
+        try:
+            print(json.dumps(verify_review(args.output_dir), ensure_ascii=False, indent=2))
+            return 0
+        except (CustomerReviewError, OSError, ValueError, UnicodeError) as exc:
+            code = str(exc) if isinstance(exc, CustomerReviewError) else 'VERIFY_REVIEW_REJECTED'
+            print(json.dumps({'status':'REJECTED','error_code':code}), file=sys.stderr)
+            return 1
     if args.command == 'quick-goal':
         try:
             report=quick_goal(args.kind,args.root,source=args.source,sources=args.sources,

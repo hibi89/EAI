@@ -1,3 +1,57 @@
+## 2026-11-12 KST — EAI P37 native Windows acceptance tool (10-point handoff)
+1. Goal/tech: advance EAI P85→P95 via actual customer-runner evidence without modifying 13 CPU goals or owner data; source-only portable Python3.11 ZIP.
+2. Design/decision: A auto PR Windows CI could incur unverified private Actions Windows runner charges; not enabled. B opt-in native-host test harness chosen; real `cmd.exe` and Korean-space path when a Windows host is authorized, no added paid services.
+3. Tests: source/test SHA `f3a61e624e5d21a21700ec21930a9021b4acd9c2` [Actions #43202624144](https://github.com/hibi89/EAI/actions/runs/43202624144) Ubuntu Python3.11 **637 total / 636 PASS / 0 FAIL / 1 genuine Windows-only SKIP**; compileall, CLI, synthetic ZIP build+independent verification success. Five P37 Linux-compatible tests passed; Windows CMD was NOT executed.
+4. Status: EAI **85% provisional**, P95 not reached, retail RELEASE HOLD; Windows10/11 buyer machine, genuine Qwen, rights/pilot/SmartScreen pending.
+5. Failures/stop: no current CI failures; do not turn one SKIP into Windows PASS; no automatic GitHub Windows run because billing allowance unknown. Synthetic-only source and no overwrite protect originals; previous P35/P36 unchanged.
+6. Repo/branch/SHA: `hibi89/EAI@feature/kmong-eai-85-p31-20261112`, code `f3a61e624e5d21a21700ec21930a9021b4acd9c2`; docs-only subsequent SHA; Draft PR#1 unmerged. `scripts/accept_windows_candidate.py`, `tests/test_windows_candidate_p37.py`, updated `tests/test_customer_candidate_p33.py`, `docs/P37_WINDOWS_CANDIDATE_ACCEPTANCE_20261112.md`. `main` and `feature/local-first-mvp` preserved.
+7. Production/runtime: offline Python3.11 local CLI; no Vercel/Production; synthetic unsigned candidate SHA256 `6806459198a5214eae28cf95b7bc1000b275186a46d2df31e27b6875ace153b9`, private artifact ID `13934909841`.
+8. Originals/backup: product previous tested SHA `9e53920bd3df6cf8f0a89d3416905bf2045b9e9d` rollback available; no customer files, secrets, paid service, permissions change or other repos touched.
+9. Next procedure: on approved real Windows10/11 run `python -m scripts.accept_windows_candidate --ack-windows-host` and capture true PASS/host version; test genuine localhost Qwen via P36; legal/PII/customer acceptance and owner sale approval. A Linux test cannot establish these.
+10. Updated 2026-11-12 KST; verified CI exact SHA as above, docs commit separate; P95 not accepted. [Full P37 record](docs/P37_WINDOWS_CANDIDATE_ACCEPTANCE_20261112.md).
+
+---
+
+## 2026-11-12 KST — P36 local-model acceptance, mocked CI PASS (10-point handoff)
+1. Goal/tech: EAI Python3.11 local-first CPU-owned typed tasks, genuine Qwen INPUT-only model acceptance boundary without auto execution.
+2. Decision: A silent model/download/remote API route rejected for cost/data/authority risk; B synthetic-only explicit opt-in localhost harness selected. `scripts/accept_local_qwen.py` and eight adversarial tests implemented.
+3. Verification: exact code+test SHA `9e53920bd3df6cf8f0a89d3416905bf2045b9e9d`, [Actions #43200279491](https://github.com/hibi89/EAI/actions/runs/43200279491) Python3.11 Ubuntu **632 discovered, 631 PASS, 0 FAIL, 1 native-Windows-only SKIP**; full CLI/compile/package evidence PASS. Mocked model only, actual Qwen not run.
+4. State: engineering 85% provisional unchanged, P95 not certified; retail RELEASE HOLD. Local model presence and physical Windows/customer rights missing.
+5. Errors/pivot: earlier 85 baseline and P35 passed; no current CI failure. Do not classify mock model response or nonexistent Windows as genuine; no repeated model-download trial.
+6. Repository/SHA/path: `hibi89/EAI@feature/kmong-eai-85-p31-20261112`, code `9e53920bd3df6cf8f0a89d3416905bf2045b9e9d`, `scripts/accept_local_qwen.py`, `tests/test_local_qwen_acceptance_p36.py`, `docs/P36_LOCAL_QWEN_ACCEPTANCE_20261112.md`. Draft PR#1 unmerged, `main` / `feature/local-first-mvp` preserved.
+7. Runtime: Python3.11+ offline; only approved `--ack-local-model` can contact local loopback Ollama on an actual host. CI used mocked responses; private ZIP artifact `13935096489` SHA256 `6806459198a5214eae28cf95b7bc1000b275186a46d2df31e27b6875ace153b9`; Production/Vercel N/A.
+8. Source/backup: prior functional SHA `fe5b3d56ea79` is rollback; no original customer files/secrets/model weights sent or committed, no paid CI, permission/license/seller action, platform/other repo mutation.
+9. Next: actual owner-approved localhost Qwen synthetic acceptance with `python -m scripts.accept_local_qwen --ack-local-model --approve-synthetic-run`; genuine native Windows10/11 CMD/HTML/SmartScreen acceptance; privacy/license/customer pilot. P95 only with real evidence.
+10. Updated 2026-11-12 KST; exact verified feature SHA above, docs-only commits distinct. [P36 evidence](docs/P36_LOCAL_QWEN_ACCEPTANCE_20261112.md).
+
+---
+
+## 2026-11-12 KST — EAI P35 canonical customer ZIP integrity (10-point handoff)
+1. Goal/tech: preserve 13 original CPU-owned local-first goal types and independent 85% retail candidate, reject hidden non-payload bytes in unsigned deterministic customer ZIP.
+2. Decision/delivery: A fixed allowlist+hash-only would accept `zipfile`-tolerated MZ prefix/trailer/comments; B deterministic byte-level rebuild selected (6MiB bound, zero new dependencies). `verify_customer_candidate.py` changed; one adversarial 3-variant test added.
+3. Exact proof: code/test SHA `fe5b3d56ea79b50ac80aa4d0cb3df564c400243d`, [Actions #43198255549](https://github.com/hibi89/EAI/actions/runs/43198255549) Ubuntu Python3.11.18 **624 total / 623 PASS / 0 FAIL / 1 Windows-only SKIP**; compileall, offline CLI, candidate generation+verification and synthetic uploaded ZIP SUCCESS.
+4. State: **85% provisional unchanged, P95 NOT ACHIEVED, RELEASE HOLD**. This security closure is not a new 10%p engineering acceptance or license approval.
+5. Errors/stop-pivot: real Windows and Qwen absent, not fabricated. Do not re-run identical successful CI solely to inflate counts. Current known failing tests 0; Windows test not run.
+6. Repo/branch/SHAs: `hibi89/EAI@feature/kmong-eai-85-p31-20261112`; tested `fe5b3d56ea79b50ac80aa4d0cb3df564c400243d`; documentation commit follows; Draft PR #1 unmerged; `main` and `feature/local-first-mvp` preserved. Paths: `scripts/verify_customer_candidate.py`, `tests/test_customer_candidate_p33.py`, `docs/P35_CANDIDATE_CANONICAL_ZIP_20261112.md`.
+7. Product/runtime: offline Python3.11 ZIP, no Production/Vercel; GitHub Actions synthetic candidate SHA `6806459198a5214eae28cf95b7bc1000b275186a46d2df31e27b6875ace153b9`, private artifact ID `13932949816`, unsigned/not retail.
+8. Original/backup/security: previous Git source SHA `736dcf017aed3144121d6b30c800575dc2599863` restorable, owner CSV/documents and other projects untouched; no tokens, customer data, external model/API, paid workflow, permissions or deployment modified. SHA is not a signature.
+9. Next: approved real Windows10/11 CMD/HTML/Defender/SmartScreen acceptance, genuine localhost Qwen INPUT-only route and separately CPU-verified approval, privacy/rights/customer pilot; do not claim P95 until exact gates are met.
+10. Updated: 2026-11-12 KST, tested CI SHA above; docs commit SHA separately verify after write; verification limited to Linux GitHub-hosted full suite.
+
+---
+
+## 2026-11-12 KST — EAI P31–P34 to provisional engineering 85% (10-point handoff)
+1. Goal/stack/scope: Independent CPU-owned EAI local-first Python>=3.11, optional localhost Qwen INPUT classification only. 70→85 provisional engineering, 100% original blueprint unchanged; no product release.
+2. Delivered/choice: P31 bounded 2 CSV referential integrity typed CPU goal + second independent source receipt (5p), P32 minimized source-free HTML/JSON/unsigned manifest owner review (4p), P33 separate deterministic 7-file source-only zipapp+Windows demo ZIP (4p), P34 actual extracted package CLI/tamper/no-overwrite/negative E2E (2p). Chose independent standalone goal and package over raw-key exposure/in-place old generic scanner mutation.
+3. Executed proof: exact code `736dcf017aed3144121d6b30c800575dc2599863`, [GitHub Actions #43115273614](https://github.com/hibi89/EAI/actions/runs/43115273614) Linux Python3.11 **623 discovered, 622 PASS/0 FAIL/1 Windows-only SKIP**, syntax/CLI PASS, fixed ZIP build+independent verification, SHA `d2df7b5bc4737f6b0a6262587be2f032f96e3b391272524552c7538592b7443f`, private Actions artifact ID 13896909925. Native customer Windows/real model NOT RUN.
+4. State: Engineering 85% provisional (70+5+4+4+2), consumer/buyer and commercial RELEASE HOLD, no published retail. Original 12 CPU kinds preserved; 13 with new reference check. No automatic data mutation.
+5. Errors/stop-pivot: first full 623-case CI #43115167483 1 fixture ERROR from literal escaped newline in synthetic test CSV; corrected, final complete CI #43115273614 SUCCESS. Do not repeat failed fixture/claim run 43115167483 successful. No other confirmed current failures.
+6. Repo/branch/SHA/paths: `hibi89/EAI@feature/kmong-eai-85-p31-20261112` exact feature SHA `736dcf017aed3144121d6b30c800575dc2599863`, Draft PR #1 into untouched base `feature/local-first-mvp@379d0c7a77e9a422e7c7cc1c3e11d8318510dda9`, main unchanged; new `eai/csv_key_coverage.py`, `eai/key_coverage_receipt.py`, `eai/customer_review.py`, `scripts/build_customer_candidate.py`, `scripts/verify_customer_candidate.py`, `RUN_EAI_REVIEW.cmd`, tests and docs. Final docs HEAD separately verify.
+7. Runtime/production: Offline Python3.11 source-only, GitHub-hosted Ubuntu; Linux zipapp extracted command executed, Windows runner contract static only (1 skip). Commands `python -m unittest discover -s tests -v`, `python scripts/build_customer_candidate.py --output dist/EAI-Offline-Review-0.1.0-beta.zip`, `python -m eai customer-review --spec examples/sample_key_coverage_goal.json --output-dir NEW --ack-authorized-local`. Vercel/production N/A.
+8. Original/source/rollback/secrets: Git history baseline + feature branch revert, no main/base merge, source CSVs read-only, no real customer secrets/logs/weights or private raw documents checked in, no customer data transferred, unsigned candidate kept private with SHA reference. Existing 12 EAI goals, HAE/LA/other products untouched.
+9. Next priorities/acceptance/approval: clean owner Windows10/11 CMD + Defender/SmartScreen + offline HTML file open, real approved local input privacy policy review, genuine localhost Qwen metadata-only opt-in test, customer QA and license/support/signing, owner approve release only after all. No automatic install/paid services/permissions changes.
+10. Updated 2026-11-12 KST, last exact full verified source SHA `736dcf017aed3144121d6b30c800575dc2599863`, GitHub Actions #43115273614 source scope; docs-only follow-up commit SHA must be checked. Internal 85% != commercial-ready.
+
 # EAI P23–P30 milestone handoff — 2026-11-11 KST
 
 1. **Goal/technology:** Independent local-first EAI with CPU-owned bounded planning, source analysis, deterministic decisions, independent receipts and optional Qwen **INPUT classification only**. Product engineering completion **70% provisional** on the established 100% scope; retail **RELEASE HOLD**. Python 3.11+ stdlib, no paid model/API.
