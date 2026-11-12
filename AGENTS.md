@@ -1,7 +1,8 @@
-> **[KMONG_WORK_IN_PROGRESS_20261112 — 크몽 필수 지침 / 소유자 승인]** 이 저장소에서 크몽 상품 또는 육성 후보 작업을 담당하면 새 채팅·`ㄱ` 재개 시 이 `AGENTS.md`를 반드시 읽는다.
-> - **실제 상품 개발·수정·테스트/검증 착수 시 즉시:** 중앙 `hibi89/hackathon-command-center-2026`의 `kmong-productization` 브랜치 [최종완성률 및 작업 현황 표](https://github.com/hibi89/hackathon-command-center-2026/blob/kmong-productization/docs/audits/KMONG_16_CURRENT_20261111.md)에서 **담당 제품명 바로 옆에 `**[작업중]**`**을 작성하고 실제 GitHub 커밋을 확인한다. 같은 저장소에 상품이 여럿이면 현재 담당 상품만 표시. 활성 16종 외 PREP·FFAX·Factory AX 등의 후보는 같은 문서의 별도 후보 작업 상태 표에서 표시한다.
-> - **검증된 목표 완성률 달성 / 종료 / 중단 / 보류 / 다른 상품으로 작업 전환 시 즉시:** 자신의 `[작업중]`만 제거해 GitHub 커밋을 확인한다. 다른 채팅이 작업 중인 표식은 임의 변경하지 않는다. 중앙 최신 HEAD를 먼저 읽고 동시 갱신을 보존한다.
-> - 중앙 기록 쓰기 실패 시 제품 `STATUS.md`·`HANDOFF.md`와 답변에 **`KMONG_HUB_SYNC_PENDING`**을 기록한다. 자동 실시간 동기화가 없고, 표식은 완성률 상향·판매/배포 승인이나 작업 자동 실행을 의미하지 않는다. 실제 검증 근거 없이는 숫자를 변경하지 않는다.
+> **[KMONG_WORK_TARGET_GATE_20261112 | 사용자 최신 확정 | 필수 작업 규칙]** 이 저장소에서 크몽 상품·육성 후보를 작업하는 모든 AI 담당자는 새 채팅·`ㄱ` 시작 시 이 문구를 읽고 적용한다.
+> - 실제 개발/수정/테스트 착수 즉시 [해총 크몽 최종완성률·후보 상태표](https://github.com/hibi89/hackathon-command-center-2026/blob/kmong-productization/docs/audits/KMONG_16_CURRENT_20261111.md)의 **해당 상품명 옆에 `**[작업중]**`을 표시하고 GitHub 커밋**한다. 확정 단계 목표(예: 95%)와 검증 기준을 제품 STATUS/HANDOFF에 남긴다.
+> - **목표 완성률 달성 전에는 [작업중]을 삭제하지 않는다.** 일시중단·종료·보류·다른 제품 전환·담당 채팅 변경도 삭제 사유가 아니다. 예전 '전환·중단 시 삭제' 지시는 폐기한다.
+> - **검증된 목표치에 도달한 뒤에만** 기능 SHA·PASS/FAIL/SKIP·미검증을 기록하고 자기 표시를 제거·커밋한다. 목표 하향/변경으로 표식 제거 시 사용자 명시 승인 필요. 다른 담당자 표시·기존 수치·RELEASE HOLD 보존.
+> - 표식은 목표 미달 상태를 의미하며 **실시간 실행 증명은 아니다**. 허브 최신 HEAD 확인 후 안전하게 반영, 실패 시 `KMONG_HUB_SYNC_PENDING` 기록. 자동 동기화 없음. 크몽 외 작업에는 표시 불필요.
 
 # AGENTS — EAI chief directive
 
