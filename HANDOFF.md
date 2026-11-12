@@ -1,3 +1,17 @@
+## 2026-11-12 KST — EAI P35 canonical customer ZIP integrity (10-point handoff)
+1. Goal/tech: preserve 13 original CPU-owned local-first goal types and independent 85% retail candidate, reject hidden non-payload bytes in unsigned deterministic customer ZIP.
+2. Decision/delivery: A fixed allowlist+hash-only would accept `zipfile`-tolerated MZ prefix/trailer/comments; B deterministic byte-level rebuild selected (6MiB bound, zero new dependencies). `verify_customer_candidate.py` changed; one adversarial 3-variant test added.
+3. Exact proof: code/test SHA `fe5b3d56ea79b50ac80aa4d0cb3df564c400243d`, [Actions #43198255549](https://github.com/hibi89/EAI/actions/runs/43198255549) Ubuntu Python3.11.18 **624 total / 623 PASS / 0 FAIL / 1 Windows-only SKIP**; compileall, offline CLI, candidate generation+verification and synthetic uploaded ZIP SUCCESS.
+4. State: **85% provisional unchanged, P95 NOT ACHIEVED, RELEASE HOLD**. This security closure is not a new 10%p engineering acceptance or license approval.
+5. Errors/stop-pivot: real Windows and Qwen absent, not fabricated. Do not re-run identical successful CI solely to inflate counts. Current known failing tests 0; Windows test not run.
+6. Repo/branch/SHAs: `hibi89/EAI@feature/kmong-eai-85-p31-20261112`; tested `fe5b3d56ea79b50ac80aa4d0cb3df564c400243d`; documentation commit follows; Draft PR #1 unmerged; `main` and `feature/local-first-mvp` preserved. Paths: `scripts/verify_customer_candidate.py`, `tests/test_customer_candidate_p33.py`, `docs/P35_CANDIDATE_CANONICAL_ZIP_20261112.md`.
+7. Product/runtime: offline Python3.11 ZIP, no Production/Vercel; GitHub Actions synthetic candidate SHA `6806459198a5214eae28cf95b7bc1000b275186a46d2df31e27b6875ace153b9`, private artifact ID `13932949816`, unsigned/not retail.
+8. Original/backup/security: previous Git source SHA `736dcf017aed3144121d6b30c800575dc2599863` restorable, owner CSV/documents and other projects untouched; no tokens, customer data, external model/API, paid workflow, permissions or deployment modified. SHA is not a signature.
+9. Next: approved real Windows10/11 CMD/HTML/Defender/SmartScreen acceptance, genuine localhost Qwen INPUT-only route and separately CPU-verified approval, privacy/rights/customer pilot; do not claim P95 until exact gates are met.
+10. Updated: 2026-11-12 KST, tested CI SHA above; docs commit SHA separately verify after write; verification limited to Linux GitHub-hosted full suite.
+
+---
+
 ## 2026-11-12 KST — EAI P31–P34 to provisional engineering 85% (10-point handoff)
 1. Goal/stack/scope: Independent CPU-owned EAI local-first Python>=3.11, optional localhost Qwen INPUT classification only. 70→85 provisional engineering, 100% original blueprint unchanged; no product release.
 2. Delivered/choice: P31 bounded 2 CSV referential integrity typed CPU goal + second independent source receipt (5p), P32 minimized source-free HTML/JSON/unsigned manifest owner review (4p), P33 separate deterministic 7-file source-only zipapp+Windows demo ZIP (4p), P34 actual extracted package CLI/tamper/no-overwrite/negative E2E (2p). Chose independent standalone goal and package over raw-key exposure/in-place old generic scanner mutation.
