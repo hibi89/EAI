@@ -114,6 +114,21 @@ def verify_archive(path, checksum=None):
                 if (len(raw) != entry["bytes"] or
                         not hmac.compare_digest(_sha(raw), entry["sha256"])):
                     raise CandidateError("ARCHIVE_PAYLOAD_MISMATCH")
+            # The producer emits one deterministic ZIP layout. Python's
+            # ZipFile tolerates self-extracting prefixes, suffix bytes and
+            # archive comments. Reject those hidden non-payload bytes.
+            normalized = io.BytesIO()
+            with zipfile.ZipFile(normalized, "w",
+                                 compression=zipfile.ZIP_STORED,
+                                 allowZip64=False) as clean:
+                for name in sorted(expected):
+                    entry = zipfile.ZipInfo(name, date_time=(2020, 1, 1, 0, 0, 0))
+                    entry.compress_type = zipfile.ZIP_STORED
+                    entry.create_system = 3
+                    entry.external_attr = 0o100644 << 16
+                    clean.writestr(entry, z.read(name))
+            if normalized.getvalue() != binary:
+                raise CandidateError("ARCHIVE_NONCANONICAL")
     except (zipfile.BadZipFile, EOFError, RuntimeError) as exc:
         raise CandidateError("ARCHIVE_INVALID") from exc
     return {"status": "CANDIDATE_ZIP_CONSISTENT_UNSIGNED",
