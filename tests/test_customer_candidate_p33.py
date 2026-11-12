@@ -152,6 +152,14 @@ class CandidatePackageTests(unittest.TestCase):
                              cwd=self.root)
         self.assertEqual(0, cmd.returncode, cmd.stdout + cmd.stderr)
         self.assertTrue((self.root / "unpacked" / "EAI-SYNTHETIC-REVIEW" / "review.html").exists())
+        # Run the full P37 Korean-path, tamper-aware, no-overwrite acceptance
+        # only on a genuine Windows host; never infer it from Linux mocks.
+        from scripts.accept_windows_candidate import accept_windows_candidate
+        evidence = accept_windows_candidate(acknowledge=True)
+        self.assertEqual("PASS", evidence["status"], evidence)
+        self.assertEqual("PASS", evidence["korean_space_path"])
+        self.assertEqual("PASS", evidence["repeat_no_overwrite"])
+        self.assertFalse(evidence["release_approved"])
 
 
 if __name__ == "__main__":
