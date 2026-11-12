@@ -1,3 +1,17 @@
+## 2026-11-12 KST — EAI P37 native Windows acceptance tool (10-point handoff)
+1. Goal/tech: advance EAI P85→P95 via actual customer-runner evidence without modifying 13 CPU goals or owner data; source-only portable Python3.11 ZIP.
+2. Design/decision: A auto PR Windows CI could incur unverified private Actions Windows runner charges; not enabled. B opt-in native-host test harness chosen; real `cmd.exe` and Korean-space path when a Windows host is authorized, no added paid services.
+3. Tests: source/test SHA `f3a61e624e5d21a21700ec21930a9021b4acd9c2` [Actions #43202624144](https://github.com/hibi89/EAI/actions/runs/43202624144) Ubuntu Python3.11 **637 total / 636 PASS / 0 FAIL / 1 genuine Windows-only SKIP**; compileall, CLI, synthetic ZIP build+independent verification success. Five P37 Linux-compatible tests passed; Windows CMD was NOT executed.
+4. Status: EAI **85% provisional**, P95 not reached, retail RELEASE HOLD; Windows10/11 buyer machine, genuine Qwen, rights/pilot/SmartScreen pending.
+5. Failures/stop: no current CI failures; do not turn one SKIP into Windows PASS; no automatic GitHub Windows run because billing allowance unknown. Synthetic-only source and no overwrite protect originals; previous P35/P36 unchanged.
+6. Repo/branch/SHA: `hibi89/EAI@feature/kmong-eai-85-p31-20261112`, code `f3a61e624e5d21a21700ec21930a9021b4acd9c2`; docs-only subsequent SHA; Draft PR#1 unmerged. `scripts/accept_windows_candidate.py`, `tests/test_windows_candidate_p37.py`, updated `tests/test_customer_candidate_p33.py`, `docs/P37_WINDOWS_CANDIDATE_ACCEPTANCE_20261112.md`. `main` and `feature/local-first-mvp` preserved.
+7. Production/runtime: offline Python3.11 local CLI; no Vercel/Production; synthetic unsigned candidate SHA256 `6806459198a5214eae28cf95b7bc1000b275186a46d2df31e27b6875ace153b9`, private artifact ID `13934909841`.
+8. Originals/backup: product previous tested SHA `9e53920bd3df6cf8f0a89d3416905bf2045b9e9d` rollback available; no customer files, secrets, paid service, permissions change or other repos touched.
+9. Next procedure: on approved real Windows10/11 run `python -m scripts.accept_windows_candidate --ack-windows-host` and capture true PASS/host version; test genuine localhost Qwen via P36; legal/PII/customer acceptance and owner sale approval. A Linux test cannot establish these.
+10. Updated 2026-11-12 KST; verified CI exact SHA as above, docs commit separate; P95 not accepted. [Full P37 record](docs/P37_WINDOWS_CANDIDATE_ACCEPTANCE_20261112.md).
+
+---
+
 ## 2026-11-12 KST — P36 local-model acceptance, mocked CI PASS (10-point handoff)
 1. Goal/tech: EAI Python3.11 local-first CPU-owned typed tasks, genuine Qwen INPUT-only model acceptance boundary without auto execution.
 2. Decision: A silent model/download/remote API route rejected for cost/data/authority risk; B synthetic-only explicit opt-in localhost harness selected. `scripts/accept_local_qwen.py` and eight adversarial tests implemented.
