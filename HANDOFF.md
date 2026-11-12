@@ -1,3 +1,17 @@
+## 2026-11-12 KST — P36 local-model acceptance, mocked CI PASS (10-point handoff)
+1. Goal/tech: EAI Python3.11 local-first CPU-owned typed tasks, genuine Qwen INPUT-only model acceptance boundary without auto execution.
+2. Decision: A silent model/download/remote API route rejected for cost/data/authority risk; B synthetic-only explicit opt-in localhost harness selected. `scripts/accept_local_qwen.py` and eight adversarial tests implemented.
+3. Verification: exact code+test SHA `9e53920bd3df6cf8f0a89d3416905bf2045b9e9d`, [Actions #43200279491](https://github.com/hibi89/EAI/actions/runs/43200279491) Python3.11 Ubuntu **632 discovered, 631 PASS, 0 FAIL, 1 native-Windows-only SKIP**; full CLI/compile/package evidence PASS. Mocked model only, actual Qwen not run.
+4. State: engineering 85% provisional unchanged, P95 not certified; retail RELEASE HOLD. Local model presence and physical Windows/customer rights missing.
+5. Errors/pivot: earlier 85 baseline and P35 passed; no current CI failure. Do not classify mock model response or nonexistent Windows as genuine; no repeated model-download trial.
+6. Repository/SHA/path: `hibi89/EAI@feature/kmong-eai-85-p31-20261112`, code `9e53920bd3df6cf8f0a89d3416905bf2045b9e9d`, `scripts/accept_local_qwen.py`, `tests/test_local_qwen_acceptance_p36.py`, `docs/P36_LOCAL_QWEN_ACCEPTANCE_20261112.md`. Draft PR#1 unmerged, `main` / `feature/local-first-mvp` preserved.
+7. Runtime: Python3.11+ offline; only approved `--ack-local-model` can contact local loopback Ollama on an actual host. CI used mocked responses; private ZIP artifact `13935096489` SHA256 `6806459198a5214eae28cf95b7bc1000b275186a46d2df31e27b6875ace153b9`; Production/Vercel N/A.
+8. Source/backup: prior functional SHA `fe5b3d56ea79` is rollback; no original customer files/secrets/model weights sent or committed, no paid CI, permission/license/seller action, platform/other repo mutation.
+9. Next: actual owner-approved localhost Qwen synthetic acceptance with `python -m scripts.accept_local_qwen --ack-local-model --approve-synthetic-run`; genuine native Windows10/11 CMD/HTML/SmartScreen acceptance; privacy/license/customer pilot. P95 only with real evidence.
+10. Updated 2026-11-12 KST; exact verified feature SHA above, docs-only commits distinct. [P36 evidence](docs/P36_LOCAL_QWEN_ACCEPTANCE_20261112.md).
+
+---
+
 ## 2026-11-12 KST — EAI P35 canonical customer ZIP integrity (10-point handoff)
 1. Goal/tech: preserve 13 original CPU-owned local-first goal types and independent 85% retail candidate, reject hidden non-payload bytes in unsigned deterministic customer ZIP.
 2. Decision/delivery: A fixed allowlist+hash-only would accept `zipfile`-tolerated MZ prefix/trailer/comments; B deterministic byte-level rebuild selected (6MiB bound, zero new dependencies). `verify_customer_candidate.py` changed; one adversarial 3-variant test added.
