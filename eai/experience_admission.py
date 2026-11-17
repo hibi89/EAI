@@ -126,3 +126,57 @@ def inspect_learning_admission(
     return ExperienceGateResult(
         decision, candidate.candidate_sha256, fingerprint, candidates,
         tuple(sorted(set(reasons))))
+
+
+# EAI-SWU-023: independent synthetic episode review -> durable replay screen.
+@dataclass(frozen=True)
+class EpisodeLearningBoundary:
+    status: str
+    candidate_sha256: str
+    replay_fingerprints: tuple[str, ...]
+    rejected_memory_hashes: tuple[str, ...]
+    reasons: tuple[str, ...]
+    independently_verified_training_data: bool = False
+    learning_authorized: bool = False
+    real_execution_authorized: bool = False
+
+
+def review_episode_learning_boundary(
+    store: AXNodeStore, problem: ProblemSpec, candidate: SynthesisCandidate,
+    baseline: ActualSolverAudit, episodes: tuple[EpisodeReplayDecision, ...],
+    evidence: CandidateEvidenceReview, fence,
+) -> EpisodeLearningBoundary:
+    """Actual independent candidate and episode checks; never trust raw labels."""
+    from .episode_replay_fence import EpisodeReplayFence
+    from .episode_replay_dedup import screen_episodes_for_manual_review
+    if (type(fence) is not EpisodeReplayFence
+            or fence.path.is_relative_to(store.root)
+            or fence.writable):
+        raise ValueError("strict read-only isolated replay index required")
+    admission = inspect_learning_admission(
+        store, problem, candidate, baseline, episodes,
+        candidate_review=evidence)
+    screened = screen_episodes_for_manual_review(
+        problem, candidate, episodes, evidence)
+    reasons = set(admission.reason_codes) | set(screened.reasons)
+    if (admission.candidate_sha256 != candidate.candidate_sha256
+            or screened.candidate_sha256 != candidate.candidate_sha256
+            or screened.admits_training or screened.grants_execution
+            or admission.eligible_for_learning or admission.eligible_for_execution):
+        raise PermissionError("untrusted training or execution authority")
+    if screened.status != "SYNTHETIC_EPISODE_MANUAL_REVIEW_ONLY":
+        reasons.add("EPISODE_NOT_ELIGIBLE_FOR_MANUAL_REVIEW")
+    for fingerprint in screened.reviewed_fingerprints:
+        if fence.contains(fingerprint):
+            reasons.add("DURABLE_REPLAY_FINGERPRINT_ALREADY_SEEN")
+    reasons.add("EXTERNAL_INDEPENDENT_VERIFIED_OUTCOMES_MISSING")
+    available = (
+        screened.reviewed_fingerprints if
+        "DURABLE_REPLAY_FINGERPRINT_ALREADY_SEEN" not in reasons and
+        screened.status == "SYNTHETIC_EPISODE_MANUAL_REVIEW_ONLY"
+        else ())
+    return EpisodeLearningBoundary(
+        "MANUAL_SYNTHETIC_EPISODE_REVIEW_NOT_TRAINING"
+        if available else "HOLD_UNTRUSTED_EXPERIENCE",
+        candidate.candidate_sha256, tuple(available),
+        screened.rejected_memory_hashes, tuple(sorted(reasons)))

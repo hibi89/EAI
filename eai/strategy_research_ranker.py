@@ -96,3 +96,48 @@ def rank_synthetic_strategy_previews(
         else "HOLD_NO_RECHECKED_SYNTHETIC_STRATEGY",
         problem.digest(), curriculum.manifest_sha256,
         tuple(scored), tuple(held))
+
+
+# EAI-SWU-024/026: keep ranking and speculative CPU prior separate from trust.
+@dataclass(frozen=True)
+class LocalResearchRanking:
+    problem_sha256: str
+    status: str
+    cost_order: tuple[str, ...]
+    declined: tuple[tuple[str, str], ...]
+    independent_ood_verified: bool = False
+    trained_for_real_use: bool = False
+    permits_execution: bool = False
+    permits_promotion: bool = False
+
+
+def rank_bounded_strategy_research(
+    store: AXNodeStore, problem: ProblemSpec,
+    candidates: tuple[SynthesisCandidate, ...],
+    curriculum: SyntheticCurriculum,
+) -> LocalResearchRanking:
+    """Actual synthetic CPU ranking -> cost envelope; out-of-domain is HOLD."""
+    from .strategy_cost_stats import build_bounded_strategy_cost_envelope
+    reviewed = rank_synthetic_strategy_previews(
+        store, problem, candidates, curriculum)
+    from .strategy_learner import (
+        ResearchStrategyObservation, derive_synthetic_strategy_prior)
+    envelopes = build_bounded_strategy_cost_envelope(
+        reviewed.ranked, max_steps=problem.budget[0],
+        max_seconds=problem.budget[1])
+    for entry in envelopes:
+        observation = ResearchStrategyObservation(
+            entry.candidate_sha256,
+            entry.step_upper_bound, entry.second_upper_bound,
+            "synthetic.cost.v1")
+        prior = derive_synthetic_strategy_prior(
+            entry.candidate_sha256, (observation,),
+            update_research_prior=True)
+        if prior.can_train_trusted_model or prior.accuracy_established:
+            raise ValueError("unverified local CPU prior exceeded authority")
+    return LocalResearchRanking(
+        problem.digest(),
+        "SYNTHETIC_CPU_COST_ORDER_NOT_TRAINED" if envelopes
+        else "HOLD_NO_SYNTHETIC_STRATEGY",
+        tuple(item.candidate_sha256 for item in envelopes),
+        reviewed.held)
