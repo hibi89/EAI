@@ -53,7 +53,7 @@ class SidecarBackupTests(unittest.TestCase):
             restored=restore_sidecar_bundle(zip_path,self.base/"quarantine")
         self.assertEqual(restored.name,"quarantine")
         self.assertEqual({p.name for p in restored.iterdir()},
-                         {"memory.sqlite","evidence.sqlite"})
+                         {"memory.sqlite","evidence.sqlite",".eai-restore-complete.sha256"})
         self.assertEqual(original,{x:(self.root/x).read_bytes() for x in original})
         with sqlite3.connect(restored/"memory.sqlite") as db:
             self.assertEqual(db.execute("SELECT count(*) FROM entries").fetchone()[0],1)
@@ -144,6 +144,29 @@ class SidecarBackupTests(unittest.TestCase):
         if os.name == "posix":
             self.assertEqual(archive.stat().st_mode & 0o077,0)
         self.assertGreater(archive.stat().st_size,0)
+
+    def test_incomplete_restore_has_no_success_marker(self):
+        self.make_sidecars()
+        archive=self.base/"incomplete.zip"
+        create_sidecar_bundle(self.store,archive)
+        import os
+        target=self.base/"interrupted"
+        original=os.link
+        calls=[0]
+        def stop_midway(src,dest,*args,**kwargs):
+            if Path(dest).parent==target:
+                calls[0]+=1
+                if calls[0]==2:
+                    raise OSError("synthetic crash during second file publication")
+            return original(src,dest,*args,**kwargs)
+        with patch("eai.axnode_sidecar_backup.os.link",side_effect=stop_midway):
+            with self.assertRaisesRegex(OSError,"synthetic crash"):
+                restore_sidecar_bundle(archive,target)
+        self.assertTrue(target.is_dir())
+        self.assertFalse((target/".eai-restore-complete.sha256").exists())
+        self.assertEqual((target/"evidence.sqlite").exists()+
+                         (target/"memory.sqlite").exists(),1)
+        self.assertTrue(archive.exists())
 
     def test_active_store_location_rejected_for_archive(self):
         self.make_sidecars()
