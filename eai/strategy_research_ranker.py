@@ -152,15 +152,18 @@ def rank_bounded_strategy_research(
             entry.candidate_sha256,
             entry.step_upper_bound, entry.second_upper_bound,
             "synthetic.cost.v1")
-        prior = derive_synthetic_strategy_prior(
+        local_cost_preview = derive_synthetic_strategy_prior(
             entry.candidate_sha256, (observation,),
             update_research_prior=True)
-        if prior.can_train_trusted_model or prior.accuracy_established:
+        if (local_cost_preview.can_train_trusted_model
+                or local_cost_preview.accuracy_established):
             raise ValueError("unverified local CPU prior exceeded authority")
     measured = tuple(sorted((
         score.candidate_sha256, score.measured_synthetic_cpu_ms
     ) for score in reviewed.ranked
         if score.measured_synthetic_cpu_ms is not None))
+    # Do not shadow the caller's BoundedResearchPrior with individual
+    # ResearchStrategyUpdate previews in the loop above.
     new_prior, change = prior, "NOT_REQUESTED"
     if update_research:
         # A true bounded CPU update re-evaluates both B0 and B1 independently.

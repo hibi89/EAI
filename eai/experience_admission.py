@@ -144,21 +144,39 @@ class EpisodeLearningBoundary:
 def review_episode_learning_boundary(
     store: AXNodeStore, problem: ProblemSpec, candidate: SynthesisCandidate,
     baseline: ActualSolverAudit, episodes: tuple[EpisodeReplayDecision, ...],
-    evidence: CandidateEvidenceReview, fence,
+    evidence: CandidateEvidenceReview, fence, *, review_journal=None,
 ) -> EpisodeLearningBoundary:
     """Actual independent candidate and episode checks; never trust raw labels."""
     from .episode_replay_fence import EpisodeReplayFence
     from .episode_replay_dedup import screen_episodes_for_manual_review
+    from .candidate_review_journal import CandidateReviewJournal
     if (type(fence) is not EpisodeReplayFence
             or fence.path.is_relative_to(store.root)
             or fence.writable):
         raise ValueError("strict read-only isolated replay index required")
+    if review_journal is not None and (
+            type(review_journal) is not CandidateReviewJournal
+            or review_journal.path.is_relative_to(store.root)
+            or review_journal.path == fence.path):
+        raise ValueError("independent isolated review journal required")
     admission = inspect_learning_admission(
         store, problem, candidate, baseline, episodes,
         candidate_review=evidence)
     screened = screen_episodes_for_manual_review(
         problem, candidate, episodes, evidence)
     reasons = set(admission.reason_codes) | set(screened.reasons)
+    # Reconcile the source-pinned candidate review against the *actual*
+    # append-only journal. Dataclass hashes alone are never evidence that a
+    # separate verifier reviewed this candidate.
+    if review_journal is None:
+        reasons.add("ISOLATED_CANDIDATE_REVIEW_JOURNAL_MISSING")
+    else:
+        latest = review_journal.latest_for(candidate.candidate_sha256)
+        if (latest is None
+                or latest.state != "REVIEW_HOLD"
+                or latest.evidence_sha256 != evidence.review_sha256
+                or latest.previous_active_sha256 is not None):
+            reasons.add("CANDIDATE_JOURNAL_QUARANTINED_OR_STALE")
     if (admission.candidate_sha256 != candidate.candidate_sha256
             or screened.candidate_sha256 != candidate.candidate_sha256
             or screened.admits_training or screened.grants_execution
@@ -172,8 +190,9 @@ def review_episode_learning_boundary(
     reasons.add("EXTERNAL_INDEPENDENT_VERIFIED_OUTCOMES_MISSING")
     available = (
         screened.reviewed_fingerprints if
-        "DURABLE_REPLAY_FINGERPRINT_ALREADY_SEEN" not in reasons and
-        screened.status == "SYNTHETIC_EPISODE_MANUAL_REVIEW_ONLY"
+        reasons == {"ACTUAL_COMPOSED_CANDIDATE_INDEPENDENT_ORACLE_MISSING",
+                    "EXTERNAL_INDEPENDENT_VERIFIED_OUTCOMES_MISSING"}
+        and screened.status == "SYNTHETIC_EPISODE_MANUAL_REVIEW_ONLY"
         else ())
     return EpisodeLearningBoundary(
         "MANUAL_SYNTHETIC_EPISODE_REVIEW_NOT_TRAINING"

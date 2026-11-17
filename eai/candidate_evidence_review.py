@@ -185,6 +185,15 @@ def intake_candidate_receipt_for_review(
     if record_locally:
         # Append-only isolated review, never the ACTIVE catalog.
         written = journal.record(review, state=state)
+        # Read the actual committed chain again: a returned Python value by
+        # itself is not proof that the isolated journal contains this review.
+        journal.verify_chain()
+        stored = journal.entries()
+        if (not stored or stored[-1] != written
+                or written.evidence_sha256 != review.review_sha256
+                or written.candidate_sha256 != candidate.candidate_sha256
+                or written.state != state):
+            raise ValueError("review journal write/readback diverged")
     reason = ("INDEPENDENT_EXTERNAL_ORACLE_UNAVAILABLE",)
     if any(value is not None for value in supplied):
         reason += ("REVIEWER_INDEPENDENCE_NOT_PROVEN",)
