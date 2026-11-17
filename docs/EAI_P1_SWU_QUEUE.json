@@ -3183,7 +3183,7 @@
   "P2": "LOCKED",
   "latest_feature_code_sha": "0462463a23db0d7baf67fadc94d7198e404337e1",
   "source_candidate_count": 36,
-  "next_safe_queue_status": "SWU-039 staged codec source at 60f9e88 (local preview + strict untrusted parsing) but remains BLOCKED_APPROVAL for live provider; 007/008 and 020/023/024 owned by pending Codex Sol Max critical paths; 8 ranker tests must be re-run against full repo after 0462463; no ordinary READY.",
+  "next_safe_queue_status": "OWNER 2026-11-18 SWU-CPAA+SWU-WE default: web GPT-6 single worker dynamically executes multi-SWU waves in one ㄱ (parallel safe reads/checks, serial reasoning/code), rechecking SHA/DAG each wave; no ordinary READY currently. 007->008 and 020->023->024 high-risk critical paths under web safe code review with optional Codex Sol Max direct implementation when necessary, not pre-assigned; 039 LIVE HOLD pending owner GO. No status/percent changed.",
   "next_dependency_blocker": "007/008 genuine crash-safe cross-DB isolated write/publish/rollback; 020 owner-governed independent verifier truth; 023/024 independently verified admission/learner; 039 authentic per-send owner GO/free-tier and actual live provider transport. 8 existing ranker errors have source-level fix at 0462463, target rerun NOT_RUN.",
   "retry_escalation_policy": {
     "schema": "eai.p1.retry.isolate.solmax.v1",

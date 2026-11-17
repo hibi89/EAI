@@ -1,3 +1,15 @@
+## 2026-11-18 KST — EAI CPAA+WE wavefront handoff (10)
+1. Mission EAI V3.1 P1 source only, repo `hibi89/EAI`, branch `feature/kmong-eai-85-p31-20261112`.
+2. Owner selected **web GPT-6 single-worker multi-wave first**, CPAA critical-path ordering; prior Sol-Max-first A/B coding resource assignment superseded. One-model reasoning/code sequential, independent GitHub tool calls/tests may run concurrently. Multiple waves per `ㄱ` if safe work remains.
+3. No source code change from policy selection; runtime/CI NOT_RUN, updated strategy document only.
+4. 36/42 (85.7%) provisional source candidates unchanged; official P1/P2 UNASSESSED, P2 LOCKED, RELEASE HOLD.
+5. Critical blockers A 007→008 cross-DB crash-safe write, B 020→023→024 governed truth/verified learning. 039 separate LIVE approval. Current ordinary READY none; continue only safe isolated code slices, never fake status.
+6. Basis HEAD `7b97588146961a214dfd6db227fb5369a505aeb5`; strategy docs SHA follows. Verify latest branch SHA before next implementation.
+7. No original/cust-data DB write, network Hydrogen, paid/external, real Player/ACTIVE, main/Production changes without owner GO.
+8. Blueprint blob `1b0712679d4171cd3681588e104ea5e8c6f6690d`, P26 and ADR-0002 remain protected.
+9. Next `ㄱ`: analyze safety-bounded functional code gaps across A/B/C, batch independent reads, code and minimum safety checks, commit noncolliding source work, reevaluate subsequent wave. Sol Max only if genuine critical path requires it; maintain 2+2 per SWU.
+10. 2026-11-18 KST; process-policy update only, no product implementation or testing evidence inferred.
+
 ## 2026-11-17 KST — EAI isolated Hydrogen codec code handoff (10)
 1. EAI V3.1 P1 on `feature/kmong-eai-85-p31-20261112` only; SWU-039 allowed path `eai/hydrogen_adapter.py`.
 2. Actual source SHA `60f9e882fc286ad3b0c92053312f87af852e11cf`, blob `a5c6286d09641ff39bb4f0782520db4e71ea194c`: Gemini request payload *preview* and strict untrusted-response-to-quarantined-idea parser; no live client, credential lookup or network, no CPU result override.
