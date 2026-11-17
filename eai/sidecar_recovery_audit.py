@@ -16,7 +16,9 @@ import sqlite3
 import zipfile
 
 from .axnode_store import AXNodeStore
-from .axnode_sidecar_backup import _FILES, _MAX_DB, _MAX_ZIP, _check_sqlite
+from .axnode_sidecar_backup import (
+    _FILES, _MAX_DB, _MAX_ZIP, _COMPLETE_MARKER, _check_sqlite,
+)
 
 
 @dataclass(frozen=True)
@@ -67,8 +69,17 @@ def audit_isolated_sidecar_restore(
                 type(manifest["files"]) is not dict or not manifest["files"] or
                 set(manifest["files"]) - set(_FILES) or
                 set(archive_names) != {"manifest.json", *manifest["files"]} or
-                names != set(manifest["files"])):
+                names != set(manifest["files"]) | {_COMPLETE_MARKER}):
             raise ValueError("incomplete or unexpected restored sidecars")
+        marker = root / _COMPLETE_MARKER
+        if (marker.is_symlink() or not marker.is_file() or
+                marker.stat().st_size != 65):
+            raise ValueError("isolated sidecar restore not committed")
+        manifest_digest = hashlib.sha256(json.dumps(
+            manifest, sort_keys=True,
+            separators=(",", ":")).encode("utf-8")).hexdigest()
+        if marker.read_text(encoding="ascii") != manifest_digest + "\n":
+            raise ValueError("isolated sidecar completion marker mismatched")
         archive_digests = manifest["files"]
         count, anchors = 0, set()
         for name, digest in sorted(archive_digests.items()):
