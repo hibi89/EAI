@@ -105,6 +105,17 @@ class EAIPreviewCLITests(unittest.TestCase):
         self.assertNotIn("PRIVATE", err)
         self.assertNotIn(str(self.root), err)
 
+    def test_player_explanation_terminal_format(self):
+        code, out, err = self.call([
+            "explain-preview", "--kind", "player", "--format", "text",
+            "--problem-file", str(self.problem_file),
+            "--plan-file", str(self.plan_file)])
+        self.assertEqual(code, 0)
+        self.assertEqual(err, "")
+        self.assertIn("EAI PLAYER - SYNTHETIC OR DENIED", out)
+        self.assertIn("REAL-WORLD VERIFICATION: NOT ESTABLISHED", out)
+        self.assertNotIn("PRIVATE", out)
+
     def test_adapter_invalid_secret_json_is_not_echoed(self):
         self.handshake_file.write_text('{"PRIVATE": "a"}',
                                        encoding="utf-8")

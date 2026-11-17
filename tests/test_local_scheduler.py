@@ -79,6 +79,52 @@ class LocalSchedulerTests(unittest.TestCase):
         self.assertEqual(result.status, "HOLD_LOCAL_RESOURCE_BUDGET")
         self.assertIn("REAL_RSS_NOT_ESTABLISHED", result.reason_codes)
 
+    def test_pure_plan_resource_preflight_mints_no_execution_right(self):
+        from eai.contracts import ProblemSpec, PlanSpec
+        from eai.local_scheduler import inspect_plan_resource_preflight
+        problem = ProblemSpec.validate({
+            "version": 1, "id": "synthetic.budget",
+            "goal": "LOCAL only", "domain": "research",
+            "state_refs": [], "assumptions": [], "hard_constraints": [],
+            "objectives": ["safety"], "oracle": "synthetic",
+            "permissions": ["pure"],
+            "budget": {"max_steps": 2, "max_seconds": 5}, "risk": "LOW",
+        })
+        plan = PlanSpec.validate({
+            "version": 1, "problem_sha256": problem.digest(),
+            "steps": [{"id": "step01", "operator": "synthetic.noop.v1",
+                       "requires": [], "capability": "pure"}],
+            "budget": {"max_steps": 1, "max_seconds": 2},
+        })
+        observation = inspect_plan_resource_preflight(
+            problem, plan, self.budget, self.sample())
+        self.assertEqual(observation.status,
+                         "PURE_SYNTHETIC_PLAN_PREFLIGHT_ONLY")
+        self.assertFalse(observation.permits_real_execution)
+        self.assertFalse(observation.permits_original_writes)
+
+    def test_plan_upper_bound_over_cpu_deadline_is_rejected(self):
+        from eai.contracts import ProblemSpec, PlanSpec
+        from eai.local_scheduler import inspect_plan_resource_preflight
+        problem = ProblemSpec.validate({
+            "version": 1, "id": "synthetic.limit", "goal": "LOCAL",
+            "domain": "research", "state_refs": [], "assumptions": [],
+            "hard_constraints": [], "objectives": ["safety"],
+            "oracle": "synthetic", "permissions": ["pure"],
+            "budget": {"max_steps": 2, "max_seconds": 20}, "risk": "LOW",
+        })
+        plan = PlanSpec.validate({
+            "version": 1, "problem_sha256": problem.digest(),
+            "steps": [{"id": "step01", "operator": "synthetic.noop.v1",
+                       "requires": [], "capability": "pure"}],
+            "budget": {"max_steps": 1, "max_seconds": 10},
+        })
+        result = inspect_plan_resource_preflight(
+            problem, plan, self.budget, self.sample())
+        self.assertIn("DECLARED_PLAN_BUDGET_EXCEEDS_CPU_POLICY",
+                      result.reason_codes)
+        self.assertFalse(result.permits_real_execution)
+
     def test_mocked_local_probe_has_no_external_side_effect(self):
         with patch("eai.local_scheduler.observe_own_process_rss_bytes",
                    return_value=128 * 1024 * 1024):

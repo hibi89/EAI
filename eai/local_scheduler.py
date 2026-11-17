@@ -157,6 +157,48 @@ def evaluate_local_budget(
     )
 
 
+@dataclass(frozen=True)
+class LocalPlanPreflight:
+    """Structural safety check only: not proof of runtime latency or permission."""
+    status: str
+    plan_sha256: str
+    reason_codes: tuple[str, ...]
+    permits_real_execution: bool = False
+    permits_original_writes: bool = False
+
+
+def inspect_plan_resource_preflight(
+    problem: object, plan: object,
+    budget: LocalResourceBudget, sample: LocalResourceSample,
+) -> LocalPlanPreflight:
+    from .policy_gate import evaluate_plan_policy
+    policy = evaluate_plan_policy(problem, plan)
+    observation = evaluate_local_budget(budget, sample)
+    reasons = set(policy.reason_codes) | set(observation.reason_codes)
+    if policy.disposition != "PURE_SYNTHETIC_PREVIEW_ONLY":
+        reasons.add("PLAN_POLICY_DENIED")
+    # A declared ceiling is NOT a runtime benchmark; requiring it within
+    # bounds is deliberately conservative until exact local profiling.
+    if (plan.budget[0] > budget.max_steps
+            or plan.budget[1] * 1000 > budget.max_elapsed_ms):
+        reasons.add("DECLARED_PLAN_BUDGET_EXCEEDS_CPU_POLICY")
+    return LocalPlanPreflight(
+        "PURE_SYNTHETIC_PLAN_PREFLIGHT_ONLY" if not reasons
+        else "HOLD_PLAN_RESOURCE_PREFLIGHT",
+        policy.plan_sha256, tuple(sorted(reasons)))
+
+
+def observe_plan_resource_preflight(
+    problem: object, plan: object, budget: LocalResourceBudget,
+    *, elapsed_ms: int, steps_completed: int,
+) -> LocalPlanPreflight:
+    rss = observe_own_process_rss_bytes()
+    sample = LocalResourceSample(
+        rss, elapsed_ms, steps_completed,
+        source="PROCESS_RSS_LOCAL" if rss is not None else "CALLER_UNVERIFIED")
+    return inspect_plan_resource_preflight(problem, plan, budget, sample)
+
+
 def observe_and_evaluate_local_budget(
     budget: LocalResourceBudget, *, elapsed_ms: int, steps_completed: int,
     running_tasks: int = 1, cancelled: bool = False,

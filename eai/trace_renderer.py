@@ -140,3 +140,69 @@ def render_player_explanation(raw: dict) -> dict:
         "verified_real_world": False,
         "network": "DISABLED_BY_DESIGN",
     }
+
+def render_explanation_text(raw: dict) -> str:
+    """ASCII-safe offline terminal report, built from validated structured data."""
+    if type(raw) is not dict or raw.get("schema") != "eai.explanation.v1":
+        raise ValueError("typed explanation required")
+    kind = raw.get("kind")
+    if kind == "ARCHITECT":
+        from_data = render_architect_explanation({
+            "schema": "eai.architect.preview.v1",
+            "problem_sha256": raw.get("problem_sha256"),
+            "status": raw.get("status"),
+            "truth_status": raw.get("truth_status"),
+            "execution": "NOT_EXECUTED", "model": "LOCAL_CPU_ONLY",
+            "analysis": {
+                "unknowns": ["REDACTED"] * _bounded_count(
+                    raw.get("uncertainty", {}).get("unknown_count"), 32),
+                "contradictions": ["REDACTED"] * _bounded_count(
+                    raw.get("uncertainty", {}).get("contradiction_count"), 32),
+            },
+            "evidence_review_required": raw.get(
+                "uncertainty", {}).get("evidence_review_required"),
+            "advisory_plans": [{
+                "alternative_id": p.get("alternative_id"),
+                "status": p.get("status"),
+                "node_hashes": p.get("source_sha256"),
+                "plan_steps": [{"operator": x} for x in p.get("operator_ids", [])],
+            } for p in raw.get("alternatives", [])],
+        })
+        if from_data != raw:
+            raise ValueError("tampered architect explanation")
+        uncertain = raw["uncertainty"]
+        lines = [
+            "EAI ARCHITECT - UNVERIFIED ADVISORY",
+            "STATUS: " + raw["status"],
+            "TRUTH: " + raw["truth_status"],
+            "PROBLEM SHA256: " + raw["problem_sha256"],
+            "UNKNOWN COUNT: " + str(uncertain["unknown_count"]),
+            "CONTRADICTION COUNT: " + str(uncertain["contradiction_count"]),
+            "EVIDENCE REVIEW REQUIRED: " + str(
+                uncertain["evidence_review_required"]).upper(),
+            "ADVISORY ALTERNATIVES: " + str(len(raw["alternatives"])),
+        ]
+        for p in raw["alternatives"]:
+            lines.append("ALTERNATIVE: " + p["alternative_id"])
+            lines.append("STEP COUNT: " + str(p["step_count"]))
+            lines.append("SOURCE SHA256: " + ",".join(p["source_sha256"]))
+    elif kind == "PLAYER":
+        if (type(raw.get("status")) is not str
+                or raw["status"] not in _PLAYER_STATUS
+                or raw.get("verified_real_world") is not False
+                or raw.get("network") != "DISABLED_BY_DESIGN"):
+            raise ValueError("untrusted player explanation")
+        lines = [
+            "EAI PLAYER - SYNTHETIC OR DENIED",
+            "STATUS: " + raw["status"],
+            "PROBLEM SHA256: " + _hash(raw.get("problem_sha256")),
+            "PLAN SHA256: " + _hash(raw.get("plan_sha256")),
+            "STEPS: " + str(_bounded_count(raw.get("interpreted_steps"))),
+        ]
+        if raw.get("trace_sha256") is not None:
+            lines.append("TRACE SHA256: " + _hash(raw["trace_sha256"]))
+    else:
+        raise ValueError("unrecognized EAI explanation kind")
+    lines.append("REAL-WORLD VERIFICATION: NOT ESTABLISHED")
+    lines.append("EXTERNAL ACTIONS: DISABLED")
+    return "\n".join(lines) + "\n"

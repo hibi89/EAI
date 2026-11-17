@@ -139,6 +139,8 @@ def main(argv: list[str] | None = None) -> int:
     explain_cmd.add_argument('--axnode-root', help='existing local AXNODE store for architect')
     explain_cmd.add_argument('--plan-file', help='typed local PlanSpec for Player')
     explain_cmd.add_argument('--max-expansions', type=int, default=8)
+    explain_cmd.add_argument('--format', choices=['json', 'text'],
+                             default='json')
     adapter_cmd = sub.add_parser('adapter-preview',
         help='schema-only local adapter handshake; executor always disabled')
     adapter_cmd.add_argument('--problem-file', required=True)
@@ -240,7 +242,11 @@ def main(argv: list[str] | None = None) -> int:
                 from .player_cli import player_preview
                 source = player_preview(args.problem_file, args.plan_file)
                 summary = render_player_explanation(source)
-            print(json.dumps(summary, ensure_ascii=False, indent=2))
+            if args.format == 'text':
+                from .trace_renderer import render_explanation_text
+                print(render_explanation_text(summary), end='')
+            else:
+                print(json.dumps(summary, ensure_ascii=False, indent=2))
             return 0 if summary['status'] in (
                 'CANDIDATES_UNVERIFIED',
                 'PURE_SYNTHETIC_INTERPRETED_UNVERIFIED') else 2

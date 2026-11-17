@@ -88,6 +88,23 @@ class TraceRendererTests(unittest.TestCase):
             with self.subTest(patch=patch), self.assertRaises(ValueError):
                 render_player_explanation({**self.player(), **patch})
 
+    def test_architect_terminal_text_is_private_data_free(self):
+        from eai.trace_renderer import render_explanation_text
+        summary = render_architect_explanation(self.architect())
+        text = render_explanation_text(summary)
+        self.assertIn("EAI ARCHITECT - UNVERIFIED", text)
+        self.assertIn("UNKNOWN COUNT: 1", text)
+        self.assertNotIn("PRIVATE", text)
+        self.assertNotIn("<script>", text)
+
+    def test_player_terminal_text_rejects_forged_status(self):
+        from eai.trace_renderer import render_explanation_text
+        summary = render_player_explanation(self.player())
+        self.assertIn("SYNTHETIC", render_explanation_text(summary))
+        forged = dict(summary, status="REAL_EXECUTION")
+        with self.assertRaises(ValueError):
+            render_explanation_text(forged)
+
     def test_denied_player_explanation_keeps_zero_steps(self):
         raw = self.player()
         raw["status"], raw["execution"] = "HOLD_POLICY_DENIED", "DENIED"
