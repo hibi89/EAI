@@ -113,6 +113,22 @@ class B0HeldoutTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,"leaked synthetic fixture"):
             self.run_b0(heldout=(poisoned,heldout[1]))
 
+    def test_heldout_source_swap_and_numeric_formatting_still_counts_as_leak(self):
+        train,heldout=self.data()
+        duplicate=replace(heldout[0],left=(("a","1.00"),),
+                          right=(("a","1.0"),),claimed_different=())
+        with self.assertRaisesRegex(ValueError,"leaked synthetic fixture"):
+            self.run_b0(heldout=(duplicate,heldout[1]))
+
+    def test_reordered_row_equivalent_heldout_is_not_independent(self):
+        train,heldout=self.data()
+        duplicate=replace(heldout[0],
+                          left=(("b","1.00"),("a","2.000")),
+                          right=(("b","1.0"),("a","8.00")),
+                          claimed_different=("a",))
+        with self.assertRaisesRegex(ValueError,"leaked synthetic fixture"):
+            self.run_b0(heldout=(duplicate,heldout[1]))
+
     def test_cross_split_duplicate_family_rejected(self):
         train,heldout=self.data()
         duplicate=replace(heldout[0],family=train[0].family)
