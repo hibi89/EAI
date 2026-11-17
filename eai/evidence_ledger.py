@@ -14,7 +14,7 @@ from pathlib import Path
 import re
 import sqlite3
 import time
-from urllib.parse import quote
+
 
 _NAME = re.compile(r"[a-z][a-z0-9_.-]{0,63}\Z")
 _HASH = re.compile(r"[0-9a-f]{64}\Z")
@@ -109,9 +109,9 @@ class EvidenceLedger:
                 raise FileNotFoundError("no evidence sidecar; unknown remains unknown")
             if append_existing:
                 # Explicit local append; never create or migrate an existing DB.
-                uri = "file:" + quote(str(self.path), safe="/") + "?mode=rw"
+                uri = self.path.resolve(strict=True).as_uri() + "?mode=rw"
             else:
-                uri = "file:" + quote(str(self.path), safe="/") + "?mode=ro"
+                uri = self.path.resolve(strict=True).as_uri() + "?mode=ro"
             self.db = sqlite3.connect(uri, uri=True, timeout=3)
             if not append_existing:
                 self.db.execute("PRAGMA query_only=ON")
