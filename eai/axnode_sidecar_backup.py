@@ -18,6 +18,7 @@ import tempfile
 import zipfile
 
 from .axnode_store import AXNodeStore
+from .contracts import strict_json, canonical_bytes
 
 _FILES = {
     "memory.sqlite": ("axnode_memory.sqlite", "entries",
@@ -52,10 +53,35 @@ def _check_sqlite(path: Path, kind: str) -> None:
         count = db.execute('SELECT count(*) FROM "' + table + '"').fetchone()[0]
         if count > 3000:
             raise ValueError("sidecar row budget exceeded")
-        for digest, payload in db.execute('SELECT sha256,payload FROM "' + table + '"'):
+        if kind == "memory.sqlite":
+            rows = db.execute(
+                "SELECT sha256,anchor_sha,tier,label,captured_at,payload FROM entries"
+            )
+        else:
+            rows = db.execute(
+                "SELECT sha256,source_sha256,polarity,observed_at,expires_at,payload "
+                "FROM observations"
+            )
+        for row in rows:
+            digest, *metadata, payload = row
             if (type(digest) is not str or len(digest) != 64 or
                     type(payload) is not bytes or _sha(payload) != digest):
                 raise ValueError("sidecar row content hash mismatch")
+            parsed = strict_json(payload, max_bytes=2048)
+            if canonical_bytes(parsed) != payload:
+                raise ValueError("sidecar payload is not canonical")
+            if kind == "memory.sqlite":
+                expected = (parsed.get("anchor_sha"), parsed.get("tier"),
+                            parsed.get("label"), parsed.get("captured_at"))
+                if parsed.get("provenance") != "LOCAL_OBSERVATION_UNVERIFIED":
+                    raise ValueError("forged memory provenance")
+            else:
+                expected = (parsed.get("source_sha256"), parsed.get("polarity"),
+                            parsed.get("observed_at"), parsed.get("expires_at"))
+                if parsed.get("origin") != "LOCAL_UNTRUSTED_OBSERVATION":
+                    raise ValueError("forged evidence provenance")
+            if tuple(metadata) != expected:
+                raise ValueError("sidecar index/record metadata mismatch")
 
 
 def create_sidecar_bundle(store: AXNodeStore, destination: str | Path) -> Path:
@@ -106,6 +132,8 @@ def create_sidecar_bundle(store: AXNodeStore, destination: str | Path) -> Path:
                 z.write(stage / name, name)
         if package.stat().st_size > _MAX_ZIP:
             raise ValueError("sidecar bundle too large")
+        # Private bundles can contain observed outcomes and references.
+        os.chmod(package, 0o600)
         # Atomic no-overwrite publication; no original or existing backup touched.
         os.link(package, dest)
         return dest
@@ -158,9 +186,11 @@ def restore_sidecar_bundle(archive: str | Path,
                     raise ValueError("sidecar archive modified")
                 (stage / name).write_bytes(payload)
                 _check_sqlite(stage / name, name)
-        if dest.exists() or dest.is_symlink():
-            raise FileExistsError("restore target appeared during validation")
-        os.rename(stage, dest)
+        # mkdir is exclusive: rename could replace an empty directory that
+        # appeared between the exists check and rename on POSIX.
+        os.mkdir(dest, mode=0o700)
+        for name in sorted(manifest["files"]):
+            os.link(stage / name, dest / name)
         return dest
     finally:
         if stage.exists():
