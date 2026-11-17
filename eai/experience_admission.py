@@ -145,11 +145,16 @@ def review_episode_learning_boundary(
     store: AXNodeStore, problem: ProblemSpec, candidate: SynthesisCandidate,
     baseline: ActualSolverAudit, episodes: tuple[EpisodeReplayDecision, ...],
     evidence: CandidateEvidenceReview, fence, *, review_journal=None,
+    fixtures=None, execution=None, claimed_receipt=None,
 ) -> EpisodeLearningBoundary:
     """Actual independent candidate and episode checks; never trust raw labels."""
     from .episode_replay_fence import EpisodeReplayFence
     from .episode_replay_dedup import screen_episodes_for_manual_review
     from .candidate_review_journal import CandidateReviewJournal
+    from .candidate_evidence_review import review_candidate_evidence
+    from .logic_oracle import SyntheticComparison
+    from .synthetic_candidate_interpreter import SyntheticCandidateExecution
+    from .synthetic_candidate_verifier import SyntheticCandidateReceipt
     if (type(fence) is not EpisodeReplayFence
             or fence.path.is_relative_to(store.root)
             or fence.writable):
@@ -165,6 +170,23 @@ def review_episode_learning_boundary(
     screened = screen_episodes_for_manual_review(
         problem, candidate, episodes, evidence)
     reasons = set(admission.reason_codes) | set(screened.reasons)
+    # A typed claimed review can be forged. Recheck every fixture and the
+    # independent CPU interpreter against the exact source AXNODE chain.
+    # A signature alone is not a semantic oracle.
+    if (type(fixtures) is not tuple or not 2 <= len(fixtures) <= 12
+            or any(type(f) is not SyntheticComparison for f in fixtures)
+            or type(execution) is not SyntheticCandidateExecution
+            or type(claimed_receipt) is not SyntheticCandidateReceipt):
+        reasons.add("RAW_RECOMPUTABLE_EVIDENCE_MISSING")
+    else:
+        try:
+            recomputed = review_candidate_evidence(
+                store, problem, candidate, fixtures, execution,
+                claimed_receipt)
+            if recomputed != evidence:
+                reasons.add("CLAIMED_REVIEW_DIFFERS_FROM_RECOMPUTED_EVIDENCE")
+        except (ValueError, KeyError, TypeError):
+            reasons.add("RECOMPUTABLE_CANDIDATE_EVIDENCE_REJECTED")
     # Reconcile the source-pinned candidate review against the *actual*
     # append-only journal. Dataclass hashes alone are never evidence that a
     # separate verifier reviewed this candidate.

@@ -139,6 +139,8 @@ def rank_bounded_strategy_research(
         raise ValueError("explicit typed research-only update switch required")
     if prior is not None and type(prior) is not BoundedResearchPrior:
         raise ValueError("typed previously research-only state required")
+    if prior is not None and not update_research:
+        raise ValueError("untrusted prior cannot be echoed without rechecking")
     from .strategy_cost_stats import build_bounded_strategy_cost_envelope
     reviewed = rank_synthetic_strategy_previews(
         store, problem, candidates, curriculum)
