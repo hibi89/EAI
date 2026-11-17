@@ -1,3 +1,5 @@
+> **[EAI V3.1 CODE CANDIDATE 2026-11-17]** V3-01 인지계약·V3-02 AXNODE 파서·V3-11 Hydrogen 기본 OFF/NullProvider 구현 후보: `b22a877e55ddab010ceb5c006e9d5016704e6366`. 신규 19개 테스트 함수 작성, 실행 결과 **NOT_RUN**. 신규 AXNODE 저장·그래프·학습·Player 및 Hydrogen live API **미구현/미승인**. 구현·검증완성률 `UNASSESSED`, 크몽 역사 85% 혼용 금지, RELEASE HOLD. [큐](docs/EAI_INSTANT_TASK_QUEUE.md).
+
 > **[EAI HYDROGEN DUAL-MODE V3.1 — 2026-11-17]** 사용자 확정 설계: **OFF=완전 로컬 독립 Architect/Player/AXNODE**, **ON=기본 OFF 결과를 만든 뒤 승인된 비민감·합성 연구 패킷에 한해 Hydrogen의 검증 전 제안 추가**. 최종 사고·계획·판단·검증·실행 권한은 EAI에만 있다. 무료 API의 계정별 한도는 미확인, 무료 티어·외부 전송 승인 없이는 실제 호출 금지, 유료 자동 전환 금지, 오류/할당량 소진 시 OFF 복귀. 정본 [ADR-0005](docs/ADR-0005_HYDROGEN_DETACHABLE_DUAL_MODE_20261117.md) 및 [최종설계 V3.1](docs/EAI_FINAL_BLUEPRINT.md); [작업 큐](docs/EAI_INSTANT_TASK_QUEUE.md). **문서 설계만 반영, 라이브 API/코드 구현 NOT_RUN, RELEASE HOLD 보존.**
 
 New EAI V3.1 dual-mode REQ C29–C36 and candidate provider safeguards: [ADR-0005](docs/ADR-0005_HYDROGEN_DETACHABLE_DUAL_MODE_20261117.md). No implementation or runtime remote call authorized.

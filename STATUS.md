@@ -1,3 +1,11 @@
+## 2026-11-17 KST — V3.1 implementation code candidate checkpoint
+- Actual committed code: `b22a877e55ddab010ceb5c006e9d5016704e6366`, active `feature/kmong-eai-85-p31-20261112`. Added `eai/contracts.py` (ProblemSpec/DesignSpec/PlanSpec/CognitiveResult), `eai/axnode_schema.py` (pure AXNODE v1 canonical parse/hash, only preapproved typed skills), `eai/research_policy.py` and `eai/research_providers.py` (Hydrogen OFF/NullProvider and unapproved ON paused). Added three unittest modules with 19 new test functions.
+- V3-01, V3-02, V3-11 = **IMPLEMENTED_UNVERIFIED** (new modules not integrated into original EAIRunner). Exact-source unit/syntax/CI **NOT_RUN**, real Windows/Qwen/Hydrogen **NOT_RUN**. No live API or bill, no customer source/permission/Production/main edits. Historical P37 CI belongs to older SHA.
+- V3.1 implementation completion **UNASSESSED** (3/15 tasks have candidate code, 0/15 officially accepted); verification completion **UNASSESSED**. Catalog is C01–C36 but accepted fixed weights are not set. Historical Kmong 85% is unrelated; **RELEASE HOLD**.
+- Next READY: run minimal safety syntax + targeted unit checks before risky V3-03 SQLite AXNODE store; independent fake-only V3-12 after V3-11 safety. Existing draft PR#1 open/unmerged; no new run at code SHA observed.
+
+---
+
 ## 2026-11-17 KST — EAI Hydrogen detachable OFF/ON final DESIGN V3.1
 - User decision: optional Gemini 4 Hydrogen provider **removable**; OFF = complete independent local Architect/Player/AXNODE path; ON = only consented public/synthetic research candidate suggestions after own baseline, independently verified and never trusted/actionable by default. [ADR-0005](docs/ADR-0005_HYDROGEN_DETACHABLE_DUAL_MODE_20261117.md) supersedes ADR-0004 future input-only research scope as narrowly described.
 - Official Google: Standard FREE input/output shown free, paid $1.50/M input, $7.50/M output; actual free project RPM/TPM/RPD and API entitlement **UNKNOWN**. Paid transition forbidden, live remote calls require separate user consent and reviewed project tier/outbound payload. Account has not been queried/connected.

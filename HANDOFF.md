@@ -1,3 +1,17 @@
+## 2026-11-17 KST — V3.1 implementation code checkpoint (10 items)
+1. Mission: EAI independent Architect/Player/AXNODE learner. my_local_ai separate coding system. Hydrogen optional research-only.
+2. Added: `eai/contracts.py`, `eai/axnode_schema.py`, `eai/research_policy.py`, `eai/research_providers.py`; typed bounded contracts + canonical AXNODE DRAFT/CANDIDATE parser + OFF-only NullProvider.
+3. Tests: 3 new test modules / 19 test functions **authored; NOT_RUN**. Next commands: `python -m compileall -q eai tests`; `python -m unittest discover -s tests -p 'test_contracts_v3.py' -v`, repeat for `test_axnode_schema.py` and `test_research_offline.py`. Full CI deferred to implementation candidate; do not claim PASS.
+4. Progress: V3-01/V3-02/V3-11 = `IMPLEMENTED_UNVERIFIED`, non-integrated. Implementation completion **UNASSESSED** (3/15 candidate tasks, 0 accepted); verification completion **UNASSESSED**. RELEASE HOLD.
+5. Safety: untrusted AXNODE cannot execute tools; no active-node import, only allowlisted skill IDs; Hydrogen ON always PAUSED_POLICY; no real remote calls/paid switch.
+6. Repo: `hibi89/EAI@feature/kmong-eai-85-p31-20261112`, exact code SHA `b22a877e55ddab010ceb5c006e9d5016704e6366`; verify later documentation commit HEAD; main untouched.
+7. Runtime: original CPU 13 goal kinds/P26 authorization unchanged; no deployment; real Windows/CPU-Qwen, live Hydrogen NOT_RUN.
+8. Security/backup: no original/customer data edits, no secrets/private prompts published; source and pre-change Git history preserved.
+9. Next: minimal safety checks, then V3-03 AXNODE atomic persistence, V3-04 lexical/graph retrieval; V3-12 fake Hydrogen policy independently later. No live adapter without new owner GO.
+10. Time: 2026-11-17 KST, evidence code SHA above only; exact-source test success not claimed.
+
+---
+
 ## 2026-11-17 KST — EAI V3.1 detachable Gemini 4 Hydrogen design handoff (10 points)
 1. Goal: best fully-independent OFF Architect/Player/Learner + removable optional ON synthetic/public research assistant. my_local_ai separate. EAI independently develops baseline and verifies external suggestions.
 2. Alternatives: always-ON cloud brain and paid AUTO rejected; pure OFF mandatory, research-only ON chosen. ADR-0005 supersedes narrow future Hydrogen INPUT-only ADR-0004 part while retaining EAI ownership ADR-0002.

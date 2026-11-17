@@ -1,3 +1,5 @@
+> **2026-11-17 P1 candidate (not accepted):** Code SHA `b22a877e55ddab010ceb5c006e9d5016704e6366` adds strict cognitive contracts, parse-only AXNODE and NullProvider/OFF gate; 19 tests authored, NOT_RUN. Full EAI cognition runtime/Graph/Synthesizer/Learner/Player/Hydrogen provider remains prospective. [Queue](EAI_INSTANT_TASK_QUEUE.md) is authoritative for evidence.
+
 # EAI — Independent Cognitive Architect & Player: Canonical Final Blueprint
 **Version:** EAI-BP-V3.1 | **Owner decision:** 2026-11-17 KST | **Status:** DESIGN_CANONICAL / IMPLEMENTATION_NOT_CLAIMED
 **Repository:** hibi89/EAI | **Active documentation branch:** feature/kmong-eai-85-p31-20261112

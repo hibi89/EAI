@@ -1,13 +1,14 @@
 # EAI V3 — Instant Task Queue + Runbook + Acceptance Starter
 **2026-11-17 KST** | Repo `hibi89/EAI` | Active `feature/kmong-eai-85-p31-20261112` | Baseline before blueprint: `5186cb1aa7928054d56b1cd0a40ea5943a5b3892`
 **Mission lock:** EAI independent architect/player/general local AI; NOT my_local_ai coding factory; NOT Kmong packaging work unless user explicitly requests it.
+**First implementation checkpoint 2026-11-17:** V3-01, V3-02, V3-11 have actual source at `b22a877e55ddab010ceb5c006e9d5016704e6366` and 19 new unit tests authored but **NOT_RUN**. Candidate status is `IMPLEMENTED_UNVERIFIED`, not verified acceptance or finished V3.1 runtime; do not infer arbitrary percent from 3/15 candidate tasks.
 **Policy:** [Canonical EAI blueprint](EAI_FINAL_BLUEPRINT.md) and ADR-0002 govern. All new tasks are `DESIGNED_NOT_IMPLEMENTED`; first select READY only after HEAD reread and file/branch collision check. No invented 100%, no implied launch.
 
 ## Queue (ordered for high-throughput Instant, controlled risk)
 | task_id | req_ids | depends_on | allowed_paths | acceptance | safety_checks | risk | status | evidence_sha | blockers |
 |---|---|---|---|---|---|---|---|---|---|
-| EAI-V3-01 | C01,C02,C28 | P0–P38 | docs/*; tests/contract*; eai/contracts.py (new) | strict v1 typed contracts, legacy compatibility fixtures, documentation crosslinks | no existing goal rewrites; no secret/data write | M | READY | none | None |
-| EAI-V3-02 | C04 | V3-01 | eai/axnode_schema.py; tests/test_axnode_schema.py; examples/axnode_synthetic/* | canonical JSON, hash, depth, duplicate-key/unsafe-op rejections | file parse only, no arbitrary exec | H | READY_AFTER_01 | none | contract |
+| EAI-V3-01 | C01,C02,C28 | P0–P38 | docs/*; tests/contract*; eai/contracts.py (new) | strict v1 typed contracts, legacy compatibility fixtures, documentation crosslinks | no existing goal rewrites; no secret/data write | M | IMPLEMENTED_UNVERIFIED | b22a877e55ddab010ceb5c006e9d5016704e6366 | None |
+| EAI-V3-02 | C04 | V3-01 | eai/axnode_schema.py; tests/test_axnode_schema.py; examples/axnode_synthetic/* | canonical JSON, hash, depth, duplicate-key/unsafe-op rejections | file parse only, no arbitrary exec | H | IMPLEMENTED_UNVERIFIED | b22a877e55ddab010ceb5c006e9d5016704e6366 | contract |
 | EAI-V3-03 | C05,C26 | V3-02 | eai/axnode_store.py; eai/axnode_db.py; tests/test_axnode_store.py | atomic import/recovery, backup/migrate, hash parent invalidation | temp test DB, no user DB mutation | H | READY_AFTER_02 | none | schema |
 | EAI-V3-04 | C06,C07 | V3-02,V3-03 | eai/axnode_retrieval.py; tests/test_axnode_retrieval.py | deterministic type/lexical/graph retrieval and negative cases | no network/index private Git content | M | READY_AFTER_03 | none | catalog |
 | EAI-V3-05 | C08,C09,C19 | V3-01,V3-04 | eai/problem_model.py; eai/design_engine.py; tests/test_design_engine.py | explicit unknowns, 2 alternatives/blocked rationale, source-backed claims | no plan execution | M | READY_AFTER_04 | none | retrieval |
@@ -21,7 +22,7 @@
 These REQ IDs extend the **independent EAI** V3 scope; historical P38/H01–H08 remain unchanged. No inferred implementation/verification percentage.
 | task_id | req_ids | depends_on | allowed_paths | acceptance | safety_checks | risk | status | evidence_sha | blockers |
 |---|---|---|---|---|---|---|---|---|---|
-| EAI-V3-11 | C29,C34,C36 | V3-01 | eai/research_providers.py; eai/research_policy.py; tests/test_research_offline.py | NullProvider stable baseline; OFF network spy=0, no provider import/key; toggle & late response safe | no outbound code; no existing solver edits | M | READY_AFTER_V3-01 | none | shared contract |
+| EAI-V3-11 | C29,C34,C36 | V3-01 | eai/research_providers.py; eai/research_policy.py; tests/test_research_offline.py | NullProvider stable baseline; OFF network spy=0, no provider import/key; toggle & late response safe | no outbound code; no existing solver edits | M | IMPLEMENTED_UNVERIFIED | b22a877e55ddab010ceb5c006e9d5016704e6366 | shared contract |
 | EAI-V3-12 | C30,C31,C35 | V3-11 | eai/hydrogen_packet.py; eai/research_quota.py; tests/test_hydrogen_policy.py | strict synthetic/public packet, per-send preview/consent, unknown paid status blocks, 429 & quota fallback mocks | NO LIVE API / BILLING / KEYS; test fake transport only | H | READY_AFTER_V3-11_MOCK_ONLY | none | live API blocked approval |
 | EAI-V3-13 | C32,C33 | V3-07,V3-11,V3-12 | eai/research_candidates.py; benchmarks/eai_v3/*; tests/test_dual_mode_ablation.py | isolated model candidate cannot execute/promote, paired OFF vs mocked ON with provenance/uncertainty | no raw private prompts or automatic AXNODE promotion | H | READY_AFTER_V3-07_AND_12 | none | independent verifier |
 | EAI-V3-14 | C30,C31,C33,C35 | V3-12,V3-13 | isolated optional adapter proposal; docs/*; tests/* | true Hydrogen on synthetic-only opt-in, exact account free-tier and outbound evidence, no paid fallback | live API/remote transmission needs separate user approval | H | BLOCKED_APPROVAL | none | user GO + account rate limits |
