@@ -9,7 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 import sqlite3
-from urllib.parse import quote
+from contextlib import closing
 
 from .axnode_store import AXNodeStore
 
@@ -64,9 +64,9 @@ def inspect_recovery_preflight(store: AXNodeStore) -> RecoveryPreflight:
         else:
             # Immutable read avoids creating -shm/-wal; this is advisory
             # structural validation only, not a backup or trust proof.
-            uri = "file:" + quote(str(path), safe="/") + "?mode=ro&immutable=1"
+            uri = path.resolve(strict=True).as_uri() + "?mode=ro&immutable=1"
             try:
-                with sqlite3.connect(uri, uri=True, timeout=1) as db:
+                with closing(sqlite3.connect(uri, uri=True, timeout=1)) as db:
                     version = db.execute("PRAGMA user_version").fetchone()[0]
                     cols = {r[1] for r in db.execute(
                         'PRAGMA table_info("' + table + '")')}
