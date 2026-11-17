@@ -166,6 +166,21 @@ def main(argv: list[str] | None = None) -> int:
     journey_cmd.add_argument('--max-elapsed-ms', type=int, default=300000)
     journey_cmd.add_argument('--interpret-pure', action='store_true',
                              help='explicit pure synthetic no-op only')
+    decide_cmd = sub.add_parser('decide-local',
+        help='CPU-only EAI advisory decision or abstention; no external actions')
+    decide_cmd.add_argument('--problem-file', required=True,
+                            help='explicit bounded local V3 ProblemSpec JSON')
+    decide_cmd.add_argument('--axnode-root', required=True,
+                            help='existing owned AXNODE library')
+    decide_cmd.add_argument('--max-expansions', type=int, default=8)
+    decide_cmd.add_argument('--max-rss-mib', type=int, default=1024)
+    decide_cmd.add_argument('--max-elapsed-ms', type=int, default=300000)
+    decide_cmd.add_argument('--interpret-pure', action='store_true',
+                            help='only the pure synthetic noop interpreter')
+    decide_cmd.add_argument('--cancel-before-start', action='store_true',
+                            help='report cancellation without reading sources')
+    decide_cmd.add_argument('--format', choices=['json','text'],
+                            default='text')
     architect_cmd = sub.add_parser('architect-preview', help='local-only V3 advisory design/plan; never execute')
     architect_cmd.add_argument('--problem-file', required=True, help='explicit local V3 ProblemSpec JSON <=32KiB')
     architect_cmd.add_argument('--axnode-root', required=True, help='existing explicit local AXNODE library')
@@ -197,6 +212,41 @@ def main(argv: list[str] | None = None) -> int:
     check_cmd = sub.add_parser('verify-review', help='read-only verify existing review folder (unsigned)')
     check_cmd.add_argument('--output-dir', required=True)
     args = p.parse_args(argv)
+    if args.command == 'decide-local':
+        if args.cancel_before_start:
+            print(json.dumps({
+                'status':'CANCELLED',
+                'reason':'OWNER_CANCELLED_BEFORE_LOCAL_DECISION',
+                'real_execution_authorized':False}))
+            return 130
+        try:
+            from .local_scheduler import LocalResourceBudget
+            from .offline_journey import decide_scheduled_local_journey
+            from .trace_renderer import (
+                render_local_decision_explanation, render_local_decision_text)
+            budget = LocalResourceBudget(
+                max_rss_mib=args.max_rss_mib,
+                max_elapsed_ms=args.max_elapsed_ms, max_steps=64)
+            raw = decide_scheduled_local_journey(
+                args.problem_file, args.axnode_root,
+                max_expansions=args.max_expansions, budget=budget,
+                interpret_pure_noop=args.interpret_pure)
+            result = render_local_decision_explanation(raw)
+            print(json.dumps(result, ensure_ascii=True, indent=2)
+                  if args.format == 'json'
+                  else render_local_decision_text(result), end='\n')
+            return 0 if result['status'] == 'ADVISORY_CPU_SELECTION_UNVERIFIED' else 2
+        except KeyboardInterrupt:
+            print(json.dumps({
+                'status':'CANCELLED', 'reason':'OWNER_INTERRUPTED_LOCAL_DECISION',
+                'real_execution_authorized':False}), file=sys.stderr)
+            return 130
+        except (ValueError, KeyError, OSError, UnicodeError, PermissionError,
+                sqlite3.DatabaseError):
+            print(json.dumps({
+                'status':'REJECTED', 'reason':'LOCAL_CPU_DECISION_REJECTED',
+                'real_execution_authorized':False}), file=sys.stderr)
+            return 1
     if args.command == 'journey-preview':
         try:
             from .local_scheduler import LocalResourceBudget

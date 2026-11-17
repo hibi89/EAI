@@ -92,3 +92,17 @@ def open_durable_mock_quota(path, *, limits: ResearchLimits | None = None,
     """Use a fresh isolated SQLite ledger, never expose real API permission."""
     from .research_quota_store import DurableMockQuota
     return DurableMockQuota(path, limits=limits, allow_create=allow_create)
+
+
+# EAI-SWU-040: in-memory synthetic failure breaker, never remote allowance.
+def pause_local_mock_after_failure(
+    quota: ResearchQuota, status: int, *,
+    now: float | None = None,
+) -> QuotaDecision:
+    """Record a local fake status; no provider call or paid retry."""
+    if type(quota) is not ResearchQuota or type(status) is not int:
+        raise ValueError("typed in-memory mock quota and response required")
+    if status not in (429, 403, 500, 503):
+        raise ValueError("unknown mock provider failure status")
+    quota.pause_after_429(3600 if status == 429 else 600, now=now)
+    return QuotaDecision(False, "OFF_AFTER_MOCK_PROVIDER_FAILURE", 0)

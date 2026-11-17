@@ -246,3 +246,104 @@ def render_final_decision_trace(result) -> dict:
         "original_writes": 0,
         "grants_real_authority": False,
     }
+
+
+# EAI-SWU-042: local decision -> allowlisted no-private-payload CPU answer.
+def render_local_decision_explanation(raw: dict) -> dict:
+    """Validate the exact output contract before any CLI display."""
+    if (type(raw) is not dict or set(raw) != {
+            "schema", "problem_sha256", "status", "selected_alternative_id",
+            "selected_plan_sha256", "reason_codes", "compared_alternatives",
+            "unknown_count", "source_receipt_sha256", "origin",
+            "external_actions", "original_writes", "provider_calls",
+            "independent_verification", "real_execution_authorized",
+            "active_promotion_authorized", "resource_postflight"}
+            or raw["schema"] != "eai.offline.decision.v1"
+            or raw["status"] not in (
+                "ADVISORY_CPU_SELECTION_UNVERIFIED", "ABSTAINED",
+                "HOLD_LOCAL_RESOURCE_BUDGET", "CANCELLED")
+            or raw["origin"] != "LOCAL_CPU_ADVISORY_UNVERIFIED"
+            or raw["independent_verification"] != "NOT_ESTABLISHED"
+            or raw["external_actions"] != 0
+            or raw["original_writes"] != 0
+            or raw["provider_calls"] != 0
+            or raw["real_execution_authorized"] is not False
+            or raw["active_promotion_authorized"] is not False
+            or raw["resource_postflight"] not in (
+                "PROCESS_RSS_PASS_NOT_EXECUTION_AUTHORITY","HOLD")):
+        raise ValueError("untrusted CPU final decision envelope")
+    digest = _hash(raw["problem_sha256"])
+    receipt = _hash(raw["source_receipt_sha256"])
+    choices = raw["compared_alternatives"]
+    if (type(choices) is not list or len(choices) > 8
+            or len(set(choices)) != len(choices)
+            or any(type(v) is not str or not _ID.fullmatch(v)
+                   for v in choices)):
+        raise ValueError("invalid alternative identifiers")
+    selected = raw["selected_alternative_id"]
+    selected_sha = raw["selected_plan_sha256"]
+    eligible = raw["status"] == "ADVISORY_CPU_SELECTION_UNVERIFIED"
+    if (eligible != (selected is not None)
+            or eligible != (selected_sha is not None)
+            or (eligible and (
+                type(selected) is not str or selected not in choices
+                or len(choices) < 2
+                or raw["resource_postflight"] !=
+                "PROCESS_RSS_PASS_NOT_EXECUTION_AUTHORITY"))
+            or (selected_sha is not None
+                and _hash(selected_sha) != selected_sha)):
+        raise ValueError("selection does not match local decision safety state")
+    reasons = raw["reason_codes"]
+    if (type(reasons) is not list or not 1 <= len(reasons) <= 32
+            or len(set(reasons)) != len(reasons)
+            or any(type(x) is not str
+                   or not re.fullmatch(r"[A-Z][A-Z0-9_]{0,63}", x)
+                   for x in reasons)):
+        raise ValueError("invalid decision reason codes")
+    unknowns = _bounded_count(raw["unknown_count"], 32)
+    return {
+        "schema":"eai.local.cpu.answer.v1",
+        "status":raw["status"],
+        "problem_sha256":digest,
+        "source_receipt_sha256":receipt,
+        "selected_alternative_id":selected,
+        "selected_plan_sha256":selected_sha,
+        "compared_alternatives":list(choices),
+        "reason_codes":list(reasons),
+        "unknown_count":unknowns,
+        "execution":"NOT_EXECUTED",
+        "verification":"INDEPENDENT_ORACLE_NOT_ESTABLISHED",
+        "network":"DISABLED_BY_DESIGN",
+        "external_actions":0,
+        "active_promotion":False,
+    }
+
+
+def render_local_decision_text(result: dict) -> str:
+    """ASCII terminal answer contains hashes and public identifiers only."""
+    if (type(result) is not dict
+            or result.get("schema") != "eai.local.cpu.answer.v1"):
+        raise ValueError("typed EAI CPU answer required")
+    # Reconstruct only from already allowlisted output. No private goal text.
+    status = result["status"]
+    if status not in (
+            "ADVISORY_CPU_SELECTION_UNVERIFIED", "ABSTAINED",
+            "HOLD_LOCAL_RESOURCE_BUDGET", "CANCELLED"):
+        raise ValueError("unsupported local CPU decision status")
+    _hash(result["problem_sha256"])
+    _hash(result["source_receipt_sha256"])
+    if (result.get("execution") != "NOT_EXECUTED"
+            or result.get("network") != "DISABLED_BY_DESIGN"
+            or result.get("external_actions") != 0
+            or result.get("active_promotion") is not False):
+        raise ValueError("privileged CPU answer rejected")
+    return "\n".join([
+        "EAI LOCAL CPU DECISION - UNVERIFIED",
+        "STATUS: " + status,
+        "PROBLEM SHA256: " + result["problem_sha256"],
+        "RECEIPT SHA256: " + result["source_receipt_sha256"],
+        "SELECTED: " + (result["selected_alternative_id"] or "NONE"),
+        "REASONS: " + ",".join(result["reason_codes"]),
+        "VERIFIED: NOT ESTABLISHED",
+        "EXTERNAL ACTIONS: DISABLED",
+    ])
