@@ -73,12 +73,15 @@ def audit_isolated_sidecar_restore(
             raise ValueError("incomplete or unexpected restored sidecars")
         marker = root / _COMPLETE_MARKER
         if (marker.is_symlink() or not marker.is_file() or
-                marker.stat().st_size != 65):
+                marker.stat().st_size not in (65, 66)):
             raise ValueError("isolated sidecar restore not committed")
         manifest_digest = hashlib.sha256(json.dumps(
             manifest, sort_keys=True,
             separators=(",", ":")).encode("utf-8")).hexdigest()
-        if marker.read_text(encoding="ascii") != manifest_digest + "\n":
+        expected = manifest_digest.encode("ascii")
+        with marker.open("rb") as handle:
+            marker_bytes = handle.read(67)
+        if marker_bytes not in (expected + b"\n", expected + b"\r\n"):
             raise ValueError("isolated sidecar completion marker mismatched")
         archive_digests = manifest["files"]
         count, anchors = 0, set()

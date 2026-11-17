@@ -1,4 +1,5 @@
 """C15 isolated journal: no ACTIVE mutation, no bypass, tamper detection."""
+from contextlib import closing
 from dataclasses import replace
 from pathlib import Path
 import sqlite3
@@ -64,11 +65,46 @@ class CandidateReviewJournalTests(unittest.TestCase):
     def test_tampered_hash_chain_fails_reopen(self):
         with CandidateReviewJournal(self.path, create=True) as journal:
             journal.record(self.review, state="QUARANTINED")
-        with sqlite3.connect(self.path) as db:
+        with closing(sqlite3.connect(self.path)) as db, db:
             db.execute("UPDATE entries SET entry_sha256=? WHERE sequence=1",
                        ("f" * 64,))
         with self.assertRaisesRegex(ValueError, "chain integrity"):
             CandidateReviewJournal(self.path)
+
+    def test_signed_binding_readback_is_by_sequence_and_detects_tampering(self):
+        with CandidateReviewJournal(self.path, create=True) as journal:
+            signed = journal.record(self.review, state="REVIEW_HOLD",
+                                    detached_binding_sha256="a" * 64,
+                                    detached_nonce_sha256="b" * 64)
+            journal.record(self.review, state="QUARANTINED")
+            self.assertEqual(journal.entry_at(signed.sequence), signed)
+        with closing(sqlite3.connect(self.path)) as db, db:
+            db.execute("UPDATE entries SET detached_binding_sha256=? WHERE sequence=1",
+                       ("c" * 64,))
+        with self.assertRaisesRegex(ValueError, "chain integrity"):
+            CandidateReviewJournal(self.path)
+
+    def test_v1_can_append_unsigned_and_cannot_be_migrated_by_signed_write(self):
+        with closing(sqlite3.connect(self.path)) as db:
+            db.executescript("""
+                PRAGMA journal_mode=WAL;
+                CREATE TABLE entries (
+                    sequence INTEGER PRIMARY KEY, candidate_sha256 TEXT NOT NULL,
+                    evidence_sha256 TEXT NOT NULL, state TEXT NOT NULL,
+                    previous_active_sha256 TEXT, previous_entry_sha256 TEXT NOT NULL,
+                    entry_sha256 TEXT NOT NULL UNIQUE
+                );
+                PRAGMA user_version=1;
+            """)
+        with CandidateReviewJournal(self.path) as legacy:
+            self.assertFalse(legacy.supports_detached_bindings)
+            first = legacy.record(self.review, state="REVIEW_HOLD")
+            with self.assertRaisesRegex(ValueError, "new journal"):
+                legacy.record(self.review, state="QUARANTINED",
+                              detached_binding_sha256="a" * 64,
+                              detached_nonce_sha256="b" * 64)
+            self.assertEqual(legacy.entries(), (first,))
+            self.assertEqual(legacy.db.execute("PRAGMA user_version").fetchone()[0], 1)
 
     def test_quarantine_may_not_self_downgrade_to_hold(self):
         with CandidateReviewJournal(self.path, create=True) as journal:
@@ -119,6 +155,16 @@ class CandidateReviewJournalTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             CandidateReviewJournal(self.path, create=True)
         self.assertEqual(self.path.read_bytes(), b"original")
+
+    def test_unrelated_database_is_rejected_without_changing_journal_mode(self):
+        with closing(sqlite3.connect(self.path)) as db, db:
+            db.execute("CREATE TABLE original (id INTEGER)")
+            db.execute("INSERT INTO original VALUES (1)")
+        before = self.path.read_bytes()
+        with self.assertRaisesRegex(ValueError, "unknown journal version"):
+            CandidateReviewJournal(self.path)
+        self.assertEqual(self.path.read_bytes(), before)
+        self.assertFalse(self.path.with_name(self.path.name + "-wal").exists())
 
     def test_quarantined_review_never_mutates_original_active_pointer(self):
         active = self.root / "active-pointer.sha256"

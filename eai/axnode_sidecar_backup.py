@@ -197,7 +197,7 @@ def restore_sidecar_bundle(archive: str | Path,
             os.link(stage / name, dest / name)
         digest = _sha(json.dumps(
             manifest, sort_keys=True, separators=(",", ":")).encode("utf-8"))
-        with (dest / _COMPLETE_MARKER).open("x", encoding="ascii") as marker:
+        with (dest / _COMPLETE_MARKER).open("x", encoding="ascii", newline="\n") as marker:
             marker.write(digest + "\n")
             marker.flush()
             os.fsync(marker.fileno())

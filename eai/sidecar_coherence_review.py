@@ -1,9 +1,4 @@
-"""C05 fail-closed, read-only cross-DB isolated restore boundary.
-
-A correct SQLite backup of each sidecar and valid AXNODE anchors do NOT prove
-they were captured at a common transaction epoch. No live attachment, import,
-migration or user-data modification is performed here.
-"""
+"""C05 read-only coherence checks for an isolated sidecar restore."""
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -13,8 +8,9 @@ from pathlib import Path
 import sqlite3
 
 from .axnode_store import AXNodeStore
+from .axnode_epoch import ReadCheckpointUnavailable, shared_read_checkpoint
 from .contracts import canonical_bytes, strict_json
-from .axnode_sidecar_backup import _FILES
+from .axnode_sidecar_backup import _COMPLETE_MARKER, _FILES, _MAX_DB, _MAX_ZIP
 from .sidecar_recovery_audit import audit_isolated_sidecar_restore
 
 
@@ -30,7 +26,20 @@ class CoherenceReview:
     source_sidecar_drift_detected: bool = False
 
 
-def _row_fingerprint(path: Path, table: str) -> str | None:
+def _row_fingerprint(path: Path, table: str, *, immutable: bool = False) -> str | None:
+    if path.is_symlink():
+        raise ValueError("symlinked source or restored sidecar")
+    if not path.exists():
+        return None
+    if not path.is_file() or path.stat().st_size > _MAX_DB:
+        raise ValueError("invalid sidecar for coherence check")
+    mode = "?mode=ro&immutable=1" if immutable else "?mode=ro"
+    with closing(sqlite3.connect(path.resolve(strict=True).as_uri() + mode,
+                                 uri=True, timeout=3)) as db:
+        return _fingerprint_rows(db, table)
+
+
+def _fingerprint_rows(db: sqlite3.Connection, table: str) -> str:
     """Read-only full schema, payload and indexed metadata audit of one sidecar.
 
     A valid content hash alone is insufficient: an attacker could alter the
@@ -39,12 +48,6 @@ def _row_fingerprint(path: Path, table: str) -> str | None:
     """
     if table not in ("entries", "observations"):
         raise ValueError("unrecognized sidecar table")
-    if path.is_symlink():
-        raise ValueError("symlinked source or restored sidecar")
-    if not path.exists():
-        return None
-    if not path.is_file() or path.stat().st_size > 16 * 1024 * 1024:
-        raise ValueError("invalid sidecar for coherence check")
     expected = {
         "entries": ("sha256", "anchor_sha", "tier", "label",
                     "captured_at", "payload"),
@@ -52,21 +55,17 @@ def _row_fingerprint(path: Path, table: str) -> str | None:
                          "polarity", "observed_at", "expires_at", "payload"),
     }[table]
     digest = hashlib.sha256()
-    with closing(sqlite3.connect(
-            path.resolve(strict=True).as_uri() + "?mode=ro",
-            uri=True, timeout=3)) as db:
-        if db.execute("PRAGMA user_version").fetchone()[0] != 1:
-            raise ValueError("unexpected sidecar user version")
-        columns = {row[1] for row in db.execute(
-            'PRAGMA table_info("' + table + '")')}
-        if columns != set(expected):
-            raise ValueError("unrecognized source sidecar schema")
-        if db.execute("PRAGMA integrity_check").fetchone()[0] != "ok":
-            raise ValueError("corrupt source sidecar")
-        rows = db.execute(
-            'SELECT ' + ",".join(expected) + ' FROM "' + table +
-            '" ORDER BY sha256'
-        ).fetchmany(3001)
+    if db.execute("PRAGMA user_version").fetchone()[0] != 1:
+        raise ValueError("unexpected sidecar user version")
+    columns = {row[1] for row in db.execute('PRAGMA table_info("' + table + '")')}
+    if columns != set(expected):
+        raise ValueError("unrecognized source sidecar schema")
+    if db.execute("PRAGMA integrity_check").fetchone()[0] != "ok":
+        raise ValueError("corrupt source sidecar")
+    rows = db.execute(
+        'SELECT ' + ",".join(expected) + ' FROM "' + table +
+        '" ORDER BY sha256 LIMIT 3001'
+    ).fetchall()
     if len(rows) > 3000:
         raise ValueError("coherence row budget exceeded")
     for row in rows:
@@ -78,7 +77,7 @@ def _row_fingerprint(path: Path, table: str) -> str | None:
                 or hashlib.sha256(blob).hexdigest() != sha):
             raise ValueError("sidecar index/payload hash mismatch")
         raw = strict_json(blob, max_bytes=2048)
-        if canonical_bytes(raw) != blob:
+        if type(raw) is not dict or canonical_bytes(raw) != blob:
             raise ValueError("noncanonical source sidecar payload")
         if table == "entries":
             metadata = (raw.get("anchor_sha"), raw.get("tier"),
@@ -96,6 +95,7 @@ def _row_fingerprint(path: Path, table: str) -> str | None:
         digest.update(bytes.fromhex(sha))
     return digest.hexdigest()
 
+
 def _source_fingerprints(store: AXNodeStore) -> tuple[str | None, ...]:
     return tuple(
         _row_fingerprint(store.root / original, table)
@@ -105,7 +105,7 @@ def _source_fingerprints(store: AXNodeStore) -> tuple[str | None, ...]:
 
 def _isolated_fingerprints(root: Path) -> tuple[str | None, ...]:
     return tuple(
-        _row_fingerprint(root / restored, table)
+        _row_fingerprint(root / restored, table, immutable=True)
         for restored, (_original, table, _columns) in _FILES.items()
     )
 
@@ -144,8 +144,6 @@ def review_isolated_cross_db_coherence(
                            source_sidecar_drift_detected=drift)
 
 
-# EAI-SWU-007: independently compare source and isolated copies, never
-# counterfeit a shared SQLite transaction epoch.
 @dataclass(frozen=True)
 class EpochConsistencyBoundary:
     status: str
@@ -157,31 +155,92 @@ class EpochConsistencyBoundary:
     may_publish_restore: bool = False
     may_bind_active_store: bool = False
     original_modified: bool = False
+    shared_read_checkpoint_sha256: str | None = None
+
+
+def _catalog_fingerprint(store: AXNodeStore) -> tuple[int, str]:
+    rows = store.db.execute(
+        "SELECT sha256,node_id,version,status,kind,output_type,search_text "
+        "FROM nodes ORDER BY sha256 LIMIT 3001"
+    ).fetchall()
+    edges = store.db.execute(
+        "SELECT child_sha,parent_sha FROM parents ORDER BY child_sha,parent_sha "
+        "LIMIT 36001"
+    ).fetchall()
+    if len(rows) > 3000 or len(edges) > 36000:
+        raise ValueError("catalog checkpoint budget exceeded")
+    audit = store.audit()
+    if (audit["sqlite_integrity"] != "ok" or audit["foreign_key_violations"]
+            or audit["invalid_hashes"] or audit["orphan_files"]):
+        raise ValueError("source AXNODE integrity not established")
+    return len(rows), hashlib.sha256(canonical_bytes({
+        "nodes": rows, "parents": edges,
+    })).hexdigest()
+
+
+def _restore_stamp(bundle: Path, root: Path) -> tuple[tuple[int, ...], ...]:
+    paths = (bundle, root, root / _COMPLETE_MARKER, *(root / name for name in _FILES))
+    stamps = []
+    for path in paths:
+        try:
+            info = path.lstat()
+        except FileNotFoundError:
+            stamps.append(())
+        else:
+            stamps.append((info.st_dev, info.st_ino, info.st_size, info.st_mode,
+                           info.st_mtime_ns, info.st_ctime_ns))
+    return tuple(stamps)
 
 
 def inspect_isolated_epoch_boundary(
     store: AXNodeStore, archive: str | Path, isolated_root: str | Path,
 ) -> EpochConsistencyBoundary:
-    """Perform actual read-only coherence audit and record stable fingerprints.
+    """Match an isolated restore to one stable read of the three source DBs.
 
-    Equality proves content agreement at two observations only; without a
-    shared commit coordinator there is *no* cross-DB epoch attestation.
+    The checkpoint describes the observed contents. It carries no historical
+    write-transaction proof or permission to publish a restore.
     """
     if type(store) is not AXNodeStore:
         raise ValueError("explicit local store required")
-    prior_nodes = tuple(store.hashes())
-    previous = _source_fingerprints(store)
-    observed = review_isolated_cross_db_coherence(store, archive, isolated_root)
-    after = _source_fingerprints(store)
-    recovered = _isolated_fingerprints(Path(isolated_root).expanduser())
-    if tuple(store.hashes()) != prior_nodes:
-        raise ValueError("source catalog changed across epoch read")
-    if previous != after:
-        raise ValueError("source sidecars changed across epoch read")
-    match = previous == recovered and observed.source_sidecar_drift_detected is False
-    if observed.same_transaction_epoch_proven or observed.may_bind_to_live_store:
-        raise PermissionError("read-only coherence review cannot establish commit")
-    return EpochConsistencyBoundary(
-        "SOURCE_COPY_MATCH_UNVERIFIED_EPOCH" if match else
-        "HOLD_MISMATCHED_ISOLATED_EPOCH",
-        len(prior_nodes), previous, recovered, match)
+    bundle, root = Path(archive).expanduser(), Path(isolated_root).expanduser()
+    sources = [store.root / source for source, _, _ in _FILES.values()]
+    if any(path.is_symlink() for path in sources):
+        raise ValueError("symlinked source sidecar")
+    if not all(path.is_file() for path in sources):
+        return EpochConsistencyBoundary("HOLD_MISSING_SOURCE_SIDECAR", 0, (), (), False)
+    if any(path.stat().st_size > _MAX_DB for path in (*sources, store.db_path)):
+        raise ValueError("source database checkpoint budget exceeded")
+    stamp = _restore_stamp(bundle, root)
+    try:
+        with shared_read_checkpoint(store, tuple(sources)) as readers:
+            node_count, catalog_sha = _catalog_fingerprint(store)
+            source = tuple(_fingerprint_rows(db, table) for db, (_, table, _) in
+                           zip(readers, _FILES.values(), strict=True))
+            audit = audit_isolated_sidecar_restore(store, bundle, root)
+            restored = _isolated_fingerprints(root)
+            # The isolated audit already validates contents and caps size.
+            with bundle.open("rb") as handle:
+                archive_bytes = handle.read(_MAX_ZIP + 1)
+            if len(archive_bytes) > _MAX_ZIP:
+                raise ValueError("checkpoint archive budget exceeded")
+            archive_sha = hashlib.sha256(archive_bytes).hexdigest()
+    except ReadCheckpointUnavailable:
+        return EpochConsistencyBoundary("HOLD_SOURCE_CHECKPOINT_UNAVAILABLE", 0, (), (), False)
+    if _restore_stamp(bundle, root) != stamp:
+        return EpochConsistencyBoundary("HOLD_ISOLATED_RESTORE_CHANGED", node_count,
+                                        source, restored, False)
+    if source != restored or audit.archived_file_count != len(_FILES):
+        return EpochConsistencyBoundary("HOLD_MISMATCHED_ISOLATED_EPOCH", node_count,
+                                        source, restored, False)
+    if not audit.validated_row_count:
+        return EpochConsistencyBoundary("HOLD_EMPTY_RESTORE_HAS_NO_PROVENANCE", node_count,
+                                        source, restored, False)
+    checkpoint = hashlib.sha256(canonical_bytes({
+        "schema": "eai.axnode.shared.read.checkpoint.v1",
+        "catalog_sha256": catalog_sha,
+        "sidecars": dict(zip(_FILES, source, strict=True)),
+        "archive_sha256": archive_sha,
+    })).hexdigest()
+    return EpochConsistencyBoundary("SHARED_READ_CHECKPOINT_MATCH", node_count,
+                                    source, restored, True,
+                                    shared_read_checkpoint_sha256=checkpoint)

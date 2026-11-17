@@ -1,4 +1,5 @@
 """Synthetic-only isolated WAL snapshot and private sidecar restore safeguards."""
+from contextlib import closing
 import json
 from pathlib import Path
 import socket
@@ -55,9 +56,9 @@ class SidecarBackupTests(unittest.TestCase):
         self.assertEqual({p.name for p in restored.iterdir()},
                          {"memory.sqlite","evidence.sqlite",".eai-restore-complete.sha256"})
         self.assertEqual(original,{x:(self.root/x).read_bytes() for x in original})
-        with sqlite3.connect(restored/"memory.sqlite") as db:
+        with closing(sqlite3.connect(restored/"memory.sqlite")) as db:
             self.assertEqual(db.execute("SELECT count(*) FROM entries").fetchone()[0],1)
-        with sqlite3.connect(restored/"evidence.sqlite") as db:
+        with closing(sqlite3.connect(restored/"evidence.sqlite")) as db:
             self.assertEqual(db.execute("SELECT count(*) FROM observations").fetchone()[0],1)
 
     def test_open_wal_writer_is_included_in_online_snapshot(self):
@@ -69,7 +70,7 @@ class SidecarBackupTests(unittest.TestCase):
             data=z.read("evidence.sqlite")
         stage=self.base/"snapshot.sqlite"
         stage.write_bytes(data)
-        with sqlite3.connect(stage) as db:
+        with closing(sqlite3.connect(stage)) as db:
             self.assertEqual(db.execute("SELECT count(*) FROM observations").fetchone()[0],1)
 
     def test_no_sidecar_is_not_success(self):
@@ -130,7 +131,7 @@ class SidecarBackupTests(unittest.TestCase):
         with AXNodeMemory(self.store) as memory:
             memory.remember(tier="EPISODIC",anchor_sha=self.anchor,
                             label="synthetic.review",captured_at=100)
-        with sqlite3.connect(self.root/"axnode_memory.sqlite") as db:
+        with closing(sqlite3.connect(self.root/"axnode_memory.sqlite")) as db, db:
             db.execute("UPDATE entries SET label='forged'")
         with self.assertRaisesRegex(ValueError,"metadata mismatch"):
             create_sidecar_bundle(self.store,self.base/"forged.zip")

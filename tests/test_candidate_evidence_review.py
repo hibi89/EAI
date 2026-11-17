@@ -1,5 +1,6 @@
 """C14/C16 exact synthetic receipt binding and no-learning guarantees."""
 from dataclasses import replace
+import hashlib
 import json
 from pathlib import Path
 import tempfile
@@ -7,19 +8,23 @@ import unittest
 from unittest.mock import patch
 
 from eai.axnode_store import AXNodeStore
-from eai.contracts import ProblemSpec
+from eai.contracts import ProblemSpec, canonical_bytes
 from eai.logic_oracle import SyntheticComparison
 from eai.logic_synthesis import LogicSynthesizer
 from eai.synthetic_candidate_interpreter import interpret_synthetic_candidate
 from eai.synthetic_candidate_verifier import verify_synthetic_interpretation
-from eai.candidate_evidence_review import review_candidate_evidence
+from eai.candidate_evidence_review import (
+    intake_candidate_receipt_for_review, review_candidate_evidence,
+)
+from eai.candidate_review_journal import CandidateReviewJournal
 
 
 class CandidateEvidenceReviewTests(unittest.TestCase):
     def setUp(self):
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)
-        self.store = AXNodeStore(Path(tmp.name) / "nodes")
+        self.root = Path(tmp.name)
+        self.store = AXNodeStore(self.root / "nodes")
         self.addCleanup(self.store.close)
         def node(name, parents):
             return {
@@ -67,6 +72,71 @@ class CandidateEvidenceReviewTests(unittest.TestCase):
             changes.get("fixtures", self.fixtures),
             changes.get("witness", self.witness),
             changes.get("claimed", self.receipt))
+
+    def signed_review(self):
+        try:
+            from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+            from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
+        except ImportError:
+            self.skipTest("optional Ed25519 implementation is unavailable")
+        review = self.review()
+        key = Ed25519PrivateKey.generate()
+        public_key = key.public_key().public_bytes(Encoding.Raw, PublicFormat.Raw)
+        envelope = canonical_bytes({
+            "schema": "eai.candidate.detached.review.v1",
+            "candidate_sha256": review.candidate_sha256,
+            "review_sha256": review.review_sha256,
+            "fixture_sha256": review.fixture_sha256,
+            "problem_sha256": review.problem_sha256,
+            "verifier_id": "synthetic.test.verifier",
+            "disposition": "REVIEW_METADATA_ONLY",
+            "nonce": "test_signature_nonce_01",
+        })
+        return dict(detached_envelope=envelope, detached_signature=key.sign(envelope),
+                    pinned_public_key=public_key,
+                    pinned_key_sha256=hashlib.sha256(public_key).hexdigest())
+
+    def intake(self, journal, **options):
+        return intake_candidate_receipt_for_review(
+            self.store, self.problem, self.candidate, self.fixtures,
+            self.witness, self.receipt, journal, **options)
+
+    def test_signed_receipt_is_durable_but_carries_no_authority_and_cannot_replay(self):
+        signed = self.signed_review()
+        path = self.root / "journal.sqlite"
+        with CandidateReviewJournal(path, create=True) as journal:
+            preview = self.intake(journal, **signed)
+            self.assertEqual(journal.entries(), ())
+            result = self.intake(journal, record_locally=True, **signed)
+            self.assertEqual(result.detached_binding_sha256, preview.detached_binding_sha256)
+            self.assertEqual(len(result.detached_binding_sha256), 64)
+            self.assertFalse(result.source_authenticated)
+            self.assertFalse(result.verified_real_world)
+            self.assertFalse(result.permits_learning)
+            self.assertFalse(result.permits_execution)
+            self.assertFalse(result.permits_promotion)
+        with CandidateReviewJournal(path) as journal:
+            entry = journal.entry_at(1)
+            self.assertEqual(entry.entry_sha256, result.journal_entry_sha256)
+            self.assertEqual(entry.evidence_sha256, result.independent_review_sha256)
+            self.assertEqual(entry.detached_binding_sha256, result.detached_binding_sha256)
+            with self.assertRaisesRegex(ValueError, "nonce already journalled"):
+                self.intake(journal, record_locally=True, **signed)
+            self.assertEqual(journal.entries(), (entry,))
+
+    def test_invalid_signature_and_wrong_evidence_are_rejected_before_journal_write(self):
+        signed = self.signed_review()
+        with CandidateReviewJournal(self.root / "journal.sqlite", create=True) as journal:
+            bad_signature = dict(signed, detached_signature=b"\x00" * 64)
+            self.assertEqual(self.intake(journal, record_locally=True,
+                                         **bad_signature).status,
+                             "HOLD_UNAUTHENTICATED_DETACHED_REVIEW")
+            envelope = json.loads(signed["detached_envelope"])
+            envelope["fixture_sha256"] = "0" * 64
+            wrong_evidence = dict(signed, detached_envelope=canonical_bytes(envelope))
+            with self.assertRaisesRegex(ValueError, "canonical exact evidence"):
+                self.intake(journal, record_locally=True, **wrong_evidence)
+            self.assertEqual(journal.entries(), ())
 
     def test_independent_replay_matches_but_cannot_promote_or_train(self):
         result = self.review()

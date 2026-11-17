@@ -128,6 +128,7 @@ class CandidateReceiptIntake:
     permits_learning: bool = False
     permits_execution: bool = False
     permits_promotion: bool = False
+    detached_binding_sha256: str | None = None
 
 
 def intake_candidate_receipt_for_review(
@@ -146,7 +147,7 @@ def intake_candidate_receipt_for_review(
     This API deliberately cannot assert an external verifier's authority.
     """
     from .candidate_review_journal import CandidateReviewJournal
-    if (type(journal) is not CandidateReviewJournal or
+    if (type(store) is not AXNodeStore or type(journal) is not CandidateReviewJournal or
             type(record_locally) is not bool):
         raise ValueError("typed existing isolated journal and explicit option required")
     if journal.path.is_relative_to(store.root) or (
@@ -168,6 +169,7 @@ def intake_candidate_receipt_for_review(
     # downgrade a failed signature to an unsigned successful journal write.
     supplied = (detached_envelope, detached_signature,
                 pinned_public_key, pinned_key_sha256)
+    detached = None
     if any(value is not None for value in supplied):
         if any(value is None for value in supplied):
             raise ValueError("partial detached signature inputs rejected")
@@ -181,28 +183,36 @@ def intake_candidate_receipt_for_review(
                 "HOLD_UNAUTHENTICATED_DETACHED_REVIEW",
                 candidate.candidate_sha256, review.review_sha256,
                 None, (detached.status, "NO_INDEPENDENT_SEMANTIC_PROOF"))
+        if record_locally and not journal.supports_detached_bindings:
+            return CandidateReceiptIntake(
+                "HOLD_SIGNED_REVIEW_REQUIRES_NEW_JOURNAL",
+                candidate.candidate_sha256, review.review_sha256,
+                None, ("LEGACY_JOURNAL_HAS_NO_DETACHED_BINDING",))
     written = None
     if record_locally:
-        # Append-only isolated review, never the ACTIVE catalog.
-        written = journal.record(review, state=state)
-        # Read the actual committed chain again: a returned Python value by
-        # itself is not proof that the isolated journal contains this review.
-        journal.verify_chain()
-        stored = journal.entries()
-        if (not stored or stored[-1] != written
+        binding = detached.binding_sha256 if detached else None
+        nonce = detached.nonce_sha256 if detached else None
+        written = journal.record(review, state=state,
+                                 detached_binding_sha256=binding,
+                                 detached_nonce_sha256=nonce)
+        # Read back this event, even if another writer has appended after it.
+        if (journal.entry_at(written.sequence) != written
                 or written.evidence_sha256 != review.review_sha256
                 or written.candidate_sha256 != candidate.candidate_sha256
-                or written.state != state):
+                or written.state != state
+                or written.detached_binding_sha256 != binding
+                or written.detached_nonce_sha256 != nonce):
             raise ValueError("review journal write/readback diverged")
     reason = ("INDEPENDENT_EXTERNAL_ORACLE_UNAVAILABLE",)
-    if any(value is not None for value in supplied):
+    if detached:
         reason += ("REVIEWER_INDEPENDENCE_NOT_PROVEN",)
     return CandidateReceiptIntake(
         "LOCAL_SYNTHETIC_REVIEW_JOURNALLED_NOT_VERIFIED" if written else
         "HOLD_RECORD_REQUIRES_EXPLICIT_OPT_IN",
         candidate.candidate_sha256, review.review_sha256,
         written.entry_sha256 if written else None,
-        tuple(sorted(set(review.reason_codes) | set(reason))))
+        tuple(sorted(set(review.reason_codes) | set(reason))),
+        detached_binding_sha256=detached.binding_sha256 if detached else None)
 
 
 # EAI-SWU-020: detached signing can prove possession of a pinned verifier key,
@@ -219,6 +229,8 @@ class DetachedCandidateSignatureReview:
     trusted_for_training: bool = False
     permits_active_promotion: bool = False
     grants_real_player_execution: bool = False
+    binding_sha256: str | None = None
+    nonce_sha256: str | None = None
 
 
 def verify_detached_candidate_signature(
@@ -266,7 +278,7 @@ def verify_detached_candidate_signature(
     try:
         from cryptography.hazmat.primitives.asymmetric.ed25519 import (
             Ed25519PublicKey)
-        from cryptography.exceptions import InvalidSignature
+        from cryptography.exceptions import InvalidSignature, UnsupportedAlgorithm
     except ImportError:
         return DetachedCandidateSignatureReview(
             "HOLD_CRYPTOGRAPHIC_VERIFIER_NOT_INSTALLED",
@@ -276,14 +288,26 @@ def verify_detached_candidate_signature(
     try:
         Ed25519PublicKey.from_public_bytes(pinned_public_key).verify(
             signature, envelope)
-    except (InvalidSignature, ValueError):
+    except (InvalidSignature, UnsupportedAlgorithm, ValueError):
         return DetachedCandidateSignatureReview(
             "HOLD_INVALID_DETACHED_SIGNATURE",
             review.candidate_sha256, review.review_sha256,
             raw["verifier_id"], sha256(signature).hexdigest(),
             trusted_public_key_sha256)
+    signature_sha256 = sha256(signature).hexdigest()
+    binding_sha256 = sha256(canonical_bytes({
+        "schema": "eai.candidate.detached.binding.v1",
+        "key_sha256": trusted_public_key_sha256,
+        "envelope_sha256": sha256(envelope).hexdigest(),
+        "signature_sha256": signature_sha256,
+    })).hexdigest()
+    nonce_sha256 = sha256(canonical_bytes({
+        "schema": "eai.candidate.detached.nonce.v1",
+        "key_sha256": trusted_public_key_sha256,
+        "nonce": raw["nonce"],
+    })).hexdigest()
     return DetachedCandidateSignatureReview(
         "DETACHED_SIGNATURE_MATCHES_PIN_UNVERIFIED_INDEPENDENCE",
         review.candidate_sha256, review.review_sha256,
-        raw["verifier_id"], sha256(signature).hexdigest(),
-        trusted_public_key_sha256)
+        raw["verifier_id"], signature_sha256, trusted_public_key_sha256,
+        binding_sha256=binding_sha256, nonce_sha256=nonce_sha256)

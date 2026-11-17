@@ -18,6 +18,7 @@ from .contracts import canonical_bytes
 
 _HASH = re.compile(r"[0-9a-f]{64}\Z")
 _STATES = frozenset({"REVIEW_HOLD", "QUARANTINED", "WITHDRAWN_FROM_REVIEW"})
+_ENTRY_LIMIT = 10000
 
 
 @dataclass(frozen=True)
@@ -31,6 +32,8 @@ class JournalEntry:
     entry_sha256: str
     permits_promotion: bool = False
     changes_active_node: bool = False
+    detached_binding_sha256: str | None = None
+    detached_nonce_sha256: str | None = None
 
 
 def _digest(value: str) -> str:
@@ -40,20 +43,29 @@ def _digest(value: str) -> str:
 
 
 def _entry_hash(seq: int, candidate: str, evidence: str, state: str,
-                active: str | None, previous: str) -> str:
-    return hashlib.sha256(canonical_bytes({
+                active: str | None, previous: str,
+                detached_binding: str | None = None,
+                detached_nonce: str | None = None) -> str:
+    payload = {
         "schema": "eai.candidate.review.entry.v1",
         "sequence": seq, "candidate_sha256": candidate,
         "evidence_sha256": evidence, "state": state,
         "previous_active_sha256": active,
         "previous_entry_sha256": previous,
-    })).hexdigest()
+    }
+    if detached_binding is not None:
+        payload.update(schema="eai.candidate.review.entry.v2",
+                       detached_binding_sha256=detached_binding,
+                       detached_nonce_sha256=detached_nonce)
+    return hashlib.sha256(canonical_bytes(payload)).hexdigest()
 
 
 class CandidateReviewJournal:
-    """Separate new SQLite v1 sidecar. No existing DB migration or activation."""
+    """Isolated review journal, with detached bindings in newly created files."""
 
     def __init__(self, path: str | Path, *, create: bool = False):
+        if type(create) is not bool:
+            raise ValueError("explicit journal creation flag required")
         path = Path(path).expanduser()
         if (path.is_symlink() or not path.parent.is_dir()
                 or path.parent.is_symlink()
@@ -66,14 +78,14 @@ class CandidateReviewJournal:
             # window: SQLite's ordinary connect can otherwise follow a new link.
             fd = os.open(self.path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
             os.close(fd)
-        self.db = sqlite3.connect(self.path, timeout=3)
+        self.db = sqlite3.connect(self.path.as_uri() + "?mode=rw", uri=True, timeout=3)
         try:
             self.db.execute("PRAGMA busy_timeout=3000")
-            self.db.execute("PRAGMA journal_mode=WAL")
             version = self.db.execute("PRAGMA user_version").fetchone()[0]
             if create:
                 if version != 0:
                     raise ValueError("journal already initialized")
+                self.db.execute("PRAGMA journal_mode=WAL")
                 self.db.executescript("""
                     CREATE TABLE entries (
                         sequence INTEGER PRIMARY KEY,
@@ -82,19 +94,27 @@ class CandidateReviewJournal:
                         state TEXT NOT NULL,
                         previous_active_sha256 TEXT,
                         previous_entry_sha256 TEXT NOT NULL,
-                        entry_sha256 TEXT NOT NULL UNIQUE
+                        entry_sha256 TEXT NOT NULL UNIQUE,
+                        detached_binding_sha256 TEXT,
+                        detached_nonce_sha256 TEXT UNIQUE,
+                        CHECK ((detached_binding_sha256 IS NULL) =
+                               (detached_nonce_sha256 IS NULL))
                     );
-                    PRAGMA user_version=1;
+                    PRAGMA user_version=2;
                 """)
                 self.db.commit()
                 os.chmod(self.path, 0o600)
-            elif version != 1:
+                version = 2
+            elif version not in (1, 2):
                 raise ValueError("unknown journal version")
+            self._version = version
             columns = {row[1] for row in self.db.execute("PRAGMA table_info(entries)")}
             expected = {
                 "sequence", "candidate_sha256", "evidence_sha256", "state",
                 "previous_active_sha256", "previous_entry_sha256", "entry_sha256",
             }
+            if self.supports_detached_bindings:
+                expected.update({"detached_binding_sha256", "detached_nonce_sha256"})
             if columns != expected or self.db.execute(
                     "PRAGMA integrity_check").fetchone()[0] != "ok":
                 raise ValueError("unsafe journal schema/integrity")
@@ -112,15 +132,37 @@ class CandidateReviewJournal:
     def __exit__(self, *_exc: object) -> None:
         self.close()
 
-    def entries(self) -> tuple[JournalEntry, ...]:
-        return tuple(JournalEntry(*row) for row in self.db.execute(
-            "SELECT sequence,candidate_sha256,evidence_sha256,state,"
-            "previous_active_sha256,previous_entry_sha256,entry_sha256 "
-            "FROM entries ORDER BY sequence"))
+    @property
+    def supports_detached_bindings(self) -> bool:
+        return self._version == 2
 
-    def verify_chain(self) -> bool:
+    def entries(self) -> tuple[JournalEntry, ...]:
+        detached_columns = ("detached_binding_sha256,detached_nonce_sha256"
+                            if self.supports_detached_bindings else "NULL,NULL")
+        rows = self.db.execute(
+            "SELECT sequence,candidate_sha256,evidence_sha256,state,"
+            "previous_active_sha256,previous_entry_sha256,entry_sha256,"
+            + detached_columns + " FROM entries ORDER BY sequence LIMIT ?",
+            (_ENTRY_LIMIT + 1,)
+        ).fetchall()
+        if len(rows) > _ENTRY_LIMIT:
+            raise ValueError("bounded review journal exceeded")
+        return tuple(JournalEntry(*row[:7], detached_binding_sha256=row[7],
+                                  detached_nonce_sha256=row[8]) for row in rows)
+
+    def _verified_entries(self) -> tuple[JournalEntry, ...]:
+        entries = self.entries()
         previous = "0" * 64
-        for index, item in enumerate(self.entries(), 1):
+        nonces = set()
+        for index, item in enumerate(entries, 1):
+            binding, nonce = item.detached_binding_sha256, item.detached_nonce_sha256
+            if (binding is None) != (nonce is None):
+                raise ValueError("incomplete detached journal binding")
+            if nonce is not None:
+                _digest(binding)
+                if _digest(nonce) in nonces:
+                    raise ValueError("replayed detached journal binding")
+                nonces.add(nonce)
             if (item.sequence != index or item.previous_entry_sha256 != previous
                     or item.state not in _STATES
                     or (item.previous_active_sha256 is not None
@@ -129,22 +171,32 @@ class CandidateReviewJournal:
                     or _digest(item.evidence_sha256) != item.evidence_sha256
                     or item.entry_sha256 != _entry_hash(
                         index, item.candidate_sha256, item.evidence_sha256,
-                        item.state, item.previous_active_sha256, previous)):
+                        item.state, item.previous_active_sha256, previous,
+                        binding, nonce)):
                 raise ValueError("journal chain integrity failure")
             previous = item.entry_sha256
+        return entries
+
+    def verify_chain(self) -> bool:
+        self._verified_entries()
         return True
+
+    def entry_at(self, sequence: int) -> JournalEntry | None:
+        entries = self._verified_entries()
+        return entries[sequence - 1] if 1 <= sequence <= len(entries) else None
 
     def latest_for(self, candidate_sha256: str) -> JournalEntry | None:
         """Read-only current review state; never a promotion decision."""
         _digest(candidate_sha256)
-        self.verify_chain()
-        for entry in reversed(self.entries()):
+        for entry in reversed(self._verified_entries()):
             if entry.candidate_sha256 == candidate_sha256:
                 return entry
         return None
 
     def record(self, review: CandidateEvidenceReview, *,
-               state: str, previous_active_sha256: str | None = None
+               state: str, previous_active_sha256: str | None = None,
+               detached_binding_sha256: str | None = None,
+               detached_nonce_sha256: str | None = None,
                ) -> JournalEntry:
         if type(review) is not CandidateEvidenceReview:
             raise ValueError("explicit untrusted review required")
@@ -159,14 +211,23 @@ class CandidateReviewJournal:
         _digest(review.fixture_sha256)
         if previous_active_sha256 is not None:
             _digest(previous_active_sha256)
+        if (detached_binding_sha256 is None) != (detached_nonce_sha256 is None):
+            raise ValueError("complete detached journal binding required")
+        if detached_binding_sha256 is not None:
+            if not self.supports_detached_bindings:
+                raise ValueError("detached binding requires a new journal")
+            _digest(detached_binding_sha256)
+            _digest(detached_nonce_sha256)
         # A user may note an existing ACTIVE pointer, but this module cannot
         # change it. The pointer is audit metadata, never an authorization.
         with self.db:
             self.db.execute("BEGIN IMMEDIATE")
-            self.verify_chain()
-            existing = self.entries()
-            if len(existing) >= 10000:
+            existing = self._verified_entries()
+            if len(existing) >= _ENTRY_LIMIT:
                 raise ValueError("bounded review journal full")
+            if detached_nonce_sha256 is not None and any(
+                    entry.detached_nonce_sha256 == detached_nonce_sha256 for entry in existing):
+                raise ValueError("detached verifier nonce already journalled")
             prior = [e for e in existing
                      if e.candidate_sha256 == review.candidate_sha256]
             if state == "REVIEW_HOLD" and (
@@ -189,10 +250,16 @@ class CandidateReviewJournal:
             previous = existing[-1].entry_sha256 if existing else "0" * 64
             digest = _entry_hash(index, review.candidate_sha256,
                                  review.review_sha256, state,
-                                 previous_active_sha256, previous)
-            self.db.execute(
-                "INSERT INTO entries VALUES(?,?,?,?,?,?,?)",
-                (index, review.candidate_sha256, review.review_sha256,
-                 state, previous_active_sha256, previous, digest))
+                                 previous_active_sha256, previous,
+                                 detached_binding_sha256, detached_nonce_sha256)
+            values = (index, review.candidate_sha256, review.review_sha256,
+                      state, previous_active_sha256, previous, digest)
+            if self.supports_detached_bindings:
+                self.db.execute("INSERT INTO entries VALUES(?,?,?,?,?,?,?,?,?)",
+                                (*values, detached_binding_sha256, detached_nonce_sha256))
+            else:
+                self.db.execute("INSERT INTO entries VALUES(?,?,?,?,?,?,?)", values)
         return JournalEntry(index, review.candidate_sha256, review.review_sha256,
-                            state, previous_active_sha256, previous, digest)
+                            state, previous_active_sha256, previous, digest,
+                            detached_binding_sha256=detached_binding_sha256,
+                            detached_nonce_sha256=detached_nonce_sha256)
