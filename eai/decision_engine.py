@@ -313,3 +313,27 @@ def render_final_architect_result(result: FinalResultSpec) -> dict:
         **validated.as_dict(),
         "verified_real_world": False, "grants_real_authority": False,
     }
+
+
+# EAI-SWU-033: concrete decision -> redacted final response boundary.
+def finalize_redacted_architect_response(
+    problem: ProblemSpec, outcome: DesignOutcome,
+) -> dict:
+    """No untrusted goal/idea text, no Qwen final answer or research privilege."""
+    from .trace_renderer import render_final_decision_trace
+    result = finalize_architect_decision(problem, outcome)
+    structured = render_final_architect_result(result)
+    trace = render_final_decision_trace(result)
+    if (trace["problem_sha256"] != structured["problem_sha256"]
+            or trace["status"] != structured["status"]
+            or trace["execution"] != "NOT_EXECUTED"
+            or trace["grants_real_authority"]):
+        raise ValueError("divergent EAI final answer and redacted trace")
+    return {
+        "schema": "eai.architect.final_response.v1",
+        "result": structured,
+        "trace": trace,
+        "origin": "INDEPENDENT_CPU_ADVISORY",
+        "hydrogen_input_used": False,
+        "verified_real_world": False,
+    }

@@ -218,3 +218,31 @@ def render_explanation_text(raw: dict) -> str:
     lines.append("REAL-WORLD VERIFICATION: NOT ESTABLISHED")
     lines.append("EXTERNAL ACTIONS: DISABLED")
     return "\n".join(lines) + "\n"
+
+
+# EAI-SWU-033: final result digest-only presentation with research separated.
+def render_final_decision_trace(result) -> dict:
+    """Allowlisted source SHA, counts and reason codes only; no private goal."""
+    from .contracts import FinalResultSpec
+    if type(result) is not FinalResultSpec:
+        raise ValueError("typed final EAI result required")
+    trusted = FinalResultSpec.validate(result.as_dict())
+    if trusted != result:
+        raise ValueError("forged final EAI result")
+    if result.status == "ABSTAINED" and result.selected_alternative is not None:
+        raise ValueError("abstention may not select an action")
+    return {
+        "schema": "eai.architect.final_trace.v1",
+        "problem_sha256": _hash(result.problem_sha256),
+        "status": result.status,
+        "selected_alternative": result.selected_alternative,
+        "source_sha256": list(result.advisory_evidence_sha256),
+        "reason_codes": list(result.reason_codes),
+        "evidence_count": len(result.advisory_evidence_sha256),
+        "execution": "NOT_EXECUTED",
+        "independent_verification": "NOT_ESTABLISHED",
+        "research_lane": "OPTIONAL_OFF_SEPARATE_UNTRUSTED",
+        "external_actions": 0,
+        "original_writes": 0,
+        "grants_real_authority": False,
+    }

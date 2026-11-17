@@ -111,3 +111,11 @@ def inspect_adapter_handshake(
     return AdapterHandshakeReview(status, handshake.adapter, digest,
                                   policy.problem_sha256, policy.plan_sha256,
                                   tuple(sorted(reasons)))
+
+
+# EAI-SWU-031: convenience bridge to an always-OFF local port registry.
+def inspect_disabled_adapter_port(
+    problem: ProblemSpec, plan: PlanSpec, handshake: AdapterHandshake,
+):
+    from .adapter_registry import DisabledAdapterRegistry
+    return DisabledAdapterRegistry().inspect(problem, plan, handshake)

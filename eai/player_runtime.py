@@ -97,3 +97,56 @@ def audit_pure_player_trace(
                               expected.trace_sha256, 0)
     return PureTraceAudit("PURE_TRACE_REPLAY_MATCH_UNVERIFIED",
                           expected.trace_sha256, len(expected.step_receipts))
+
+
+# EAI-SWU-028: real safe caller -> gate -> pure interpreter -> replay.
+@dataclass(frozen=True)
+class PurePlayerFlow:
+    status: str
+    problem_sha256: str
+    plan_sha256: str
+    trace_sha256: str | None
+    interpreted_steps: int
+    reason_codes: tuple[str, ...]
+    replay_status: str
+    original_writes: int = 0
+    external_actions: int = 0
+    grants_real_authority: bool = False
+    independent_real_world_verification: bool = False
+
+
+def run_bounded_pure_player(
+    problem: ProblemSpec, plan: PlanSpec, *,
+    interpret_pure_noop: bool = False,
+    architect_truth: str = "UNVERIFIED",
+    evidence_review_required: bool = False,
+    cancel_before_step: str | None = None,
+) -> PurePlayerFlow:
+    """Only explicit no-op interpretation can proceed after recomputed gate."""
+    from .policy_gate import evaluate_problem_review_policy
+    if type(interpret_pure_noop) is not bool:
+        raise ValueError("explicit boolean pure interpretation switch")
+    policy = evaluate_problem_review_policy(
+        problem, plan, architect_truth=architect_truth,
+        evidence_review_required=evidence_review_required)
+    if policy.disposition != "PURE_SYNTHETIC_PREVIEW_ONLY":
+        return PurePlayerFlow(
+            "HOLD_POLICY_DENIED", policy.problem_sha256,
+            policy.plan_sha256, None, 0, policy.reason_codes, "NOT_RUN")
+    if not interpret_pure_noop:
+        return PurePlayerFlow(
+            "PURE_ELIGIBLE_NOT_INTERPRETED", policy.problem_sha256,
+            policy.plan_sha256, None, 0, (), "NOT_RUN")
+    # Existing interpreter revalidates policy independently before each call.
+    trace = execute_pure_synthetic_preview(
+        problem, plan, policy, cancel_before_step=cancel_before_step)
+    audit = audit_pure_player_trace(
+        problem, plan, policy, trace, cancel_before_step=cancel_before_step)
+    if audit.status != "PURE_TRACE_REPLAY_MATCH_UNVERIFIED":
+        raise ValueError("independent pure replay rejected trace")
+    if trace.external_actions or trace.original_writes or trace.promotion_authorized:
+        raise PermissionError("untrusted Player attempted side-effect claim")
+    return PurePlayerFlow(
+        trace.status, trace.problem_sha256, trace.plan_sha256,
+        trace.trace_sha256, audit.matching_steps, (),
+        audit.status)

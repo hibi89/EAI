@@ -91,3 +91,67 @@ class DesignEngine:
             "unknowns": list(analysis.unknowns),
         })
         return DesignOutcome(analysis, design, result)
+
+
+# EAI-SWU-013: bridge a modeled problem to evidence-bound design alternatives.
+@dataclass(frozen=True)
+class DesignObligation:
+    alternative_id: str
+    node_source_sha256: tuple[str, ...]
+    tradeoffs: tuple[str, ...]
+    verification_required: str
+    status: str = "ADVISORY_UNVERIFIED"
+
+
+@dataclass(frozen=True)
+class DesignReview:
+    problem_sha256: str
+    status: str
+    alternatives: tuple[DesignObligation, ...]
+    reason_codes: tuple[str, ...]
+    unknown_count: int
+    verified: bool = False
+    permits_execution: bool = False
+
+
+def review_design_alternatives(
+    engine: DesignEngine, problem: ProblemSpec,
+) -> DesignReview:
+    """Actual local modeler -> design -> source obligations; never a proof."""
+    if type(engine) is not DesignEngine or type(problem) is not ProblemSpec:
+        raise ValueError("explicit EAI design engine and typed problem required")
+    outcome = engine.propose(problem)
+    digest = problem.digest()
+    if (outcome.analysis.problem_sha256 != digest or
+            outcome.design.problem_sha256 != digest or
+            outcome.result.problem_sha256 != digest):
+        raise ValueError("cross-problem design outcome")
+    if outcome.result.status not in ("UNVERIFIED", "CONFLICT"):
+        raise ValueError("model cannot establish independent verification")
+    evidence = {e.strategy_id: e.source_sha256 for e in outcome.analysis.evidence}
+    blockers = []
+    if outcome.design.blocked_reason:
+        blockers.append("DESIGN_BLOCKED")
+    if outcome.analysis.contradictions:
+        blockers.append("HARD_CONSTRAINT_CONFLICT")
+    obligations = []
+    for aid, refs, tradeoffs, check in outcome.design.alternatives:
+        if (not refs or len(refs) > 8 or len(set(refs)) != len(refs)
+                or not set(refs).issubset(evidence)
+                or not set(outcome.analysis.required).issubset(refs)
+                or set(refs) & set(outcome.analysis.forbidden)):
+            raise ValueError("design option is not grounded in local candidates")
+        pinned = tuple(evidence[r] for r in refs)
+        if len(set(pinned)) != len(pinned):
+            raise ValueError("duplicated AXNODE source in design")
+        obligations.append(DesignObligation(
+            aid, pinned, tradeoffs, check))
+    if len(obligations) != 2 or obligations[0].node_source_sha256 == obligations[1].node_source_sha256:
+        blockers.append("TWO_DISTINCT_ALTERNATIVES_NOT_ESTABLISHED")
+    if not blockers:
+        blockers.append("INDEPENDENT_ORACLE_PENDING")
+    held = any(code != "INDEPENDENT_ORACLE_PENDING" for code in blockers)
+    return DesignReview(
+        digest, "ABSTAINED" if held else "TWO_ALTERNATIVES_UNVERIFIED",
+        tuple(obligations) if not held else (),
+        tuple(sorted(set(blockers))), len(outcome.analysis.unknowns))
