@@ -1,8 +1,8 @@
-"""Read-only recovery preflight for AXNODE catalog and separate memory sidecars.
+"""Recovery preflight and isolated publication for AXNODE catalog and sidecars.
 
 The legacy ZIP v1 backs up only AXNODE catalog and node files. This module
-makes exclusion of private experience/evidence SQLite explicit instead of
-silently implying full recovery. Never repairs, renames or deletes user data.
+makes exclusion of private experience/evidence SQLite explicit. Publication
+copies approved checkpoint data into an independent recovery ledger.
 """
 from __future__ import annotations
 
@@ -11,6 +11,10 @@ from pathlib import Path
 import sqlite3
 from contextlib import closing
 
+from .axnode_restore import (
+    IsolatedRestoreReceipt, IsolatedRestoreRequest, commit_isolated_restore,
+)
+from .axnode_sidecar_backup import _FILES
 from .axnode_store import AXNodeStore
 
 _SIDECARS = (
@@ -152,8 +156,7 @@ def snapshot_and_audit_sidecars(
         audited.matched_anchor_count, written.name, restored.name)
 
 
-# EAI-SWU-008: staged recovery publication/rollback is an advisory decision
-# until an atomic cross-DB checkpoint and independent verifier exist.
+# EAI-SWU-008: staged recovery can publish to an explicitly isolated ledger.
 @dataclass(frozen=True)
 class IsolatedRestoreDisposition:
     status: str
@@ -164,21 +167,32 @@ class IsolatedRestoreDisposition:
     staged_data_deleted: bool = False
     originals_touched: bool = False
     can_commit_to_live: bool = False
+    shared_read_checkpoint_sha256: str | None = None
+    publication: IsolatedRestoreReceipt | None = None
 
 
 def review_isolated_restore_commit_or_hold(
-    store: AXNodeStore, archive: str | Path, isolated_root: str | Path,
+    store: AXNodeStore, archive: str | Path, isolated_root: str | Path, *,
+    publication: IsolatedRestoreRequest | None = None,
 ) -> IsolatedRestoreDisposition:
-    """Check the true completion marker and independent coherence result.
+    """Review a staged restore, or publish it to a dedicated offline ledger.
 
-    Never deletes, renames or rolls back a user-selected restored directory.
-    A failed review is a HOLD with manual rollback required, not auto-cleanup.
+    The optional request requires the checkpoint from a prior review, an
+    explicit isolated write option and a matching ledger revision. A replay
+    returns the audit and publication result at the recorded revision.
     """
     from .axnode_sidecar_backup import _COMPLETE_MARKER
     from .sidecar_recovery_audit import audit_isolated_sidecar_restore
     from .sidecar_coherence_review import inspect_isolated_epoch_boundary
     if type(store) is not AXNodeStore:
         raise ValueError("explicit original AXNODE store required")
+    if publication is not None:
+        committed = commit_isolated_restore(store, archive, isolated_root, publication)
+        return IsolatedRestoreDisposition(
+            committed.status, True, len(_FILES), (), False,
+            shared_read_checkpoint_sha256=committed.checkpoint_sha256,
+            publication=committed,
+        )
     root = Path(isolated_root).expanduser()
     if (root.is_symlink() or not root.is_dir()
             or root.resolve(strict=True).is_relative_to(store.root)):
@@ -201,4 +215,6 @@ def review_isolated_restore_commit_or_hold(
         True, inspected.archived_file_count,
         ("NO_SHARED_TRANSACTION_EPOCH",
          "INDEPENDENT_RESTORE_VALIDATION_NOT_RUN",
-         "NO_LIVE_STORE_COMMIT_AUTHORIZATION"), False)
+         "NO_LIVE_STORE_COMMIT_AUTHORIZATION"), False,
+        shared_read_checkpoint_sha256=epoch.shared_read_checkpoint_sha256,
+    )

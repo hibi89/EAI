@@ -1,4 +1,4 @@
-"""C05 read-only coherence checks for an isolated sidecar restore."""
+"""C05 checkpoint checks and capture of audited AXNODE recovery payloads."""
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -8,7 +8,10 @@ from pathlib import Path
 import sqlite3
 
 from .axnode_store import AXNodeStore
-from .axnode_epoch import ReadCheckpointUnavailable, shared_read_checkpoint
+from .axnode_epoch import (
+    IsolatedEpochPayload, ReadCheckpointUnavailable, _copy_checkpoint_database,
+    shared_read_checkpoint,
+)
 from .contracts import canonical_bytes, strict_json
 from .axnode_sidecar_backup import _COMPLETE_MARKER, _FILES, _MAX_DB, _MAX_ZIP
 from .sidecar_recovery_audit import audit_isolated_sidecar_restore
@@ -158,13 +161,13 @@ class EpochConsistencyBoundary:
     shared_read_checkpoint_sha256: str | None = None
 
 
-def _catalog_fingerprint(store: AXNodeStore) -> tuple[int, str]:
+def _catalog_rows(store: AXNodeStore) -> tuple[list[tuple], list[tuple]]:
     rows = store.db.execute(
         "SELECT sha256,node_id,version,status,kind,output_type,search_text "
-        "FROM nodes ORDER BY sha256 LIMIT 3001"
+        "FROM main.nodes ORDER BY sha256 LIMIT 3001"
     ).fetchall()
     edges = store.db.execute(
-        "SELECT child_sha,parent_sha FROM parents ORDER BY child_sha,parent_sha "
+        "SELECT child_sha,parent_sha FROM main.parents ORDER BY child_sha,parent_sha "
         "LIMIT 36001"
     ).fetchall()
     if len(rows) > 3000 or len(edges) > 36000:
@@ -173,9 +176,32 @@ def _catalog_fingerprint(store: AXNodeStore) -> tuple[int, str]:
     if (audit["sqlite_integrity"] != "ok" or audit["foreign_key_violations"]
             or audit["invalid_hashes"] or audit["orphan_files"]):
         raise ValueError("source AXNODE integrity not established")
-    return len(rows), hashlib.sha256(canonical_bytes({
-        "nodes": rows, "parents": edges,
-    })).hexdigest()
+    return rows, edges
+
+
+def _capture_epoch_payload(
+    store: AXNodeStore, sidecars: tuple[sqlite3.Connection, ...],
+    rows: list[tuple], edges: list[tuple],
+) -> IsolatedEpochPayload:
+    assets = []
+    expected_edges = []
+    for digest, *metadata in rows:
+        node = store.get(digest)
+        raw = node.as_dict()
+        expected = (
+            raw["id"], raw["version"], raw["status"], raw["kind"],
+            raw["signature"]["output"], store._keywords(raw),
+        )
+        if tuple(metadata) != expected:
+            raise ValueError("catalog metadata differs from immutable AXNODE")
+        expected_edges.extend((digest, parent) for parent in raw["parent_hashes"])
+        assets.append((f"nodes/{digest}.axnode", node.canonical))
+    if sorted(expected_edges) != edges:
+        raise ValueError("catalog parent graph differs from immutable AXNODE")
+    catalog_image = _copy_checkpoint_database(store.db, {"nodes", "parents"})
+    images = [(name, _copy_checkpoint_database(db, {table}))
+              for db, (name, (_, table, _)) in zip(sidecars, _FILES.items(), strict=True)]
+    return IsolatedEpochPayload((("catalog.sqlite", catalog_image), *images, *assets))
 
 
 def _restore_stamp(bundle: Path, root: Path) -> tuple[tuple[int, ...], ...]:
@@ -200,6 +226,29 @@ def inspect_isolated_epoch_boundary(
     The checkpoint describes the observed contents. It carries no historical
     write-transaction proof or permission to publish a restore.
     """
+    boundary, _ = _observe_epoch_boundary(store, archive, isolated_root)
+    return boundary
+
+
+def capture_isolated_write_epoch(
+    store: AXNodeStore, archive: str | Path, isolated_root: str | Path, *,
+    checkpoint_sha256: str,
+) -> IsolatedEpochPayload:
+    """Capture full payload from the same pinned view used for the audit."""
+    boundary, payload = _observe_epoch_boundary(
+        store, archive, isolated_root, capture_checkpoint=checkpoint_sha256,
+    )
+    if not boundary.sidecars_agree:
+        raise ValueError(boundary.status)
+    if payload is None:
+        raise ValueError("isolated restore checkpoint differs from the reviewed checkpoint")
+    return payload
+
+
+def _observe_epoch_boundary(
+    store: AXNodeStore, archive: str | Path, isolated_root: str | Path, *,
+    capture_checkpoint: str | None = None,
+) -> tuple[EpochConsistencyBoundary, IsolatedEpochPayload | None]:
     if type(store) is not AXNodeStore:
         raise ValueError("explicit local store required")
     bundle, root = Path(archive).expanduser(), Path(isolated_root).expanduser()
@@ -207,13 +256,18 @@ def inspect_isolated_epoch_boundary(
     if any(path.is_symlink() for path in sources):
         raise ValueError("symlinked source sidecar")
     if not all(path.is_file() for path in sources):
-        return EpochConsistencyBoundary("HOLD_MISSING_SOURCE_SIDECAR", 0, (), (), False)
+        return EpochConsistencyBoundary("HOLD_MISSING_SOURCE_SIDECAR", 0, (), (), False), None
     if any(path.stat().st_size > _MAX_DB for path in (*sources, store.db_path)):
         raise ValueError("source database checkpoint budget exceeded")
     stamp = _restore_stamp(bundle, root)
+    payload = None
     try:
         with shared_read_checkpoint(store, tuple(sources)) as readers:
-            node_count, catalog_sha = _catalog_fingerprint(store)
+            rows, edges = _catalog_rows(store)
+            node_count = len(rows)
+            catalog_sha = hashlib.sha256(canonical_bytes({
+                "nodes": rows, "parents": edges,
+            })).hexdigest()
             source = tuple(_fingerprint_rows(db, table) for db, (_, table, _) in
                            zip(readers, _FILES.values(), strict=True))
             audit = audit_isolated_sidecar_restore(store, bundle, root)
@@ -223,24 +277,27 @@ def inspect_isolated_epoch_boundary(
                 archive_bytes = handle.read(_MAX_ZIP + 1)
             if len(archive_bytes) > _MAX_ZIP:
                 raise ValueError("checkpoint archive budget exceeded")
-            archive_sha = hashlib.sha256(archive_bytes).hexdigest()
+            checkpoint = hashlib.sha256(canonical_bytes({
+                "schema": "eai.axnode.shared.read.checkpoint.v1",
+                "catalog_sha256": catalog_sha,
+                "sidecars": dict(zip(_FILES, source, strict=True)),
+                "archive_sha256": hashlib.sha256(archive_bytes).hexdigest(),
+            })).hexdigest()
+            complete = (source == restored and audit.archived_file_count == len(_FILES)
+                        and audit.validated_row_count > 0)
+            if complete and checkpoint == capture_checkpoint:
+                payload = _capture_epoch_payload(store, readers, rows, edges)
     except ReadCheckpointUnavailable:
-        return EpochConsistencyBoundary("HOLD_SOURCE_CHECKPOINT_UNAVAILABLE", 0, (), (), False)
+        return EpochConsistencyBoundary("HOLD_SOURCE_CHECKPOINT_UNAVAILABLE", 0, (), (), False), None
     if _restore_stamp(bundle, root) != stamp:
         return EpochConsistencyBoundary("HOLD_ISOLATED_RESTORE_CHANGED", node_count,
-                                        source, restored, False)
+                                        source, restored, False), None
     if source != restored or audit.archived_file_count != len(_FILES):
         return EpochConsistencyBoundary("HOLD_MISMATCHED_ISOLATED_EPOCH", node_count,
-                                        source, restored, False)
+                                        source, restored, False), None
     if not audit.validated_row_count:
         return EpochConsistencyBoundary("HOLD_EMPTY_RESTORE_HAS_NO_PROVENANCE", node_count,
-                                        source, restored, False)
-    checkpoint = hashlib.sha256(canonical_bytes({
-        "schema": "eai.axnode.shared.read.checkpoint.v1",
-        "catalog_sha256": catalog_sha,
-        "sidecars": dict(zip(_FILES, source, strict=True)),
-        "archive_sha256": archive_sha,
-    })).hexdigest()
+                                        source, restored, False), None
     return EpochConsistencyBoundary("SHARED_READ_CHECKPOINT_MATCH", node_count,
                                     source, restored, True,
-                                    shared_read_checkpoint_sha256=checkpoint)
+                                    shared_read_checkpoint_sha256=checkpoint), payload

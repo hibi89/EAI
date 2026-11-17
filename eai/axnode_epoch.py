@@ -1,8 +1,9 @@
-"""A read-only observation boundary across the existing AXNODE databases."""
+"""Common AXNODE read checkpoint and self-contained isolated SQLite images."""
 from __future__ import annotations
 
 from collections.abc import Iterator
 from contextlib import ExitStack, closing, contextmanager
+from dataclasses import dataclass
 from pathlib import Path
 import sqlite3
 import stat
@@ -13,6 +14,72 @@ from .axnode_sidecar_backup import _MAX_DB
 
 class ReadCheckpointUnavailable(ValueError):
     """The source could not be observed at a common read checkpoint."""
+
+
+_SQLITE_OFFLINE_HEADER = b"\x01\x01"
+_DATABASE_FILES = ("catalog.sqlite", "memory.sqlite", "evidence.sqlite")
+
+
+@dataclass(frozen=True)
+class IsolatedEpochPayload:
+    """All bytes of one restorable catalog, sidecar pair and node inventory."""
+
+    files: tuple[tuple[str, bytes], ...]
+
+    @contextmanager
+    def open_database(self, name: str) -> Iterator[sqlite3.Connection]:
+        """Use a snapshot without creating or attaching an on-disk store."""
+        if name not in _DATABASE_FILES:
+            raise ValueError("unknown isolated epoch database")
+        with closing(sqlite3.connect(":memory:")) as reader:
+            reader.deserialize(dict(self.files)[name])
+            reader.execute("PRAGMA trusted_schema=OFF")
+            reader.execute("PRAGMA temp_store=MEMORY")
+            reader.execute("PRAGMA query_only=ON")
+            reader.set_authorizer(_snapshot_authorizer)
+            yield reader
+
+
+def _offline_sqlite_image(data: bytes) -> bool:
+    return (100 <= len(data) <= _MAX_DB and data[:16] == b"SQLite format 3\x00"
+            and data[18:20] == _SQLITE_OFFLINE_HEADER)
+
+
+def _snapshot_authorizer(action: int, name: str | None, value: str | None, *_: object) -> int:
+    if action in (sqlite3.SQLITE_ATTACH, sqlite3.SQLITE_DETACH):
+        return sqlite3.SQLITE_DENY
+    if action == sqlite3.SQLITE_PRAGMA and name == "query_only" and value is not None:
+        return sqlite3.SQLITE_DENY
+    return sqlite3.SQLITE_OK
+
+
+def _copy_checkpoint_database(
+    source: sqlite3.Connection, tables: set[str],
+) -> bytes:
+    """Copy a pinned view, then normalize its private copy for offline reads."""
+    schema = source.execute(
+        "SELECT type, name FROM main.sqlite_schema WHERE sql IS NOT NULL"
+    ).fetchall()
+    if ({name for kind, name in schema if kind == "table"} != tables
+            or any(kind not in ("table", "index") for kind, _ in schema)):
+        raise ValueError("unexpected isolated epoch source schema")
+    pages = source.execute("PRAGMA page_count").fetchone()[0]
+    page_size = source.execute("PRAGMA page_size").fetchone()[0]
+    if pages * page_size > _MAX_DB:
+        raise ValueError("isolated epoch database exceeds size budget")
+    with closing(sqlite3.connect(":memory:")) as snapshot:
+        if not hasattr(snapshot, "serialize") or not hasattr(snapshot, "deserialize"):
+            raise ValueError("isolated recovery requires SQLite serialization support")
+        source.backup(snapshot)
+        snapshot.execute("PRAGMA trusted_schema=OFF")
+        snapshot.execute("PRAGMA temp_store=MEMORY")
+        # A backup of a WAL source may still carry WAL header bytes. Rebuild
+        # on the in-memory database so reopen never needs a WAL companion.
+        snapshot.execute("VACUUM")
+        data = snapshot.serialize()
+    if not _offline_sqlite_image(data):
+        raise ValueError("invalid isolated checkpoint database image")
+    return data
 
 
 def _file_identity(path: Path) -> tuple[int, int]:
