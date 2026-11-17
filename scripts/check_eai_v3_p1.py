@@ -23,6 +23,7 @@ SOURCES = (
     "eai/logic_verifier.py", "eai/logic_counterexamples.py",
     "eai/logic_oracle.py", "eai/logic_validation_pipeline.py",
     "eai/solver_reference_check.py", "eai/synthetic_holdout.py",
+    "eai/b0_cli.py",
     "eai/research_policy.py",
     "eai/research_providers.py", "eai/hydrogen_packet.py",
     "eai/research_quota.py", "eai/research_mock_transport.py",
@@ -41,6 +42,7 @@ TESTS = (
     "test_logic_synthesis.py", "test_logic_counterexamples.py",
     "test_logic_oracle.py", "test_logic_validation_pipeline.py",
     "test_solver_reference_check.py", "test_synthetic_holdout.py",
+    "test_b0_cli.py",
     "test_hydrogen_policy.py",
     "test_research_mock_transport.py", "test_research_offline.py",
 )
