@@ -282,13 +282,15 @@ def _read_external_owner_trust_root(path) -> tuple[str, str]:
 
 def _check_live_owner_permit(
     permit: SignedLiveSendPermit, packet: ResearchPacket,
-    draft: DraftHydrogenRequest, api_key: str, now: int,
+    draft: DraftHydrogenRequest, api_key: str | None, now: int,
     *, trusted_project_id: str, trusted_owner_key_sha256: str,
 ) -> tuple[str, str, str]:
-    """Require a genuine detached owner signature over an exact single send.
+    """Verify detached owner consent; an absent API key is preflight ONLY.
 
-    The separately pinned key must come from an owner-controlled local trust
-    process. This proves key possession, not Google's actual tier or identity.
+    When api_key is None, the signed statement, pinned public key, precise
+    request and expiry are verified BEFORE opening the Windows credential.
+    The real transport MUST call this again with the actual key to bind the
+    credential hash. Preflight is never authorization to send by itself.
     """
     if (type(permit) is not SignedLiveSendPermit
             or type(permit.statement) is not bytes
@@ -324,8 +326,11 @@ def _check_live_owner_permit(
             or type(raw["payload_sha256"]) is not str
             or raw["payload_sha256"] != draft.payload_sha256
             or type(raw["api_key_sha256"]) is not str
-            or raw["api_key_sha256"] != hashlib.sha256(
-                api_key.encode("ascii")).hexdigest()
+            or not _SHA256.fullmatch(raw["api_key_sha256"])
+            or (api_key is not None and (
+                type(api_key) is not str or not _KEY.fullmatch(api_key)
+                or raw["api_key_sha256"] != hashlib.sha256(
+                    api_key.encode("ascii")).hexdigest()))
             or type(raw["project_id"]) is not str
             or not _PROJECT.fullmatch(raw["project_id"])
             or raw["project_id"] != trusted_project_id
@@ -767,12 +772,23 @@ def dispatch_live_hydrogen_from_windows_credential(
     if owner_permit is None:
         return LiveHydrogenResult(baseline, "HOLD_SIGNED_OWNER_APPROVAL", sha)
     try:
-        _read_external_owner_trust_root(owner_trust_root_path)
+        trusted_project, trusted_key = _read_external_owner_trust_root(
+            owner_trust_root_path)
     except PermissionError:
         return LiveHydrogenResult(baseline, "HOLD_OWNER_TRUST_NOT_PROVISIONED", sha)
+    # Validate the owner's real signature, exact packet and expiry BEFORE
+    # accessing the OS vault. The actual key hash is checked in dispatch.
+    try:
+        from time import time
+        _check_live_owner_permit(
+            owner_permit, checked, build_hydrogen_request_preview(checked),
+            None, int(time()), trusted_project_id=trusted_project,
+            trusted_owner_key_sha256=trusted_key)
+    except (PermissionError, ValueError, TypeError):
+        return LiveHydrogenResult(baseline, "HOLD_SIGNED_OWNER_APPROVAL", sha)
     try:
         key = read_local_windows_hydrogen_api_key()
-    except PermissionError:
+    except (PermissionError, OSError):
         return LiveHydrogenResult(baseline, "HOLD_LOCAL_WINDOWS_CREDENTIAL", sha)
     return dispatch_live_hydrogen(
         checked, baseline, coordinator=coordinator, api_key=key,
