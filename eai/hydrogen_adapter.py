@@ -10,6 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import hashlib
 import hmac
+import http.client
 import re
 import sqlite3
 
@@ -258,9 +259,35 @@ def _provider_http_failure_reason(response) -> str:
                 "UNAVAILABLE", "INTERNAL", "CANCELLED", "DEADLINE_EXCEEDED",
             }:
                 provider_status = status
-    except (OSError, ValueError, TypeError, UnicodeError):
+    except (http.client.HTTPException, OSError, ValueError, TypeError,
+            UnicodeError):
         pass  # Numeric HTTP status remains useful if body parse/read fails.
     return f"HTTP_{code}_{provider_status}_NO_PAID_RETRY_OR_FALLBACK"
+
+
+def _ledger_failure_status(reason: str) -> str:
+    """Persist only bounded fixed diagnostics in the reservation status field."""
+    known = {
+        "TIMEOUT_OUTCOME_UNKNOWN_NO_RETRY", "TLS_FAILURE_NO_RETRY",
+        "HTTP_PROTOCOL_FAILURE_NO_RETRY", "TRANSPORT_FAILURE_NO_RETRY",
+        "INVALID_RESPONSE_NO_RETRY", "INVALID_PROVIDER_CONTENT_NO_RETRY",
+        "AUTHORIZATION_CHANGED_BEFORE_SEND",
+    }
+    if type(reason) is not str:
+        return "FAILED_HOLD"
+    if reason in known:
+        return "FAILED_HOLD_" + reason
+    allowed_google = {
+        "INVALID_ARGUMENT", "UNAUTHENTICATED", "PERMISSION_DENIED",
+        "NOT_FOUND", "RESOURCE_EXHAUSTED", "FAILED_PRECONDITION",
+        "UNAVAILABLE", "INTERNAL", "CANCELLED", "DEADLINE_EXCEEDED",
+        "UNCLASSIFIED",
+    }
+    if re.fullmatch(
+            r"HTTP_[1-5][0-9]{2}_(?:" + "|".join(sorted(allowed_google))
+            + r")_NO_PAID_RETRY_OR_FALLBACK", reason):
+        return "FAILED_HOLD_" + reason
+    return "FAILED_HOLD"
 
 
 def _read_external_owner_trust_root(path) -> tuple[str, str]:
@@ -535,7 +562,8 @@ class _LiveSendLedger:
             self.db.execute("ROLLBACK")
             raise
 
-    def settle(self, nonce: str, *, success: bool) -> None:
+    def settle(self, nonce: str, *, success: bool,
+               failure_reason: str = "") -> None:
         self.db.execute("BEGIN IMMEDIATE")
         try:
             if success:
@@ -543,11 +571,12 @@ class _LiveSendLedger:
                     "UPDATE eai_live_reservations SET status='UNTRUSTED_REPLY' "
                     "WHERE nonce=?", (nonce,))
             else:
+                safe_status = _ledger_failure_status(failure_reason)
                 self.db.execute("UPDATE eai_live_control SET state='HOLD' "
                                 "WHERE id=1")
                 self.db.execute(
-                    "UPDATE eai_live_reservations SET status='FAILED_HOLD' "
-                    "WHERE nonce=?", (nonce,))
+                    "UPDATE eai_live_reservations SET status=? WHERE nonce=?",
+                    (safe_status, nonce))
             self.db.execute("COMMIT")
         except BaseException:
             self.db.execute("ROLLBACK")
@@ -627,9 +656,11 @@ def dispatch_live_hydrogen(
         import ssl
         conn = None
         ok = False
+        settlement_reason = ""
         try:
             if (issued_generation != coordinator.generation
                     or not coordinator.policy.allows_remote_proposal()):
+                settlement_reason = "AUTHORIZATION_CHANGED_BEFORE_SEND"
                 return LiveHydrogenResult(
                     baseline, "OFF_AUTHORIZATION_CHANGED_BEFORE_SEND", sha)
             conn = http.client.HTTPSConnection(
@@ -645,19 +676,24 @@ def dispatch_live_hydrogen(
                 # HTTP code and allowlisted Google error.status. No raw error
                 # text, headers, credential or prompt may enter result/logs.
                 failure_reason = _provider_http_failure_reason(resp)
+                settlement_reason = failure_reason
                 return LiveHydrogenResult(
                     baseline, "OFF_AFTER_PROVIDER_HTTP_ERROR", sha,
                     reason=failure_reason, requests_attempted=1)
             body = resp.read(_MAX_RESPONSE_BYTES + 1)
             if len(body) > _MAX_RESPONSE_BYTES:
+                settlement_reason = "INVALID_RESPONSE_NO_RETRY"
                 return LiveHydrogenResult(
                     baseline, "OFF_AFTER_OVERSIZE_RESPONSE", sha,
+                    reason=settlement_reason,
                     requests_attempted=1)
             review = review_hydrogen_response(
                 checked, baseline, body, coordinator=coordinator)
             if review.disposition != "LOCAL_UNTRUSTED_IDEAS_REVIEW_ONLY":
+                settlement_reason = "INVALID_PROVIDER_CONTENT_NO_RETRY"
                 return LiveHydrogenResult(
                     baseline, "OFF_AFTER_INVALID_PROVIDER_CONTENT", sha,
+                    reason=settlement_reason,
                     requests_attempted=1)
             if (issued_generation != coordinator.generation
                     or not coordinator.policy.allows_remote_proposal()):
@@ -672,21 +708,29 @@ def dispatch_live_hydrogen(
         except TimeoutError:
             # A socket timeout may occur before or after bytes reach Google.
             # The consumed nonce and persistent breaker still forbid retry.
+            settlement_reason = "TIMEOUT_OUTCOME_UNKNOWN_NO_RETRY"
             return LiveHydrogenResult(
                 baseline, "OFF_AFTER_PROVIDER_TIMEOUT", sha,
+                reason=settlement_reason,
                 requests_attempted=1)
         except ssl.SSLError:
+            settlement_reason = "TLS_FAILURE_NO_RETRY"
             return LiveHydrogenResult(
                 baseline, "OFF_AFTER_PROVIDER_TLS_FAILURE", sha,
+                reason=settlement_reason,
                 requests_attempted=1)
         except http.client.HTTPException:
             # IncompleteRead, RemoteDisconnected and malformed replies.
+            settlement_reason = "HTTP_PROTOCOL_FAILURE_NO_RETRY"
             return LiveHydrogenResult(
                 baseline, "OFF_AFTER_PROVIDER_PROTOCOL_FAILURE", sha,
+                reason=settlement_reason,
                 requests_attempted=1)
         except (OSError, ValueError):
+            settlement_reason = "TRANSPORT_FAILURE_NO_RETRY"
             return LiveHydrogenResult(
                 baseline, "OFF_AFTER_PROVIDER_TRANSPORT_FAILURE", sha,
+                reason=settlement_reason,
                 requests_attempted=1)
         finally:
             if conn is not None:
@@ -697,7 +741,8 @@ def dispatch_live_hydrogen(
             # A crash before settlement retains the consumed nonce. A
             # settlement error raises closed; failure must still disable ON.
             try:
-                ledger.settle(nonce, success=ok)
+                ledger.settle(nonce, success=ok,
+                              failure_reason=settlement_reason)
             except Exception:
                 # A response is not usable if its journal completion failed.
                 # Override even a pending "success" return with an OFF result.
