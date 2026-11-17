@@ -147,6 +147,12 @@ def render_explanation_text(raw: dict) -> str:
         raise ValueError("typed explanation required")
     kind = raw.get("kind")
     if kind == "ARCHITECT":
+        if (type(raw.get("uncertainty")) is not dict
+                or type(raw.get("alternatives")) is not list
+                or len(raw["alternatives"]) > 8
+                or any(type(item) is not dict
+                       for item in raw["alternatives"])):
+            raise ValueError("invalid explanation structure")
         from_data = render_architect_explanation({
             "schema": "eai.architect.preview.v1",
             "problem_sha256": raw.get("problem_sha256"),
@@ -190,7 +196,10 @@ def render_explanation_text(raw: dict) -> str:
         if (type(raw.get("status")) is not str
                 or raw["status"] not in _PLAYER_STATUS
                 or raw.get("verified_real_world") is not False
-                or raw.get("network") != "DISABLED_BY_DESIGN"):
+                or raw.get("network") != "DISABLED_BY_DESIGN"
+                or raw.get("execution") != (
+                    "DENIED" if raw["status"] == "HOLD_POLICY_DENIED"
+                    else "PURE_SYNTHETIC_NOOP_ONLY")):
             raise ValueError("untrusted player explanation")
         lines = [
             "EAI PLAYER - SYNTHETIC OR DENIED",

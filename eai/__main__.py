@@ -153,6 +153,10 @@ def main(argv: list[str] | None = None) -> int:
     resource_cmd.add_argument('--max-steps', type=int, default=32)
     resource_cmd.add_argument('--elapsed-ms', type=int, default=0)
     resource_cmd.add_argument('--steps-completed', type=int, default=0)
+    resource_cmd.add_argument('--problem-file',
+                              help='optional bounded local EAI ProblemSpec')
+    resource_cmd.add_argument('--plan-file',
+                              help='optional bounded local PlanSpec; requires --problem-file')
     architect_cmd = sub.add_parser('architect-preview', help='local-only V3 advisory design/plan; never execute')
     architect_cmd.add_argument('--problem-file', required=True, help='explicit local V3 ProblemSpec JSON <=32KiB')
     architect_cmd.add_argument('--axnode-root', required=True, help='existing explicit local AXNODE library')
@@ -193,13 +197,28 @@ def main(argv: list[str] | None = None) -> int:
                 max_rss_mib=args.max_rss_mib,
                 max_elapsed_ms=args.max_elapsed_ms,
                 max_steps=args.max_steps)
-            decision = observe_and_evaluate_local_budget(
-                budget, elapsed_ms=args.elapsed_ms,
-                steps_completed=args.steps_completed)
+            if args.problem_file is not None or args.plan_file is not None:
+                if not args.problem_file or not args.plan_file:
+                    raise ValueError('both local typed contracts required')
+                from .player_cli import _read_local_contract
+                from .contracts import ProblemSpec, PlanSpec
+                from .local_scheduler import observe_plan_resource_preflight
+                problem = ProblemSpec.validate(
+                    _read_local_contract(args.problem_file))
+                plan = PlanSpec.validate(
+                    _read_local_contract(args.plan_file))
+                decision = observe_plan_resource_preflight(
+                    problem, plan, budget, elapsed_ms=args.elapsed_ms,
+                    steps_completed=args.steps_completed)
+                expected = 'PURE_SYNTHETIC_PLAN_PREFLIGHT_ONLY'
+            else:
+                decision = observe_and_evaluate_local_budget(
+                    budget, elapsed_ms=args.elapsed_ms,
+                    steps_completed=args.steps_completed)
+                expected = 'CPU_LOCAL_BUDGET_AVAILABLE_NOT_EXECUTION_AUTHORITY'
             print(json.dumps(asdict(decision), ensure_ascii=False, indent=2))
-            return 0 if decision.status == (
-                'CPU_LOCAL_BUDGET_AVAILABLE_NOT_EXECUTION_AUTHORITY') else 2
-        except (ValueError, OSError, UnicodeError):
+            return 0 if decision.status == expected else 2
+        except (ValueError, KeyError, OSError, UnicodeError):
             print(json.dumps({'status': 'REJECTED',
                               'reason': 'LOCAL_RESOURCE_PREVIEW_REJECTED'}),
                   file=sys.stderr)

@@ -105,6 +105,20 @@ class TraceRendererTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             render_explanation_text(forged)
 
+    def test_terminal_explanation_does_not_accept_unsafe_shape(self):
+        from eai.trace_renderer import render_explanation_text
+        summary = render_architect_explanation(self.architect())
+        with self.assertRaises(ValueError):
+            render_explanation_text(dict(summary, uncertainty=[]))
+        with self.assertRaises(ValueError):
+            render_explanation_text(dict(summary, alternatives=[42]))
+
+    def test_terminal_player_explanation_rejects_spoofed_execution(self):
+        from eai.trace_renderer import render_explanation_text
+        summary = render_player_explanation(self.player())
+        with self.assertRaises(ValueError):
+            render_explanation_text(dict(summary, execution="REAL_ACTION"))
+
     def test_denied_player_explanation_keeps_zero_steps(self):
         raw = self.player()
         raw["status"], raw["execution"] = "HOLD_POLICY_DENIED", "DENIED"

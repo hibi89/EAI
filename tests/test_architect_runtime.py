@@ -51,6 +51,34 @@ class ArchitectRuntimeTests(unittest.TestCase):
             "budget": {"max_steps": 3, "max_seconds": 60}, "risk": "LOW",
         }
 
+    def test_architect_explanation_cli_sanitizes_private_goal(self):
+        out, err = io.StringIO(), io.StringIO()
+        with redirect_stdout(out), redirect_stderr(err):
+            code = main(["explain-preview", "--kind", "architect",
+                         "--problem-file", str(self.problem_path),
+                         "--axnode-root", str(self.root)])
+        self.assertEqual(code, 0)
+        self.assertEqual(err.getvalue(), "")
+        explanation = json.loads(out.getvalue())
+        self.assertEqual(explanation["kind"], "ARCHITECT")
+        self.assertEqual(explanation["status"], "CANDIDATES_UNVERIFIED")
+        self.assertEqual(len(explanation["alternatives"]), 2)
+        self.assertFalse(explanation["verified_real_world"])
+        self.assertNotIn("PRIVATE", out.getvalue())
+
+    def test_architect_explanation_text_is_no_network(self):
+        out, err = io.StringIO(), io.StringIO()
+        with patch.object(socket, "socket", side_effect=AssertionError("network")):
+            with redirect_stdout(out), redirect_stderr(err):
+                code = main(["explain-preview", "--kind", "architect",
+                             "--problem-file", str(self.problem_path),
+                             "--axnode-root", str(self.root),
+                             "--format", "text"])
+        self.assertEqual(code, 0)
+        self.assertEqual(err.getvalue(), "")
+        self.assertIn("EAI ARCHITECT - UNVERIFIED ADVISORY", out.getvalue())
+        self.assertNotIn("PRIVATE", out.getvalue())
+
     def test_local_preview_returns_two_unverified_plans_without_prompt(self):
         report = preview_architecture(self.problem_path, self.root)
         self.assertEqual(report["status"], "CANDIDATES_UNVERIFIED")

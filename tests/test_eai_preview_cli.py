@@ -116,6 +116,30 @@ class EAIPreviewCLITests(unittest.TestCase):
         self.assertIn("REAL-WORLD VERIFICATION: NOT ESTABLISHED", out)
         self.assertNotIn("PRIVATE", out)
 
+    def test_resource_preview_can_evaluate_exact_pure_plan_preflight(self):
+        with patch("eai.local_scheduler.observe_own_process_rss_bytes",
+                   return_value=128 * 1024 * 1024):
+            code, out, err = self.call([
+                "resource-preview", "--problem-file", str(self.problem_file),
+                "--plan-file", str(self.plan_file),
+                "--max-rss-mib", "512", "--max-elapsed-ms", "30000",
+                "--steps-completed", "0"])
+        self.assertEqual(code, 0)
+        self.assertEqual(err, "")
+        report = json.loads(out)
+        self.assertEqual(report["status"],
+                         "PURE_SYNTHETIC_PLAN_PREFLIGHT_ONLY")
+        self.assertFalse(report["permits_real_execution"])
+        self.assertFalse(report["permits_original_writes"])
+        self.assertNotIn("PRIVATE", out)
+
+    def test_resource_preview_one_sided_input_denied(self):
+        code, out, err = self.call([
+            "resource-preview", "--problem-file", str(self.problem_file)])
+        self.assertEqual(code, 1)
+        self.assertEqual(out, "")
+        self.assertNotIn(str(self.problem_file), err)
+
     def test_adapter_invalid_secret_json_is_not_echoed(self):
         self.handshake_file.write_text('{"PRIVATE": "a"}',
                                        encoding="utf-8")
