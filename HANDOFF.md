@@ -1,3 +1,15 @@
+## 2026-11-17 KST — EAI SWU-036 overflow-safe source checkpoint (10)
+1. Mission: EAI V3.1 independent local AI Architect, Player, AXNODE and Experience Learner, P1 source work; P2 LOCKED.
+2. Latest functional source SHA `b7f2361bf8d738eeab989d3495951a30b715f3b5` handles huge timestamp float overflow for local mock quota; prior quota monotonic backdate fix SHA `510d469ef23f6df455473d791e362c47c5c71433`. Changes confined to `eai/research_quota.py`.
+3. Source GitHub exact-SHA/static guard PASS_STATIC, exact-SHA Python compile/smoke, functional and CI/P2 Windows NOT_RUN (no local checkout; GitHub DNS failure).
+4. Provisional source candidate **36/42 (85.7%)**, +0; official implementation/verification UNASSESSED, RELEASE HOLD.
+5. No ordinary READY. **SWU-007→008 and SWU-020→023/024** require immediate owner Codex GPT-6.1 Sol Max for critical architectural/trust design; NOT_RUN. Hydrogen SWU-039 explicit approval block; four-failure batch empty.
+6. GitHub `hibi89/EAI` branch `feature/kmong-eai-85-p31-20261112`; source SHA `b7f2361bf8d738eeab989d3495951a30b715f3b5`, next docs commit head follows. Confirm live ref before next ㄱ.
+7. No Production, real Player, original/customer data write, ACTIVE, remote/paid provider, permission change, main merge approval.
+8. Preserve blueprint blob `1b0712679d4171cd3681588e104ea5e8c6f6690d`, P26, ADR-0002, original repo/git history and mandatory CI.
+9. User starts Sol Max for SWU-007/020; only independently proven safe code defects may proceed without reviewed trust/epoch design. Two-plus-two failure counters unchanged and no artificial completion increment.
+10. Updated 2026-11-17 KST; source only, verification deferred/NOT_RUN.
+
 ## 2026-11-17 KST — EAI mock-quota source repair, Sol Max critical escalation (10)
 1. Mission: EAI V3.1 independent Architect + Player + AXNODE + Experience Learner. P1 coding only; P2 LOCKED; separate from MLA.
 2. Actual source commit `510d469ef23f6df455473d791e362c47c5c71433`: `eai/research_quota.py` repairs backward/nonfinite injected mock monotonic time handling. Local RPM/TPM reservation and 429 cooldown preserve last observed clock in memory, fail closed on backdating. No cloud tool or authority.
