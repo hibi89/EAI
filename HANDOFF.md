@@ -1,3 +1,12 @@
+## 2026-11-18 KST — Windows Generic Credential EAI bridge handoff
+- Repo `hibi89/EAI` branch `feature/kmong-eai-85-p31-20261112`; High actual feature SHA `d99512f8f526aa91ca35820ee636d697d1c559ac`, allowed source `eai/hydrogen_adapter.py`, blob `df63a7891525f0fe0ebeea531cbc9fbaa5ea9f77`. Central High CPAA+WE policy and final blueprint unchanged.
+- Screenshot confirms name of user-created Generic Credential `EAI_HYDROGEN_API_KEY`, **not** the key contents or successful API authentication. Free-tier and Hydrogen displayed limits 5/250K/20 are UI observations only. Do not put screenshots/keys into public GitHub.
+- Local Windows credential reader and safe wrapper now code-written: exact target/name, bounded ASCII/UTF16LE, explicit CredReadW and CredFree, protected before OFF/approval/key trust checks; never exposes secret. No external network called.
+- Existing source static 13/13 PASS; isolated new function Python syntax PASS and synthetic offline gate tests 9/9 PASS. Real Windows CredRead, complete Python 3.11/full EAI run, exact assembled module syntax, actual Hydrogen response and full P2 NOT_RUN.
+- SWU-039 `BLOCKED_APPROVAL`, P1 41/42 candidates (+0), official P1/P2 UNASSESSED, P2 LOCKED, RELEASE HOLD. first_ready=[].
+- Remaining external gate: owner-controlled local root must be provisioned out of Git, exact reviewed synthetic/public packet and per-send detached Ed25519 signature; verify actual project tier/quotas and safe first local API request. Broad owner GO is not substitute for cryptographic consent or account verification. Keep user PC effort low and never request the key over chat.
+- Source basis SHA `d99512f8f526aa91ca35820ee636d697d1c559ac`; docs commit follows. Re-fetch latest remote HEAD before next wave. Preserve original/customer data, permission/billing/main/Production and ACTIVE/real Player; no Sol Max/Work audit claimed.
+
 ## 2026-11-18 KST — EAI-SWU-039 HTTPException correction handoff
 - Branch `feature/kmong-eai-85-p31-20261112`; feature SHA `468ffd61bffb6596624d2352cdd7c43c8a42b4ce`; changed only allowed source `eai/hydrogen_adapter.py`. Full source Git blob `77e0e862497033d19536407a568a45b4d4a334ec`, immutable blueprint `1b0712679d4171cd3681588e104ea5e8c6f6690d`.
 - Existing signed-per-send live transport now treats malformed/incomplete HTTP protocol exceptions as OFF and journal breaker error, no retries or paid fallback; module default remains OFF.
