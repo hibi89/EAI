@@ -1,8 +1,8 @@
 """Synthetic/public-only *proposal preview* contract. Never sends a request.
 
-External visibility requires separate real human consent, verified free API
-entitlement and a future explicitly authorized adapter. The regex guards
-only obvious leakage patterns, NOT sensitive-data classification assurance.
+External visibility requires a separate signed per-send approval and verified
+free API entitlement through the dormant REST adapter. The regex guards only
+obvious leakage patterns, NOT sensitive-data classification assurance.
 """
 from __future__ import annotations
 

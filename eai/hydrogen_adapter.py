@@ -221,6 +221,7 @@ class LiveHydrogenResult:
     permits_execution: bool = False
     permits_training: bool = False
     permits_promotion: bool = False
+    request_id: str = ""
 
 
 _LIVE_HOST = "generativelanguage.googleapis.com"
@@ -240,6 +241,21 @@ _LIVE_MAX_RPM = 2
 _LIVE_MAX_RPD = 5
 _LIVE_MAX_TPM = 2048
 _LIVE_NETWORK_TIMEOUT_SECONDS = 60  # Bounded response wait, never an auto-retry.
+_LIVE_REQUEST_ID = re.compile(r"eaih_[0-9a-f]{24}\Z")
+
+
+def _live_request_id(project_id: str, nonce: str,
+                     request_sha256: str) -> str:
+    """Return a payload-bound local ID without exposing the signed nonce."""
+    if (type(project_id) is not str or not _PROJECT.fullmatch(project_id)
+            or type(nonce) is not str or not _NONCE_LIVE.fullmatch(nonce)
+            or type(request_sha256) is not str
+            or not _SHA256.fullmatch(request_sha256)):
+        raise ValueError("validated live project, nonce and packet digest required")
+    material = (b"eai-hydrogen-live-request-id-v1\0"
+                + project_id.encode("ascii") + b"\0" + nonce.encode("ascii")
+                + b"\0" + request_sha256.encode("ascii"))
+    return "eaih_" + hashlib.sha256(material).hexdigest()[:24]
 
 
 def _provider_http_failure_reason(response) -> str:
@@ -265,8 +281,11 @@ def _provider_http_failure_reason(response) -> str:
     return f"HTTP_{code}_{provider_status}_NO_PAID_RETRY_OR_FALLBACK"
 
 
-def _ledger_failure_status(reason: str) -> str:
+def _ledger_failure_status(reason: str, request_id: str = "") -> str:
     """Persist only bounded fixed diagnostics in the reservation status field."""
+    suffix = ("_RID_" + request_id[5:]
+              if type(request_id) is str and _LIVE_REQUEST_ID.fullmatch(request_id)
+              else "")
     known = {
         "TIMEOUT_OUTCOME_UNKNOWN_NO_RETRY", "TLS_FAILURE_NO_RETRY",
         "HTTP_PROTOCOL_FAILURE_NO_RETRY", "TRANSPORT_FAILURE_NO_RETRY",
@@ -274,9 +293,9 @@ def _ledger_failure_status(reason: str) -> str:
         "AUTHORIZATION_CHANGED_BEFORE_SEND",
     }
     if type(reason) is not str:
-        return "FAILED_HOLD"
+        return "FAILED_HOLD" + suffix
     if reason in known:
-        return "FAILED_HOLD_" + reason
+        return "FAILED_HOLD_" + reason + suffix
     allowed_google = {
         "INVALID_ARGUMENT", "UNAUTHENTICATED", "PERMISSION_DENIED",
         "NOT_FOUND", "RESOURCE_EXHAUSTED", "FAILED_PRECONDITION",
@@ -286,8 +305,8 @@ def _ledger_failure_status(reason: str) -> str:
     if re.fullmatch(
             r"HTTP_[1-5][0-9]{2}_(?:" + "|".join(sorted(allowed_google))
             + r")_NO_PAID_RETRY_OR_FALLBACK", reason):
-        return "FAILED_HOLD_" + reason
-    return "FAILED_HOLD"
+        return "FAILED_HOLD_" + reason + suffix
+    return "FAILED_HOLD" + suffix
 
 
 def _read_external_owner_trust_root(path) -> tuple[str, str]:
@@ -563,15 +582,20 @@ class _LiveSendLedger:
             raise
 
     def settle(self, nonce: str, *, success: bool,
-               failure_reason: str = "") -> None:
+               failure_reason: str = "", request_id: str = "") -> None:
         self.db.execute("BEGIN IMMEDIATE")
         try:
             if success:
+                success_status = (
+                    "UNTRUSTED_REPLY_RID_" + request_id[5:]
+                    if type(request_id) is str
+                    and _LIVE_REQUEST_ID.fullmatch(request_id)
+                    else "UNTRUSTED_REPLY")
                 self.db.execute(
-                    "UPDATE eai_live_reservations SET status='UNTRUSTED_REPLY' "
-                    "WHERE nonce=?", (nonce,))
+                    "UPDATE eai_live_reservations SET status=? WHERE nonce=?",
+                    (success_status, nonce))
             else:
-                safe_status = _ledger_failure_status(failure_reason)
+                safe_status = _ledger_failure_status(failure_reason, request_id)
                 self.db.execute("UPDATE eai_live_control SET state='HOLD' "
                                 "WHERE id=1")
                 self.db.execute(
@@ -625,6 +649,7 @@ def dispatch_live_hydrogen(
             trusted_owner_key_sha256=trusted_key)
     except (PermissionError, ValueError, TypeError):
         return LiveHydrogenResult(baseline, "HOLD_SIGNED_OWNER_APPROVAL", sha)
+    request_id = _live_request_id(project, nonce, sha)
     # The existing mock quota is NEVER used to authorize real sends.
     budget = max(1, (len(draft.payload) + 3) // 4)
     if budget > _LIVE_MAX_INPUT_TOKENS:
@@ -637,7 +662,9 @@ def dispatch_live_hydrogen(
         # Any corrupt/missing/unusable local durable journal must turn ON off,
         # not strand the coordinator in a retryable enabled state.
         coordinator.disable()
-        return LiveHydrogenResult(baseline, "OFF_LIVE_LEDGER_UNAVAILABLE", sha)
+        return LiveHydrogenResult(
+            baseline, "OFF_LIVE_LEDGER_UNAVAILABLE", sha,
+            request_id=request_id)
     try:
         try:
             gate = ledger.reserve(nonce=nonce, now=now,
@@ -647,9 +674,11 @@ def dispatch_live_hydrogen(
             # request is permissible; never attempt HTTP without commit.
             coordinator.disable()
             return LiveHydrogenResult(
-                baseline, "OFF_LIVE_RESERVATION_FAILED", sha)
+                baseline, "OFF_LIVE_RESERVATION_FAILED", sha,
+                request_id=request_id)
         if gate != "RESERVED":
-            return LiveHydrogenResult(baseline, gate, sha)
+            return LiveHydrogenResult(
+                baseline, gate, sha, request_id=request_id)
         # HTTPS endpoint, method and model are fixed; redirects and proxies
         # are never followed. http.client validates certificates by default.
         import http.client
@@ -662,7 +691,8 @@ def dispatch_live_hydrogen(
                     or not coordinator.policy.allows_remote_proposal()):
                 settlement_reason = "AUTHORIZATION_CHANGED_BEFORE_SEND"
                 return LiveHydrogenResult(
-                    baseline, "OFF_AUTHORIZATION_CHANGED_BEFORE_SEND", sha)
+                    baseline, "OFF_AUTHORIZATION_CHANGED_BEFORE_SEND", sha,
+                    request_id=request_id)
             conn = http.client.HTTPSConnection(
                 _LIVE_HOST, timeout=_LIVE_NETWORK_TIMEOUT_SECONDS,
                 context=ssl.create_default_context())
@@ -679,14 +709,15 @@ def dispatch_live_hydrogen(
                 settlement_reason = failure_reason
                 return LiveHydrogenResult(
                     baseline, "OFF_AFTER_PROVIDER_HTTP_ERROR", sha,
-                    reason=failure_reason, requests_attempted=1)
+                    reason=failure_reason, requests_attempted=1,
+                    request_id=request_id)
             body = resp.read(_MAX_RESPONSE_BYTES + 1)
             if len(body) > _MAX_RESPONSE_BYTES:
                 settlement_reason = "INVALID_RESPONSE_NO_RETRY"
                 return LiveHydrogenResult(
                     baseline, "OFF_AFTER_OVERSIZE_RESPONSE", sha,
                     reason=settlement_reason,
-                    requests_attempted=1)
+                    requests_attempted=1, request_id=request_id)
             review = review_hydrogen_response(
                 checked, baseline, body, coordinator=coordinator)
             if review.disposition != "LOCAL_UNTRUSTED_IDEAS_REVIEW_ONLY":
@@ -694,17 +725,17 @@ def dispatch_live_hydrogen(
                 return LiveHydrogenResult(
                     baseline, "OFF_AFTER_INVALID_PROVIDER_CONTENT", sha,
                     reason=settlement_reason,
-                    requests_attempted=1)
+                    requests_attempted=1, request_id=request_id)
             if (issued_generation != coordinator.generation
                     or not coordinator.policy.allows_remote_proposal()):
                 return LiveHydrogenResult(
                     baseline, "OFF_LATE_PROVIDER_RESPONSE_IGNORED", sha,
-                    requests_attempted=1)
+                    requests_attempted=1, request_id=request_id)
             ok = True
             return LiveHydrogenResult(
                 baseline, "UNTRUSTED_HYDROGEN_IDEAS_QUARANTINED",
                 sha, review.ideas, "OWNER_ATTESTED_FREE_NOT_PROVIDER_VERIFIED",
-                requests_attempted=1)
+                requests_attempted=1, request_id=request_id)
         except TimeoutError:
             # A socket timeout may occur before or after bytes reach Google.
             # The consumed nonce and persistent breaker still forbid retry.
@@ -712,26 +743,26 @@ def dispatch_live_hydrogen(
             return LiveHydrogenResult(
                 baseline, "OFF_AFTER_PROVIDER_TIMEOUT", sha,
                 reason=settlement_reason,
-                requests_attempted=1)
+                requests_attempted=1, request_id=request_id)
         except ssl.SSLError:
             settlement_reason = "TLS_FAILURE_NO_RETRY"
             return LiveHydrogenResult(
                 baseline, "OFF_AFTER_PROVIDER_TLS_FAILURE", sha,
                 reason=settlement_reason,
-                requests_attempted=1)
+                requests_attempted=1, request_id=request_id)
         except http.client.HTTPException:
             # IncompleteRead, RemoteDisconnected and malformed replies.
             settlement_reason = "HTTP_PROTOCOL_FAILURE_NO_RETRY"
             return LiveHydrogenResult(
                 baseline, "OFF_AFTER_PROVIDER_PROTOCOL_FAILURE", sha,
                 reason=settlement_reason,
-                requests_attempted=1)
+                requests_attempted=1, request_id=request_id)
         except (OSError, ValueError):
             settlement_reason = "TRANSPORT_FAILURE_NO_RETRY"
             return LiveHydrogenResult(
                 baseline, "OFF_AFTER_PROVIDER_TRANSPORT_FAILURE", sha,
                 reason=settlement_reason,
-                requests_attempted=1)
+                requests_attempted=1, request_id=request_id)
         finally:
             if conn is not None:
                 try:
@@ -742,14 +773,15 @@ def dispatch_live_hydrogen(
             # settlement error raises closed; failure must still disable ON.
             try:
                 ledger.settle(nonce, success=ok,
-                              failure_reason=settlement_reason)
+                              failure_reason=settlement_reason,
+                              request_id=request_id)
             except Exception:
                 # A response is not usable if its journal completion failed.
                 # Override even a pending "success" return with an OFF result.
                 coordinator.disable()
                 return LiveHydrogenResult(
                     baseline, "OFF_LIVE_SETTLEMENT_FAILED", sha,
-                    requests_attempted=1)
+                    requests_attempted=1, request_id=request_id)
             finally:
                 if not ok:
                     coordinator.disable()

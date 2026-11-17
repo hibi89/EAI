@@ -143,7 +143,9 @@ def evaluate_local_budget(
         reasons.append("RSS_BUDGET_EXCEEDED")
     if sample.elapsed_ms > budget.max_elapsed_ms:
         reasons.append("TIME_BUDGET_EXCEEDED")
-    if sample.steps_completed >= budget.max_steps:
+    # A completed count equal to the cap is valid; only work beyond the cap
+    # exceeds the budget. Callers must account for the aggregate journey count.
+    if sample.steps_completed > budget.max_steps:
         reasons.append("STEP_BUDGET_EXHAUSTED")
     if sample.running_tasks > budget.max_concurrent:
         reasons.append("CONCURRENCY_BUDGET_EXCEEDED")
@@ -214,11 +216,11 @@ def observe_and_evaluate_local_budget(
 # EAI-SWU-032: current-process RSS and elapsed time, postflight decision gate.
 def review_local_journey_postflight(
     budget: LocalResourceBudget, *, elapsed_ms: int,
-    cancelled: bool = False,
+    cancelled: bool = False, steps_completed: int = 0,
 ) -> LocalBudgetDecision:
     """Observe actual own-process RSS; caller cannot substitute fake samples."""
     if type(cancelled) is not bool:
         raise ValueError("typed cancellation required")
     return observe_and_evaluate_local_budget(
-        budget, elapsed_ms=elapsed_ms, steps_completed=0,
+        budget, elapsed_ms=elapsed_ms, steps_completed=steps_completed,
         running_tasks=1, cancelled=cancelled)

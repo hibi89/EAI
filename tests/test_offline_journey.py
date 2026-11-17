@@ -117,6 +117,33 @@ class OfflineJourneyTests(unittest.TestCase):
         self.assertNotEqual(result["receipt_sha256"], preview["receipt_sha256"])
         self.assertFalse(result["verified_real_world"])
 
+    def test_journey_aggregate_step_budget_holds_later_candidate(self):
+        pure = self.root / "aggregate_step_budget_nodes"
+        with AXNodeStore(pure) as store:
+            for name in ("data.first", "data.second"):
+                store.import_node(json.dumps(
+                    self.node(name, "synthetic.noop.v1")))
+        self.problem["permissions"] = ["pure"]
+        self.problem["budget"]["max_steps"] = 1
+        self.problem_file.write_text(json.dumps(self.problem), encoding="utf-8")
+        with patch("eai.local_scheduler.observe_own_process_rss_bytes",
+                   return_value=100 * 1024 * 1024):
+            report = preview_offline_journey(
+                self.problem_file, pure, interpret_pure_noop=True,
+                budget=LocalResourceBudget(max_rss_mib=128,
+                                           max_elapsed_ms=60000,
+                                           max_steps=1))
+        self.assertEqual(sum(c["interpreted_steps"]
+                             for c in report["candidates"]), 1)
+        self.assertEqual(sum(c["status"] ==
+                             "PURE_SYNTHETIC_INTERPRETED_UNVERIFIED"
+                             for c in report["candidates"]), 1)
+        held = [c for c in report["candidates"]
+                if c["status"] == "POLICY_OR_RESOURCE_HELD"]
+        self.assertEqual(len(held), 1)
+        self.assertIn("STEP_BUDGET_EXHAUSTED", held[0]["reason_codes"])
+        self.assertEqual(report["original_writes"], 0)
+
 
     def test_cancel_callback_prevents_pure_player_before_dispatch(self):
         pure = self.root / "cancelled_pure_nodes"
@@ -384,6 +411,49 @@ class OfflineJourneyTests(unittest.TestCase):
         self.assertEqual(report["candidate_count"], 2)
         self.assertNotIn("PRIVATE", out.getvalue())
         self.assertEqual(report["real_tool_invocations"], 0)
+
+    def test_decide_local_cli_reaches_audited_cpu_result(self):
+        pure = self.root / "decision_pure_nodes"
+        with AXNodeStore(pure) as store:
+            for name in ("data.first", "data.second"):
+                store.import_node(json.dumps(
+                    self.node(name, "synthetic.noop.v1")))
+        self.problem["permissions"] = ["pure"]
+        self.problem_file.write_text(json.dumps(self.problem), encoding="utf-8")
+        out, err = io.StringIO(), io.StringIO()
+        with (patch("eai.local_scheduler.observe_own_process_rss_bytes",
+                    return_value=100 * 1024 * 1024),
+              redirect_stdout(out), redirect_stderr(err)):
+            code = main([
+                "decide-local", "--problem-file", str(self.problem_file),
+                "--axnode-root", str(pure), "--interpret-pure", "--format",
+                "json",
+            ])
+        self.assertEqual(code, 2)
+        self.assertEqual(err.getvalue(), "")
+        answer = json.loads(out.getvalue())
+        self.assertEqual(answer["status"], "ABSTAINED")
+        self.assertIsNone(answer["selected_plan_sha256"])
+        self.assertIn("DISTINCT_PINNED_PLANS_NOT_ESTABLISHED",
+                      answer["reason_codes"])
+        self.assertEqual(answer["network"], "DISABLED_BY_DESIGN")
+        self.assertEqual(answer["execution"], "NOT_EXECUTED")
+        self.assertNotIn("PRIVATE", out.getvalue())
+
+    def test_decide_local_cancel_before_start_does_not_read_sources(self):
+        out, err = io.StringIO(), io.StringIO()
+        with redirect_stdout(out), redirect_stderr(err):
+            code = main([
+                "decide-local", "--problem-file", str(self.root / "missing.json"),
+                "--axnode-root", str(self.root / "missing_axnodes"),
+                "--cancel-before-start", "--format", "json",
+            ])
+        self.assertEqual(code, 130)
+        self.assertEqual(err.getvalue(), "")
+        answer = json.loads(out.getvalue())
+        self.assertEqual(answer["status"], "CANCELLED")
+        self.assertFalse(answer["real_execution_authorized"])
+        self.assertFalse((self.root / "missing_axnodes").exists())
 
 
     def test_rehashed_verified_architect_and_truth_claims_are_denied(self):

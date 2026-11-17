@@ -41,11 +41,21 @@ class LocalSchedulerTests(unittest.TestCase):
                 d = evaluate_local_budget(self.budget, sample)
                 self.assertIn("REAL_RSS_NOT_ESTABLISHED", d.reason_codes)
 
-    def test_timeout_and_step_exhaustion_are_separate_holds(self):
-        d = evaluate_local_budget(
+    def test_step_cap_is_inclusive_and_overrun_is_a_hold(self):
+        at_cap = evaluate_local_budget(
+            self.budget, self.sample(steps_completed=8))
+        self.assertEqual(at_cap.status,
+                         "CPU_LOCAL_BUDGET_AVAILABLE_NOT_EXECUTION_AUTHORITY")
+        self.assertNotIn("STEP_BUDGET_EXHAUSTED", at_cap.reason_codes)
+        over = evaluate_local_budget(
+            LocalResourceBudget(max_rss_mib=512, max_elapsed_ms=5000,
+                                max_steps=7),
+            self.sample(steps_completed=8))
+        self.assertEqual(over.status, "HOLD_LOCAL_RESOURCE_BUDGET")
+        self.assertIn("STEP_BUDGET_EXHAUSTED", over.reason_codes)
+        timed = evaluate_local_budget(
             self.budget, self.sample(elapsed_ms=5001, steps_completed=8))
-        self.assertIn("TIME_BUDGET_EXCEEDED", d.reason_codes)
-        self.assertIn("STEP_BUDGET_EXHAUSTED", d.reason_codes)
+        self.assertIn("TIME_BUDGET_EXCEEDED", timed.reason_codes)
 
     def test_cancelled_or_parallel_work_denied(self):
         d = evaluate_local_budget(

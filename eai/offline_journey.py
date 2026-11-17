@@ -37,13 +37,15 @@ def _check_cancel(cancel_check: Callable[[], bool] | None) -> None:
 
 
 def _check_postflight(problem: ProblemSpec, plan: PlanSpec,
-                      budget: LocalResourceBudget, started_ns: int) -> None:
+                      budget: LocalResourceBudget, started_ns: int,
+                      steps_completed: int) -> None:
     """No synthetic success receipt if the final measured budget was exceeded."""
     elapsed_ms = (monotonic_ns() - started_ns) // 1_000_000
     if elapsed_ms < 0:
         raise ValueError("invalid monotonic journey duration")
     postflight = observe_plan_resource_preflight(
-        problem, plan, budget, elapsed_ms=elapsed_ms, steps_completed=0)
+        problem, plan, budget, elapsed_ms=elapsed_ms,
+        steps_completed=steps_completed)
     if postflight.status != "PURE_SYNTHETIC_PLAN_PREFLIGHT_ONLY":
         raise ValueError("post-interpretation resource budget not established")
 
@@ -97,6 +99,7 @@ def preview_offline_journey(
                    for p, e in zip(plans, explanation["alternatives"]))):
         raise ValueError("inconsistent bounded architect alternatives")
     candidates = []
+    interpreted_steps_total = 0
     # Reopen only the explicitly selected local source store. Never invoke
     # real tools or assume a prior preview was an approved execution request.
     with AXNodeStore(axnode_root) as store:
@@ -153,13 +156,18 @@ def preview_offline_journey(
                 raise ValueError("invalid monotonic journey duration")
             observation = observe_plan_resource_preflight(
                 problem, plan, budget, elapsed_ms=elapsed_ms,
-                steps_completed=0)
+                steps_completed=interpreted_steps_total)
             reasons = set(gate.reason_codes) | set(observation.reason_codes)
+            if (interpret_pure_noop
+                    and interpreted_steps_total + len(plan.steps)
+                    > budget.max_steps):
+                reasons.add("STEP_BUDGET_EXHAUSTED")
             status = "POLICY_OR_RESOURCE_HELD"
             trace = None
             steps = 0
             if (gate.disposition == "PURE_SYNTHETIC_PREVIEW_ONLY"
-                    and observation.status == "PURE_SYNTHETIC_PLAN_PREFLIGHT_ONLY"):
+                    and observation.status == "PURE_SYNTHETIC_PLAN_PREFLIGHT_ONLY"
+                    and not reasons):
                 if interpret_pure_noop:
                     _check_cancel(cancel_check)
                     # Recheck immediately before the bounded in-memory Player.
@@ -167,7 +175,7 @@ def preview_offline_journey(
                     pre_execute = observe_plan_resource_preflight(
                         problem, plan, budget,
                         elapsed_ms=(monotonic_ns() - started_ns) // 1_000_000,
-                        steps_completed=0)
+                        steps_completed=interpreted_steps_total)
                     if pre_execute.status != "PURE_SYNTHETIC_PLAN_PREFLIGHT_ONLY":
                         reasons.update(pre_execute.reason_codes)
                     else:
@@ -177,11 +185,14 @@ def preview_offline_journey(
                             problem, plan, gate, receipt)
                         if replay.status != "PURE_TRACE_REPLAY_MATCH_UNVERIFIED":
                             raise ValueError("pure interpreter replay disagreement")
-                        _check_postflight(problem, plan, budget, started_ns)
+                        steps = replay.matching_steps
+                        interpreted_steps_total += steps
+                        _check_postflight(
+                            problem, plan, budget, started_ns,
+                            steps_completed=interpreted_steps_total)
                         _check_cancel(cancel_check)
                         status = "PURE_SYNTHETIC_INTERPRETED_UNVERIFIED"
                         trace = replay.expected_trace_sha256
-                        steps = replay.matching_steps
                 else:
                     status = "PURE_ELIGIBLE_NOT_INTERPRETED"
             candidates.append({
@@ -292,6 +303,7 @@ def audit_offline_journey_report(report: dict) -> dict:
                 (report["architect_status"] == "BLOCKED_EVIDENCE_DISPUTE"))):
         raise ValueError("untrusted architect status or outcome inventory")
     seen_alternatives = set()
+    observed_steps = 0
     for candidate in report["candidates"]:
         if (type(candidate) is not dict
                 or set(candidate) != {
@@ -353,6 +365,9 @@ def audit_offline_journey_report(report: dict) -> dict:
                     (candidate["interpreted_steps"] != 0
                      or candidate["trace_sha256"] is not None))):
             raise ValueError("contradictory player interpretation claim")
+        observed_steps += candidate["interpreted_steps"]
+    if observed_steps > 64:
+        raise ValueError("journey candidate steps exceed the hard cap")
     claimed = report["receipt_sha256"]
     content = {k: v for k, v in report.items() if k != "receipt_sha256"}
     if canonical_sha256(content) != claimed:
@@ -367,20 +382,9 @@ def audit_offline_journey_report(report: dict) -> dict:
 
 
 # EAI-SWU-041: actual local goal -> Architect/Policy/Player -> advisory choice.
-def decide_local_offline_journey(
-    problem_file: str | Path, axnode_root: str | Path, *,
-    max_expansions: int = 8,
-    budget: LocalResourceBudget | None = None,
-    interpret_pure_noop: bool = False,
-    research_policy: ResearchPolicy | None = None,
-    cancel_check: Callable[[], bool] | None = None,
-) -> dict:
-    """Return a bounded CPU-owned decision or abstention; never perform actions."""
+def _local_decision_from_report(local: dict) -> dict:
+    """Turn an audited journey into an advisory choice without authority."""
     from .decision_engine import select_audited_local_journey
-    local = preview_offline_journey(
-        problem_file, axnode_root, max_expansions=max_expansions,
-        budget=budget, interpret_pure_noop=interpret_pure_noop,
-        research_policy=research_policy, cancel_check=cancel_check)
     choice = select_audited_local_journey(local)
     if choice.problem_sha256 != local["problem_sha256"] or (
             choice.independent_real_world_verification or
@@ -407,6 +411,22 @@ def decide_local_offline_journey(
     }
 
 
+def decide_local_offline_journey(
+    problem_file: str | Path, axnode_root: str | Path, *,
+    max_expansions: int = 8,
+    budget: LocalResourceBudget | None = None,
+    interpret_pure_noop: bool = False,
+    research_policy: ResearchPolicy | None = None,
+    cancel_check: Callable[[], bool] | None = None,
+) -> dict:
+    """Return a bounded CPU-owned decision or abstention; never perform actions."""
+    local = preview_offline_journey(
+        problem_file, axnode_root, max_expansions=max_expansions,
+        budget=budget, interpret_pure_noop=interpret_pure_noop,
+        research_policy=research_policy, cancel_check=cancel_check)
+    return _local_decision_from_report(local)
+
+
 # EAI-SWU-032: resource/cancellation result gates a local CPU decision.
 def decide_scheduled_local_journey(
     problem_file: str | Path, axnode_root: str | Path, *,
@@ -426,10 +446,13 @@ def decide_scheduled_local_journey(
         raise ValueError("typed synchronous cancellation callback required")
     _check_cancel(cancel_check)
     started_ns = monotonic_ns()
-    result = decide_local_offline_journey(
+    local = preview_offline_journey(
         problem_file, axnode_root, max_expansions=max_expansions,
         budget=budget, interpret_pure_noop=interpret_pure_noop,
         research_policy=ResearchPolicy(), cancel_check=cancel_check)
+    result = _local_decision_from_report(local)
+    steps_completed = sum(
+        candidate["interpreted_steps"] for candidate in local["candidates"])
     elapsed_ms = (monotonic_ns() - started_ns) // 1_000_000
     cancelled = False
     if cancel_check is not None:
@@ -437,7 +460,8 @@ def decide_scheduled_local_journey(
         if type(cancelled) is not bool:
             raise ValueError("cancellation callback must return bool")
     observed = review_local_journey_postflight(
-        budget, elapsed_ms=elapsed_ms, cancelled=cancelled)
+        budget, elapsed_ms=elapsed_ms, cancelled=cancelled,
+        steps_completed=steps_completed)
     if observed.status != "CPU_LOCAL_BUDGET_AVAILABLE_NOT_EXECUTION_AUTHORITY":
         # Return the CPU-computed digest and reason ONLY; no selection.
         return {

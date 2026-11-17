@@ -1,7 +1,8 @@
-"""Optional research provider boundary. OFF never imports an SDK or contacts a host.
+"""Optional research provider boundary. OFF never contacts a host.
 
-This is the OFF-only implementation skeleton for EAI-V3-11. No Hydrogen
-adapter, network client, key handling, model result trust or API usage exists.
+The dormant signed REST sender lives in ``hydrogen_adapter`` as a separate,
+explicitly called path. This coordinator never loads it, looks up credentials,
+or dispatches network requests.
 """
 from dataclasses import dataclass
 from typing import Any
@@ -41,9 +42,10 @@ class ResearchCoordinator:
         """Return the exact independent baseline; never load cloud dependencies."""
         if self.policy.mode is ResearchMode.OFF:
             return ResearchOutcome(baseline, self._null.propose(), "OFF")
-        # Even when flags look permissive, adapter and per-request safe packet,
-        # explicit preview, project quota and independent verifier DO NOT YET EXIST.
-        # Until they are implemented a remote call is impossible.
+        # Even when flags look permissive, this coordinator never dispatches
+        # the dormant REST path. External research remains paused here; a
+        # separate caller must meet its per-send signature, project and ledger
+        # gates before any network request can occur.
         return ResearchOutcome(baseline, (), "PAUSED_POLICY",
                                "Live provider remains unimplemented and unapproved")
 
