@@ -144,3 +144,51 @@ def model_local_problem_input(text: str, *,
         problem, parsed.source, parsed.intent.task,
         "INPUT_CLASSIFIED_UNVERIFIED" if parsed.intent.task != "unsupported"
         else "NEEDS_EXPLICIT_PROBLEM_SPEC")
+
+
+# EAI-SWU-012: link unresolved constraints to explicit CPU decision abstention.
+@dataclass(frozen=True)
+class ProblemDecisionReadiness:
+    problem_sha256: str
+    disposition: str
+    reason_codes: tuple[str, ...]
+    candidate_source_sha256: tuple[str, ...]
+    unknowns: tuple[str, ...]
+    independent_verification: str = "NOT_ESTABLISHED"
+    executable: bool = False
+
+
+def review_problem_decision(
+    modeler: ProblemModeler, problem: ProblemSpec,
+) -> ProblemDecisionReadiness:
+    """Do not treat ambiguous AXNODE matches or unknown facts as evidence."""
+    if type(modeler) is not ProblemModeler or type(problem) is not ProblemSpec:
+        raise ValueError("typed local modeler and problem required")
+    analysis = modeler.analyze(problem)
+    if analysis.problem_sha256 != problem.digest():
+        raise ValueError("cross-problem analysis rejected")
+    blockers = []
+    if analysis.contradictions or analysis.state == "CONFLICT":
+        blockers.append("CONFLICTING_HARD_CONSTRAINTS")
+    if analysis.state == "BLOCKED_UNINTERPRETED_CONSTRAINT" or any(
+            u.startswith("constraint_unparsed:") for u in analysis.unknowns):
+        blockers.append("UNINTERPRETED_HARD_CONSTRAINT")
+    if any(u.startswith("ambiguous_strategy_version:")
+           for u in analysis.unknowns):
+        blockers.append("AMBIGUOUS_STRATEGY_VERSION")
+    if any(u.startswith("required_strategy_missing:")
+           for u in analysis.unknowns):
+        blockers.append("REQUIRED_STRATEGY_MISSING")
+    if len(analysis.evidence) < 2:
+        blockers.append("INSUFFICIENT_ALTERNATIVE_EVIDENCE")
+    if problem.risk == "HIGH":
+        blockers.append("HIGH_RISK_REQUIRES_REVIEW")
+    if not blockers:
+        blockers.append("INDEPENDENT_ORACLE_NOT_ESTABLISHED")
+    sources = tuple(item.source_sha256 for item in analysis.evidence)
+    if len(set(sources)) != len(sources):
+        blockers.append("DUPLICATE_SOURCE_EVIDENCE")
+    holding = any(code != "INDEPENDENT_ORACLE_NOT_ESTABLISHED" for code in blockers)
+    return ProblemDecisionReadiness(
+        analysis.problem_sha256, "ABSTAINED" if holding else "ADVISORY_ONLY",
+        tuple(sorted(set(blockers))), sources, analysis.unknowns)

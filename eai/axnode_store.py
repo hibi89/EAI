@@ -201,3 +201,78 @@ class AXNodeStore:
                 "orphan_files": orphans,
                 "sqlite_integrity": integrity,
                 "foreign_key_violations": len(fk)}
+
+
+# EAI-SWU-005: explicit additive import -> committed catalog -> fresh reload.
+from dataclasses import dataclass
+
+
+@dataclass(frozen=True)
+class AXNodeReopenReceipt:
+    node_sha256: str
+    node_id: str
+    version: int
+    catalog_count: int
+    parent_hashes: tuple[str, ...]
+    status: str = "REOPENED_LOCAL_CONTENT_CONSISTENT_UNVERIFIED"
+    real_execution_allowed: bool = False
+    active_promotion_allowed: bool = False
+
+
+def import_and_reopen_node(
+    root: str | Path, source: str | bytes, *,
+    allow_additive_import: bool = False,
+) -> AXNodeReopenReceipt:
+    """Opt-in existing isolated store only; no repair, overwrite or migration.
+
+    A fresh connection must observe the exact immutable bytes, version row and
+    graph edges after SQLite commit. Any incomplete/orphan store is held.
+    """
+    if type(allow_additive_import) is not bool or not allow_additive_import:
+        raise PermissionError("explicit additive AXNODE import switch required")
+    node = parse_axnode(source)  # reject hostile syntax before even opening disk
+    canonical = node.canonical
+    raw = node.as_dict()
+    path = Path(root).expanduser()
+    if (path.is_symlink() or not path.is_dir() or
+            (path / "axnodes.sqlite").is_symlink() or
+            not (path / "axnodes.sqlite").is_file() or
+            (path / "nodes").is_symlink() or
+            not (path / "nodes").is_dir()):
+        raise ValueError("explicit pre-existing isolated AXNODE store required")
+    with AXNodeStore(path) as writer:
+        before = writer.audit()
+        if (before["sqlite_integrity"] != "ok" or
+                before["foreign_key_violations"] or before["invalid_hashes"] or
+                before["orphan_files"]):
+            raise ValueError("AXNODE pre-import integrity review required")
+        previous_hashes = set(writer.hashes())
+        digest = writer.import_node(source)
+        if digest != node.sha256 or writer.get(digest).canonical != canonical:
+            raise ValueError("AXNODE immediate import round-trip mismatch")
+    # Reopen from disk rather than reuse a live in-memory SQLite connection.
+    with AXNodeStore(path) as reader:
+        loaded = reader.get(digest)
+        if loaded.canonical != canonical or loaded.as_dict() != raw:
+            raise ValueError("AXNODE fresh reload differs from imported source")
+        row = reader.db.execute(
+            "SELECT node_id,version,status,kind,output_type FROM nodes "
+            "WHERE sha256=?", (digest,)).fetchone()
+        expected = (raw["id"], raw["version"], raw["status"],
+                    raw["kind"], raw["signature"]["output"])
+        if row != expected:
+            raise ValueError("AXNODE reopened catalog row mismatch")
+        parents = reader.parents_of(digest)
+        if parents != tuple(sorted(raw["parent_hashes"])):
+            raise ValueError("AXNODE reopened graph edges differ")
+        after = reader.audit()
+        hashes_after = set(reader.hashes())
+        if (after["sqlite_integrity"] != "ok" or
+                after["foreign_key_violations"] or after["invalid_hashes"] or
+                after["orphan_files"] or
+                hashes_after - previous_hashes != (
+                    set() if digest in previous_hashes else {digest}) or
+                not previous_hashes.issubset(hashes_after)):
+            raise ValueError("AXNODE import/reopen safety reconciliation failed")
+        return AXNodeReopenReceipt(
+            digest, raw["id"], raw["version"], len(hashes_after), parents)

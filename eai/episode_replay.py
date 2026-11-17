@@ -64,3 +64,58 @@ def replay_memory_evidence(
             observation_tier=review.tier, evidence_state=state,
             disposition=result))
     return tuple(decisions)
+
+
+# EAI-SWU-010: actual local observation write -> five-tier replay -> decision.
+@dataclass(frozen=True)
+class ExperienceMemoryDecision:
+    memory_sha256: str
+    source_node_sha256: str
+    tier: str
+    outcome: str
+    disposition: str
+    evidence_state: str
+    five_tier_model: tuple[str, ...] = (
+        "WORKING", "EPISODIC", "SEMANTIC", "PROCEDURAL", "NEGATIVE")
+    independently_verified: bool = False
+    can_train: bool = False
+    can_execute: bool = False
+    can_promote: bool = False
+
+
+def record_and_review_experience(
+    memory: AXNodeMemory, evidence: EvidenceLedger | None, *,
+    tier: str, anchor_sha: str, label: str,
+    tags: tuple[str, ...] = (), outcome: str = "UNKNOWN",
+    captured_at: int | None = None, ttl_seconds: int | None = None,
+    withdrawn_hashes: tuple[str, ...] = (),
+) -> ExperienceMemoryDecision:
+    """Record only existing bounded local metadata, then re-evaluate it.
+
+    A successful observation is NOT independent truth or learning permission.
+    Failure/withdrawal/contradiction can only block reuse.
+    """
+    if type(memory) is not AXNodeMemory or (
+            evidence is not None and (
+                type(evidence) is not EvidenceLedger or
+                evidence.store is not memory.store)):
+        raise ValueError("same-store typed memory and evidence required")
+    digest = memory.remember(
+        tier=tier, anchor_sha=anchor_sha, label=label, tags=tags,
+        outcome=outcome, captured_at=captured_at, ttl_seconds=ttl_seconds)
+    stored = memory.get(digest)
+    if (stored["tier"] != tier or stored["anchor_sha"] != anchor_sha or
+            stored["label"] != label or stored["outcome"] != outcome):
+        raise ValueError("new memory record did not round-trip")
+    decisions = replay_memory_evidence(
+        memory, evidence, label, withdrawn_hashes=withdrawn_hashes,
+        now=captured_at, limit=25)
+    matching = [d for d in decisions if d.memory_sha256 == digest]
+    if len(matching) != 1:
+        return ExperienceMemoryDecision(
+            digest, anchor_sha, tier, outcome,
+            "HOLD_MEMORY_NOT_REPLAYABLE", "NO_INDEPENDENT_EVIDENCE")
+    reviewed = matching[0]
+    return ExperienceMemoryDecision(
+        digest, anchor_sha, tier, outcome,
+        reviewed.disposition, reviewed.evidence_state)

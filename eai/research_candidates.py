@@ -90,3 +90,47 @@ def quarantine_mock_research(
         "QUARANTINED_LOCAL_FAKE_IDEA_ONLY", digest,
         (QuarantinedResearchIdea(
             idea_sha, digest, proposal.idea_id, proposal.task_family),), ())
+
+
+# EAI-SWU-037: quarantine -> explicit EAI-owned manual research candidate view.
+@dataclass(frozen=True)
+class ArchitectResearchCandidate:
+    status: str
+    request_sha256: str
+    idea_sha256: str | None
+    strategy_id: str | None
+    obligations: tuple[str, ...]
+    reason_codes: tuple[str, ...]
+    independent_verifier_passed: bool = False
+    permitted_to_import: bool = False
+    permitted_to_train: bool = False
+    permitted_to_execute: bool = False
+    permitted_to_promote: bool = False
+
+
+def review_mock_idea_for_architect(
+    packet: ResearchPacket, outcome: MockOutcome,
+) -> ArchitectResearchCandidate:
+    """Use existing strict local quarantine, then expose only review metadata."""
+    quarantine = quarantine_mock_research(packet, outcome)
+    if quarantine.disposition != "QUARANTINED_LOCAL_FAKE_IDEA_ONLY":
+        return ArchitectResearchCandidate(
+            "HOLD_UNTRUSTED_RESEARCH", quarantine.request_sha256,
+            None, None, (), quarantine.reason_codes)
+    if (len(quarantine.ideas) != 1 or
+            quarantine.permits_execution or quarantine.permits_learning or
+            quarantine.permits_promotion):
+        raise ValueError("untrusted mock quarantine authority")
+    idea = quarantine.ideas[0]
+    if (type(idea) is not QuarantinedResearchIdea or idea.can_execute or
+            idea.can_train or idea.can_promote or
+            idea.request_sha256 != quarantine.request_sha256 or
+            idea.provenance != "LOCAL_FAKE_UNVERIFIED" or
+            idea.idea_id not in _ALLOWED_LOCAL_IDEAS):
+        raise ValueError("forged quarantined research candidate")
+    return ArchitectResearchCandidate(
+        "LOCAL_MOCK_IDEA_REVIEW_ONLY", quarantine.request_sha256,
+        idea.idea_sha256, idea.idea_id,
+        ("INDEPENDENT_COUNTEREXAMPLE_ORACLE",
+         "HOLDOUT_NON_REGRESSION",
+         "HUMAN_REVIEW_BEFORE_ANY_PROMOTION"), ())

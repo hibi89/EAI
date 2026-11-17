@@ -85,6 +85,17 @@ class ResearchPacket:
     def request_sha256(self) -> str:
         return hashlib.sha256(self.to_json_bytes()).hexdigest()
 
+
+    def record_local_review(self, review_directory, *,
+                            reviewed_preview_sha256: str,
+                            reviewed: bool = False):
+        """Persist only an exact local review; NEVER approve an external send."""
+        from .research_consent import record_local_packet_review
+        return record_local_packet_review(
+            self, review_directory,
+            reviewed_preview_sha256=reviewed_preview_sha256,
+            reviewed=reviewed)
+
     def review_exact_outbound_text(self) -> str:
         """Human-only local preview; never called by a network transport."""
         return self.to_json_bytes().decode("utf-8")
