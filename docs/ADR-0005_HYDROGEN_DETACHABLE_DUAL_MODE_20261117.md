@@ -1,6 +1,8 @@
 # ADR-0005 — EAI removable Gemini 4 Hydrogen: best OFF/ON dual-path architecture
-**2026-11-17 KST | Decision:** ACCEPT DESIGN, REMOTE EXECUTION NOT AUTHORIZED | **Status:** DESIGN_CANONICAL, IMPLEMENTATION_NOT_STARTED
+**2026-11-17 KST | Decision:** ACCEPT DESIGN, REMOTE EXECUTION NOT AUTHORIZED | **Status:** DESIGN_CANONICAL, DORMANT_SOURCE_CANDIDATE, LIVE_AUTHORIZATION_HOLD
 **Authority:** Owner request for a detachable free-first Hydrogen option, EAI Final Blueprint V3.1, ADR-0002 EAI cognitive ownership and existing original data/security gates. This ADR supersedes only the **narrow future Hydrogen input-classifier-only scope** in ADR-0004: an *isolated research-only proposal source* may be designed, but NOT an EAI brain, runtime executor, trusted planner, verifier, or final renderer. Existing P38 synthetic benchmark stays unchanged and is NOT evidence of a real model.
+
+> **Implementation status addendum — 2026-11-18:** At source `d998a150697926550248ec040b37fe7a8dcf10af`, the dormant per-send signed REST source path is a provisional P1 candidate. Its result and SQLite reservation now share a payload-bound local correlation ID; safe HTTP status classification is bounded, with no schema migration or prior row rewrite. Mock HTTP/temporary SQLite tests and EAI local checks pass. No real Google request, user credential/private key read, or project entitlement verification occurred. Live runtime remains `HOLD`; P2 and release remain locked.
 
 ## 1. Verifiable external facts and uncertainties
 - Google 2026-11-12 announcement: https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-hydrogen/ ; official model card https://deepmind.google/models/model-cards/gemini-4-hydrogen/ ; documented model identifier `gemini-4-hydrogen`, to be revalidated at integration time.
