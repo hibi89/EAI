@@ -1,7 +1,7 @@
 ## 2026-11-17 KST — P38 Hydrogen optional evaluation: design + offline benchmark implementation candidate
 - Active product branch `feature/kmong-eai-85-p31-20261112`, pre-change HEAD `bf1ef6ebbf2b260f6328fb02dc21233ed9ec509e`. ADR-0004 and EAI-H01–H08 task queue added; existing ADR-0002 CPU ownership, 13 typed goals, P26 SHA human execution gate and customer ZIP unchanged.
 - New offline-only `scripts/benchmark_model_candidates.py`, synthetic fixtures and adversarial tests. Zero API/remote/model invocation, no billing/permission changes. The fixture model names are synthetic labels, **not actual Hydrogen or Qwen execution**.
-- New code/CI exact SHA pending until commit and GitHub Actions. Current status `IMPLEMENTED_UNVERIFIED`, tests `NOT_RUN` at report authoring, native Windows/real model/customer acceptance `NOT_RUN`. Existing P37 Linux 636 PASS/1 Windows SKIP belongs to older SHA, not P38. Official verified completion `UNASSESSED`, legacy P85 history held, `RELEASE HOLD`.
+- New code/test candidate exact SHA `e8a7ca7f34e417a0483d371b014724c95a572ff9` committed. No new GitHub Actions workflow result visible for this SHA at checkpoint; P38 tests `NOT_RUN`/unverified. Current status `IMPLEMENTED_UNVERIFIED`, tests `NOT_RUN` at report authoring, native Windows/real model/customer acceptance `NOT_RUN`. Existing P37 Linux 636 PASS/1 Windows SKIP belongs to older SHA, not P38. Official verified completion `UNASSESSED`, legacy P85 history held, `RELEASE HOLD`.
 - Next: check exact committed source tests/CI; only later separately authorize remote adapter or GitHub App permissions. Main, prior EAI branches, customer originals/other repos untouched.
 
 ## 2026-11-12 KST — EAI P37 Windows synthetic acceptance automation; Linux CI PASS, native Windows pending
