@@ -1,3 +1,17 @@
+## 2026-11-17 KST — EAI P1 four-READY Player expansion handoff (10)
+1. **Goal:** implement EAI independent local Architect + Player + AXNODE Experience Learner candidate, not MLA/AX Factory/hub. Locked repo `hibi89/EAI`, branch `feature/kmong-eai-85-p31-20261112`, final design immutable.
+2. **New code:** `e92a3af30a1e63114de994489677b905254b7a46` adds C20 `policy_gate.py` strict typed/hash/permission/risk/budget PURE-only policy, C21 `player_runtime.py` deterministic bounded `synthetic.noop.v1` DAG interpreter and receipts/cancel, C16 `episode_replay_dedup.py` negative/replay hash screen, C15 `candidate_activation_preflight.py` always-deny owner-verifier-rollback gate. CLI commit `2099642b9e2515a7d2e9cf5198b92ff346151d0f`: `player_cli.py`, `__main__.py` player-preview command, fast P1 runner wiring. No cross-repo changes.
+3. **Testing:** `92862fbe0f0a0c87fe5d0cc09562025a3ab81673` adds 23 unittest functions (8+6+4+5), V3 cumulative 275 authored. GitHub path/sha/CLI/risk-import/static review PASS for inspected files, real Python compile, targeted P1 unit and whole repo CI `NOT_RUN` (original execution container DNS GitHub unresolved). Browser/Windows/manual E2E P2 only.
+4. **Progress:** 3 candidate / 8 partial / 4 blocked-or-planned of 15 queue groups. C01-C36 implementation percent `UNASSESSED`, verification `UNASSESSED`, release `HOLD`. Synthetic pure Player is partial V3-09, not full real-world user automation.
+5. **Blockers/errors:** exact SHA checkout unavailable due blocked DNS; do not call tests PASS. No repeated ineffective network retry. High must decide signed verifier and real ACTIVE or customer originals; no default owner approval.
+6. **Branch evidence:** baseline HEAD `6adb335d9b3edc2be285ae49002e666cff1216f6`, source SHA `e92a3af30a1e63114de994489677b905254b7a46`, CLI `2099642b9e2515a7d2e9cf5198b92ff346151d0f`, tests `92862fbe0f0a0c87fe5d0cc09562025a3ab81673`, final docs HEAD to verify. No force/rebase/main merge.
+7. **Deployment:** No Vercel/Production target used; no real Hydrogen ON; no paid services or external transfers.
+8. **Originals:** Blueprint Blob `1b0712679d4171cd3681588e104ea5e8c6f6690d` unchanged; legacy 13 CPU goals, P26 approval and original data untouched. Only safe mock/no-op local runtime code authored, zero actual customer data.
+9. **Next READY:** C20 sandbox scoped action approval & denial; C21 idempotency/cancellation and compensation model, C16 independent episode receipts and persistent non-replay policy, C05 multi-DB epoch recovery, C15 proof/promotion owner authorization High gate. Targeted Python syntax/secure local smoke before risky implementation, P2 whole CI later.
+10. **Timing:** 2026-11-17 KST. Documents updated after source/tests; final docs SHA and branch must be reread. Implementation/verification scores remain UNASSESSED, RELEASE HOLD.
+
+---
+
 ## 2026-11-17 KST — EAI P1 C14/C15/C16/C05 hardening batch handoff (10)
 1. **Task lock:** Only EAI V3.1 independent local Architect/Player/AXNODE; current repo `hibi89/EAI`, branch `feature/kmong-eai-85-p31-20261112`; no MLA/hub/Factory scope.
 2. **Actual changes:** code SHA `3ef09a83ec47c8f925e23a0e2c865811b81918cb` modifies `eai/candidate_evidence_review.py` to re-run bounded interpreter and reject fake witness, `eai/candidate_review_journal.py` to prevent quarantined/withdrawn promotion-state laundering, `eai/experience_admission.py` to bind optional synthetic review to candidate/problem without automated learning, and `eai/sidecar_coherence_review.py` to detect source drift vs isolated restore.
