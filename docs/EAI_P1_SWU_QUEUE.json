@@ -3009,8 +3009,24 @@
       "initial_nonprogress_attempts": null,
       "post_isolation_nonprogress_attempts": null,
       "retry_evidence": [],
-      "source_candidate_note": "2026-11-18 current High SWU-039 source hardening at 2f6aebda8dd415a7e97da6c2f9669befca7661d6, blob 1aa66e719925418678a12bd038cd2e05ef27157f: preexisting owner-provisioned local canonical trust root is checked independently of signed permit and must match project/key; reply instructions explicitly carry exact request SHA; stale coordinator generation and policy rechecked before HTTP and after reply. No trust file/key created, no external data sent or live Google tier proven. 14/14 exact-blob structural safety guards PASS; actual Python syntax/import/test and live network NOT_RUN. Remains BLOCKED_APPROVAL until real project free-tier evidence, true owner-provisioned trust, exact per-send GO. Source candidates 41/42 (+0).",
-      "source_only_code_sha": "2f6aebda8dd415a7e97da6c2f9669befca7661d6"
+      "source_candidate_note": "2026-11-18 current High SWU-039 source hardening at 2f6aebda8dd415a7e97da6c2f9669befca7661d6, blob 1aa66e719925418678a12bd038cd2e05ef27157f: preexisting owner-provisioned local canonical trust root is checked independently of signed permit and must match project/key; reply instructions explicitly carry exact request SHA; stale coordinator generation and policy rechecked before HTTP and after reply. No trust file/key created, no external data sent or live Google tier proven. 14/14 exact-blob structural safety guards PASS; actual Python syntax/import/test and live network NOT_RUN. Remains BLOCKED_APPROVAL until real project free-tier evidence, true owner-provisioned trust, exact per-send GO. Source candidates 41/42 (+0). 2026-11-18 KST exact code blob independently restored into local Python runtime and git hash-object verified MATCH 1aa66e719925418678a12bd038cd2e05ef27157f. Python 3.13.5 py_compile PASS. Local isolated stub-import smoke: prior codec 7/7 PASS; per-send signature/trust-root/ledger denial and mocked transport failure 12/12 PASS; positive mocked HTTPS untrusted candidate quarantine/replay 8/8 PASS. Total distinct focused cases 27/27 PASS on Python 3.13.5 / cryptography 46.0.4, with cryptographic signing only synthetic temporary keys, fake HTTP constructor and temporary synthetic ledger, no outbound network or real credential. Full actual EAI import graph, Python 3.11 target, GitHub CI, actual Google project tier, real send, real Power failure, P2 independent acceptance NOT_RUN. SWU-039 remains BLOCKED_APPROVAL, no +1.",
+      "source_only_code_sha": "2f6aebda8dd415a7e97da6c2f9669befca7661d6",
+      "targeted_local_checks": {
+        "source_sha": "2f6aebda8dd415a7e97da6c2f9669befca7661d6",
+        "blob_sha": "1aa66e719925418678a12bd038cd2e05ef27157f",
+        "environment": "LOCAL_PYTHON_3_13_5_CRYPTOGRAPHY_46_0_4",
+        "python_compile": "PASS",
+        "isolated_stub_import_smoke": "PASS_7_OF_7",
+        "mock_http_consent_failure_ledger_smoke": "PASS_12_OF_12",
+        "mock_http_success_quarantine_replay_smoke": "PASS_8_OF_8",
+        "total_distinct_focused": "PASS_27_OF_27",
+        "complete_repo_imports": "NOT_RUN",
+        "python311": "NOT_RUN",
+        "actual_google_http": "NOT_RUN",
+        "full_p2": "NOT_RUN",
+        "provider_free_tier_verified": false,
+        "remote_bytes_sent": 0
+      }
     },
     {
       "task_id": "EAI-SWU-040",
@@ -3231,7 +3247,7 @@
   "P2": "LOCKED",
   "latest_feature_code_sha": "2f6aebda8dd415a7e97da6c2f9669befca7661d6",
   "source_candidate_count": 41,
-  "next_safe_queue_status": "High CPAA+WE source fix at 2f6aebd: owner trust root independent of permit, prompt SHA, stale-generation guard. 14/14 structural PASS, exact Python syntax/runtime NOT_RUN; 039 BLOCKED_APPROVAL, first_ready=[], 41/42 provisional and P2 LOCKED. No other safe READY.",
+  "next_safe_queue_status": "2026-11-18 exact SWU-039 module Git blob verified and Python compile + 27/27 focused local synthetic mock checks PASS; real repo import graph, 3.11/P2, provider tier, real signed consent and Google network NOT_RUN. No ordinary READY: 41/42 provisional P1 candidates; SWU-039 external owner account/GO BLOCKED_APPROVAL, P2 LOCKED. No fabricated increase.",
   "next_dependency_blocker": "SWU-039 per-send external owner GO and Google project free tier eligibility, owner-provisioned trust anchor; real API/production/paid use HOLD.",
   "retry_escalation_policy": {
     "schema": "eai.p1.retry.isolate.solmax.v1",

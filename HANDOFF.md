@@ -1,3 +1,10 @@
+## 2026-11-18 KST — EAI-039 exact-source local evidence handoff
+- EAI repo `hibi89/EAI`, branch `feature/kmong-eai-85-p31-20261112`; code source `2f6aebda8dd415a7e97da6c2f9669befca7661d6`, blob `1aa66e719925418678a12bd038cd2e05ef27157f` verified exact by local Git hash. Latest origin head must be rechecked.
+- Python 3.13.5 `py_compile` PASS; isolated package stub codec 7/7, owner Ed25519/per-send trust gate/mock failure and ledger 12/12, synthetic success + quarantine + replay 8/8, **27/27 distinct local smoke PASS**. cryptography 46.0.4. All HTTP connections were fake; ephemeral synthetic keys and temporary disposable ledger, no outbound bytes.
+- Actual EAI repo full import graph and Windows/Python 3.11 test environment NOT_RUN; actual Google API/free tier and real user consent NOT_RUN; P2 independent validation NOT_RUN. No P1 product functionality changed this turn.
+- SWU-039 C30/C35 remains `BLOCKED_APPROVAL` because real project free tier credentials/quotas, trusted owner root, human-reviewed per-send GO, live acceptance missing. Provisional source 41/42, official P1/P2 UNASSESSED, P2 LOCKED, RELEASE HOLD. No ordinary READY.
+- No main/Production, original/customer/rights/permissions, real Player/ACTIVE or cloud/paid changes. Final blueprint `1b0712679d4171cd3681588e104ea5e8c6f6690d`, hub §0J/§0E `b42134647bf6998c0df0932e32336b0bc8ae8ccc` preserved. This update only records genuine test evidence, not +1 SWU.
+
 ## 2026-11-18 KST — EAI High SWU-039 owner trust root fix handoff
 - Repo `hibi89/EAI` branch `feature/kmong-eai-85-p31-20261112`, code SHA `2f6aebda8dd415a7e97da6c2f9669befca7661d6`, permitted path `eai/hydrogen_adapter.py`, blob `1aa66e719925418678a12bd038cd2e05ef27157f`.
 - Implemented separately pinned owner root lookup, bounded explicit request SHA echo, coordinator generation/ON rechecks around HTTP. No real live send, key, trust file, external account access or paid provider.
