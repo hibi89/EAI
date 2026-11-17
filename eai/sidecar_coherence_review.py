@@ -142,3 +142,46 @@ def review_isolated_cross_db_coherence(
     return CoherenceReview(disposition, audited.archived_file_count,
                            audited.matched_anchor_count, len(before),
                            source_sidecar_drift_detected=drift)
+
+
+# EAI-SWU-007: independently compare source and isolated copies, never
+# counterfeit a shared SQLite transaction epoch.
+@dataclass(frozen=True)
+class EpochConsistencyBoundary:
+    status: str
+    catalog_node_count: int
+    source_sidecars: tuple[str | None, ...]
+    isolated_sidecars: tuple[str | None, ...]
+    sidecars_agree: bool
+    transaction_epoch_proven: bool = False
+    may_publish_restore: bool = False
+    may_bind_active_store: bool = False
+    original_modified: bool = False
+
+
+def inspect_isolated_epoch_boundary(
+    store: AXNodeStore, archive: str | Path, isolated_root: str | Path,
+) -> EpochConsistencyBoundary:
+    """Perform actual read-only coherence audit and record stable fingerprints.
+
+    Equality proves content agreement at two observations only; without a
+    shared commit coordinator there is *no* cross-DB epoch attestation.
+    """
+    if type(store) is not AXNodeStore:
+        raise ValueError("explicit local store required")
+    prior_nodes = tuple(store.hashes())
+    previous = _source_fingerprints(store)
+    observed = review_isolated_cross_db_coherence(store, archive, isolated_root)
+    after = _source_fingerprints(store)
+    recovered = _isolated_fingerprints(Path(isolated_root).expanduser())
+    if tuple(store.hashes()) != prior_nodes:
+        raise ValueError("source catalog changed across epoch read")
+    if previous != after:
+        raise ValueError("source sidecars changed across epoch read")
+    match = previous == recovered and observed.source_sidecar_drift_detected is False
+    if observed.same_transaction_epoch_proven or observed.may_bind_to_live_store:
+        raise PermissionError("read-only coherence review cannot establish commit")
+    return EpochConsistencyBoundary(
+        "SOURCE_COPY_MATCH_UNVERIFIED_EPOCH" if match else
+        "HOLD_MISMATCHED_ISOLATED_EPOCH",
+        len(prior_nodes), previous, recovered, match)

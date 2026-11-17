@@ -150,3 +150,55 @@ def snapshot_and_audit_sidecars(
         "ISOLATED_BACKUP_RESTORED_AUDITED_UNVERIFIED",
         audited.archived_file_count, audited.validated_row_count,
         audited.matched_anchor_count, written.name, restored.name)
+
+
+# EAI-SWU-008: staged recovery publication/rollback is an advisory decision
+# until an atomic cross-DB checkpoint and independent verifier exist.
+@dataclass(frozen=True)
+class IsolatedRestoreDisposition:
+    status: str
+    isolated_marker_present: bool
+    sidecar_count: int
+    reason_codes: tuple[str, ...]
+    requires_manual_rollback: bool
+    staged_data_deleted: bool = False
+    originals_touched: bool = False
+    can_commit_to_live: bool = False
+
+
+def review_isolated_restore_commit_or_hold(
+    store: AXNodeStore, archive: str | Path, isolated_root: str | Path,
+) -> IsolatedRestoreDisposition:
+    """Check the true completion marker and independent coherence result.
+
+    Never deletes, renames or rolls back a user-selected restored directory.
+    A failed review is a HOLD with manual rollback required, not auto-cleanup.
+    """
+    from .axnode_sidecar_backup import _COMPLETE_MARKER
+    from .sidecar_recovery_audit import audit_isolated_sidecar_restore
+    from .sidecar_coherence_review import inspect_isolated_epoch_boundary
+    if type(store) is not AXNodeStore:
+        raise ValueError("explicit original AXNODE store required")
+    root = Path(isolated_root).expanduser()
+    if (root.is_symlink() or not root.is_dir()
+            or root.resolve(strict=True).is_relative_to(store.root)):
+        raise ValueError("isolated restore outside original store required")
+    marker = root / _COMPLETE_MARKER
+    if marker.is_symlink() or not marker.is_file():
+        return IsolatedRestoreDisposition(
+            "HOLD_INCOMPLETE_ISOLATED_RESTORE", False, 0,
+            ("COMPLETION_MARKER_MISSING",), True)
+    inspected = audit_isolated_sidecar_restore(store, archive, root)
+    epoch = inspect_isolated_epoch_boundary(store, archive, root)
+    if inspected.bound_into_live_store or inspected.original_data_modified:
+        raise PermissionError("restore tried to modify original or live data")
+    if not epoch.sidecars_agree:
+        return IsolatedRestoreDisposition(
+            "HOLD_ISOLATED_RESTORE_DIVERGENCE", True,
+            inspected.archived_file_count, ("SOURCE_COPY_MISMATCH",), True)
+    return IsolatedRestoreDisposition(
+        "HOLD_CROSS_DB_EPOCH_AND_OWNER_APPROVAL",
+        True, inspected.archived_file_count,
+        ("NO_SHARED_TRANSACTION_EPOCH",
+         "INDEPENDENT_RESTORE_VALIDATION_NOT_RUN",
+         "NO_LIVE_STORE_COMMIT_AUTHORIZATION"), False)

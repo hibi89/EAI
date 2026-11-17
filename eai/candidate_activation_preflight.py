@@ -57,3 +57,53 @@ def inspect_activation_preflight(
     return CandidateActivationPreflight(
         "ACTIVATION_FORBIDDEN", review.candidate_sha256,
         state, current_active_sha256, tuple(sorted(set(reasons))))
+
+
+# EAI-SWU-021: one-way quarantine intent, no ACTIVE or store status mutation.
+@dataclass(frozen=True)
+class QuarantineActivationIntent:
+    status: str
+    candidate_sha256: str
+    node_sha256: str
+    current_review_state: str
+    affected_descendants: tuple[str, ...]
+    reason_codes: tuple[str, ...]
+    needs_owner_go: bool = True
+    active_commit_performed: bool = False
+    original_modified: bool = False
+    may_activate: bool = False
+    may_execute: bool = False
+
+
+def review_quarantine_without_activation(
+    store, journal: CandidateReviewJournal, review: CandidateEvidenceReview,
+    node_sha256: str, *, current_active_sha256: str | None = None,
+) -> QuarantineActivationIntent:
+    """Graph impact and journal preflight only; no quarantine side effects."""
+    from .axnode_store import AXNodeStore
+    from .axnode_maintenance import plan_parent_invalidation
+    if (type(store) is not AXNodeStore or
+            type(journal) is not CandidateReviewJournal or
+            type(review) is not CandidateEvidenceReview or
+            type(node_sha256) is not str):
+        raise ValueError("explicit typed AXNODE review inputs required")
+    node = store.get(node_sha256)
+    if node.sha256 != node_sha256:
+        raise ValueError("stale node source")
+    if (current_active_sha256 is not None and
+            type(current_active_sha256) is not str):
+        raise ValueError("untrusted active pointer")
+    pre = inspect_activation_preflight(
+        journal, review, current_active_sha256=current_active_sha256)
+    impact = plan_parent_invalidation(store, node_sha256)
+    reasons = set(pre.reasons)
+    if pre.disposition != "ACTIVATION_FORBIDDEN" or pre.may_activate:
+        raise ValueError("unsafe activation preflight result")
+    if node.as_dict()["status"] == "ACTIVE":
+        reasons.add("ACTIVE_NODE_REQUIRES_SEPARATE_OWNER_REVIEW")
+    reasons.add("NODE_CANDIDATE_BINDING_NOT_INDEPENDENTLY_PROVEN")
+    return QuarantineActivationIntent(
+        "QUARANTINE_REVIEW_ONLY_NOT_APPLIED",
+        review.candidate_sha256, node_sha256,
+        pre.current_review_state, impact.affected_sha256,
+        tuple(sorted(reasons)))

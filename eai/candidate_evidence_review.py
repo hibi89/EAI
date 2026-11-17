@@ -113,3 +113,61 @@ def review_candidate_evidence(
     return CandidateEvidenceReview(
         status, problem.digest(), candidate.candidate_sha256,
         fixture_sha, review_sha, reasons, checked.counterexample_families)
+
+
+# EAI-SWU-020: external receipt is untrusted until local independent replay.
+@dataclass(frozen=True)
+class CandidateReceiptIntake:
+    status: str
+    candidate_sha256: str
+    independent_review_sha256: str
+    journal_entry_sha256: str | None
+    reason_codes: tuple[str, ...]
+    source_authenticated: bool = False
+    verified_real_world: bool = False
+    permits_learning: bool = False
+    permits_execution: bool = False
+    permits_promotion: bool = False
+
+
+def intake_candidate_receipt_for_review(
+    store: AXNodeStore, problem: ProblemSpec, candidate: SynthesisCandidate,
+    fixtures: tuple[SyntheticComparison, ...],
+    execution: SyntheticCandidateExecution, claimed: SyntheticCandidateReceipt,
+    journal, *, record_locally: bool = False,
+) -> CandidateReceiptIntake:
+    """Recompute candidate effects, then optionally write only a quarantine log.
+
+    A SHA and a caller-supplied receipt never authenticate the claim's sender.
+    This API deliberately cannot assert an external verifier's authority.
+    """
+    from .candidate_review_journal import CandidateReviewJournal
+    if (type(journal) is not CandidateReviewJournal or
+            type(record_locally) is not bool):
+        raise ValueError("typed existing isolated journal and explicit option required")
+    if journal.path.is_relative_to(store.root) or (
+            journal.path.is_symlink()
+            or not journal.path.is_file()):
+        raise ValueError("review journal must not be stored in live AXNODE root")
+    review = review_candidate_evidence(
+        store, problem, candidate, fixtures, execution, claimed)
+    if review.status not in (
+            "SYNTHETIC_REVIEW_ONLY_NOT_AUTHORIZED",
+            "QUARANTINE_UNTRUSTED_SYNTHETIC_RECEIPT"):
+        raise ValueError("unexpected independent CPU review status")
+    if review.permits_promotion or review.permits_learning or review.permits_real_execution:
+        raise PermissionError("untrusted receipt cannot authorize actions")
+    state = ("REVIEW_HOLD" if
+             review.status == "SYNTHETIC_REVIEW_ONLY_NOT_AUTHORIZED"
+             else "QUARANTINED")
+    written = None
+    if record_locally:
+        # Append-only isolated review, never the ACTIVE catalog.
+        written = journal.record(review, state=state)
+    reason = ("INDEPENDENT_EXTERNAL_ORACLE_UNAVAILABLE",)
+    return CandidateReceiptIntake(
+        "LOCAL_SYNTHETIC_REVIEW_JOURNALLED_NOT_VERIFIED" if written else
+        "HOLD_RECORD_REQUIRES_EXPLICIT_OPT_IN",
+        candidate.candidate_sha256, review.review_sha256,
+        written.entry_sha256 if written else None,
+        tuple(sorted(set(review.reason_codes) | set(reason))))
