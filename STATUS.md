@@ -1,3 +1,12 @@
+## 2026-11-17 KST — EAI Hydrogen detachable OFF/ON final DESIGN V3.1
+- User decision: optional Gemini 4 Hydrogen provider **removable**; OFF = complete independent local Architect/Player/AXNODE path; ON = only consented public/synthetic research candidate suggestions after own baseline, independently verified and never trusted/actionable by default. [ADR-0005](docs/ADR-0005_HYDROGEN_DETACHABLE_DUAL_MODE_20261117.md) supersedes ADR-0004 future input-only research scope as narrowly described.
+- Official Google: Standard FREE input/output shown free, paid $1.50/M input, $7.50/M output; actual free project RPM/TPM/RPD and API entitlement **UNKNOWN**. Paid transition forbidden, live remote calls require separate user consent and reviewed project tier/outbound payload. Account has not been queried/connected.
+- Documents changed only: V3.1 blueprint, ADR-0005, future queue V3-11..V3-15, policy/readme pointers. New code/tests **NOT_RUN**, external send/API usage **ZERO BY THIS DOCUMENTATION CHANGE**; all new C29–C36 `DESIGNED_NOT_IMPLEMENTED`.
+- Baseline before patch: `6556dd8aa4ca1f1fd3c078f2392faac7de6a6721` on `feature/kmong-eai-85-p31-20261112`. Verify containing GitHub SHA as evidence, no main/cross-repo changes. Old CPU 13 goals/P26/P38 unchanged; historic engineering 85% only, new implementation/verification UNASSESSED, product RELEASE HOLD.
+- NEXT: V3-01 contracts, V3-11 NullProvider/OFF safety and V3-02 AXNODE parser as dependencies allow. V3-12 fake transport and strict policy later; live V3-14 BLOCKED_APPROVAL.
+
+---
+
 ## 2026-11-17 KST — EAI original Architect/Player V3 canonical design (documentation only)
 - Owner scope: EAI = original independent general-purpose local architect + player + logic learner; `my_local_ai` = separate Codex-style coding/instruction executor. This is not a rename, integration, product delivery, model claim or release.
 - Canonical complete blueprint: `docs/EAI_FINAL_BLUEPRINT.md`; atomic task queue, implementation runbook and acceptance matrix: `docs/EAI_INSTANT_TASK_QUEUE.md`. ADR-0002 input-only Qwen CPU ownership remains controlling. Describes AXNODE node lifecycle, typed composition, alternative planning, independent verification, negative memory, verified experience learning, safe Player, benchmark and hardware constraints.

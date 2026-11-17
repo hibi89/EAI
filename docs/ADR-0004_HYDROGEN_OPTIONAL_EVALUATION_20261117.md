@@ -1,3 +1,5 @@
+> **2026-11-17 owner design update (future only):** [ADR-0005 detachable Hydrogen OFF/ON](ADR-0005_HYDROGEN_DETACHABLE_DUAL_MODE_20261117.md) supersedes the future research-adapter *input-classification-only* restriction below solely to permit quarantined, untrusted synthetic/public **candidate suggestions and counterexamples** under explicit separately approved outbound preview. EAI retains planning/verification/final authority; existing P38 comparator, API blocked status, no paid/remote permissions and all historical evidence remain unchanged. This header does not authorize live API use.
+
 # ADR-0004 — Optional Gemini 4 Hydrogen evaluation without surrendering EAI cognition
 **2026-11-17 KST | Draft integration design; first offline benchmark implemented candidate**
 

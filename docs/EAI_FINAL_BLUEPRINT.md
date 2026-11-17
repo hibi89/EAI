@@ -1,5 +1,5 @@
 # EAI — Independent Cognitive Architect & Player: Canonical Final Blueprint
-**Version:** EAI-BP-V3.0 | **Owner decision:** 2026-11-17 KST | **Status:** DESIGN_CANONICAL / IMPLEMENTATION_NOT_CLAIMED
+**Version:** EAI-BP-V3.1 | **Owner decision:** 2026-11-17 KST | **Status:** DESIGN_CANONICAL / IMPLEMENTATION_NOT_CLAIMED
 **Repository:** hibi89/EAI | **Active documentation branch:** feature/kmong-eai-85-p31-20261112
 **Authority:** Current owner request > safety/approval constraints > this long-term EAI blueprint and ADR-0002 > project AGENTS > historical product notes. This document elaborates ADR-0002; it does not authorize production, paid usage, remote prompt transfer, privilege changes or changes to other repositories.
 
@@ -97,6 +97,15 @@ Useful precedents (inspiration, not drop-in implementation/verified EAI features
 - **Level 5 / player:** permission-scoped execution of local tasks, reproducible plan→act→observe→verify→repair with dry-run and compensation; later external integrations only with authorization; optional interface to my_local_ai without authority inversion.
 - **Level 6 / open-domain research:** richer causal/temporal models, original local natural-language generation/abstraction, new domains, multimodal understanding and an independently trained cognitive model as **research tracks**. No fixed GPT-parity deadline/claim. Natural language competence cannot be inferred from tool count.
 
+## 6A. Dual-mode best-available architecture — detachable Gemini 4 Hydrogen (V3.1)
+[ADR-0005](ADR-0005_HYDROGEN_DETACHABLE_DUAL_MODE_20261117.md) is the **canonical detailed design** for Hydrogen ON/OFF. Earlier [ADR-0004](ADR-0004_HYDROGEN_OPTIONAL_EVALUATION_20261117.md) remains an historical P38 offline benchmark and its future input-only limitation is superseded **only for quarantined, non-authoritative synthetic research suggestions**. ADR-0002 still prohibits Qwen-generating EAI's final solutions: local Qwen classifies INPUT only. EAI maintains full architecture, execution/approval and final decision authority regardless of provider.
+- **OFF (DEFAULT, zero cloud API):** Rule parser + optional localhost Qwen INPUT parser + EAI-own ProblemModeler, AXNODE graph, LogicSynthesizer, hierarchical planner, independent verifier, StrategyLearner, PolicyGate/Player and own response; deterministic offline fallback when even Qwen is absent. OFF never reads API key, initializes a Hydrogen SDK or connects to the network. All reasoning/plan and local memory remain portable and usable.
+- **ON (RESEARCH_OPT_IN, free-only):** independently produce the OFF candidate **first**, then on explicit user approval and validated Google free project entitlement send only previewed public/synthetic minimal ResearchPacket ≤500 chars and pre-approved IDs to optional Hydrogen candidate-provider module. Hydrogen suggests alternative experiment ideas, typed logic candidates or counterexample hypotheses; EAI alone constrains, tests, verifies and decides. Outside origin is permanently labelled, no automatic promotion or remote planner/tool/Player authority.
+- **Failure/DETACH:** 429/RPM/TPM/RPD, 401, tier unknown, disallowed content, timeout or model disabled → local output + diagnostic/circuit breaker, not paid fallback. Toggling OFF keeps all offline local state and cancels/ignores outstanding sends. Hard $0 paid budget is policy, not a promise that an unknown billing account cannot charge; live use requires verified free tier and a **separate per-send consent**. Rates differ by account/project; do not invent quotas.
+- **Evaluation:** Same blind tasks and hash-pinned EAI engine for OFF vs mock ON vs later approved real ON. Compare accuracy/transfer, verification failures, resource/latency, tokens/quota and security leak prevention. No claims of automatic superiority, generalized intelligence or zero bill without evidence.
+- **Provider boundary:** NullProvider and lazy HydrogenResearchAdapter only implement `propose(ResearchPacket) → CandidateIdea[]`, never `solve` or `execute`. External proposals are sandboxed, provenance-labelled and must not rewrite verified AXNODE or independent EAI knowledge automatically. The optional provider is not a core dependency.
+- **Current status:** V3.1 dual-mode extension is **DESIGN ONLY**. Existing 13 CPU goals, P26 SHA approvals, P38 offline comparator, user data and release HOLD unchanged; Hydrogen live API not called.
+
 ## 7. Security, provenance, rights and recovery gates
 - Local-first, free-default, offline functionality mandatory. On-device Qwen/Ollama only optional INPUT parsing; no Qwen-generated final solution, chain-of-thought impersonation or final decision. P38 Hydrogen only offline synthetic comparator; remote API/GitHub worker remains blocked pending explicit separate authorization. Do not silently switch provider because local parser fails.
 - Model/retrieved/AXNODE content is untrusted. Strict parse, allowlisted typed operators, no arbitrary import/exec/eval, prompt-injection resistant trust boundaries, source provenance, file canonicalization, symlink/path restrictions, resource/time limits, input size caps, loopback endpoint pinning, network default OFF.
@@ -149,6 +158,14 @@ Requirements below are the **new EAI Cognitive Research V3 scope**, distinct fro
 | EAI-C26 | Backup/restore, privacy & supply-chain review | C05,C20 | synthetic migration/restore/provenance and security review | H |
 | EAI-C27 | Research lane: original language/causal/general model | C25 | separate bounded experiment; no premature GPT parity claim | R&D |
 | EAI-C28 | Acceptance split & independent audits | C01,C25,C26 | implementation vs validation evidence matrix & owner GO held | H |
+| EAI-C29 | OFF/ON detachable provider contract and no-SDK offline | C01,C02,C03,C20 | OFF identical baseline, no remote import or network bytes, stable schemas | H |
+| EAI-C30 | Opt-in Hydrogen synthetic/public ResearchPacket & preview | C29,C19,C20 | private prompt exfil denied; ≤500 chars; separate consent | H |
+| EAI-C31 | Zero-paid-tier guard, quota budget and circuit-breaker | C29,C30 | block unknown/paid accounts; RPM/TPM/RPD local limits, 429 fallback, no paid switch | H |
+| EAI-C32 | Untrusted CandidateIdea DSL/AXNODE quarantine | C13,C14,C15,C29 | no direct action/promotion; independent verifier rejects forged model response | H |
+| EAI-C33 | Same-task OFF/ON sandbox A/B and true live-data attribution | C25,C29,C32 | paired baseline uplift/failure metrics, external provenance preserved | M |
+| EAI-C34 | Safe disable/removal, late-response and crash recovery | C05,C21,C29 | switching OFF retains local plans/episodes, ignores late replies, no network | H |
+| EAI-C35 | Remote-only controlled research consent and privacy compliance | C30,C31 | live use BLOCKED until separate user GO and entitlement review | H |
+| EAI-C36 | OFF independent competence and no-forced-cloud UX | C24,C25,C29 | complete goal/design/action path works offline with Qwen absent or present | M |
 
 ## 11. Implementation sequence for High→Instant→verification (no work confused with release)
 - **R0 protect foundation:** snapshot HEAD/policies/13-goal baseline, strict tests/CI evidence, compatibility fixtures; define scopes/contracts and immutable golden corpus. Do not reimplement working P0–P38.

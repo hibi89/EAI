@@ -17,6 +17,15 @@
 | EAI-V3-09 | C20,C21,C26 | V3-06,V3-07 | eai/policy_gate.py; eai/player_runtime.py; tests/test_player_runtime.py | sandbox plan hash approval, cancel/rollback, denial of unauthorized actions | explicit GO for real effects, sandbox-only first | H | BLOCKED_APPROVAL_FOR_REAL | none | owner real-action approval |
 | EAI-V3-10 | C22,C23,C24,C27,C28 | V3-08,V3-09 | docs/*; eai/local_scheduler.py; eai/renderer.py; tests/* | measured offline UX/resource + optional stub adapter + R&D spec | no cross-repo writes, no GPU claims | H | PLANNED | none | earlier stages |
 
+## Removable Hydrogen V3.1 tasks — dual mode (added 2026-11-17, DESIGN ONLY)
+These REQ IDs extend the **independent EAI** V3 scope; historical P38/H01–H08 remain unchanged. No inferred implementation/verification percentage.
+| task_id | req_ids | depends_on | allowed_paths | acceptance | safety_checks | risk | status | evidence_sha | blockers |
+|---|---|---|---|---|---|---|---|---|---|
+| EAI-V3-11 | C29,C34,C36 | V3-01 | eai/research_providers.py; eai/research_policy.py; tests/test_research_offline.py | NullProvider stable baseline; OFF network spy=0, no provider import/key; toggle & late response safe | no outbound code; no existing solver edits | M | READY_AFTER_V3-01 | none | shared contract |
+| EAI-V3-12 | C30,C31,C35 | V3-11 | eai/hydrogen_packet.py; eai/research_quota.py; tests/test_hydrogen_policy.py | strict synthetic/public packet, per-send preview/consent, unknown paid status blocks, 429 & quota fallback mocks | NO LIVE API / BILLING / KEYS; test fake transport only | H | READY_AFTER_V3-11_MOCK_ONLY | none | live API blocked approval |
+| EAI-V3-13 | C32,C33 | V3-07,V3-11,V3-12 | eai/research_candidates.py; benchmarks/eai_v3/*; tests/test_dual_mode_ablation.py | isolated model candidate cannot execute/promote, paired OFF vs mocked ON with provenance/uncertainty | no raw private prompts or automatic AXNODE promotion | H | READY_AFTER_V3-07_AND_12 | none | independent verifier |
+| EAI-V3-14 | C30,C31,C33,C35 | V3-12,V3-13 | isolated optional adapter proposal; docs/*; tests/* | true Hydrogen on synthetic-only opt-in, exact account free-tier and outbound evidence, no paid fallback | live API/remote transmission needs separate user approval | H | BLOCKED_APPROVAL | none | user GO + account rate limits |
+| EAI-V3-15 | C34,C36,C28 | V3-11,V3-13 | tests/*; docs/* | no-internet Windows smoke, ON failure = OFF correctness, release independent of external | actual owner Windows later, no cross-repo touch | M | READY_AFTER_V3-13 | none | device/live-model gates |
 ## Implementation runbook
 1. On `ㄱ`: lock EAI mission, confirm exact GitHub branch/HEAD, newest `AGENTS.md` then `HANDOFF.md`, `STATUS.md`, `REQUIREMENTS.md`, [blueprint](EAI_FINAL_BLUEPRINT.md), queue and actual source. Read current task ownership, changed files and CI protection.
 2. Pick 3–10 independently implementable READYs if dependencies permit; isolate H-risk or incompatible work. The first READY may need a small contract implementation without changing existing 13 CPU solvers. Never write to main or other repo without explicit instruction.

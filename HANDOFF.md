@@ -1,3 +1,17 @@
+## 2026-11-17 KST — EAI V3.1 detachable Gemini 4 Hydrogen design handoff (10 points)
+1. Goal: best fully-independent OFF Architect/Player/Learner + removable optional ON synthetic/public research assistant. my_local_ai separate. EAI independently develops baseline and verifies external suggestions.
+2. Alternatives: always-ON cloud brain and paid AUTO rejected; pure OFF mandatory, research-only ON chosen. ADR-0005 supersedes narrow future Hydrogen INPUT-only ADR-0004 part while retaining EAI ownership ADR-0002.
+3. Tests: docs-only, no code runtime changes. Syntax/CI/offline fake/provider tests/live Hydrogen/real Windows/Qwen all NOT_RUN for this design SHA. Historical P37 CI belongs to older SHA.
+4. Requirements: adds C29–C36, V3-11..15; design only; current V3 implementation/verification UNASSESSED, product RELEASE HOLD; 85% is historical product estimate only.
+5. Costs/privacy: official Hydrogen Standard free price but actual account rate limits unknown; project-level RPM/TPM/RPD. Local $0 policy, no automatic paid fallback. External outbound payload and live model invocation require new explicit owner GO.
+6. Repository: hibi89/EAI branch feature/kmong-eai-85-p31-20261112; pre-design HEAD `6556dd8aa4ca1f1fd3c078f2392faac7de6a6721`; verify containing final SHA. main, my_local_ai, HAE, LA, Vercel untouched.
+7. Runtime: today 13 typed CPU goals, P26 exact consent, P38 offline synthetic benchmark as before. NullProvider/HydrogenResearchAdapter/dual toggles not yet coded, no API key.
+8. Evidence and recovery: Git history before docs change preserved. No original data, secrets, P38 source or Windows app touched; OFF never depends on provider even after implementation.
+9. Next READY: V3-01 contracts; after it, V3-11 pure OFF NullProvider and V3-02 AXNODE pure parser. Fake ON transport V3-12 after policy; live V3-14 remains BLOCKED_APPROVAL. Implement and check safety locally before whole CI later.
+10. Time: 2026-11-17 KST. Documentation-only change, all new module functionality NOT_RUN; actual SHA GitHub ref is authoritative.
+
+---
+
 ## 2026-11-17 KST — EAI V3 original architect/player FINAL DESIGN handoff (10 points)
 1. Goal: return EAI to an independently cognitive local **Architect + Player + lifelong Logic Learner**, not `my_local_ai` Codex/instruction execution. Long-term research target, no GPT-parity claim.
 2. Decision: compared fixed CPU-only, pure AXNODE/RAG, Qwen-as-brain, verified neuro-symbolic composition, new foundation training. Selected EAI CPU-owned typed planning+synthesis+verification, AXNODE graph/episodes and small learned ranker; Qwen INPUT only per ADR-0002.
