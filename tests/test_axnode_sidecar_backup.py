@@ -126,6 +126,25 @@ class SidecarBackupTests(unittest.TestCase):
         self.assertEqual((self.root/"evidence_ledger.sqlite").read_bytes(),b"broken")
         self.assertFalse((self.base/"bad.zip").exists())
 
+    def test_reject_forged_sidecar_index_metadata(self):
+        with AXNodeMemory(self.store) as memory:
+            memory.remember(tier="EPISODIC",anchor_sha=self.anchor,
+                            label="synthetic.review",captured_at=100)
+        with sqlite3.connect(self.root/"axnode_memory.sqlite") as db:
+            db.execute("UPDATE entries SET label='forged'")
+        with self.assertRaisesRegex(ValueError,"metadata mismatch"):
+            create_sidecar_bundle(self.store,self.base/"forged.zip")
+        self.assertFalse((self.base/"forged.zip").exists())
+
+    def test_backup_archive_permissions_are_private_where_supported(self):
+        import os
+        self.make_sidecars()
+        archive=self.base/"private.zip"
+        create_sidecar_bundle(self.store,archive)
+        if os.name == "posix":
+            self.assertEqual(archive.stat().st_mode & 0o077,0)
+        self.assertGreater(archive.stat().st_size,0)
+
     def test_active_store_location_rejected_for_archive(self):
         self.make_sidecars()
         with self.assertRaisesRegex(ValueError,"inside active"):
