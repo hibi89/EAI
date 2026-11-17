@@ -36,10 +36,22 @@ def review_memory_reuse(memory: AXNodeMemory, query: str, *,
         # Validates the content address without altering graph/status.
         memory.store.get(digest)
     entries = memory.find(query, now=now, limit=limit)
-    labels_with_negative = {
-        item["label"] for item in entries
-        if item["tier"] == "NEGATIVE" or item["outcome"] == "FAILURE_OBSERVED"
-    }
+    # A negative record must not be hidden merely because ranking truncated
+    # the visible result set. Read only matching labels and verify hashes via
+    # memory.get(); bounded by the existing local 3000-record scan budget.
+    labels = sorted({item["label"] for item in entries})
+    labels_with_negative = set()
+    if labels:
+        marks = ",".join("?" for _ in labels)
+        rows = memory.db.execute(
+            "SELECT sha256 FROM entries WHERE label IN (" + marks +
+            ") ORDER BY sha256 LIMIT 3001", labels).fetchall()
+        if len(rows) > 3000:
+            raise ValueError("negative memory coverage exceeds safe review budget")
+        for (digest,) in rows:
+            item = memory.get(digest)
+            if item["tier"] == "NEGATIVE" or item["outcome"] == "FAILURE_OBSERVED":
+                labels_with_negative.add(item["label"])
     withdrawn = set(withdrawn_hashes)
     reports = []
     for item in entries:
