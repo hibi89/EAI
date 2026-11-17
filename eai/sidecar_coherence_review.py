@@ -13,6 +13,7 @@ from pathlib import Path
 import sqlite3
 
 from .axnode_store import AXNodeStore
+from .contracts import canonical_bytes, strict_json
 from .axnode_sidecar_backup import _FILES
 from .sidecar_recovery_audit import audit_isolated_sidecar_restore
 
@@ -30,32 +31,70 @@ class CoherenceReview:
 
 
 def _row_fingerprint(path: Path, table: str) -> str | None:
-    """Opaque, bounded read-only row fingerprint: never export row payloads."""
+    """Read-only full schema, payload and indexed metadata audit of one sidecar.
+
+    A valid content hash alone is insufficient: an attacker could alter the
+    un-hashed SQLite tier/anchor/polarity columns to poison recovery claims.
+    All payloads remain on device and only opaque row digests are returned.
+    """
+    if table not in ("entries", "observations"):
+        raise ValueError("unrecognized sidecar table")
     if path.is_symlink():
         raise ValueError("symlinked source or restored sidecar")
     if not path.exists():
         return None
     if not path.is_file() or path.stat().st_size > 16 * 1024 * 1024:
         raise ValueError("invalid sidecar for coherence check")
+    expected = {
+        "entries": ("sha256", "anchor_sha", "tier", "label",
+                    "captured_at", "payload"),
+        "observations": ("sha256", "claim_id", "source_sha256",
+                         "polarity", "observed_at", "expires_at", "payload"),
+    }[table]
     digest = hashlib.sha256()
     with closing(sqlite3.connect(
             path.resolve(strict=True).as_uri() + "?mode=ro",
             uri=True, timeout=3)) as db:
+        if db.execute("PRAGMA user_version").fetchone()[0] != 1:
+            raise ValueError("unexpected sidecar user version")
+        columns = {row[1] for row in db.execute(
+            'PRAGMA table_info("' + table + '")')}
+        if columns != set(expected):
+            raise ValueError("unrecognized source sidecar schema")
+        if db.execute("PRAGMA integrity_check").fetchone()[0] != "ok":
+            raise ValueError("corrupt source sidecar")
         rows = db.execute(
-            'SELECT sha256,payload FROM "' + table + '" ORDER BY sha256'
-        ).fetchall()
+            'SELECT ' + ",".join(expected) + ' FROM "' + table +
+            '" ORDER BY sha256'
+        ).fetchmany(3001)
     if len(rows) > 3000:
         raise ValueError("coherence row budget exceeded")
-    for sha, blob in rows:
-        if (type(sha) is not str or len(sha) != 64 or
-                any(c not in "0123456789abcdef" for c in sha)
-                or type(blob) is not bytes or len(blob) > 2048):
-            raise ValueError("untrusted sidecar fingerprint inputs")
-        if hashlib.sha256(blob).hexdigest() != sha:
+    for row in rows:
+        sha, *rest = row
+        blob = rest[-1]
+        if (type(sha) is not str or len(sha) != 64
+                or any(c not in "0123456789abcdef" for c in sha)
+                or type(blob) is not bytes or len(blob) > 2048
+                or hashlib.sha256(blob).hexdigest() != sha):
             raise ValueError("sidecar index/payload hash mismatch")
+        raw = strict_json(blob, max_bytes=2048)
+        if canonical_bytes(raw) != blob:
+            raise ValueError("noncanonical source sidecar payload")
+        if table == "entries":
+            metadata = (raw.get("anchor_sha"), raw.get("tier"),
+                        raw.get("label"), raw.get("captured_at"))
+            if raw.get("provenance") != "LOCAL_OBSERVATION_UNVERIFIED":
+                raise ValueError("untrusted source memory provenance")
+        else:
+            metadata = (raw.get("claim_id"), raw.get("source_sha256"),
+                        raw.get("polarity"), raw.get("observed_at"),
+                        raw.get("expires_at"))
+            if raw.get("origin") != "LOCAL_UNTRUSTED_OBSERVATION":
+                raise ValueError("untrusted source evidence provenance")
+        if tuple(rest[:-1]) != metadata:
+            raise ValueError("source sidecar indexed metadata mismatch")
         digest.update(bytes.fromhex(sha))
     return digest.hexdigest()
-
 
 def _source_fingerprints(store: AXNodeStore) -> tuple[str | None, ...]:
     return tuple(

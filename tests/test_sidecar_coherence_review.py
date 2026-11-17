@@ -1,5 +1,6 @@
 """C05 explicit multi-DB epoch uncertainty after integrity-only restore."""
 import json
+import sqlite3
 from pathlib import Path
 import tempfile
 import unittest
@@ -91,6 +92,30 @@ class SidecarCoherenceReviewTests(unittest.TestCase):
                 self.store, self.archive, self.isolated)
         self.assertEqual(result.disposition, "HOLD_SOURCE_CHANGED_DURING_AUDIT")
         self.assertTrue(result.source_sidecar_drift_detected)
+
+    def test_source_memory_metadata_tamper_rejected_not_silently_coherent(self):
+        path = self.store.root / "axnode_memory.sqlite"
+        with sqlite3.connect(path) as db:
+            db.execute("UPDATE entries SET tier='NEGATIVE'")
+        with self.assertRaisesRegex(ValueError, "indexed metadata mismatch"):
+            review_isolated_cross_db_coherence(
+                self.store, self.archive, self.isolated)
+
+    def test_source_evidence_metadata_tamper_rejected(self):
+        path = self.store.root / "evidence_ledger.sqlite"
+        with sqlite3.connect(path) as db:
+            db.execute("UPDATE observations SET polarity='REFUTE'")
+        with self.assertRaisesRegex(ValueError, "indexed metadata mismatch"):
+            review_isolated_cross_db_coherence(
+                self.store, self.archive, self.isolated)
+
+    def test_source_sidecar_unknown_schema_version_rejected(self):
+        path = self.store.root / "axnode_memory.sqlite"
+        with sqlite3.connect(path) as db:
+            db.execute("PRAGMA user_version=2")
+        with self.assertRaisesRegex(ValueError, "unexpected sidecar user version"):
+            review_isolated_cross_db_coherence(
+                self.store, self.archive, self.isolated)
 
     def test_corrupt_source_node_blocks_coherence_claim(self):
         digest = self.store.hashes()[0]
