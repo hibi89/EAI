@@ -1,3 +1,15 @@
+## 2026-11-17 KST — EAI P1 CPU-only 5 SWU handoff (10 points)
+1. Goal: independent EAI V3.1 Architect/Player/AXNODE and Experience Learner, local CPU default, distinct from MLA; P1 coding, P2 locked.
+2. Implemented functions (source candidate): `84817f4b845080dbfb818ef48331e1199fe3f7f4`, 7 files for SWU-002/003/009/018/027: typed advisory ResultSpec and abstention, optional INPUT-only Qwen/CPU fallback, AXNODE provenance-bound candidate choice, bounded typed DSL, restrictive policy HOLD. No real actions or authority.
+3. Test record: GitHub exact SHA, code paths and static marker/prohibition scan PASS_STATIC. Exact-SHA Python compile, targeted smoke, DB/no-network/Windows and P2 suite NOT_RUN; no fictitious runtime PASS.
+4. Status: provisional 13/42 source candidate (31.0% source-written only); 3 historic code candidates +10 implementation-unverified minimal-check pending; official P1/P2 UNASSESSED, RELEASE HOLD.
+5. Blocker: container github.com DNS unavailable on single attempt; connector fetch/write succeeds. Avoid repeat no-progress checkout and isolate safety operations pending executable local checks.
+6. Repo: `hibi89/EAI`, branch `feature/kmong-eai-85-p31-20261112`, feature code SHA `84817f4b845080dbfb818ef48331e1199fe3f7f4`, handoff/queue/status commit is separate; read latest branch SHA before next batch.
+7. Production: none; external Hydrogen calls, real Player, ACTIVE, original customer data and live Windows all NOT_RUN/HOLD.
+8. Integrity: final blueprint blob `1b0712679d4171cd3681588e104ea5e8c6f6690d` unchanged; ADR-0002, original CPU 13 goals, P26 owner gate, existing mandatory CI and Git history preserved.
+9. Next READY: `005/010/012/035/037`, five disjoint code paths; 005 requires immediate local DB integrity guard on any change. No automatic operating authorization inherited from source deps.
+10. Evidence basis: GitHub connected code and SHA; KST 2026-11-17. Work limited to P1 source. P2 acceptance and runtime tests unassessed.
+
 ## 2026-11-17 KST — EAI next chat immediate handoff
 1. Project: EAI independent local Architect/Player/AXNODE, optional Hydrogen OFF; not MLA.
 2. Actual code: `208d81ecae4faef7f204a95e05d3142dadb3c240`, implemented source paths for EAI-SWU-011, EAI-SWU-014, EAI-SWU-016, EAI-SWU-025, EAI-SWU-038: negative memory retrieval, scoped evidence ingestion to Architect, plan cost ranking, synthetic gap sampling, OFF/mock-ON pairing.
