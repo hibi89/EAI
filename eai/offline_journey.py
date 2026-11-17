@@ -199,7 +199,7 @@ def audit_offline_journey_report(report: dict) -> dict:
             or len(report["candidates"]) != report["candidate_count"]):
         raise ValueError("unsafe or tampered journey envelope")
     import re
-    _DIGEST = re.compile(r"[0-9a-f]{64}\\Z")
+    _DIGEST = re.compile(r"[0-9a-f]{64}\Z")
     if (type(report["problem_sha256"]) is not str
             or not _DIGEST.fullmatch(report["problem_sha256"])
             or type(report["receipt_sha256"]) is not str
@@ -223,6 +223,12 @@ def audit_offline_journey_report(report: dict) -> dict:
                     "PURE_ELIGIBLE_NOT_INTERPRETED",
                     "PURE_SYNTHETIC_INTERPRETED_UNVERIFIED",
                     "POLICY_OR_RESOURCE_HELD")
+                or type(candidate["alternative_id"]) is not str
+                or not 1 <= len(candidate["alternative_id"]) <= 64
+                or any(ch not in "abcdefghijklmnopqrstuvwxyz0123456789_.-"
+                       for ch in candidate["alternative_id"])
+                or type(candidate["node_hashes"]) is not list
+                or len(set(candidate["node_hashes"])) != len(candidate["node_hashes"])
                 or candidate["original_writes"] != 0
                 or candidate["external_actions"] != 0
                 or candidate["grants_real_authority"] is not False
