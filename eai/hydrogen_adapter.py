@@ -241,6 +241,28 @@ _LIVE_MAX_TPM = 2048
 _LIVE_NETWORK_TIMEOUT_SECONDS = 60  # Bounded response wait, never an auto-retry.
 
 
+def _provider_http_failure_reason(response) -> str:
+    """Status-only HTTP diagnostics; never return raw provider text or secrets."""
+    code = response.status
+    code = code if type(code) is int and 100 <= code <= 599 else 0
+    provider_status = "UNCLASSIFIED"
+    try:
+        blob = response.read(4097)
+        if len(blob) <= 4096:
+            doc = strict_json(blob, max_bytes=4096)
+            err = doc.get("error") if type(doc) is dict else None
+            status = err.get("status") if type(err) is dict else None
+            if type(status) is str and status in {
+                "INVALID_ARGUMENT", "UNAUTHENTICATED", "PERMISSION_DENIED",
+                "NOT_FOUND", "RESOURCE_EXHAUSTED", "FAILED_PRECONDITION",
+                "UNAVAILABLE", "INTERNAL", "CANCELLED", "DEADLINE_EXCEEDED",
+            }:
+                provider_status = status
+    except (OSError, ValueError, TypeError, UnicodeError):
+        pass  # Numeric HTTP status remains useful if body parse/read fails.
+    return f"HTTP_{code}_{provider_status}_NO_PAID_RETRY_OR_FALLBACK"
+
+
 def _read_external_owner_trust_root(path) -> tuple[str, str]:
     """Read a preexisting OS-protected root, never one embedded in a permit.
 
@@ -619,9 +641,13 @@ def dispatch_live_hydrogen(
             })
             resp = conn.getresponse()
             if resp.status != 200:
+                # Read only a small bounded error envelope, expose solely the
+                # HTTP code and allowlisted Google error.status. No raw error
+                # text, headers, credential or prompt may enter result/logs.
+                failure_reason = _provider_http_failure_reason(resp)
                 return LiveHydrogenResult(
                     baseline, "OFF_AFTER_PROVIDER_HTTP_ERROR", sha,
-                    reason="NO_PAID_RETRY_OR_FALLBACK", requests_attempted=1)
+                    reason=failure_reason, requests_attempted=1)
             body = resp.read(_MAX_RESPONSE_BYTES + 1)
             if len(body) > _MAX_RESPONSE_BYTES:
                 return LiveHydrogenResult(
