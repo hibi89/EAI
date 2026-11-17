@@ -1,4 +1,4 @@
-"""Fake-response diagnostics and append-only live-ledger failure evidence."""
+"""Fake HTTP diagnostics and preservation of prior live-ledger rows."""
 from __future__ import annotations
 
 import http.client
