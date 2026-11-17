@@ -136,6 +136,10 @@ def main(argv: list[str] | None = None) -> int:
     architect_cmd.add_argument('--problem-file', required=True, help='explicit local V3 ProblemSpec JSON <=32KiB')
     architect_cmd.add_argument('--axnode-root', required=True, help='existing explicit local AXNODE library')
     architect_cmd.add_argument('--max-expansions', type=int, default=8, help='bounded candidate expansions 1..8')
+    player_cmd = sub.add_parser('player-preview', help='pure local synthetic no-op EAI Player (no real actions)')
+    player_cmd.add_argument('--problem-file', required=True, help='explicit local ProblemSpec JSON')
+    player_cmd.add_argument('--plan-file', required=True, help='explicit local bounded PlanSpec JSON')
+    player_cmd.add_argument('--cancel-before-step', help='optional plan step to cancel before')
     b0_cmd = sub.add_parser('b0-preview', help='strict offline B0 CPU baseline on synthetic fixtures only')
     b0_cmd.add_argument('--problem-file', required=True, help='local EAI ProblemSpec JSON')
     b0_cmd.add_argument('--axnode-root', required=True, help='existing local AXNODE store')
@@ -153,6 +157,18 @@ def main(argv: list[str] | None = None) -> int:
     check_cmd = sub.add_parser('verify-review', help='read-only verify existing review folder (unsigned)')
     check_cmd.add_argument('--output-dir', required=True)
     args = p.parse_args(argv)
+    if args.command == 'player-preview':
+        try:
+            from .player_cli import player_preview
+            report = player_preview(args.problem_file, args.plan_file,
+                                    cancel_before_step=args.cancel_before_step)
+            print(json.dumps(report, ensure_ascii=False, indent=2))
+            return 0 if report['status'] == 'PURE_SYNTHETIC_INTERPRETED_UNVERIFIED' else 2
+        except (ValueError, OSError, UnicodeError, PermissionError):
+            print(json.dumps({'status': 'REJECTED',
+                              'reason': 'PLAYER_PREVIEW_INVALID_OR_UNAVAILABLE'}),
+                  file=sys.stderr)
+            return 1
     if args.command == 'architect-preview':
         try:
             from .architect_runtime import preview_architecture
