@@ -13,6 +13,8 @@ import hashlib
 from pathlib import Path
 import tempfile
 
+from .logic_oracle import _ID
+
 from .axnode_store import AXNodeStore
 from .contracts import ProblemSpec
 from .logic_synthesis import SynthesisCandidate
@@ -83,7 +85,7 @@ def compare_real_cpu_on_synthetic(
     for item in fixtures:
         if type(item) is not SyntheticComparison:
             raise ValueError("typed synthetic fixture required")
-        if (type(item.family) is not str or len(item.family) > 64 or
+        if (type(item.family) is not str or not _ID.fullmatch(item.family) or
                 item.family in families):
             raise ValueError("duplicate or invalid synthetic family")
         families.add(item.family)
@@ -110,6 +112,11 @@ def compare_real_cpu_on_synthetic(
                 results.append(CPUSolverFixtureResult(
                     item.family, "BASELINE_CPU_EXCEPTION",
                     expected_status, "ERROR", True))
+                continue
+            if type(actual) is not dict:
+                results.append(CPUSolverFixtureResult(
+                    item.family, "BASELINE_CPU_MALFORMED",
+                    expected_status, "MALFORMED", True))
                 continue
             reported = actual.get("status", "MALFORMED")
             reported_counts = actual.get("counts")
