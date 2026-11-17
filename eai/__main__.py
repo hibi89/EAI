@@ -157,6 +157,15 @@ def main(argv: list[str] | None = None) -> int:
                               help='optional bounded local EAI ProblemSpec')
     resource_cmd.add_argument('--plan-file',
                               help='optional bounded local PlanSpec; requires --problem-file')
+    journey_cmd = sub.add_parser('journey-preview',
+        help='offline Architect->PolicyGate->CPU->pure Player, no real actions')
+    journey_cmd.add_argument('--problem-file', required=True)
+    journey_cmd.add_argument('--axnode-root', required=True)
+    journey_cmd.add_argument('--max-expansions', type=int, default=8)
+    journey_cmd.add_argument('--max-rss-mib', type=int, default=1024)
+    journey_cmd.add_argument('--max-elapsed-ms', type=int, default=300000)
+    journey_cmd.add_argument('--interpret-pure', action='store_true',
+                             help='explicit pure synthetic no-op only')
     architect_cmd = sub.add_parser('architect-preview', help='local-only V3 advisory design/plan; never execute')
     architect_cmd.add_argument('--problem-file', required=True, help='explicit local V3 ProblemSpec JSON <=32KiB')
     architect_cmd.add_argument('--axnode-root', required=True, help='existing explicit local AXNODE library')
@@ -188,6 +197,27 @@ def main(argv: list[str] | None = None) -> int:
     check_cmd = sub.add_parser('verify-review', help='read-only verify existing review folder (unsigned)')
     check_cmd.add_argument('--output-dir', required=True)
     args = p.parse_args(argv)
+    if args.command == 'journey-preview':
+        try:
+            from .local_scheduler import LocalResourceBudget
+            from .offline_journey import preview_offline_journey
+            budget = LocalResourceBudget(
+                max_rss_mib=args.max_rss_mib,
+                max_elapsed_ms=args.max_elapsed_ms, max_steps=64)
+            report = preview_offline_journey(
+                args.problem_file, args.axnode_root,
+                max_expansions=args.max_expansions,
+                budget=budget, interpret_pure_noop=args.interpret_pure)
+            print(json.dumps(report, ensure_ascii=False, indent=2))
+            return 0 if report['architect_status'] in (
+                'CANDIDATES_UNVERIFIED', 'PARTIAL_UNVERIFIED'
+            ) else 2
+        except (ValueError, KeyError, OSError, UnicodeError,
+                PermissionError, sqlite3.DatabaseError):
+            print(json.dumps({'status': 'REJECTED',
+                              'reason': 'OFFLINE_JOURNEY_PREVIEW_REJECTED'}),
+                  file=sys.stderr)
+            return 1
     if args.command == 'resource-preview':
         try:
             from dataclasses import asdict

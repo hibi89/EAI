@@ -10,7 +10,7 @@ import re
 _HASH = re.compile(r"[0-9a-f]{64}\Z")
 _ID = re.compile(r"[a-z][a-z0-9_.-]{0,63}\Z")
 _ARCHITECT_STATUS = frozenset({
-    "CANDIDATES_UNVERIFIED", "BLOCKED", "CANCELLED",
+    "CANDIDATES_UNVERIFIED", "PARTIAL_UNVERIFIED", "BLOCKED", "CANCELLED",
     "BLOCKED_EVIDENCE_DISPUTE"
 })
 _TRUTH = frozenset({"UNVERIFIED", "UNSUPPORTED", "CONFLICT"})
