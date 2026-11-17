@@ -166,6 +166,7 @@ class HierarchicalPlanner:
                 blocked.append((alternative_id, code))
         candidates.sort(key=lambda c: (
             c.declared_step_count, c.declared_seconds_upper_bound, c.alternative_id))
-        status = ("CANDIDATES_UNVERIFIED" if candidates else "BLOCKED")
+        status = ("CANDIDATES_UNVERIFIED" if len(candidates) >= 2 else
+                  "PARTIAL_UNVERIFIED" if candidates else "BLOCKED")
         return PlanningOutcome(digest, tuple(candidates), tuple(blocked),
                                status, expansions)
