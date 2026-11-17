@@ -1,3 +1,15 @@
+## 2026-11-17 KST — EAI P1 research-only cumulative CPU strategy work (10-point)
+1. Mission: EAI V3.1 independent Architect/Player/AXNODE/Experience Learner; P1 source candidate and P2 LOCKED. No MLA/other-repo work.
+2. Actual source SHA chain `e8529e26fb1c1875bb308b5a6ef8a7dae4c43fa7` → `cea4d020d173b3fae7dcbdbee54b458911208c79` → `a7651b877e6b68cd889af643f4fe7530049dd638`. Actual code paths `eai/strategy_learner.py`, `eai/strategy_research_ranker.py`, `eai/strategy_cost_stats.py`: bounded online synthetic cost-prior update/fallback and measured local synthetic CPU timing caller→callee→ranker output.
+3. Checks: previous source checkpoint 15/15 PASS_STATIC, local fail-closed candidate SHA and benchmark status source guard added at `a7651b877e6b68cd889af643f4fe7530049dd638`. Exact SHA Python syntax, smoke, security/DB, full P2/CI/Windows NOT_RUN; source claims only.
+4. Provisional source-written 36/42 (85.7%). SWU-026 source written candidate; SWU-024 still partial as verified real-world outcome admission/learning absent. Official P1/P2 UNASSESSED, release HOLD.
+5. Blocker: SWU-020 external signing authority and real semantic proof missing; 007/008 cross-DB atomic epoch and live rollback missing; 023/024 independently verified episode absent; 039 live Hydrogen owner approval absent. Do not substitute synthetic CPU status for independent real truth.
+6. GitHub `hibi89/EAI` branch `feature/kmong-eai-85-p31-20261112`, actual code SHA `a7651b877e6b68cd889af643f4fe7530049dd638`, document HEAD follows. Recheck branch HEAD every ㄱ.
+7. Production none. No original/cust data, ACTIVE, real Player, external paid Hydrogen, auth or privilege changes, branch merge.
+8. Canonical blueprint blob `1b0712679d4171cd3681588e104ea5e8c6f6690d` preserved. Mandatory CI/ADR/P26 untouched.
+9. Ordinary READY zero; High reviews remaining 007/008/020 plus 021/029/030 code candidates; synthetic-only research 024 remains partial, training gate 023 partial, 039 approval BLOCKED. P2 runtime verification must be done once source candidate ready.
+10. Updated 2026-11-17 KST; source-only SHA `a7651b877e6b68cd889af643f4fe7530049dd638`, exact-SHA execution NOT_RUN, official adoption unassessed.
+
 ## 2026-11-17 KST — EAI source P1 029/030 + detached review 020 checkpoint (10)
 1. Mission: independent EAI V3.1 Architect + Player + AXNODE + Experience Learner, not MLA; P1 source candidate before separate P2.
 2. Actual code: `7fa358658af2c6a0d1d8e334fa96e6a4a4f564d7` adds `eai/player_executor.py` local scoped pure Player, `eai/player_observation.py` idempotent synthetic compensation and `eai/policy_gate.py` pure port policy; `f5212f2fd3f6c866ebb2013e61d272c45551a09a` + `e1d5b0fc096d8103cde03ec22e4e7bca6f18de25` add strict detached Ed25519 signature checking and integrate with existing `eai/candidate_evidence_review.py` quarantine gate. Not live tool/rollback.

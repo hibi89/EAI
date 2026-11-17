@@ -13,14 +13,14 @@
   "first_ready": [],
   "status_counts": {
     "SOURCE_COMPLETE_P2_PENDING": 3,
-    "SOURCE_IMPLEMENTED_UNVERIFIED_MINIMAL_CHECK_PENDING": 29,
+    "SOURCE_IMPLEMENTED_UNVERIFIED_MINIMAL_CHECK_PENDING": 30,
     "HIGH_REVIEW_REQUIRED": 3,
     "SOURCE_WRITTEN_HIGH_REVIEW_PENDING": 3,
-    "PARTIAL_SOURCE": 3,
+    "PARTIAL_SOURCE": 2,
     "BLOCKED_APPROVAL": 1
   },
   "already_coded_candidate_count": 3,
-  "remaining_code_or_holds": 7,
+  "remaining_code_or_holds": 6,
   "attempt_rule": {
     "target": 1,
     "maximum": 2,
@@ -1716,10 +1716,10 @@
       "score_rationale": "One bounded local caller-to-callee output and known contract",
       "status": "PARTIAL_SOURCE",
       "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
-      "evidence_sha": "5df0be08fce3525d819ee7a651671fe93ec10b39",
+      "evidence_sha": "a7651b877e6b68cd889af643f4fe7530049dd638",
       "legacy_evidence_history": "7e0cf41cfc7c6cfce21b96b3e14c94c8dcb4e2a6; 2721906c07df995f82fb1a6cceec1efdd7eda5af; c2504ac95b97c0e9d053a01ea1559adb65fe4bc0; 55d4b89b49f3d3e302f58c7dfe4656f6f2eb22fa; e86932f9f1fe44629464f3b0f9106addfdfcd203; 2d89290c7e95af2cc90cfa198e3982fb644cd75a; 325e4ba5048d90782afe1dd8c29c14d5b910ec9f; ff7d5eaf88c502fbfe3e7607740d794481361022; 5bd1be759ecb37a5f7a25646fe1fe22f1648b886 ; 80e39916ed4234c3fa8171d7c1fefa426aacafc6; 933fbd7bdb680afc2e639189224d4faf060a2477; 8ed29e31d9bd4ef5697cc8ee6298fdc263db5397; 27761ba8bafae175a33a4146ac53ac2635c94b7e; 802f0e3e1f22c8b42c12fc52c17bdd8f56385775; a5801311fe0ae15748f2b792c4e415696219c1ea; 26e9a24b81c82d893e8a67e04be5d39c97dfa5b1; 0dbe85595b60e92f09c0d2fd6c6c8cdfe0f8b559",
       "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED",
-      "attempts_recorded": 1,
+      "attempts_recorded": 2,
       "historical_attempts": "UNKNOWN_NOT_RESET",
       "max_attempts": 2,
       "max3_exception_approved": false,
@@ -1729,7 +1729,7 @@
       "source_dependencies_are_code_only": true,
       "operating_authorization_is_not_inferred_from_dependencies": true,
       "high_review_scope": "2026-11-17 CPU-only source attempt; no owner-approved ACTIVE, original restore, external receipt trust, independent real proof or trusted learning. Mandatory High/security/runtime hold unchanged.",
-      "source_candidate_note": "Actual in-memory bounded synthetic CPU cost-prior update/fallback; verified outcome learning/protected training absent, remains partial source."
+      "source_candidate_note": "Source-coded actual opt-in bounded research-only multi-curriculum CPU model update, duplicate-family rejection, SHA-checked candidate and no-regression rollback to existing state; rank_bounded_strategy_research calls it and returns update status and in-memory prior. Still PARTIAL_SOURCE: separately verified real outcomes and trusted learner admission not implemented/authorized. Do not mislabel synthetic model as actual verified-experience learning."
     },
     {
       "task_id": "EAI-SWU-025",
@@ -1839,9 +1839,9 @@
         "total": 3
       },
       "score_rationale": "One bounded local caller-to-callee output and known contract",
-      "status": "PARTIAL_SOURCE",
+      "status": "SOURCE_IMPLEMENTED_UNVERIFIED_MINIMAL_CHECK_PENDING",
       "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
-      "evidence_sha": "5df0be08fce3525d819ee7a651671fe93ec10b39",
+      "evidence_sha": "a7651b877e6b68cd889af643f4fe7530049dd638",
       "legacy_evidence_history": "7e0cf41cfc7c6cfce21b96b3e14c94c8dcb4e2a6; 2721906c07df995f82fb1a6cceec1efdd7eda5af; c2504ac95b97c0e9d053a01ea1559adb65fe4bc0; 55d4b89b49f3d3e302f58c7dfe4656f6f2eb22fa; e86932f9f1fe44629464f3b0f9106addfdfcd203; 2d89290c7e95af2cc90cfa198e3982fb644cd75a; 325e4ba5048d90782afe1dd8c29c14d5b910ec9f; ff7d5eaf88c502fbfe3e7607740d794481361022; 5bd1be759ecb37a5f7a25646fe1fe22f1648b886 ; 80e39916ed4234c3fa8171d7c1fefa426aacafc6; 933fbd7bdb680afc2e639189224d4faf060a2477; 8ed29e31d9bd4ef5697cc8ee6298fdc263db5397; 27761ba8bafae175a33a4146ac53ac2635c94b7e; 802f0e3e1f22c8b42c12fc52c17bdd8f56385775; a5801311fe0ae15748f2b792c4e415696219c1ea; 26e9a24b81c82d893e8a67e04be5d39c97dfa5b1; 0dbe85595b60e92f09c0d2fd6c6c8cdfe0f8b559",
       "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED",
       "attempts_recorded": 1,
@@ -1854,7 +1854,7 @@
       "source_dependencies_are_code_only": true,
       "operating_authorization_is_not_inferred_from_dependencies": true,
       "high_review_scope": "2026-11-17 CPU-only source attempt; no owner-approved ACTIVE, original restore, external receipt trust, independent real proof or trusted learning. Mandatory High/security/runtime hold unchanged.",
-      "source_candidate_note": "Actual synthesized CPU cost ranking/envelope, unverified OOD and no trusted learner rank state; depends on 024, remains partial source."
+      "source_candidate_note": "Bounded synthetic CPU benchmarking now collects observed perf_counter_ns time independently of declared cost, stores capped measured_synthetic_cpu_ms on scored envelope, strict typed guard and caller-to-ranker result. OOD real truth and repeatable performance uplift remain P2 NOT_RUN. SWU-024 upstream real verified learner/trusted experience still partial; only source-written candidate, no verification acceptance."
     },
     {
       "task_id": "EAI-SWU-027",
@@ -2845,13 +2845,13 @@
   ],
   "code_dependency_rule": "Source candidate or code-complete predecessor only; never bypass independent verifier, owner GO or runtime authorization.",
   "next_ready_rule": "After a code SWU becomes SOURCE_COMPLETE_P2_PENDING with actual functional source evidence, re-evaluate dependents and select disjoint safe units; leave HIGH_REVIEW_REQUIRED and BLOCKED_APPROVAL locked.",
-  "implemented_source_candidate_count": 35,
-  "implemented_source_candidate_percent_preview": 83.3,
-  "implemented_source_candidate_caveat": "35/42 (83.3%) provisional P1 code-written candidates only, including new SWU-029 and 030 limited strictly to synthetic in-memory no-op, NOT real Player tool dispatch or original rollback. High review, owner GO, exact SHA runtime, independent signed evidence, P2 all not accepted. Official P1/P2 UNASSESSED.",
+  "implemented_source_candidate_count": 36,
+  "implemented_source_candidate_percent_preview": 85.7,
+  "implemented_source_candidate_caveat": "36/42 (85.7%) provisional source-written candidates, +1 for actual bounded CPU cost measurement/ranking SWU-026. SWU-024 is still partial because no externally/independently verified outcome-based learner exists, despite real research-only update code. User GO and real authority unchanged. Official implementation/verification UNASSESSED.",
   "official_implementation_rate": "UNASSESSED",
   "P2": "LOCKED",
-  "latest_feature_code_sha": "e1d5b0fc096d8103cde03ec22e4e7bca6f18de25",
-  "source_candidate_count": 35,
-  "next_safe_queue_status": "NO_GENERAL_READY_020_INDEPENDENT_TRUST_HIGH_REVIEW_HOLD",
-  "next_dependency_blocker": "EAI-SWU-020 independent verifier signing authority and semantic evidence missing; 023->024->026 remain partial, 007->008 cross-DB atomic epoch absent; 039 owner Hydrogen GO blocked"
+  "latest_feature_code_sha": "a7651b877e6b68cd889af643f4fe7530049dd638",
+  "source_candidate_count": 36,
+  "next_safe_queue_status": "NO_UNBLOCKED_READY; 024 verified learner,020 authentic independent receipt,007/008 epoch,023 true admission,039 consent HOLD",
+  "next_dependency_blocker": "007/008 missing common transaction epoch and independently verified non-destructive restore; 020 missing independently governed trust anchor and true semantics; 023 and 024 cannot learn verified real outcomes; 039 live Hydrogen user GO"
 }
