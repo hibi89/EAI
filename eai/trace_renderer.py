@@ -42,7 +42,9 @@ def render_architect_explanation(raw: dict) -> dict:
     if (type(raw) is not dict or raw.get("schema") != "eai.architect.preview.v1"
             or raw.get("execution") != "NOT_EXECUTED"
             or raw.get("model") != "LOCAL_CPU_ONLY"
+            or type(raw.get("status")) is not str
             or raw.get("status") not in _ARCHITECT_STATUS
+            or type(raw.get("truth_status")) is not str
             or raw.get("truth_status") not in _TRUTH
             or type(raw.get("analysis")) is not dict
             or type(raw.get("advisory_plans")) is not list
@@ -107,6 +109,7 @@ def render_player_explanation(raw: dict) -> dict:
     """No arbitrary raw receipts or task payloads are returned."""
     if (type(raw) is not dict
             or raw.get("schema") != "eai.player.preview.v1"
+            or type(raw.get("status")) is not str
             or raw.get("status") not in _PLAYER_STATUS
             or raw.get("real_world_verified") is not False
             or raw.get("automatic_learning") is not False

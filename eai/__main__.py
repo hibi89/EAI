@@ -132,6 +132,25 @@ def main(argv: list[str] | None = None) -> int:
     quick_cmd.add_argument('--max-results',type=int,default=10)
     quick_cmd.add_argument('--include-snippets',action='store_true')
     quick_cmd.add_argument('--json',action='store_true')
+    explain_cmd = sub.add_parser('explain-preview',
+        help='sanitized offline Architect/Player uncertainty and source trace')
+    explain_cmd.add_argument('--kind', choices=['architect', 'player'], required=True)
+    explain_cmd.add_argument('--problem-file', required=True)
+    explain_cmd.add_argument('--axnode-root', help='existing local AXNODE store for architect')
+    explain_cmd.add_argument('--plan-file', help='typed local PlanSpec for Player')
+    explain_cmd.add_argument('--max-expansions', type=int, default=8)
+    adapter_cmd = sub.add_parser('adapter-preview',
+        help='schema-only local adapter handshake; executor always disabled')
+    adapter_cmd.add_argument('--problem-file', required=True)
+    adapter_cmd.add_argument('--plan-file', required=True)
+    adapter_cmd.add_argument('--handshake-file', required=True)
+    resource_cmd = sub.add_parser('resource-preview',
+        help='local process RSS budget gate; no process creation or GPU')
+    resource_cmd.add_argument('--max-rss-mib', type=int, default=1024)
+    resource_cmd.add_argument('--max-elapsed-ms', type=int, default=30000)
+    resource_cmd.add_argument('--max-steps', type=int, default=32)
+    resource_cmd.add_argument('--elapsed-ms', type=int, default=0)
+    resource_cmd.add_argument('--steps-completed', type=int, default=0)
     architect_cmd = sub.add_parser('architect-preview', help='local-only V3 advisory design/plan; never execute')
     architect_cmd.add_argument('--problem-file', required=True, help='explicit local V3 ProblemSpec JSON <=32KiB')
     architect_cmd.add_argument('--axnode-root', required=True, help='existing explicit local AXNODE library')
@@ -163,6 +182,74 @@ def main(argv: list[str] | None = None) -> int:
     check_cmd = sub.add_parser('verify-review', help='read-only verify existing review folder (unsigned)')
     check_cmd.add_argument('--output-dir', required=True)
     args = p.parse_args(argv)
+    if args.command == 'resource-preview':
+        try:
+            from dataclasses import asdict
+            from .local_scheduler import (
+                LocalResourceBudget, observe_and_evaluate_local_budget)
+            budget = LocalResourceBudget(
+                max_rss_mib=args.max_rss_mib,
+                max_elapsed_ms=args.max_elapsed_ms,
+                max_steps=args.max_steps)
+            decision = observe_and_evaluate_local_budget(
+                budget, elapsed_ms=args.elapsed_ms,
+                steps_completed=args.steps_completed)
+            print(json.dumps(asdict(decision), ensure_ascii=False, indent=2))
+            return 0 if decision.status == (
+                'CPU_LOCAL_BUDGET_AVAILABLE_NOT_EXECUTION_AUTHORITY') else 2
+        except (ValueError, OSError, UnicodeError):
+            print(json.dumps({'status': 'REJECTED',
+                              'reason': 'LOCAL_RESOURCE_PREVIEW_REJECTED'}),
+                  file=sys.stderr)
+            return 1
+    if args.command == 'adapter-preview':
+        try:
+            from dataclasses import asdict
+            from .adapter_stub import AdapterHandshake, inspect_adapter_handshake
+            from .player_cli import _read_local_contract
+            from .contracts import ProblemSpec, PlanSpec
+            source = Path(args.handshake_file).expanduser()
+            if source.is_symlink() or not source.is_file() or source.stat().st_size > 2048:
+                raise ValueError('explicit bounded local adapter handshake required')
+            hand = AdapterHandshake.from_json(source.read_bytes())
+            problem = ProblemSpec.validate(_read_local_contract(args.problem_file))
+            plan = PlanSpec.validate(_read_local_contract(args.plan_file))
+            review = inspect_adapter_handshake(problem, plan, hand)
+            print(json.dumps(asdict(review), ensure_ascii=False, indent=2))
+            return 2   # A valid stub is STILL disabled, never a remote success
+        except (ValueError, OSError, UnicodeError, KeyError):
+            print(json.dumps({'status': 'REJECTED',
+                              'reason': 'ADAPTER_STUB_PREVIEW_REJECTED'}),
+                  file=sys.stderr)
+            return 1
+    if args.command == 'explain-preview':
+        try:
+            from .trace_renderer import (
+                render_architect_explanation, render_player_explanation)
+            if args.kind == 'architect':
+                if args.plan_file is not None or not args.axnode_root:
+                    raise ValueError('architect requires existing local root')
+                from .architect_runtime import preview_architecture
+                source = preview_architecture(
+                    args.problem_file, args.axnode_root,
+                    max_expansions=args.max_expansions)
+                summary = render_architect_explanation(source)
+            else:
+                if args.axnode_root is not None or not args.plan_file:
+                    raise ValueError('player requires explicit PlanSpec')
+                from .player_cli import player_preview
+                source = player_preview(args.problem_file, args.plan_file)
+                summary = render_player_explanation(source)
+            print(json.dumps(summary, ensure_ascii=False, indent=2))
+            return 0 if summary['status'] in (
+                'CANDIDATES_UNVERIFIED',
+                'PURE_SYNTHETIC_INTERPRETED_UNVERIFIED') else 2
+        except (ValueError, KeyError, OSError, UnicodeError, PermissionError,
+                sqlite3.DatabaseError):
+            print(json.dumps({'status': 'REJECTED',
+                              'reason': 'EXPLANATION_PREVIEW_REJECTED'}),
+                  file=sys.stderr)
+            return 1
     if args.command == 'player-preview':
         try:
             from .player_cli import player_preview
