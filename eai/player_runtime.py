@@ -72,3 +72,28 @@ def execute_pure_synthetic_preview(
     })).hexdigest()
     return PurePlayerPreview(problem.digest(), policy.plan_sha256,
                              disposition, tuple(receipts), trace_sha)
+
+
+@dataclass(frozen=True)
+class PureTraceAudit:
+    """Independent deterministic replay agreement, never semantic truth."""
+    status: str
+    expected_trace_sha256: str
+    matching_steps: int
+    grants_real_authority: bool = False
+
+
+def audit_pure_player_trace(
+    problem: ProblemSpec, plan: PlanSpec, policy: PlanPolicyDecision,
+    claimed: PurePlayerPreview, *, cancel_before_step: str | None = None,
+) -> PureTraceAudit:
+    """Recompute all no-op step hashes and cancellation outcome before review."""
+    if type(claimed) is not PurePlayerPreview:
+        raise ValueError("explicit typed trace required")
+    expected = execute_pure_synthetic_preview(
+        problem, plan, policy, cancel_before_step=cancel_before_step)
+    if claimed != expected:
+        return PureTraceAudit("REJECTED_UNREPRODUCIBLE_PURE_TRACE",
+                              expected.trace_sha256, 0)
+    return PureTraceAudit("PURE_TRACE_REPLAY_MATCH_UNVERIFIED",
+                          expected.trace_sha256, len(expected.step_receipts))

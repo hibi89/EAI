@@ -26,6 +26,30 @@ class PlanPolicyDecision:
     grants_real_authority: bool = False
 
 
+def _validated_problem(problem: ProblemSpec) -> ProblemSpec:
+    """Reject dataclass.replace or manually constructed policy-bound problems."""
+    if type(problem) is not ProblemSpec:
+        raise ValueError("typed EAI problem required")
+    try:
+        rebuilt = ProblemSpec.validate({
+            "version": problem.version, "id": problem.id,
+            "goal": problem.goal, "domain": problem.domain,
+            "state_refs": list(problem.state_refs),
+            "assumptions": list(problem.assumptions),
+            "hard_constraints": list(problem.hard_constraints),
+            "objectives": list(problem.objectives), "oracle": problem.oracle,
+            "permissions": list(problem.permissions),
+            "budget": {"max_steps": problem.budget[0],
+                       "max_seconds": problem.budget[1]},
+            "risk": problem.risk,
+        })
+    except (TypeError, IndexError, KeyError, AttributeError) as exc:
+        raise ValueError("invalid typed problem fields") from exc
+    if rebuilt != problem:
+        raise ValueError("untrusted problem representation")
+    return rebuilt
+
+
 def _validated_plan(plan: PlanSpec) -> PlanSpec:
     if type(plan) is not PlanSpec:
         raise ValueError("typed EAI plan required")
@@ -60,8 +84,7 @@ def evaluate_plan_policy(
     problem: ProblemSpec, plan: PlanSpec, *,
     proposed_approval_hash: str | None = None,
 ) -> PlanPolicyDecision:
-    if type(problem) is not ProblemSpec:
-        raise ValueError("typed EAI problem required")
+    problem = _validated_problem(problem)
     plan = _validated_plan(plan)
     digest = plan_digest(plan)
     reasons = []

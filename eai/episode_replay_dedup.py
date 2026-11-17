@@ -93,7 +93,9 @@ def screen_episodes_for_manual_review(
             rejected.append(episode.memory_sha256)
         else:
             accepted.append(fingerprint)
-    if "UNTRUSTED_OR_UNRELATED_SYNTHETIC_REVIEW" in reasons:
+    # Never expose an accepted subset of a rejected batch: downstream
+    # callers must not accidentally reward the first of two duplicates.
+    if reasons:
         accepted.clear()
     status = ("SYNTHETIC_EPISODE_MANUAL_REVIEW_ONLY" if not reasons
               else "HOLD_UNTRUSTED_OR_REPLAYED_EPISODES")
