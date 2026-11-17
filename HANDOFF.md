@@ -1,3 +1,17 @@
+## 2026-11-17 KST — EAI P1 C14/C15/C16/C05 hardening batch handoff (10)
+1. **Task lock:** Only EAI V3.1 independent local Architect/Player/AXNODE; current repo `hibi89/EAI`, branch `feature/kmong-eai-85-p31-20261112`; no MLA/hub/Factory scope.
+2. **Actual changes:** code SHA `3ef09a83ec47c8f925e23a0e2c865811b81918cb` modifies `eai/candidate_evidence_review.py` to re-run bounded interpreter and reject fake witness, `eai/candidate_review_journal.py` to prevent quarantined/withdrawn promotion-state laundering, `eai/experience_admission.py` to bind optional synthetic review to candidate/problem without automated learning, and `eai/sidecar_coherence_review.py` to detect source drift vs isolated restore.
+3. **Tests/real execution:** test SHA `95d6b59e9dc70c0d900838272866032abf04a8e3` adds 12 unittest methods: C14 2, C15 5, C16 3, C05 2; 252 cumulative V3 authored only. Actual exact-SHA Python tests, full CI, browser, Windows, GUI **NOT_RUN**. P1 fast runner already includes modified paths. Mandatory targeted syntax/auth/data safety requires executable exact checkout; not claimed PASS.
+4. **Progress:** 3/15 V3 code candidates, 7/15 partial, 5/15 other/blocked. C01–C36 official implementation and verification `UNASSESSED`, RELEASE HOLD. C14/C15/C16/C05 only deeper partial.
+5. **Blockers:** container github.com DNS resolution failure prevents exact checkout. GitHub authenticated Git Tree+branch CAS worked; local tests not executed, no repeated failed CI attempt. Improvement: isolate dangerous ACTIVE/DB migration tasks to High review, continue safe READY modules.
+6. **SHA/paths:** baseline `2cd574c3ceac62168b9b8f05772b3620f7647d90`; code `3ef09a83ec47c8f925e23a0e2c865811b81918cb`; tests `95d6b59e9dc70c0d900838272866032abf04a8e3`. New final handoff-doc HEAD needs recheck after publication. Same feature branch, no force-push/main merge.
+7. **Production:** no deployment or operational integration modified. Live Hydrogen and remote data transfer not authorized or called.
+8. **Integrity:** approved blueprint blob `1b0712679d4171cd3681588e104ea5e8c6f6690d` not modified; no original user files or EAI core DB changed, 13 legacy CPU solvers and P26 preserved. Hash chain ≠ authenticated signer, synthetic receipts ≠ independent real truth.
+9. **Next executable READY:** fix exact-SHA P1 syntax/local regression gate; C14 authenticated independent result provenance (High before trusted signer); C16 episode replay cross-run dedupe; C05 atomic multi-DB epoch with explicit read-only evidence first; C15 owner-approved ACTIVE rollback behind separate High decision. P2 full CI/browser/real device only after implementation candidate.
+10. **Updated:** 2026-11-17 KST, document baseline `95d6b59`; exact final HEAD must be verified. Official numbers `UNASSESSED` pending accepted denominator.
+
+---
+
 ## 2026-11-17 KST — EAI P1 governance/isolation batch handoff (10)
 1. **Mission:** standalone EAI V3.1 Architect/Player/AXNODE on existing `hibi89/EAI` branch `feature/kmong-eai-85-p31-20261112`, not MLA or hub; mobile `ㄱ` bundles code and tests.
 2. **Implemented source:** `a0ee3734495ecd2da1ab45cfd26a9c288c909edf`: `eai/candidate_evidence_review.py` re-verifies exact synthetic CPU receipts with fixture fingerprints; `eai/candidate_review_journal.py` separate append-only SQLite non-ACTIVE candidate state records and tamper-evident chain; `eai/sidecar_coherence_review.py` read-only recovery audit refuses false same-epoch proof. `59740762660444a39835296db7f7bba29451ae98` adds exclusive create and ACTIVE-preservation test.
