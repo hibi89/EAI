@@ -138,6 +138,29 @@ class OfflineJourneyTests(unittest.TestCase):
             for c in result["candidates"]))
         self.assertEqual(result["original_writes"], 0)
 
+    def test_measured_architect_latency_can_hold_pure_interpretation(self):
+        from eai.offline_journey import preview_offline_journey
+        pure = self.root / "timed_pure_nodes"
+        with AXNodeStore(pure) as store:
+            for name in ("data.first", "data.second"):
+                store.import_node(json.dumps(self.node(name, "synthetic.noop.v1")))
+        self.problem["permissions"] = ["pure"]
+        self.problem_file.write_text(json.dumps(self.problem), encoding="utf-8")
+        with (patch("eai.offline_journey.monotonic_ns",
+                    side_effect=[0, 61_000_000_000, 62_000_000_000]),
+              patch("eai.local_scheduler.observe_own_process_rss_bytes",
+                    return_value=100 * 1024 * 1024)):
+            report = preview_offline_journey(
+                self.problem_file, pure, interpret_pure_noop=True,
+                budget=LocalResourceBudget(max_rss_mib=128,
+                                           max_elapsed_ms=60000,
+                                           max_steps=64))
+        self.assertTrue(all(c["status"] == "POLICY_OR_RESOURCE_HELD"
+                            for c in report["candidates"]))
+        self.assertTrue(all("TIME_BUDGET_EXCEEDED" in c["reason_codes"]
+                            for c in report["candidates"]))
+        self.assertEqual(report["real_tool_invocations"], 0)
+
     def test_tampered_step_source_is_rejected(self):
         original = preview_architecture(self.problem_file, self.axnode_dir)
         changed = dict(original)
@@ -227,6 +250,23 @@ class OfflineJourneyTests(unittest.TestCase):
         report["verified_real_world"] = True
         with self.assertRaises(ValueError):
             audit_offline_journey_report(report)
+
+    def test_rehashed_status_reason_spoof_is_still_rejected(self):
+        from eai.offline_journey import audit_offline_journey_report
+        from eai.contracts import canonical_sha256
+        for fake_status, fake_reasons in (
+            ("PURE_ELIGIBLE_NOT_INTERPRETED", ["PLAN_POLICY_DENIED"]),
+            ("POLICY_OR_RESOURCE_HELD", []),
+        ):
+            with self.subTest(status=fake_status):
+                report = self.call(interpret=False)
+                report["candidates"][0]["status"] = fake_status
+                report["candidates"][0]["reason_codes"] = fake_reasons
+                report["receipt_sha256"] = canonical_sha256({
+                    k: v for k, v in report.items() if k != "receipt_sha256"
+                })
+                with self.assertRaisesRegex(ValueError, "reason/status"):
+                    audit_offline_journey_report(report)
 
     def test_tampered_trace_checksum_rejected(self):
         from eai.offline_journey import audit_offline_journey_report

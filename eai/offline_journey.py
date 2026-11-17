@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from pathlib import Path
 import hashlib
+from time import monotonic_ns
 
 from .architect_runtime import preview_architecture
 from .axnode_store import AXNodeStore
@@ -42,6 +43,7 @@ def preview_offline_journey(
         raise ValueError("explicit CPU budget required")
     # Existing Architect independently confirms local store/schema constraints
     # and refuses to auto-create a customer-selected path.
+    started_ns = monotonic_ns()
     source = preview_architecture(
         problem_file, axnode_root, max_expansions=max_expansions)
     # Research proposals cannot replace the independent OFF baseline. This
@@ -116,8 +118,12 @@ def preview_offline_journey(
                     or not 1 <= option["declared_seconds_upper_bound"] <= problem.budget[1]):
                 raise ValueError("untrusted declared plan resource requirements")
             gate = evaluate_plan_policy(problem, plan)
+            elapsed_ms = (monotonic_ns() - started_ns) // 1_000_000
+            if elapsed_ms < 0:
+                raise ValueError("invalid monotonic journey duration")
             observation = observe_plan_resource_preflight(
-                problem, plan, budget, elapsed_ms=0, steps_completed=0)
+                problem, plan, budget, elapsed_ms=elapsed_ms,
+                steps_completed=0)
             reasons = set(gate.reason_codes) | set(observation.reason_codes)
             status = "POLICY_OR_RESOURCE_HELD"
             trace = None
@@ -264,6 +270,11 @@ def audit_offline_journey_report(report: dict) -> dict:
                 or not 0 <= candidate["interpreted_steps"] <= candidate["declared_steps"]):
             raise ValueError("invalid journey candidate")
         executed = candidate["status"] == "PURE_SYNTHETIC_INTERPRETED_UNVERIFIED"
+        if ((candidate["status"] == "PURE_ELIGIBLE_NOT_INTERPRETED"
+             and candidate["reason_codes"])
+                or (candidate["status"] == "POLICY_OR_RESOURCE_HELD"
+                    and not candidate["reason_codes"])):
+            raise ValueError("journey candidate reason/status inconsistency")
         if (executed and (
                 report["run_mode"] != "PURE_SYNTHETIC_EXPLICIT"
                 or candidate["interpreted_steps"] != candidate["declared_steps"]
