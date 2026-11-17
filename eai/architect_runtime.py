@@ -9,6 +9,7 @@ from .contracts import MAX_DOCUMENT_BYTES, ProblemSpec, strict_json
 from .design_engine import DesignEngine
 from .problem_model import ProblemModeler
 from .hierarchical_planner import HierarchicalPlanner
+from .evidence_ledger import EvidenceLedger
 
 
 def preview_architecture(problem_file: str | Path, axnode_root: str | Path, *,
@@ -37,10 +38,32 @@ def preview_architecture(problem_file: str | Path, axnode_root: str | Path, *,
         design = designer.propose(problem)
         plans = HierarchicalPlanner(store).plan(
             problem, design, max_expansions=max_expansions)
+        claim_states = []
+        ledger_path = store.root / "evidence_ledger.sqlite"
+        if ledger_path.exists() or ledger_path.is_symlink():
+            # Existing local sidecar is examined read-only; NEVER auto-create it
+            # merely to preview a user's private ProblemSpec.
+            with EvidenceLedger(store) as evidence:
+                for item in design.analysis.evidence:
+                    assessed = evidence.assess(item.strategy_id)
+                    claim_states.append({
+                        "id": assessed.claim_id, "state": assessed.state,
+                        "trust": assessed.trust,
+                        "source_count": len(assessed.supporting_hashes) +
+                                        len(assessed.refuting_hashes) +
+                                        len(assessed.stale_hashes),
+                    })
+        evidence_disputed = any(
+            item["state"] in ("CONTRADICTED_UNVERIFIED", "REFUTED_UNVERIFIED")
+            for item in claim_states)
+        # Untrusted observations cannot grant trust, but an explicit negative
+        # or contradictory local report can safely force review.
+        preview_status = "BLOCKED_EVIDENCE_DISPUTE" if evidence_disputed else plans.status
+        safe_candidates = () if evidence_disputed else plans.candidates
     return {
         "schema": "eai.architect.preview.v1",
         "problem_sha256": problem.digest(),
-        "status": plans.status,
+        "status": preview_status,
         "truth_status": design.result.status,
         "execution": "NOT_EXECUTED",
         "model": "LOCAL_CPU_ONLY",
@@ -51,10 +74,13 @@ def preview_architecture(problem_file: str | Path, axnode_root: str | Path, *,
             "candidate_provenance": "LOCAL_CANDIDATE_UNVERIFIED",
         },
         "design_blocked_reason": design.design.blocked_reason,
+        "evidence_claims": claim_states,
+        "evidence_review_required": evidence_disputed,
         "plan_search_expansions": plans.expansions,
         "blocked_alternatives": [
             {"id": aid, "reason": reason} for aid, reason in plans.blocked
-        ],
+        ] + ([{"id": "evidence", "reason": "UNTRUSTED_NEGATIVE_OR_CONFLICT"}]
+             if evidence_disputed else []),
         "advisory_plans": [
             {
                 "alternative_id": candidate.alternative_id,
@@ -71,6 +97,6 @@ def preview_architecture(problem_file: str | Path, axnode_root: str | Path, *,
                 ],
                 "declared_step_count": candidate.declared_step_count,
                 "declared_seconds_upper_bound": candidate.declared_seconds_upper_bound,
-            } for candidate in plans.candidates
+            } for candidate in safe_candidates
         ],
     }
