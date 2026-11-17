@@ -1,3 +1,10 @@
+## 2026-11-18 KST — EAI-SWU-039 HTTPException correction handoff
+- Branch `feature/kmong-eai-85-p31-20261112`; feature SHA `468ffd61bffb6596624d2352cdd7c43c8a42b4ce`; changed only allowed source `eai/hydrogen_adapter.py`. Full source Git blob `77e0e862497033d19536407a568a45b4d4a334ec`, immutable blueprint `1b0712679d4171cd3681588e104ea5e8c6f6690d`.
+- Existing signed-per-send live transport now treats malformed/incomplete HTTP protocol exceptions as OFF and journal breaker error, no retries or paid fallback; module default remains OFF.
+- Current code exact-blob static **7/7 PASS**, isolated Python standard-library error-subtype coverage **3/3 PASS**. Exact-module compile and integration, Python3.11, live Google, full P2 all NOT_RUN. No network request.
+- P1 provisional 41/42=97.6%, official P1/P2 UNASSESSED, P2 LOCKED, RELEASE HOLD, no other READY, SWU-039 BLOCKED_APPROVAL. User broad GO does not prove free-only account/project eligibility and cannot produce scoped owner signature.
+- Preserve main/Production/credentials/originals/ACTIVE/real Player and independent review. Next approved source wave only upon actual new ready; external provider needs authenticated Google free-only entitlement, separately protected owner trust root and exact reviewed per-send consent. Recheck actual latest HEAD before followup.
+
 ## 2026-11-18 KST — EAI SWU-039 next-wave source handoff
 1. Mission EAI V3.1, `hibi89/EAI@feature/kmong-eai-85-p31-20261112`, current High direct P1, active hub §0J/§0E pinned b42134647bf6998c0df0932e32336b0bc8ae8ccc (current hub f633dcf1 changes read-only observations only).
 2. Actual source change `e208612e793ec1bcbc03ca39f680f403f62262bd`, sole allowed path `eai/hydrogen_adapter.py`; blob `84d3af6f2250c8568adedb1d96bc51c8c8193da0`. Ledger-open/reserve/settle failure OFF/error path implemented, no real network or credential.
