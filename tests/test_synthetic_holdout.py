@@ -106,6 +106,13 @@ class B0HeldoutTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,"leaked synthetic fixture"):
             self.run_b0(heldout=(duplicate,heldout[1]))
 
+    def test_forged_expected_label_cannot_hide_input_leak(self):
+        train,heldout=self.data()
+        poisoned=replace(heldout[0],left=train[0].left,right=train[0].right,
+                         claimed_different=("a",))
+        with self.assertRaisesRegex(ValueError,"leaked synthetic fixture"):
+            self.run_b0(heldout=(poisoned,heldout[1]))
+
     def test_cross_split_duplicate_family_rejected(self):
         train,heldout=self.data()
         duplicate=replace(heldout[0],family=train[0].family)
