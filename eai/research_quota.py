@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from collections import deque
 from dataclasses import dataclass
+from math import isfinite
 from threading import Lock
 from time import monotonic
 
@@ -51,12 +52,20 @@ class ResearchQuota:
         self._lock = Lock()
         self._pause_until = 0.0
         self._count = 0
+        self._last_stamp: float | None = None
 
     def pause_after_429(self, cooldown: int = 3600, *, now: float | None = None) -> None:
         if type(cooldown) is not int or not 1 <= cooldown <= 86400:
             raise ValueError("invalid cooldown")
+        if now is not None and (type(now) not in (int, float) or not isfinite(now)):
+            raise ValueError("invalid monotonic quota time")
         stamp = monotonic() if now is None else float(now)
+        if not isfinite(stamp) or stamp < 0:
+            raise ValueError("invalid monotonic quota time")
         with self._lock:
+            if self._last_stamp is not None and stamp < self._last_stamp:
+                raise ValueError("non-monotonic quota time")
+            self._last_stamp = stamp
             self._pause_until = max(self._pause_until, stamp + cooldown)
 
     def reserve(self, input_tokens: int, output_cap_tokens: int, *,
@@ -65,10 +74,17 @@ class ResearchQuota:
                 or not 1 <= input_tokens <= self.limits.max_input_tokens
                 or not 1 <= output_cap_tokens <= self.limits.max_output_tokens):
             return QuotaDecision(False, "INVALID_TOKEN_BUDGET")
+        if now is not None and (type(now) not in (int, float) or not isfinite(now)):
+            return QuotaDecision(False, "INVALID_TIME")
         stamp = monotonic() if now is None else float(now)
-        if stamp < 0:
+        if not isfinite(stamp) or stamp < 0:
             return QuotaDecision(False, "INVALID_TIME")
         with self._lock:
+            # A backdated synthetic clock must not evade the rolling RPM/TPM
+            # window or a preceding mock failure cooldown.
+            if self._last_stamp is not None and stamp < self._last_stamp:
+                return QuotaDecision(False, "NON_MONOTONIC_TIME")
+            self._last_stamp = stamp
             if stamp < self._pause_until:
                 return QuotaDecision(False, "PAUSED_QUOTA")
             # Rolling 24h window is stricter than assuming a free-tier reset.
