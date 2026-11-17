@@ -296,6 +296,44 @@ def _check_live_owner_permit(
     return raw["project_id"], raw["nonce"], permit.trusted_owner_key_sha256
 
 
+
+def prepare_live_owner_statement(
+    packet: ResearchPacket, *, api_key_sha256: str, project_id: str,
+    nonce: str, issued_at: int, expires_at: int, free_tier_checked_at: int,
+) -> bytes:
+    """Prepare exact unsigned consent for external, owner-controlled signing.
+
+    This function DOES NOT approve a send. The user must inspect the exact
+    request preview and free-only project entitlement in their own account,
+    then sign this statement outside EAI. Never place a private key in Git.
+    """
+    checked = _packet(packet)
+    draft = build_hydrogen_request_preview(checked)
+    if (type(api_key_sha256) is not str or not _SHA256.fullmatch(api_key_sha256)
+            or type(project_id) is not str or not _PROJECT.fullmatch(project_id)
+            or type(nonce) is not str or not _NONCE_LIVE.fullmatch(nonce)
+            or any(type(x) is not int for x in (
+                issued_at, expires_at, free_tier_checked_at))
+            or not issued_at < expires_at <= issued_at + 900
+            or not issued_at - 3600 <= free_tier_checked_at <= issued_at):
+        raise ValueError("cannot prepare unscoped or expiring owner consent")
+    return canonical_bytes({
+        "schema": _LIVE_SCHEMA,
+        "model": _MODEL,
+        "request_sha256": checked.request_sha256(),
+        "payload_sha256": draft.payload_sha256,
+        "api_key_sha256": api_key_sha256,
+        "project_id": project_id,
+        "nonce": nonce,
+        "issued_at": issued_at,
+        "expires_at": expires_at,
+        "free_tier_checked_at": free_tier_checked_at,
+        "free_tier_attestation": "OWNER_REVIEWED_FREE_ONLY",
+        "paid_budget_usd": 0,
+        "per_send": True,
+    })
+
+
 class _LiveSendLedger:
     """Private, durable single-project fail-closed quota, replay and breaker.
 
@@ -522,11 +560,16 @@ def dispatch_live_hydrogen(
                 requests_attempted=1)
         finally:
             if conn is not None:
-                conn.close()
-            # Always finalize the durable reservation. A crash before this
-            # transaction retains a consumed nonce and unknown delivery.
-            ledger.settle(nonce, success=ok)
-            if not ok:
-                coordinator.disable()
+                try:
+                    conn.close()
+                except OSError:
+                    pass  # Never mask a failed send or skip the breaker.
+            # A crash before settlement retains the consumed nonce. A
+            # settlement error raises closed; failure must still disable ON.
+            try:
+                ledger.settle(nonce, success=ok)
+            finally:
+                if not ok:
+                    coordinator.disable()
     finally:
         ledger.close()
