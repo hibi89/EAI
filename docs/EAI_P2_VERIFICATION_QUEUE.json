@@ -17,61 +17,177 @@
       "id": "EAI-P2-01",
       "name": "Exact-SHA full Python compile/type and existing CI",
       "status": "LOCKED",
-      "evidence": "NOT_RUN"
+      "evidence": "NOT_RUN",
+      "req_ids": [
+        "C01",
+        "C02",
+        "C03",
+        "C04",
+        "C28"
+      ],
+      "acceptance": "Exact SHA full compileall, whole type/static and mandatory existing CI, 13-goal baseline nonregression",
+      "p1_swu_attempt_budget_applies": false,
+      "minimal_immediate_safety_still_applies_in_P1": true,
+      "real_privileged_actions_require_owner_go": false
     },
     {
       "id": "EAI-P2-02",
       "name": "AXNODE crash-safe DB and privacy",
       "status": "LOCKED",
-      "evidence": "NOT_RUN"
+      "evidence": "NOT_RUN",
+      "req_ids": [
+        "C05",
+        "C06",
+        "C07",
+        "C16",
+        "C26"
+      ],
+      "acceptance": "DB integrity, synthetic crash/restart, sidecar epoch/coherence and isolated restores",
+      "p1_swu_attempt_budget_applies": false,
+      "minimal_immediate_safety_still_applies_in_P1": true,
+      "real_privileged_actions_require_owner_go": false
     },
     {
       "id": "EAI-P2-03",
       "name": "Architect evidence plus legacy 13 solver regression",
       "status": "LOCKED",
-      "evidence": "NOT_RUN"
+      "evidence": "NOT_RUN",
+      "req_ids": [
+        "C03",
+        "C08",
+        "C09",
+        "C10",
+        "C11",
+        "C12",
+        "C19"
+      ],
+      "acceptance": "Architect unknown/contradicted claims, bounded plans, legacy solver parity",
+      "p1_swu_attempt_budget_applies": false,
+      "minimal_immediate_safety_still_applies_in_P1": true,
+      "real_privileged_actions_require_owner_go": false
     },
     {
       "id": "EAI-P2-04",
       "name": "Independent synthesis/forged verifier/ACTIVE rejection",
       "status": "LOCKED",
-      "evidence": "NOT_RUN"
+      "evidence": "NOT_RUN",
+      "req_ids": [
+        "C13",
+        "C14",
+        "C15",
+        "C20",
+        "C25"
+      ],
+      "acceptance": "Counterexample independent oracle, forged proof rejection and ACTIVE hold",
+      "p1_swu_attempt_budget_applies": false,
+      "minimal_immediate_safety_still_applies_in_P1": true,
+      "real_privileged_actions_require_owner_go": false
     },
     {
       "id": "EAI-P2-05",
       "name": "Experience learner OOD heldout and cost",
       "status": "LOCKED",
-      "evidence": "NOT_RUN"
+      "evidence": "NOT_RUN",
+      "req_ids": [
+        "C16",
+        "C17",
+        "C18",
+        "C25",
+        "C27"
+      ],
+      "acceptance": "Verified-only learner, heldout/OOD family split, no regression quantified",
+      "p1_swu_attempt_budget_applies": false,
+      "minimal_immediate_safety_still_applies_in_P1": true,
+      "real_privileged_actions_require_owner_go": false
     },
     {
       "id": "EAI-P2-06",
       "name": "Player permission/rollback/security integrations",
       "status": "LOCKED",
-      "evidence": "NOT_RUN"
+      "evidence": "NOT_RUN",
+      "req_ids": [
+        "C20",
+        "C21",
+        "C22",
+        "C23",
+        "C24",
+        "C26",
+        "C28"
+      ],
+      "acceptance": "Player action scope/idempotency/rollback, adapter cross-repo guards and security",
+      "p1_swu_attempt_budget_applies": false,
+      "minimal_immediate_safety_still_applies_in_P1": true,
+      "real_privileged_actions_require_owner_go": false
     },
     {
       "id": "EAI-P2-07",
       "name": "Hydrogen OFF/mock/owner-gated live 429/privacy",
       "status": "LOCKED",
-      "evidence": "NOT_RUN"
+      "evidence": "NOT_RUN",
+      "req_ids": [
+        "C29",
+        "C30",
+        "C31",
+        "C32",
+        "C33",
+        "C34",
+        "C35"
+      ],
+      "acceptance": "Hydrogen default OFF/no network, mock/quarantine, approved free-tier/consent gated live checks",
+      "p1_swu_attempt_budget_applies": false,
+      "minimal_immediate_safety_still_applies_in_P1": true,
+      "real_privileged_actions_require_owner_go": true
     },
     {
       "id": "EAI-P2-08",
       "name": "Windows 11 CPU RSS offline and local model",
       "status": "LOCKED",
-      "evidence": "NOT_RUN"
+      "evidence": "NOT_RUN",
+      "req_ids": [
+        "C03",
+        "C21",
+        "C23",
+        "C34",
+        "C36"
+      ],
+      "acceptance": "Owner Win11 CPU RSS measured offline and no real customer data",
+      "p1_swu_attempt_budget_applies": false,
+      "minimal_immediate_safety_still_applies_in_P1": true,
+      "real_privileged_actions_require_owner_go": false
     },
     {
       "id": "EAI-P2-09",
       "name": "CLI/UX and browser if there is actual browser FE",
       "status": "LOCKED",
-      "evidence": "NOT_RUN"
+      "evidence": "NOT_RUN",
+      "req_ids": [
+        "C09",
+        "C24",
+        "C28",
+        "C36"
+      ],
+      "acceptance": "CLI output/errors and optional actual browser FE accessibility/UX E2E",
+      "p1_swu_attempt_budget_applies": false,
+      "minimal_immediate_safety_still_applies_in_P1": true,
+      "real_privileged_actions_require_owner_go": false
     },
     {
       "id": "EAI-P2-10",
       "name": "Independent audit and High/owner final release gate",
       "status": "LOCKED",
-      "evidence": "NOT_RUN"
+      "evidence": "NOT_RUN",
+      "req_ids": [
+        "C01",
+        "C15",
+        "C26",
+        "C28",
+        "C33",
+        "C35"
+      ],
+      "acceptance": "Full acceptance matrix and independent Codex/Astra review + High GO decisions",
+      "p1_swu_attempt_budget_applies": false,
+      "minimal_immediate_safety_still_applies_in_P1": true,
+      "real_privileged_actions_require_owner_go": true
     }
   ]
 }
