@@ -227,7 +227,10 @@ _LIVE_PATH = "/v1beta/models/gemini-4-hydrogen:generateContent"
 _SHA256 = re.compile(r"[0-9a-f]{64}\Z")
 _NONCE_LIVE = re.compile(r"[A-Za-z0-9_-]{20,64}\Z")
 _PROJECT = re.compile(r"[a-z][a-z0-9-]{5,62}\Z")
-_KEY = re.compile(r"[A-Za-z0-9_-]{20,256}\Z")
+# Accept both legacy Google API keys and 2026 AI Studio auth keys (AQ.).
+# Only the documented AQ. prefix may contain a dot; never allow whitespace,
+# arbitrary punctuation or unbounded credential lengths.
+_KEY = re.compile(r"(?:[A-Za-z0-9_-]{20,256}|AQ\.[A-Za-z0-9_-]{17,253})\Z")
 _LIVE_SCHEMA = "eai.hydrogen.owner.send.v1"
 _LIVE_LEDGER_VERSION = 1
 _LIVE_MAX_INPUT_TOKENS = 512
