@@ -18,3 +18,13 @@ P1 completion candidate requires real caller path, normal/denied failure and loc
 - **Essential/critical-path exception (immediately)**: if a task prevents necessary dependent SWUs, blocks P1 completion entirely, or would require unsafe assumptions/unauthorized actions, classify as `IMMEDIATE_OWNER_SOLMAX_REQUEST` **as soon as that is established**, even before initial two failures. Tell the user explicitly which EAI SWUs require **Codex GPT-6.1 Sol Max now**, why, what SHA/branch to inspect, what conditions must remain untouched, and which safe parallel tasks continue. The assistant cannot invoke a model it has not run; ask the user to initiate the handoff. No guessing acceptance.
 - **No authority bypass**: a Sol Max request is a technical escalation, never automatic permission for original/customer file mutation, DB migration, external data send, paid services, LIVE Hydrogen, ACTIVE promotion, real Player actions, production or branch merge. These remain separately approved. Keep mandatory CI/branch protection and immediate auth/DB/secret checks. P2 whole validation remains locked until implementation candidate.
 - **Queue state**: top-level `retry_escalation_policy`, `sol_max_escalation`; task-level `retry_stage`, `initial_nonprogress_attempts`, `post_isolation_nonprogress_attempts`, `retry_evidence`. Preserve historical `attempts_recorded` untouched where failure accounting is unknown. Do not infer failures from `PARTIAL_SOURCE` or High/HOLD status alone; documentation changes add 0 P1 progress.
+
+
+## 사용자 지정 Sol Max 요청 경로 선택 (2026-11-17 KST)
+
+- **요청 책임:** 실제 SWU를 수행 중인 해당 제품 개발 작업자. 해총은 공통 정책만 유지한다.
+- **Codex**: 소스/기술 설계/코드 결함 재현과 수정, 보안·F18 신뢰 경계, CI/테스트/PR 기반 코드 검수. 작업 원본은 정확 branch/SHA로 고정한다.
+- **ChatGPT Work**: 소유자 승인 범위의 실제 브라우저/로그인·GitHub/Vercel 콘솔·외부 서비스 UI·멀티스텝 현장 조사/검증. Work 실행 자체를 Codex GPT-6.1 Sol Max 실행으로 오인하지 않는다. 모델 가용성은 별도 확인, 불확실하면 `MODEL_UNVERIFIED`.
+- **혼합 사례**: 코드 수정을 Codex 1차, 브라우저 재현/실검증을 Work 2차처럼 범위와 검증 책임을 분리. 필요없는 양쪽 동시 요청 금지.
+- **사용자 요청 형식(필수):** `요청자=제품 실작업자; 장애종류=즉시 필수 차단|2+2 일괄; 실행수단=Codex|Work; 선택 근거; 모델=실제 사용 가능/미확인; repo@branch@SHA; SWU/REQ; 이전 실패 0–4회 증거; 요청 작업/수용기준; allowed_paths; 비용/원본/권한/Production 사전 승인 필요 여부; 다른 READY 진행 여부`.
+- **절대 금지:** 모델 실행 여부 과장, 자동 사용자 GO, F18/원본/인증/비밀/Production/필수 CI 우회, 정책 변경을 제품 구현 진척으로 산정.
