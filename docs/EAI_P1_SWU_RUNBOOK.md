@@ -26,6 +26,19 @@ Baseline exact SHA: 5ff09af317f2fe1862f829bd94b7c10202edb14d; final blueprint bl
 **Measurement:** compare wall-clock total P1 candidate completion time, actual completed SWUs, targeted defects and later P2 rework time, number of GitHub calls and Sol Max usage; do not assume 3–6× speedup from one model. Wave batching improves shared context/I/O and reduces repeated setup, not parallel reasoning. Official P1/P2 remain UNASSESSED without accepted weights/evidence.
 
 
+## Owner 2026-11-18 — CPAA + WE + 동적 병목 대응 (최신 실행 규칙)
+
+1. **모델·책임:** 현재(2026-11-18) 웹 GPT-6 Sol High가 최종설계와 실제 P1 구현을 책임진다. 사용자 계획의 12월 이후 Instant 전환은 별도 실행 시 실제 모델 가용성과 담당 전환을 확인한다. Sol Max는 High보다 반드시 우월한 모델이 아니라, 특정 코드/DB/보안 전문 작업과 독립 검토에 필요한 선택적 가속 수단이다. **High는 코딩 문제를 Sol Max에 떠넘기지 않지만, 반드시 혼자 끝낼 의무 때문에 완료시간을 늘리지도 않는다.**
+2. **CPAA 의사결정:** 매 웨이브에서 실제 HEAD·SWU DAG·REQ·허용 경로를 확인하여 완료를 막는 임계경로, 후속 차단 수, 구현 난이도, 위험·재작업·권한, 예상 자체 해결시간과 다른 모델 투입/대기/통합 비용을 비교한다. 완료를 위한 총소요시간을 우선하되 Sol Max 한도와 사용 비용을 낭비하지 않는다.
+3. **WE 실행:** `ㄱ` 한 번에 충돌 없는 SWU를 동적으로 1~6개(보통 3~6개 목표; 고위험이면 1~2개) 묶어 소스 공통 조회 → 실제 caller→callee→상태/결과 코딩 → 국소 필수 검사 → GitHub 커밋을 수행한다. 독립 도구 호출만 병렬로 실행할 수 있으며 모델 추론·코드 작성은 단일 직렬 흐름이다. 가능하면 원자적 다중 파일 Git tree 커밋, 아니면 안전한 순차 커밋. 동시 branch ref 수정 금지. 한 웨이브 후 신규 HEAD/DAG 재평가, 같은 `ㄱ`에서 다음 안전 READY가 있으면 다음 웨이브 구현을 계속한다. 3~6개 완료 보장은 없고 임의 SWU 생성 금지.
+4. **실제 장애 즉시 분류:** 코드 오류·인터페이스 불일치·원설계 누락·도구 제약·승인/독립 신뢰 주체 부재를 구분한다. High가 수정 가능한 일반 오류는 직접 코드/안전한 설계 내 개선으로 해결한다. 구현 방법을 바꾸어도 전체 일정 이점이 없거나 핵심 임계경로의 DB/암호/신뢰 경계에 전문 검토가 필요한 경우에는 **실패 2회/4회를 기다리지 않고** Codex Sol Max 직접 구현·기술 검수 요청 가능. High는 최종 아키텍처·통합·수용 책임을 유지한다.
+5. **속도 방어:** 인위적인 공통 '10분 제한'·무의미한 반복 분석·동일 HOLD 추가를 금지한다. 실제 원인과 다른 구현 대안을 비교하고 진전 없으면 그 SWU만 격리한다. 그동안 다른 안전 독립 READY 코딩을 멈추지 않는다. 일반 실패는 SWU별 **2+2**, 필수 차단은 즉시 상위 모델 검토 요청. 모델 이관 판단은 막연한 난도보다 예상 P1 완료시간·P2 재작업 위험·모델 한도·인계/충돌 비용에 따른다. 실측 전 성능 향상률은 `UNMEASURED`.
+6. **이관과 게이트:** 요청에는 `repo@branch@SHA / SWU+REQ / 실제 실패·개선 시도 / 허용 경로 / 요구 코드·수용조건 / 안전 검사 / 승인 필요 여부 / 병렬 진행할 다른 READY` 포함. Codex는 소스·DB·보안, Work는 인증된 브라우저·현장 작업. 실제 모델 호출이나 검수가 없으면 NOT_RUN. 원본 DB·권한·외부송신·유료·ACTIVE/실도구·Production에 사전 GO 필요; 모델 변경은 승인이 아니다.
+7. **검증과 성과:** SWU 크기·분모·P1 소스 후보/공식 검증 구분·필수 CI와 즉시 국소 안전 검사는 불변. 코딩 커밋 정확 SHA, SWU별 완료/부분/차단, targeted PASS/FAIL/NOT_RUN, P2 이관만 기록. 실제 총완료시간·SWU 처리량·재작업·모델 사용량을 관찰하며 근거 없는 배속 주장 금지.
+
+**현재 EAI 기술 상태는 날짜 고정 수치가 아닌 `docs/EAI_P1_SWU_QUEUE.json` 최신 파일이 정본이다.** 2026-11-18 기준 SWU-007/008/020/023/024는 실제 신규 격리 코드를 갖춘 P1 후보로 업데이트되었으나, 전체 P2·고객 운영 승인을 의미하지 않는다. SWU-039 LIVE Hydrogen은 계속 승인 HOLD이며 정본 분모에서 삭제하지 않는다.
+
+
 One P1 SWU = High one-call target of actual source caller to callee to observable result and principal fail-closed case. No CI/test harness, broad syntax/type, security audit, browser/E2E/Windows as P1 SWU. Preserve mandatory CI and immediate auth/data/secret safety checks.
 Historic EAI 15 groups are decomposed into 42 units without changing requirements. C01..C36 complete, C03 missing in historic table restored. Tests and source prior evidence never treated as completed product.
 Current snapshot (2026-11-17): provisional 36/42 source-written candidate (85.7%) with official P1/P2 UNASSESSED; six source-incomplete/approval-blocked. Current ordinary READY empty; initial historic READY set 011/014/016/025/038 is obsolete.

@@ -1,3 +1,8 @@
+## 2026-11-18 KST — High accountability + CPAA/WE dynamic bottleneck update (policy only)
+- User explicitly selected current **web Sol High as EAI design+implementation owner**, web single-worker multi-SWU waves as default and **cost/time/risk-aware optional Sol Max direct coding** without mandatory failure-budget exhaustion. High first diagnoses its own design/implementation bugs; critical DB/trust or genuinely faster independent expertise can escalate immediately. General failure uses per-SWU 2+2, isolate only blocked SWU, keep independent READY moving. No speculative background execution or multi-model concurrency.
+- Current upstream work before this policy edit reported SWU-007/008/020/023/024 scoped source candidates; source provisional **41/42 (97.6%)**. SWU-039 LIVE remains owner-approved-only. **This policy update changes zero product SWUs**, official P1/P2 UNASSESSED, P2 LOCKED, RELEASE HOLD, speedup UNMEASURED; full P2 NOT_RUN.
+- Refined AGENTS, runbook, queue execution metadata, STATUS/HANDOFF. No final blueprint/P26/ADR-0002 change; no source, original/customer data, Production, permissions, paid/cloud access, ACTIVE or main modification.
+
 ## 2026-11-18 KST — SWU-007/008 and SWU-020/023/024 source candidates
 
 - Codex GPT-6.1 Sol Max ran separate A/B worktrees at `81ecdf2bcef174255aa035d289a018759b0ae328`. Integration preserved concurrent SWU-039 codec and owner execution-policy commits through `075547e6d094ee7b54336ed97ed18bcab1a7e058`.

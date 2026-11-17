@@ -3230,7 +3230,7 @@
   "P2": "LOCKED",
   "latest_feature_code_sha": "ad07eabcec5007b634b6d425bea7608cc95ba7ec",
   "source_candidate_count": 41,
-  "next_safe_queue_status": "SWU-007/008/020/023/024 SOURCE_COMPLETE_P2_PENDING. SWU-039 live transport BLOCKED_APPROVAL. Current owner single-worker default applies to ordinary queue continuation.",
+  "next_safe_queue_status": "Owner 2026-11-18 CPAA+WE+DYNAMIC_BOTTLENECK: web Sol High current designer/implementer; repeat safe waves per ㄱ; selective Codex Sol Max direct coding/independent review only when net completion-time or safety benefit; per-SWU 2+2, critical blocker may escalate immediately. Latest source 41/42 provisional; SWU-007/008/020/023/024 local isolated source candidates, 039 live owner GO HOLD. P2 locked.",
   "next_dependency_blocker": "SWU-039 requires authentic provider/free-tier configuration, explicit per-send owner approval and live transport implementation. Real verifier deployment, original restore, ACTIVE and Player remain authorized separately. P2 remains LOCKED.",
   "retry_escalation_policy": {
     "schema": "eai.p1.retry.isolate.solmax.v1",
@@ -3266,5 +3266,21 @@
     "approval_requirements": "No external provider/real Player/ACTIVE/original DB mutation without separate owner GO",
     "model_review_execution": "NOT_RUN"
   },
-  "policy_update_does_not_count_as_implementation": true
+  "policy_update_does_not_count_as_implementation": true,
+  "execution_strategy": {
+    "id": "CPAA_WE_DYNAMIC_BOTTLENECK",
+    "owner_selected": "2026-11-18 KST",
+    "p1_current_lead": "WEB_GPT6_SOL_HIGH_DESIGN_AND_IMPLEMENTATION",
+    "future_implementer": "WEB_GPT6_INSTANT_ONLY_AFTER_OWNER_ACTIVATES",
+    "mode": "SINGLE_WORKER_MULTI_SWU_REPEATED_WAVES",
+    "reasoning": "SERIAL_SINGLE_MODEL",
+    "tools": "PARALLEL_INDEPENDENT_IO_WHEN_SUPPORTED",
+    "priority": "CRITICAL_PATH_END_TO_END_SOURCE_COMPLETION_TIME",
+    "sol_max": "OPTIONAL_EARLY_SPECIALIST_WHEN_NET_SPEED_OR_RISK_BENEFIT__NO_FORCED_2_PLUS_2_FIRST",
+    "ordinary_failure": "EXISTING_PER_SWU_2_PLUS_2",
+    "gates": "DESIGN_REQUIRES_OWNER_GO_FOR_NEW_SCOPE__P2_LOCKED__RELEASE_HOLD",
+    "source_candidate_delta_from_policy": 0,
+    "speedup_evidence": "UNMEASURED",
+    "runbook": "docs/EAI_P1_SWU_RUNBOOK.md"
+  }
 }

@@ -1,3 +1,15 @@
+## 2026-11-18 KST — EAI High-led CPAA+WE dynamic-bottleneck handoff (10)
+1. EAI repo `hibi89/EAI`, branch `feature/kmong-eai-85-p31-20261112`; current P1 implementation owner and blueprint designer = **web GPT-6 Sol High**, Instant switch planned but not automatically active.
+2. Changed execution policy: CPAA selects critical SWU, WE executes repeated source waves per `ㄱ` with independent tool I/O parallel and one serial reasoning stream; Sol Max optional for actual net critical-time/safety gain.
+3. This turn modifies no product source or tests; actual code/runtime/P2 checks NOT_RUN. Upstream isolated source work at `3d3a60fb51ed0185956bb6e52fba3b3eb8f400ed` retained without overwrite.
+4. Source provisional 41/42 (97.6%); official P1/P2 UNASSESSED, P2 LOCKED, RELEASE HOLD; speedup UNMEASURED.
+5. SWU-039 LIVE Hydrogen owner GO still blocks final 42; latest source candidates 007/008/020/023/024 require P2 full validation. No general READY according to current queue.
+6. Baseline `3d3a60fb51ed0185956bb6e52fba3b3eb8f400ed`, policy commit SHA follows. Recheck branch HEAD, queue, code before next `ㄱ`.
+7. Preserve no original/cust DB writes, permissions, outbound API, paid providers, real Player, ACTIVE, main/Production or release without separate GO.
+8. Blueprint SHA `1b0712679d4171cd3681588e104ea5e8c6f6690d`, P26 and ADR-0002 unchanged.
+9. Next `ㄱ` work: select safe independent code gap, batch code and local safety checks; High owns design defect fixes. Optional bounded Codex escalation only on demonstrated critical correctness/total-time benefit, not after compulsory 2+2 exhaustion.
+10. 2026-11-18 KST, process update only; predecessor SHA `3d3a60fb51ed0185956bb6e52fba3b3eb8f400ed`, GitHub commit is authoritative.
+
 ## 2026-11-18 KST — Codex isolated recovery and verified learning source batch
 
 1. Use `hibi89/EAI@feature/kmong-eai-85-p31-20261112`. Both workers used `81ecdf2bcef174255aa035d289a018759b0ae328`. Integrated A `e6fde509a90ddd6aaedf8df313f81526c4c388cf`; integrated B and exact local test source `ad07eabcec5007b634b6d425bea7608cc95ba7ec`. Final blueprint blob `1b0712679d4171cd3681588e104ea5e8c6f6690d`.
