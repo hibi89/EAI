@@ -55,6 +55,19 @@ class MemoryReuseReviewTests(unittest.TestCase):
         self.assertIn("REVIEW_CONTRADICTED_BY_NEGATIVE_MEMORY",
                       {x.disposition for x in review})
 
+    def test_negative_outcome_hidden_by_visible_limit_still_blocks_reuse(self):
+        self.memory.remember(tier="PROCEDURAL", anchor_sha=self.parent,
+                             label="csv.review", outcome="SUCCESS_OBSERVED",
+                             captured_at=10)
+        # SEMANTIC sorts after PROCEDURAL: a limit=1 read alone would miss it.
+        self.memory.remember(tier="SEMANTIC", anchor_sha=self.child,
+                             label="csv.review", outcome="FAILURE_OBSERVED",
+                             captured_at=11)
+        review=review_memory_reuse(self.memory,"csv",now=30,limit=1)
+        self.assertEqual(len(review),1)
+        self.assertEqual(review[0].disposition,
+                         "REVIEW_CONTRADICTED_BY_NEGATIVE_MEMORY")
+
     def test_withdrawn_parent_invalidates_descendant_recommendation(self):
         self.memory.remember(tier="EPISODIC",anchor_sha=self.child,
                              label="csv.child",captured_at=10)
