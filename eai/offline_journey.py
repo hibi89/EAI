@@ -48,7 +48,9 @@ def preview_offline_journey(
             or explanation["verified_real_world"] is not False):
         raise ValueError("untrusted architect preview")
     plans = source["advisory_plans"]
-    if len(plans) != len(explanation["alternatives"]) or len(plans) > 8:
+    if (len(plans) != len(explanation["alternatives"]) or len(plans) > 8
+            or any(p["alternative_id"] != e["alternative_id"]
+                   for p, e in zip(plans, explanation["alternatives"]))):
         raise ValueError("inconsistent bounded architect alternatives")
     candidates = []
     # Reopen only the explicitly selected local source store. Never invoke
@@ -58,6 +60,19 @@ def preview_offline_journey(
             if type(option) is not dict:
                 raise ValueError("invalid architect alternative")
             node_hashes = tuple(option["node_hashes"])
+            step_sources = option.get("step_sources")
+            if (type(step_sources) is not list
+                    or len(step_sources) != len(option["plan_steps"])):
+                raise ValueError("unbound plan source inventory")
+            bound_steps = set()
+            for step, source_item in zip(option["plan_steps"], step_sources):
+                if (type(step) is not dict or type(source_item) is not dict
+                        or set(source_item) != {"step", "axnode_sha256"}
+                        or source_item["step"] != step.get("id")
+                        or source_item["step"] in bound_steps
+                        or source_item["axnode_sha256"] not in node_hashes):
+                    raise ValueError("plan step is not pinned to AXNODE provenance")
+                bound_steps.add(source_item["step"])
             for pinned in node_hashes:
                 node = store.get(pinned)
                 if node.sha256 != pinned:
