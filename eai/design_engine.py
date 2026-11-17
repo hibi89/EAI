@@ -37,6 +37,10 @@ class DesignEngine:
             reason = "REQUIRED_STRATEGY_NOT_AVAILABLE"
         elif len(analysis.evidence) < 2:
             reason = "INSUFFICIENT_DISTINCT_LOCAL_STRATEGIES"
+        elif len(analysis.evidence) - len(analysis.required) < (1 if analysis.required else 2):
+            # Two alternative designs must EACH honor every mandatory strategy.
+            # Never drop a required strategy merely to manufacture variety.
+            reason = "INSUFFICIENT_OPTIONAL_STRATEGIES"
         elif problem.risk == "HIGH":
             reason = "HIGH_RISK_REQUIRES_INDEPENDENT_REVIEW"
         options: list[dict] = []
@@ -51,10 +55,13 @@ class DesignEngine:
                 first_refs = required
                 second_refs = required + [optional[0].strategy_id]
             else:
-                first_refs = [analysis.evidence[0].strategy_id]
-                second_refs = [analysis.evidence[1].strategy_id]
-            if first_refs == second_refs:
-                raise ValueError("cannot create distinct bounded alternatives")
+                first_refs = [optional[0].strategy_id]
+                second_refs = [optional[1].strategy_id]
+            if (first_refs == second_refs or
+                    not set(analysis.required).issubset(first_refs) or
+                    not set(analysis.required).issubset(second_refs) or
+                    any(ref in analysis.forbidden for ref in first_refs + second_refs)):
+                raise ValueError("alternative violates required or forbidden strategies")
             options = [
                 {
                     "id": "option.evidence_first",
