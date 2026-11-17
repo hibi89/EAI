@@ -14,6 +14,7 @@ from eai.logic_synthesis import LogicSynthesizer
 from eai.solver_reference_check import review_candidate_with_cpu_baseline
 from eai.episode_replay import replay_memory_evidence
 from eai.experience_admission import inspect_learning_admission
+from eai.candidate_evidence_review import CandidateEvidenceReview
 
 
 class ExperienceAdmissionTests(unittest.TestCase):
@@ -121,6 +122,38 @@ class ExperienceAdmissionTests(unittest.TestCase):
                              label="data.review",captured_at=102)
         r=self.inspect()
         self.assertIn("EPISODE_NODE_OUTSIDE_CANDIDATE",r.reason_codes)
+
+    def synthetic_review(self):
+        return CandidateEvidenceReview(
+            "SYNTHETIC_REVIEW_ONLY_NOT_AUTHORIZED",
+            self.problem.digest(), self.candidate.candidate_sha256,
+            "3" * 64, "4" * 64, (), ())
+
+    def test_matching_candidate_review_is_still_manual_only(self):
+        verified_synthetic = self.synthetic_review()
+        result = inspect_learning_admission(
+            self.store, self.problem, self.candidate, self.audit,
+            self.replay(), candidate_review=verified_synthetic)
+        self.assertEqual(result.disposition, "SYNTHETIC_REVIEW_ONLY_NOT_TRAINING")
+        self.assertFalse(result.eligible_for_learning)
+        self.assertFalse(result.candidate_semantically_verified)
+        self.assertNotEqual(result.review_fingerprint, self.inspect().review_fingerprint)
+
+    def test_cross_candidate_review_reuse_is_held(self):
+        forged = replace(self.synthetic_review(), candidate_sha256="f" * 64)
+        result = inspect_learning_admission(
+            self.store, self.problem, self.candidate, self.audit,
+            self.replay(), candidate_review=forged)
+        self.assertEqual(result.disposition, "HOLD_UNTRUSTED_OR_INCOMPLETE_EXPERIENCE")
+        self.assertIn("UNTRUSTED_OR_UNRELATED_CANDIDATE_REVIEW", result.reason_codes)
+
+    def test_forged_synthetic_review_cannot_grant_training(self):
+        forged = replace(self.synthetic_review(), permits_learning=True)
+        result = inspect_learning_admission(
+            self.store, self.problem, self.candidate, self.audit,
+            self.replay(), candidate_review=forged)
+        self.assertFalse(result.eligible_for_learning)
+        self.assertIn("UNTRUSTED_OR_UNRELATED_CANDIDATE_REVIEW", result.reason_codes)
 
     def test_private_user_goal_is_never_persisted_or_rendered(self):
         r=self.inspect()

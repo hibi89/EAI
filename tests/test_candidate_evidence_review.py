@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 
 from eai.axnode_store import AXNodeStore
 from eai.contracts import ProblemSpec
@@ -111,6 +112,24 @@ class CandidateEvidenceReviewTests(unittest.TestCase):
         self.assertEqual(result.status, "QUARANTINE_UNTRUSTED_SYNTHETIC_RECEIPT")
         self.assertIn("INDEPENDENT_CPU_OR_STRUCTURE_DID_NOT_MATCH",
                       result.reason_codes)
+
+    def test_replay_mismatch_quarantines_even_valid_cpu_receipt(self):
+        fake_replay = replace(self.witness, witness_sha256="f" * 64)
+        with patch("eai.candidate_evidence_review.interpret_synthetic_candidate",
+                   return_value=fake_replay):
+            result = self.review()
+        self.assertEqual(result.status, "QUARANTINE_UNTRUSTED_SYNTHETIC_RECEIPT")
+        self.assertIn("EXECUTION_WITNESS_NOT_REPRODUCIBLE",
+                      result.reason_codes)
+        self.assertFalse(result.permits_promotion)
+
+    def test_missing_independent_replay_cannot_certify_a_receipt(self):
+        with patch("eai.candidate_evidence_review.interpret_synthetic_candidate",
+                   side_effect=ValueError("unsupported candidate")):
+            result = self.review()
+        self.assertIn("INDEPENDENT_SYNTHETIC_REPLAY_REJECTED",
+                      result.reason_codes)
+        self.assertFalse(result.permits_learning)
 
     def test_corrupted_execution_digest_cannot_be_reviewed(self):
         corrupted = replace(self.witness, witness_sha256="0" * 64)

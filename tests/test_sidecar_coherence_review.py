@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 
 from eai.axnode_store import AXNodeStore
 from eai.axnode_memory import AXNodeMemory
@@ -61,6 +62,35 @@ class SidecarCoherenceReviewTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             review_isolated_cross_db_coherence(
                 self.store, self.archive, self.isolated)
+
+    def test_source_sidecar_drift_is_detected_without_merging(self):
+        anchor = self.store.hashes()[0]
+        with EvidenceLedger(self.store, append_existing=True) as evidence:
+            evidence.append(claim_id="data.second", source_sha256=anchor,
+                            polarity="REFUTE", observed_at=15,
+                            expires_at=120, now=20)
+        result = review_isolated_cross_db_coherence(
+            self.store, self.archive, self.isolated)
+        self.assertEqual(result.disposition, "HOLD_SOURCE_SIDECAR_DRIFT")
+        self.assertTrue(result.source_sidecar_drift_detected)
+        self.assertFalse(result.may_bind_to_live_store)
+
+    def test_source_mutation_during_audit_is_distinguished_from_old_snapshot(self):
+        import eai.sidecar_coherence_review as module
+        original = module.audit_isolated_sidecar_restore
+        anchor = self.store.hashes()[0]
+        def write_during_read(store, archive, root):
+            with EvidenceLedger(self.store, append_existing=True) as evidence:
+                evidence.append(claim_id="data.changed", source_sha256=anchor,
+                                polarity="REFUTE", observed_at=15,
+                                expires_at=120, now=20)
+            return original(store, archive, root)
+        with patch.object(module, "audit_isolated_sidecar_restore",
+                          side_effect=write_during_read):
+            result = review_isolated_cross_db_coherence(
+                self.store, self.archive, self.isolated)
+        self.assertEqual(result.disposition, "HOLD_SOURCE_CHANGED_DURING_AUDIT")
+        self.assertTrue(result.source_sidecar_drift_detected)
 
     def test_corrupt_source_node_blocks_coherence_claim(self):
         digest = self.store.hashes()[0]

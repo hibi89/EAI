@@ -70,6 +70,50 @@ class CandidateReviewJournalTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "chain integrity"):
             CandidateReviewJournal(self.path)
 
+    def test_quarantine_may_not_self_downgrade_to_hold(self):
+        with CandidateReviewJournal(self.path, create=True) as journal:
+            journal.record(self.review, state="QUARANTINED")
+            with self.assertRaisesRegex(ValueError, "cannot self-reinstate"):
+                journal.record(self.review, state="REVIEW_HOLD")
+            self.assertEqual(journal.latest_for(self.review.candidate_sha256).state,
+                             "QUARANTINED")
+
+    def test_withdrawn_review_is_terminal_even_if_user_supplies_new_claim(self):
+        with CandidateReviewJournal(self.path, create=True) as journal:
+            journal.record(self.review, state="REVIEW_HOLD")
+            journal.record(self.review, state="WITHDRAWN_FROM_REVIEW")
+            with self.assertRaisesRegex(ValueError, "cannot be resurrected"):
+                journal.record(self.review, state="QUARANTINED")
+            self.assertEqual(len(journal.entries()), 2)
+
+    def test_duplicate_review_event_does_not_inflate_history(self):
+        with CandidateReviewJournal(self.path, create=True) as journal:
+            journal.record(self.review, state="REVIEW_HOLD")
+            with self.assertRaisesRegex(ValueError, "duplicate journal event"):
+                journal.record(self.review, state="REVIEW_HOLD")
+            self.assertEqual(len(journal.entries()), 1)
+
+    def test_changed_active_pointer_metadata_requires_separate_review(self):
+        with CandidateReviewJournal(self.path, create=True) as journal:
+            journal.record(self.review, state="REVIEW_HOLD",
+                           previous_active_sha256="a" * 64)
+            with self.assertRaisesRegex(ValueError, "ACTIVE pointer evidence changed"):
+                journal.record(self.review, state="QUARANTINED",
+                               previous_active_sha256="b" * 64)
+            self.assertEqual(journal.latest_for(self.review.candidate_sha256).
+                             previous_active_sha256, "a" * 64)
+
+    def test_untrusted_receipt_cannot_enter_review_hold(self):
+        bad = replace(self.review,
+                      status="QUARANTINE_UNTRUSTED_SYNTHETIC_RECEIPT",
+                      reason_codes=("FORGED_RECEIPT_AUTHORITY",))
+        with CandidateReviewJournal(self.path, create=True) as journal:
+            with self.assertRaisesRegex(ValueError, "untrusted review"):
+                journal.record(bad, state="REVIEW_HOLD")
+            journal.record(bad, state="QUARANTINED")
+            self.assertEqual(journal.latest_for(bad.candidate_sha256).state,
+                             "QUARANTINED")
+
     def test_existing_file_not_overwritten_on_create(self):
         self.path.write_bytes(b"original")
         with self.assertRaises(ValueError):
