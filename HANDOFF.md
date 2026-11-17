@@ -1,3 +1,15 @@
+## 2026-11-17 KST — owner retry policy 2+2 then Sol Max handoff (10)
+1. Mission still EAI V3.1 independent local Architect/Player/AXNODE/Experience Learner; do not switch projects.
+2. Updated documentation only: AGENTS top banner and old ceiling conflicts; SWU runbook step policy; 42-task JSON per-task stage and central Sol Max escalation. No product source code changed.
+3. Checks: branch HEAD + canonical blueprint blob pre-update checked; task count 42 and statuses intact. No runtime/CI/P2 execution from policy change (NOT_RUN).
+4. Provisional source-written 36/42=85.7% unchanged; official implementation/verification UNASSESSED. Documentation changes are 0 implementation progress.
+5. New owner policy: 2 substantive same-root-cause non-progress failures -> ISOLATED_REDESIGN_PENDING; redesign with genuinely different methods -> up to 2 more substantive tries; 4 failures -> SOLMAX_BATCH_PENDING and batch delegation to Codex GPT-6.1 Sol Max. Essential/critical dependency blockage -> IMMEDIATE_OWNER_SOLMAX_REQUEST now, regardless of attempts. Historic attempts are not automatically failures; never reset evidence across chats.
+6. Repository `hibi89/EAI`, branch `feature/kmong-eai-85-p31-20261112`, pre-policy source HEAD `29ec36eff903b3fe7f0c0b17022f7dc25ae4ebc9`, docs policy SHA follows. Current code/queue/source should be fetched at next turn.
+7. Production none. No new approval for paid/remote tools, original/customer data, Active, real Player, live Hydrogen, auth/permissions, main merge.
+8. Canonical blueprint blob `1b0712679d4171cd3681588e104ea5e8c6f6690d` and P26/ADR-0002 unchanged; existing mandatory CI protected.
+9. **Immediate owner Sol Max request candidates**: 007 critical epoch (008 dependent) and 020 independently controlled trust (023/024 dependent). This is a technical review request, NOT approval to execute unsafe operations. User must start Max; assistant has not run it. Non-essential 2+2 exhausted list currently empty and cannot be fabricated.
+10. Updated 2026-11-17 KST; policy-only, source 36/42, P2 LOCKED, RELEASE HOLD.
+
 ## 2026-11-17 KST — EAI P1 source repair and negative provenance gate (10)
 1. Goal: EAI V3.1 independent Architect/Player/AXNODE/experience learner, distinct from MLA. This chat P1 source coding; P2 remains LOCKED.
 2. Real source SHAs `1af05742d6547a42766ced2939e3d96282a66b59` and `db83d544e496da79599d766ecadb2fba1207da02`. Modified `eai/strategy_research_ranker.py` (fix prior shadow and reject unchecked prior); `eai/experience_admission.py` (raw recomputation+isolated journal+replay checks); `eai/candidate_evidence_review.py` (journal durable chain readback).
