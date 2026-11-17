@@ -2990,7 +2990,7 @@
       "score_rationale": "Protected operation: High safety review required",
       "status": "BLOCKED_APPROVAL",
       "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
-      "evidence_sha": null,
+      "evidence_sha": "2210ca4b1248cd521bcd693c34ae339c15dade45",
       "legacy_evidence_history": "none",
       "legacy_status": "BLOCKED_APPROVAL",
       "attempts_recorded": 0,
@@ -3009,7 +3009,8 @@
       "initial_nonprogress_attempts": null,
       "post_isolation_nonprogress_attempts": null,
       "retry_evidence": [],
-      "source_candidate_note": "2026-11-17 partial source at 60f9e882fc286ad3b0c92053312f87af852e11cf: eai/hydrogen_adapter.py contains exact public/synthetic Gemini payload preview + bounded strict JSON candidate-response parser, typed untrusted quarantined hypotheses, fail-closed OFF/consent gating, no network/SDK/credential. Function-level isolated codec local dependency-stub smoke 7/7 PASS, py_compile PASS, identical local/repo Git blob SHA a5c6286d09641ff39bb4f0782520db4e71ea194c. Exact repo-import tests, 8 prior ranker tests, CI/P2 NOT_RUN. Live transport, authentic per-send owner GO, verified free-tier project quota and genuine provider response remain unimplemented/unapproved; BLOCKED_APPROVAL, no +1 SWU."
+      "source_candidate_note": "2026-11-18 partial implemented LIVE HTTP source (unexecuted): eai/hydrogen_adapter.py code commits eab6728fc57bb30ab06fc27b4ac32f0e4d4ce70a and 2210ca4b1248cd521bcd693c34ae339c15dade45 (blob 050f3494d544d92e0757951b2a4f7c88df6c2980): static pinned official Google generateContent HTTPS host/model, exact request/response SHA and bounded strict untrusted quarantining, out-of-band Ed25519 owner per-send signed statement with expiry, owner-attested free-tier checked time and $0, pinned owner fingerprint and project, durable isolated SQLite single-project throttle/replay breaker and fail-closed OFF on HTTP/non-200/invalid response. Pure owner signable statement preview added; no actual credential, no authentic tier proof, no owner GO, no outgoing API invocation. Exact-blob security/order static guards 10/10 PASS; Python py_compile/full-module smoke/unittest/P2 NOT_RUN. Blocked at real operational approval and live acceptance; SWU-039 stays BLOCKED_APPROVAL and source candidate count remains 41/42.",
+      "source_only_code_sha": "2210ca4b1248cd521bcd693c34ae339c15dade45"
     },
     {
       "task_id": "EAI-SWU-040",
@@ -3228,10 +3229,10 @@
   "implemented_source_candidate_caveat": "41/42 provisional source candidates. Five owner-requested isolated and scoped paths passed immediate local checks; official P1/P2 UNASSESSED. Runtime grants and full P2 remain separately locked.",
   "official_implementation_rate": "UNASSESSED",
   "P2": "LOCKED",
-  "latest_feature_code_sha": "ad07eabcec5007b634b6d425bea7608cc95ba7ec",
+  "latest_feature_code_sha": "2210ca4b1248cd521bcd693c34ae339c15dade45",
   "source_candidate_count": 41,
-  "next_safe_queue_status": "Owner 2026-11-18 CPAA+WE+DYNAMIC_BOTTLENECK: web Sol High current designer/implementer; repeat safe waves per ㄱ; selective Codex Sol Max direct coding/independent review only when net completion-time or safety benefit; per-SWU 2+2, critical blocker may escalate immediately. Latest source 41/42 provisional; SWU-007/008/020/023/024 local isolated source candidates, 039 live owner GO HOLD. P2 locked.",
-  "next_dependency_blocker": "SWU-039 requires authentic provider/free-tier configuration, explicit per-send owner approval and live transport implementation. Real verifier deployment, original restore, ACTIVE and Player remain authorized separately. P2 remains LOCKED.",
+  "next_safe_queue_status": "SWU-039 real REST live transport code written at 2210ca4b, no API call performed; STATIC_ONLY guards 10/10 PASS; actual Python syntax/runtime P1 minimal check NOT_RUN; external owner per-send GO, actual free-tier/project evidence and verified live acceptance still blocked. 41/42 provisional candidates. Other source complete, P2 LOCKED.",
+  "next_dependency_blocker": "SWU-039 external authorization/trust enrollment: owner must verify real project/account free-tier eligibility, inspect exact public/synthetic payload, separately sign approval and give GO for first live send; real live E2E NOT_RUN; no fabricated 42/42.",
   "retry_escalation_policy": {
     "schema": "eai.p1.retry.isolate.solmax.v1",
     "owner_order_date": "2026-11-17 KST",

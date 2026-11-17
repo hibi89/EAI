@@ -1,3 +1,15 @@
+## 2026-11-18 KST — EAI SWU-039 live transport source handoff (10)
+1. Task EAI V3.1 SWU-039 (C30,C35), repo `hibi89/EAI` branch `feature/kmong-eai-85-p31-20261112`; P1 source implementation.
+2. Actual code `2210ca4b1248cd521bcd693c34ae339c15dade45` at `eai/hydrogen_adapter.py`; immutable blob `050f3494d544d92e0757951b2a4f7c88df6c2980`. Added actual dormant Google REST HTTPS sender, owner exact signed request gate, persistent dedicated SQLite quota/nonces, fail-closed transport/response handling, quarantine-only proposals; no remote execution.
+3. Exact-source static safety/call-order guards **10/10 PASS**; actual Python syntax, import, isolated callable smoke, Google service, full CI/P2 **NOT_RUN**. Credential reads, outbound requests, paid API usage **NONE**.
+4. SWU-039 retains `BLOCKED_APPROVAL` for actual free-tier eligibility, consent and live acceptance; 41/42 provisional source count, official P1/P2 UNASSESSED, P2 LOCKED, release HOLD.
+5. No source change elsewhere, no original DB/credentials, model-led plan/Player/ACTIVE, permissions, main/Production; no paid/remote actions authorized. Existing 007/008/020/023/024 source candidates preserved.
+6. Current code parent SHA `2210ca4b1248cd521bcd693c34ae339c15dade45`; this docs-only commit SHA follows. Check current remote HEAD before next implementation.
+7. Provider official REST host/model fixed; FREE tier is **owner attestation only** and not independently verified against authenticated Google project. Do NOT claim guaranteed $0.
+8. Final blueprint blob `1b0712679d4171cd3681588e104ea5e8c6f6690d`, P26, ADR-0002 immutable.
+9. Next: validate actual Python import/smoke in complete checkout (targeted P1 immediate safety); after owner GO only, check account tier and per-send signature, perform permitted controlled live test. No Sol Max request necessary for ordinary code unless critical new blocker arises.
+10. 2026-11-18 KST; code committed, full validation NOT_RUN; docs snapshot attached to basis SHA `2210ca4b1248cd521bcd693c34ae339c15dade45`.
+
 ## 2026-11-18 KST — EAI High-led CPAA+WE dynamic-bottleneck handoff (10)
 1. EAI repo `hibi89/EAI`, branch `feature/kmong-eai-85-p31-20261112`; current P1 implementation owner and blueprint designer = **web GPT-6 Sol High**, Instant switch planned but not automatically active.
 2. Changed execution policy: CPAA selects critical SWU, WE executes repeated source waves per `ㄱ` with independent tool I/O parallel and one serial reasoning stream; Sol Max optional for actual net critical-time/safety gain.
