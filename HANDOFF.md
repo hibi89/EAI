@@ -1,3 +1,15 @@
+## 2026-11-17 KST — EAI P1 five SWUs code+queue checkpoint (10-item)
+1. Mission: EAI V3.1 independent local Architect/Player/AXNODE/Experience Learner, distinct from MLA. P1 source coding, P2 LOCKED.
+2. Actual code: `81e3f7a156ac527467b5676932e096d47f14364c` seven source files for SWU-013/019/028/031/033: local design obligations, structurally rejected synthesis bounded revision, pure Player policy→noop→audit, disabled adapter registry, redacted Architect result trace. No external activity or authorization.
+3. Checks: exact source commit and branch/tree via GitHub PASS; static prohibition flags PASS_STATIC; exact-source Python syntax, smoke, DB security, full CI/Windows/browser P2 NOT_RUN. Do not infer any runtime PASS.
+4. State: source-written candidates 23/42 (54.8% provisional only), 20 unverified/minimal safety pending; official P1 and P2 UNASSESSED, RELEASE HOLD.
+5. Blocker: repository executable checkout not established after earlier DNS failure. Do not repeat unchanged failing route; keep operational high risk HOLD, use independent source tasks.
+6. Source: `hibi89/EAI` branch `feature/kmong-eai-85-p31-20261112`, actual feature SHA `81e3f7a156ac527467b5676932e096d47f14364c`; queue+handoff doc SHA follows. Verify latest branch HEAD before next work.
+7. Production: NONE. Real Player tools, Hydrogen API, external transfers, paid tier, ACTIVE and original customer data untouched.
+8. Preserve final blueprint blob `1b0712679d4171cd3681588e104ea5e8c6f6690d`, ADR-0002, CPU13, P26, protected branches, existing CI and Git history. No approved GO implied.
+9. Next READY: 006,015,022,036; source disjoint, three DB/local persistence paths must retain immediate integrity/security checks, isolate if not feasible. No fifth independent READY until dependencies resolve.
+10. Basis: 2026-11-17 KST, GitHub exact evidence SHA `81e3f7a156ac527467b5676932e096d47f14364c`. Official rates UNASSESSED, P2 and product release still HOLD.
+
 ## 2026-11-17 KST — EAI P1 5 SWU source code continuation (10-point)
 1. Goal: EAI independent local Architect + Player + AXNODE + Experience Learner; not MLA. P1 functional code only, P2 LOCKED.
 2. Actual source: `2f1a4e0053231524b353145d81c1db0333ef3c6a`, SWU-005/010/012/035/037 across 6 files: explicit AXNODE catalog reopen integrity, experience memory write→evidence replay, problem unknown→advisory abstention, append-only local research packet review, fake research idea quarantine→review. No real service or rights enabled.
