@@ -2990,7 +2990,7 @@
       "score_rationale": "Protected operation: High safety review required",
       "status": "BLOCKED_APPROVAL",
       "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
-      "evidence_sha": "2210ca4b1248cd521bcd693c34ae339c15dade45",
+      "evidence_sha": "2f6aebda8dd415a7e97da6c2f9669befca7661d6",
       "legacy_evidence_history": "none",
       "legacy_status": "BLOCKED_APPROVAL",
       "attempts_recorded": 0,
@@ -3009,8 +3009,8 @@
       "initial_nonprogress_attempts": null,
       "post_isolation_nonprogress_attempts": null,
       "retry_evidence": [],
-      "source_candidate_note": "2026-11-18 partial implemented LIVE HTTP source (unexecuted): eai/hydrogen_adapter.py code commits eab6728fc57bb30ab06fc27b4ac32f0e4d4ce70a and 2210ca4b1248cd521bcd693c34ae339c15dade45 (blob 050f3494d544d92e0757951b2a4f7c88df6c2980): static pinned official Google generateContent HTTPS host/model, exact request/response SHA and bounded strict untrusted quarantining, out-of-band Ed25519 owner per-send signed statement with expiry, owner-attested free-tier checked time and $0, pinned owner fingerprint and project, durable isolated SQLite single-project throttle/replay breaker and fail-closed OFF on HTTP/non-200/invalid response. Pure owner signable statement preview added; no actual credential, no authentic tier proof, no owner GO, no outgoing API invocation. Exact-blob security/order static guards 10/10 PASS; Python py_compile/full-module smoke/unittest/P2 NOT_RUN. Blocked at real operational approval and live acceptance; SWU-039 stays BLOCKED_APPROVAL and source candidate count remains 41/42.",
-      "source_only_code_sha": "2210ca4b1248cd521bcd693c34ae339c15dade45"
+      "source_candidate_note": "2026-11-18 current High SWU-039 source hardening at 2f6aebda8dd415a7e97da6c2f9669befca7661d6, blob 1aa66e719925418678a12bd038cd2e05ef27157f: preexisting owner-provisioned local canonical trust root is checked independently of signed permit and must match project/key; reply instructions explicitly carry exact request SHA; stale coordinator generation and policy rechecked before HTTP and after reply. No trust file/key created, no external data sent or live Google tier proven. 14/14 exact-blob structural safety guards PASS; actual Python syntax/import/test and live network NOT_RUN. Remains BLOCKED_APPROVAL until real project free-tier evidence, true owner-provisioned trust, exact per-send GO. Source candidates 41/42 (+0).",
+      "source_only_code_sha": "2f6aebda8dd415a7e97da6c2f9669befca7661d6"
     },
     {
       "task_id": "EAI-SWU-040",
@@ -3229,10 +3229,10 @@
   "implemented_source_candidate_caveat": "41/42 provisional source candidates. Five owner-requested isolated and scoped paths passed immediate local checks; official P1/P2 UNASSESSED. Runtime grants and full P2 remain separately locked.",
   "official_implementation_rate": "UNASSESSED",
   "P2": "LOCKED",
-  "latest_feature_code_sha": "2210ca4b1248cd521bcd693c34ae339c15dade45",
+  "latest_feature_code_sha": "2f6aebda8dd415a7e97da6c2f9669befca7661d6",
   "source_candidate_count": 41,
-  "next_safe_queue_status": "2026-11-18 central §0J/§0E applied from b42134647bf6998c0df0932e32336b0bc8ae8ccc; web GPT-6 Sol High current designer+P1 implementer, CPAA/WE 1–6 dynamically repeated safe waves; no automatic December Instant change, Sol Max only conditional. Current ordinary READY empty; SWU-039 remains BLOCKED_APPROVAL for authenticated free-tier/per-send owner GO/real external use; provisional 41/42 candidates (+0), P2 LOCKED, RELEASE HOLD.",
-  "next_dependency_blocker": "SWU-039 external authorization/trust enrollment: owner must verify real project/account free-tier eligibility, inspect exact public/synthetic payload, separately sign approval and give GO for first live send; real live E2E NOT_RUN; no fabricated 42/42.",
+  "next_safe_queue_status": "High CPAA+WE source fix at 2f6aebd: owner trust root independent of permit, prompt SHA, stale-generation guard. 14/14 structural PASS, exact Python syntax/runtime NOT_RUN; 039 BLOCKED_APPROVAL, first_ready=[], 41/42 provisional and P2 LOCKED. No other safe READY.",
+  "next_dependency_blocker": "SWU-039 per-send external owner GO and Google project free tier eligibility, owner-provisioned trust anchor; real API/production/paid use HOLD.",
   "retry_escalation_policy": {
     "schema": "eai.p1.retry.isolate.solmax.v1",
     "owner_order_date": "2026-11-17 KST",
