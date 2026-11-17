@@ -1,3 +1,15 @@
+## 2026-11-17 KST — EAI P1 source repair and negative provenance gate (10)
+1. Goal: EAI V3.1 independent Architect/Player/AXNODE/experience learner, distinct from MLA. This chat P1 source coding; P2 remains LOCKED.
+2. Real source SHAs `1af05742d6547a42766ced2939e3d96282a66b59` and `db83d544e496da79599d766ecadb2fba1207da02`. Modified `eai/strategy_research_ranker.py` (fix prior shadow and reject unchecked prior); `eai/experience_admission.py` (raw recomputation+isolated journal+replay checks); `eai/candidate_evidence_review.py` (journal durable chain readback).
+3. Source checks **15/15 PASS_STATIC**, blueprint and P26 unchanged; exact SHA Python/SQLite/crypto CPU functional tests, full CI/P2/Windows NOT_RUN. No runtime PASS.
+4. Implementation provisional 36/42 (85.7%) **unchanged**; 020 High, 023 and 024 partial; official implementation and verification UNASSESSED, release HOLD.
+5. Blockers: owner-governed external trust anchor and independent real semantic oracle missing (020); real learning admission cannot be legitimately granted (023/024). Coherent cross-DB transactional epoch/recovery (007/008) High HOLD; live Hydrogen 039 explicit owner GO HOLD.
+6. GitHub `hibi89/EAI` branch `feature/kmong-eai-85-p31-20261112`, code SHA `db83d544e496da79599d766ecadb2fba1207da02`. Docs SHA is later; check branch HEAD next turn.
+7. Production none, no original/customer modification, security elevation, ACTIVE, real Player or remote send; no main merge.
+8. Final blueprint blob `1b0712679d4171cd3681588e104ea5e8c6f6690d` unchanged; P26, ADR-0002, mandatory CI unchanged.
+9. Next: High approval-bound design for independently trusted oracle or verified evidence; do not add more untrusted claims/HOLD wrappers or fabricate percent. No ordinary READY.
+10. Updated 2026-11-17 KST, evidence feature SHA `db83d544e496da79599d766ecadb2fba1207da02` and static-only review; real runtime and P2 NOT_RUN.
+
 ## 2026-11-17 KST — EAI P1 research-only cumulative CPU strategy work (10-point)
 1. Mission: EAI V3.1 independent Architect/Player/AXNODE/Experience Learner; P1 source candidate and P2 LOCKED. No MLA/other-repo work.
 2. Actual source SHA chain `e8529e26fb1c1875bb308b5a6ef8a7dae4c43fa7` → `cea4d020d173b3fae7dcbdbee54b458911208c79` → `a7651b877e6b68cd889af643f4fe7530049dd638`. Actual code paths `eai/strategy_learner.py`, `eai/strategy_research_ranker.py`, `eai/strategy_cost_stats.py`: bounded online synthetic cost-prior update/fallback and measured local synthetic CPU timing caller→callee→ranker output.
