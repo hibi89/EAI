@@ -13,6 +13,7 @@ from .axnode_store import AXNodeStore
 from .contracts import ProblemSpec, canonical_bytes
 from .logic_oracle import SyntheticComparison, _records
 from .logic_synthesis import SynthesisCandidate
+from .logic_verifier import StructuralVerifier
 from .synthetic_candidate_interpreter import (
     SyntheticCandidateExecution, SyntheticStepWitness, SyntheticFamilyWitness,
 )
@@ -46,6 +47,14 @@ def verify_synthetic_interpretation(
         raise ValueError("explicit typed synthetic witness required")
     if not 2 <= len(fixtures) <= 12:
         raise ValueError("synthetic verifier fixture budget exceeded")
+    if (problem.risk != "LOW" or
+            "local.read" not in problem.permissions or
+            StructuralVerifier(store).check(problem, candidate).status !=
+            "STRUCTURE_ONLY_UNVERIFIED"):
+        return SyntheticCandidateReceipt(
+            "REJECTED_UNSAFE_OR_INVALID_CANDIDATE_STRUCTURE",
+            candidate.candidate_sha256, problem.digest(), witness.witness_sha256,
+            (), (), False, False)
     if (witness.disposition != "SYNTHETIC_INTERPRETED_UNVERIFIED" or
             witness.problem_sha256 != problem.digest() or
             witness.candidate_sha256 != candidate.candidate_sha256 or
@@ -68,7 +77,8 @@ def verify_synthetic_interpretation(
                 candidate.candidate_sha256, problem.digest(), witness.witness_sha256,
                 (), (), False, False)
         node = store.get(step.node_sha256).as_dict()
-        if (node["signature"]["output"] != "difference_receipt" or
+        if ("csv_ref" not in node["signature"]["inputs"].values() or
+                node["signature"]["output"] != "difference_receipt" or
                 len(node["steps"]) != 1 or
                 node["steps"][0]["skill"] != "csv.reconcile.v1" or
                 (i and "difference_receipt" not in
