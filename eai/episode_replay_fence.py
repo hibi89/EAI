@@ -1,4 +1,4 @@
-"""C16 durable *review-only* replay fence on opaque SHA-256 fingerprints.
+"""C16 durable replay fences on opaque SHA-256 fingerprints.
 
 New isolated SQLite file with strict no-overwrite creation and a unique index.
 This stores no prompts, customer data, training signals or executable authority.
@@ -13,9 +13,50 @@ import re
 import sqlite3
 
 from .episode_replay_dedup import EpisodeBatchReview
+from .contracts import canonical_sha256
 
 _HASH = re.compile(r"[0-9a-f]{64}\Z")
 _MAX_ROWS = 4096
+
+
+def _fingerprint_digest(fingerprints: tuple[str, ...]) -> str:
+    if (not 1 <= len(fingerprints) <= 32
+            or any(type(value) is not str or not _HASH.fullmatch(value)
+                   for value in fingerprints)
+            or len(set(fingerprints)) != len(fingerprints)):
+        raise ValueError("invalid or replayed verified episode fingerprints")
+    return canonical_sha256({
+        "schema": "eai.verified.episode.fence.v1",
+        "fingerprints": sorted(fingerprints),
+    })
+
+
+def _reserve_verified_fingerprints(
+    db: sqlite3.Connection, sequence: int, fingerprints: tuple[str, ...],
+) -> None:
+    """Same transaction as the signed candidate review and verifier nonce."""
+    if not db.in_transaction:
+        raise ValueError("verified episode replay fence needs a journal transaction")
+    if (db.execute("SELECT count(*) FROM verified_replays").fetchone()[0]
+            + len(fingerprints) > _MAX_ROWS):
+        raise ValueError("verified episode replay fence full")
+    try:
+        db.executemany("INSERT INTO verified_replays VALUES (?,?)",
+                       ((fingerprint, sequence) for fingerprint in fingerprints))
+    except sqlite3.IntegrityError as exc:
+        raise ValueError("verified episode replayed or already admitted") from exc
+
+
+def _verified_fingerprint_digests(db: sqlite3.Connection) -> dict[int, str]:
+    rows = db.execute("SELECT sequence,fingerprint FROM verified_replays LIMIT ?",
+                      (_MAX_ROWS + 1,)).fetchall()
+    if len(rows) > _MAX_ROWS:
+        raise ValueError("verified episode replay fence full")
+    grouped: dict[int, list[str]] = {}
+    for sequence, fingerprint in rows:
+        grouped.setdefault(sequence, []).append(fingerprint)
+    return {seq: _fingerprint_digest(tuple(fingerprints))
+            for seq, fingerprints in grouped.items()}
 
 
 @dataclass(frozen=True)

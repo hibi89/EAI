@@ -1,18 +1,18 @@
-"""Strict C16/C17 boundary for synthetic experience candidates.
-
-A successful legacy CPU baseline is NOT proof that a newly composed AXNODE
-ran correctly. This gate creates only a hash-pinned *manual review queue*,
-never a training signal, ACTIVE node, executable permission or verified fact.
-"""
+"""C16/C17 manual synthetic review and independently checked episode admission."""
 from __future__ import annotations
 
+from contextlib import contextmanager
 from dataclasses import dataclass
 import hashlib
 import re
 
 from .axnode_store import AXNodeStore
-from .candidate_evidence_review import CandidateEvidenceReview
-from .contracts import ProblemSpec, canonical_bytes
+from .candidate_evidence_review import (
+    CandidateEvidenceReview, ReconciliationCase, SignedReconciliationReview,
+    _is_digest, _recompute_reconciliation_cases, _recheck_signed_reconciliation,
+)
+from .candidate_review_journal import CandidateReviewJournal, _VerifiedJournalRecord
+from .contracts import ProblemSpec, canonical_bytes, canonical_sha256
 from .episode_replay import EpisodeReplayDecision
 from .logic_synthesis import SynthesisCandidate
 from .logic_verifier import StructuralVerifier
@@ -150,7 +150,6 @@ def review_episode_learning_boundary(
     """Actual independent candidate and episode checks; never trust raw labels."""
     from .episode_replay_fence import EpisodeReplayFence
     from .episode_replay_dedup import screen_episodes_for_manual_review
-    from .candidate_review_journal import CandidateReviewJournal
     from .candidate_evidence_review import review_candidate_evidence
     from .logic_oracle import SyntheticComparison
     from .synthetic_candidate_interpreter import SyntheticCandidateExecution
@@ -221,3 +220,124 @@ def review_episode_learning_boundary(
         if available else "HOLD_UNTRUSTED_EXPERIENCE",
         candidate.candidate_sha256, tuple(available),
         screened.rejected_memory_hashes, tuple(sorted(reasons)))
+
+
+@dataclass(frozen=True)
+class VerifiedLocalEpisode:
+    """A checked result or counterexample for one exact approved local case."""
+
+    episode_sha256: str
+    candidate_sha256: str
+    case_sha256: str
+    partition: str
+    observed_output_sha256: str
+    reference_output_sha256: str
+
+    @property
+    def correct(self) -> bool:
+        return self.observed_output_sha256 == self.reference_output_sha256
+
+
+@dataclass(frozen=True)
+class VerifiedEpisodeBatch:
+    policy_sha256: str
+    problem_sha256: str
+    baseline_sha256: str
+    episodes: tuple[VerifiedLocalEpisode, ...]
+    journal_entry_sha256: tuple[str, ...]
+    valid_until: int
+
+
+@contextmanager
+def _admitting_verified_episodes(
+    store: AXNodeStore, problem: ProblemSpec,
+    candidates: tuple[SynthesisCandidate, ...],
+    cases: tuple[ReconciliationCase, ...],
+    reviews: tuple[SignedReconciliationReview, ...],
+    journal: CandidateReviewJournal,
+):
+    if (type(store) is not AXNodeStore or type(problem) is not ProblemSpec
+            or type(journal) is not CandidateReviewJournal
+            or journal.path.is_relative_to(store.root)
+            or type(candidates) is not tuple or not 2 <= len(candidates) <= 4
+            or any(type(candidate) is not SynthesisCandidate
+                   or not _is_digest(candidate.candidate_sha256)
+                   for candidate in candidates)
+            or type(reviews) is not tuple or len(reviews) != len(candidates)
+            or any(type(review) is not SignedReconciliationReview for review in reviews)):
+        raise ValueError("isolated owner journal and exact typed review inputs required")
+    ids = {candidate.candidate_sha256 for candidate in candidates}
+    with journal._owner_transaction() as (policy, now):
+        if (len(ids) != len(candidates)
+                or ids != set(dict(policy.producers))
+                or problem.digest() != policy.problem_sha256):
+            raise PermissionError("candidate or problem is outside owner scope")
+        manifest, truths = _recompute_reconciliation_cases(cases)
+        if manifest != policy.case_manifest_sha256:
+            raise PermissionError("case source or partition is outside owner scope")
+        episodes, records, expiries = [], [], []
+        inputs = sorted(zip(candidates, reviews), key=lambda item: item[0].candidate_sha256)
+        for candidate, review in inputs:
+            receipt = _recheck_signed_reconciliation(
+                store, problem, candidate, truths, review, policy, now)
+            expiries.append(receipt.expires_at)
+            fingerprints, episode_hashes = [], []
+            for outcome in receipt.outcomes:
+                case = outcome.case
+                # A new nonce, signer, family name, number representation
+                # or swapped CSV sides cannot make this prior case new.
+                fingerprint = canonical_sha256({
+                    "schema": "eai.local.verified.episode.replay.v1",
+                    "problem_sha256": policy.problem_sha256,
+                    "candidate_sha256": candidate.candidate_sha256,
+                    "semantic_case_sha256": case.semantic_case_sha256,
+                })
+                digest = canonical_sha256({
+                    "schema": "eai.local.verified.episode.v1",
+                    "fingerprint": fingerprint,
+                    "receipt_binding_sha256": receipt.binding_sha256,
+                    "case_sha256": case.case_sha256,
+                    "observed_output_sha256": outcome.observed_output_sha256,
+                    "reference_output_sha256": case.expected_output_sha256,
+                })
+                episodes.append(VerifiedLocalEpisode(
+                    digest, candidate.candidate_sha256, case.case_sha256, case.partition,
+                    outcome.observed_output_sha256, case.expected_output_sha256))
+                fingerprints.append(fingerprint)
+                episode_hashes.append(digest)
+            records.append(_VerifiedJournalRecord(
+                candidate.candidate_sha256,
+                canonical_sha256({
+                    "schema": "eai.local.verified.candidate.outcomes.v1",
+                    "policy_sha256": policy.sha256,
+                    "episode_sha256": episode_hashes,
+                }),
+                receipt.binding_sha256,
+                receipt.nonce_sha256,
+                tuple(fingerprints),
+                receipt.expires_at,
+            ))
+        entries = journal._record_verified_batch(policy, tuple(records))
+        valid_until = min(expiries)
+        yield policy, VerifiedEpisodeBatch(
+            policy.sha256, policy.problem_sha256, policy.baseline_sha256,
+            tuple(episodes), tuple(entry.entry_sha256 for entry in entries),
+            valid_until)
+        if journal._observe_owner_clock() >= valid_until:
+            raise PermissionError("independent review expired before admission completed")
+
+
+def admit_verified_episodes(
+    store: AXNodeStore, problem: ProblemSpec,
+    candidates: tuple[SynthesisCandidate, ...],
+    cases: tuple[ReconciliationCase, ...],
+    reviews: tuple[SignedReconciliationReview, ...],
+    journal: CandidateReviewJournal,
+) -> VerifiedEpisodeBatch:
+    """Independently check and transactionally admit a fresh batch once.
+
+    Call the ranker for admission and fitting together. A returned batch is
+    an audit result; replaying it cannot authorize another update.
+    """
+    with _admitting_verified_episodes(store, problem, candidates, cases, reviews, journal) as (_, batch):
+        return batch

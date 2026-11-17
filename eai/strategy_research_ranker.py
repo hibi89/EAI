@@ -1,20 +1,21 @@
-"""C17 research-only strategy ranking after recomputed B0/B1 synthetic checks.
-
-There is intentionally NO persistent trained learner and NO ACTIVE change:
-unverified synthetic parity cannot be elevated into a trusted reward signal.
-The chosen order minimizes declared CPU cost only among eligible simulations.
-"""
+"""C17 synthetic cost research and verified local advisory strategy ranking."""
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from time import perf_counter_ns, process_time_ns
 
 from .axnode_store import AXNodeStore
+from .candidate_evidence_review import ReconciliationCase, SignedReconciliationReview
+from .candidate_review_journal import CandidateReviewJournal
 from .contracts import ProblemSpec
+from .experience_admission import _admitting_verified_episodes
 from .logic_synthesis import LogicSynthesizer, SynthesisCandidate
 from .synthetic_candidate_benchmark import benchmark_synthetic_candidate
 from .synthetic_curriculum import SyntheticCurriculum, generate_synthetic_curriculum
-from .strategy_learner import BoundedResearchPrior, advance_bounded_research_prior
+from .strategy_learner import (
+    BoundedResearchPrior, VerifiedStrategyUpdate, _fit_verified_strategy,
+    advance_bounded_research_prior,
+)
 
 
 @dataclass(frozen=True)
@@ -201,3 +202,28 @@ def rank_bounded_strategy_research(
         research_cost_prior_sha256=(
             () if new_prior is None else new_prior.curriculum_sha256),
         research_prior=new_prior, research_update_status=change)
+
+
+def rank_verified_strategies(
+    store: AXNodeStore, problem: ProblemSpec,
+    candidates: tuple[SynthesisCandidate, ...],
+    cases: tuple[ReconciliationCase, ...],
+    reviews: tuple[SignedReconciliationReview, ...],
+    journal: CandidateReviewJournal,
+) -> VerifiedStrategyUpdate:
+    """Fit from fresh verified episodes under the current owner policy.
+
+    Admission, fit and held-out comparison share a journal transaction with
+    policy updates. Failed admission or fitting rolls back journal writes.
+    Reopen or roll back through the same journal. The selection is usable
+    only until its earliest review expires and under its current owner policy.
+    """
+    with _admitting_verified_episodes(
+        store, problem, candidates, cases, reviews, journal,
+    ) as (policy, batch):
+        update = _fit_verified_strategy(candidates, batch)
+        selection = journal._write_selection(
+            policy, candidate=update.advisory_candidate_sha256,
+            fallback=update.fallback_candidate_sha256, valid_until=update.valid_until,
+            proofs=batch.journal_entry_sha256)
+        return replace(update, selection_sha256=selection.selection_sha256)

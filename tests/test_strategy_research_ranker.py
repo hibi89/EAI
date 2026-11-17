@@ -68,6 +68,8 @@ class StrategyResearchRankerTests(unittest.TestCase):
         self.assertEqual(len(outcome.ranked), 1)
         self.assertEqual(outcome.ranked[0].compared_train, 2)
         self.assertEqual(outcome.ranked[0].compared_heldout, 2)
+        self.assertIs(type(outcome.ranked[0].measured_synthetic_cpu_ms), int)
+        self.assertGreaterEqual(outcome.ranked[0].measured_synthetic_cpu_ms, 0)
         self.assertFalse(outcome.learner_trained)
         self.assertFalse(outcome.ranked[0].trusted_for_learning)
         self.assertFalse(outcome.permits_promotion)
@@ -75,7 +77,13 @@ class StrategyResearchRankerTests(unittest.TestCase):
         self.assertEqual(outcome.verified_uplift, "NOT_MEASURED")
 
     def test_same_source_same_synthetic_rank_deterministic(self):
-        self.assertEqual(self.rank(), self.rank())
+        with patch("eai.strategy_research_ranker.perf_counter_ns",
+                   side_effect=(0, 100_000_000, 0, 100_000_000)), patch(
+                       "eai.strategy_research_ranker.process_time_ns",
+                       side_effect=(0, 37_000_000, 0, 37_000_000)):
+            first, second = self.rank(), self.rank()
+        self.assertEqual(first, second)
+        self.assertEqual(first.ranked[0].measured_synthetic_cpu_ms, 37)
 
     def test_forged_candidate_digest_cannot_be_ranked(self):
         bad = replace(self.candidate, candidate_sha256="f" * 64)

@@ -1,5 +1,6 @@
 
 """Synthetic review-only durable replay fence; no training/execution permission."""
+from contextlib import closing
 from dataclasses import replace
 from pathlib import Path
 import sqlite3
@@ -72,7 +73,7 @@ class EpisodeReplayFenceTests(unittest.TestCase):
     def test_wrong_schema_version_fails(self):
         with EpisodeReplayFence(self.file, create=True):
             pass
-        with sqlite3.connect(self.file) as db:
+        with closing(sqlite3.connect(self.file)) as db:
             db.execute("PRAGMA user_version=2")
         with self.assertRaises(ValueError):
             EpisodeReplayFence(self.file, append_existing=True)

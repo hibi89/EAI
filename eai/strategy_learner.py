@@ -1,13 +1,11 @@
-"""EAI-SWU-024 bounded local CPU research updates, NOT trusted learning.
-
-All outcomes remain synthetic/unverified and in-memory only. The real
-verified-outcome learner is unavailable until an independent source verifier
-and owner-governed admission are supplied; this module cannot fake them.
-"""
+"""Bounded synthetic research and local verified-outcome strategy updates."""
 from __future__ import annotations
 
 from dataclasses import dataclass
 import re
+
+from .experience_admission import VerifiedEpisodeBatch
+from .logic_synthesis import SynthesisCandidate
 
 _HASH = re.compile(r"[0-9a-f]{64}\Z")
 
@@ -198,3 +196,63 @@ def advance_bounded_research_prior(
     return BoundedResearchUpdate(
         "UPDATED_SYNTHETIC_CPU_PRIOR_UNVERIFIED",
         updated, ordered(updated), True, ())
+
+
+@dataclass(frozen=True)
+class VerifiedStrategyUpdate:
+    """One local advisory selection and its independent held-out result."""
+
+    status: str
+    baseline_sha256: str
+    training_preference_sha256: str
+    advisory_candidate_sha256: str | None
+    training_errors: tuple[tuple[str, int], ...]
+    held_out_errors: tuple[tuple[str, int], ...]
+    policy_sha256: str
+    journal_entry_sha256: tuple[str, ...]
+    valid_until: int
+    fallback_candidate_sha256: str | None
+    selection_sha256: str | None = None
+
+
+def _fit_verified_strategy(
+    candidates: tuple[SynthesisCandidate, ...], batch: VerifiedEpisodeBatch,
+) -> VerifiedStrategyUpdate:
+    """Fit one ranking from training cases, then check the proposed selection."""
+    inventory = {candidate.candidate_sha256: candidate for candidate in candidates}
+    baseline = batch.baseline_sha256
+    training_errors = dict.fromkeys(inventory, 0)
+    for episode in batch.episodes:
+        if episode.partition == "TRAIN" and not episode.correct:
+            training_errors[episode.candidate_sha256] += 1
+    champion = min(inventory, key=lambda digest: (
+        training_errors[digest], inventory[digest].step_count,
+        inventory[digest].predicted_seconds, digest != baseline, digest,
+    ))
+    # Evaluate only the proposed selection and the owner-pinned fallback.
+    # A held-out failure cannot cause a search for a different challenger.
+    held_out_errors = dict.fromkeys((baseline, champion), 0)
+    for episode in batch.episodes:
+        if (episode.partition == "HELD_OUT"
+                and episode.candidate_sha256 in held_out_errors and not episode.correct):
+            held_out_errors[episode.candidate_sha256] += 1
+
+    preferred, previous = inventory[champion], inventory[baseline]
+    fewer_operators = (preferred.step_count < previous.step_count
+                       and preferred.predicted_seconds <= previous.predicted_seconds)
+    safe_baseline = training_errors[baseline] == held_out_errors[baseline] == 0
+    safe_champion = training_errors[champion] == held_out_errors[champion] == 0
+    if (champion != baseline and safe_champion and (not safe_baseline or fewer_operators)):
+        status, selected = "UPDATED_LOCAL_ADVISORY_STRATEGY", champion
+    elif not safe_baseline:
+        status, selected = "HOLD_NO_VERIFIED_FALLBACK", None
+    elif champion != baseline and held_out_errors[champion] > 0:
+        status, selected = "ROLLBACK_HELD_OUT_REGRESSION", baseline
+    else:
+        status, selected = "RETAIN_BASELINE_NO_HELD_OUT_UPLIFT", baseline
+
+    return VerifiedStrategyUpdate(
+        status, baseline, champion, selected, tuple(sorted(training_errors.items())),
+        tuple(sorted(held_out_errors.items())), batch.policy_sha256,
+        batch.journal_entry_sha256, batch.valid_until,
+        baseline if safe_baseline else None)
