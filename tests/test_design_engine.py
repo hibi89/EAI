@@ -107,6 +107,14 @@ class DesignEngineTests(unittest.TestCase):
         self.assertTrue(all("data.strategy_a" in option[1]
                             for option in result.design.alternatives))
 
+    def test_two_mandatory_strategies_cannot_be_dropped_for_fake_diversity(self):
+        self.populate()
+        result = self.engine.propose(self.problem(
+            hard_constraints=["must:data.strategy_a", "must:data.strategy_b"]))
+        self.assertEqual(result.design.alternatives, ())
+        self.assertEqual(result.design.blocked_reason,
+                         "INSUFFICIENT_OPTIONAL_STRATEGIES")
+
     def test_single_candidate_and_high_risk_abstain(self):
         self.store.import_node(json.dumps(self.node("data.strategy_a")))
         self.assertEqual(self.engine.propose(self.problem()).design.blocked_reason,
