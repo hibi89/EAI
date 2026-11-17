@@ -47,6 +47,8 @@ class LogicSynthesizer:
                 node_hashes: tuple[str, ...]) -> SynthesisCandidate:
         if type(problem) is not ProblemSpec:
             raise ValueError("typed problem required")
+        if problem.risk == "HIGH":
+            raise ValueError("high risk composition requires independent owner review")
         if (type(node_hashes) is not tuple or not 2 <= len(node_hashes) <= _MAX_NODES or
                 any(type(h) is not str for h in node_hashes) or
                 len(set(node_hashes)) != len(node_hashes)):
