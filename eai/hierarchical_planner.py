@@ -178,3 +178,77 @@ class HierarchicalPlanner:
                   "PARTIAL_UNVERIFIED" if candidates else "BLOCKED")
         return PlanningOutcome(digest, tuple(candidates), tuple(blocked),
                                status, expansions)
+
+
+# EAI-SWU-015: actual plan candidates -> source-pinned advisory decision.
+@dataclass(frozen=True)
+class HierarchicalPlanReview:
+    problem_sha256: str
+    status: str
+    selected_alternative_id: str | None
+    selected_plan: PlanSpec | None
+    selected_step_sources: tuple[tuple[str, str], ...]
+    alternatives: tuple[str, ...]
+    blocked: tuple[tuple[str, str], ...]
+    reason_codes: tuple[str, ...]
+    expansions: int
+    can_execute_real_actions: bool = False
+    independent_verification: str = "NOT_ESTABLISHED"
+
+
+def plan_and_review_provenance(
+    planner: HierarchicalPlanner, problem: ProblemSpec,
+    design: DesignOutcome, *, max_expansions: int = 8,
+    cancelled: Callable[[], bool] | None = None,
+) -> HierarchicalPlanReview:
+    """Design→bounded DAG→pinned step sources→EAI-owned advisory or abstain."""
+    if type(planner) is not HierarchicalPlanner or type(problem) is not ProblemSpec:
+        raise ValueError("explicit local planner and problem required")
+    outcome = planner.plan(
+        problem, design, max_expansions=max_expansions, cancelled=cancelled)
+    if outcome.problem_sha256 != problem.digest():
+        raise ValueError("planner outcome crossed problem identity")
+    alternatives = tuple(c.alternative_id for c in outcome.candidates)
+    if len(set(alternatives)) != len(alternatives) or len(alternatives) > 8:
+        raise ValueError("invalid bounded planner alternatives")
+    blockers = list(outcome.blocked)
+    for candidate in outcome.candidates:
+        if candidate.trust != "ADVISORY_UNVERIFIED_NOT_EXECUTED":
+            raise ValueError("untrusted plan authority")
+        if candidate.plan.problem_sha256 != problem.digest():
+            raise ValueError("cross-problem candidate plan")
+        step_ids = tuple(sid for sid, *_ in candidate.plan.steps)
+        if len(candidate.step_sources) != len(step_ids) or (
+                tuple(sid for sid, _ in candidate.step_sources) != step_ids):
+            raise ValueError("unbound plan steps")
+        if (len(candidate.node_hashes) > 8 or
+                len(set(candidate.node_hashes)) != len(candidate.node_hashes)
+                or any(h not in candidate.node_hashes for _, h in candidate.step_sources)):
+            raise ValueError("unbound AXNODE source")
+        for digest in candidate.node_hashes:
+            if planner._store.get(digest).sha256 != digest:
+                raise ValueError("stale AXNODE source in plan")
+    if outcome.status == "CANCELLED":
+        return HierarchicalPlanReview(
+            problem.digest(), "CANCELLED", None, None, (),
+            alternatives, tuple(blockers), ("CANCELLED_BEFORE_DECISION",),
+            outcome.expansions)
+    if outcome.status not in ("CANDIDATES_UNVERIFIED", "PARTIAL_UNVERIFIED", "BLOCKED"):
+        raise ValueError("unexpected local plan search disposition")
+    # One candidate is not silently sold as a reviewed alternative choice.
+    if (outcome.status != "CANDIDATES_UNVERIFIED"
+            or len(outcome.candidates) < 2
+            or design.design.blocked_reason or design.analysis.contradictions):
+        reasons = tuple(sorted({
+            "ALTERNATIVES_NOT_ESTABLISHED",
+            *(reason for _aid, reason in blockers),
+        }))
+        return HierarchicalPlanReview(
+            problem.digest(), "ABSTAINED", None, None, (),
+            alternatives, tuple(blockers), reasons, outcome.expansions)
+    chosen = outcome.candidates[0]
+    return HierarchicalPlanReview(
+        problem.digest(), "ADVISORY_PLAN_NOT_EXECUTED",
+        chosen.alternative_id, chosen.plan, chosen.step_sources,
+        alternatives, tuple(blockers),
+        ("INDEPENDENT_ORACLE_REQUIRED",), outcome.expansions)

@@ -82,3 +82,71 @@ def inspect_recovery_preflight(store: AXNodeStore) -> RecoveryPreflight:
     status = "REVIEW_REQUIRED" if findings else "AXNODE_V1_ONLY_CANDIDATE_UNVERIFIED"
     return RecoveryPreflight(status, audit["indexed"], tuple(findings),
                              tuple(sidecars))
+
+
+# EAI-SWU-006: existing sidecar snapshot -> isolated restore -> commit audit.
+@dataclass(frozen=True)
+class IsolatedSidecarSnapshotReceipt:
+    status: str
+    archived_file_count: int
+    restored_row_count: int
+    matched_anchor_count: int
+    archive_name: str | None
+    restored_name: str | None
+    original_modified: bool = False
+    live_restore_applied: bool = False
+    independent_semantic_proof: bool = False
+
+
+def snapshot_and_audit_sidecars(
+    store: AXNodeStore, archive: str | Path, isolated_restore: str | Path, *,
+    perform_isolated_copy: bool = False,
+) -> IsolatedSidecarSnapshotReceipt:
+    """Opt-in isolated copy; no automatic restore to live AXNODE or customer DB.
+
+    Existing backup/restore already do exclusive publication, WAL-safe copy,
+    marker fsync and local SQLite validation. This links their actual receipts.
+    A failure leaves any staged evidence for independent review, not deletion.
+    """
+    from .axnode_sidecar_backup import (
+        create_sidecar_bundle, restore_sidecar_bundle)
+    from .sidecar_recovery_audit import audit_isolated_sidecar_restore
+    if type(store) is not AXNodeStore or type(perform_isolated_copy) is not bool:
+        raise ValueError("typed explicit AXNODE recovery inputs required")
+    pre = inspect_recovery_preflight(store)
+    permitted = {"NOT_PRESENT", "LOCAL_SIDECAR_NOT_IN_V1_BACKUP",
+                 "WAL_SNAPSHOT_REQUIRED"}
+    if (pre.catalog_indexed > 3000 or
+            any(state not in permitted for _, state in pre.sidecars) or
+            any(issue not in {
+                "MEMORY_EXCLUDED_FROM_V1_ARCHIVE",
+                "EVIDENCE_EXCLUDED_FROM_V1_ARCHIVE",
+            } for issue in pre.source_findings)):
+        return IsolatedSidecarSnapshotReceipt(
+            "HOLD_SOURCE_INTEGRITY_OR_SCHEMA", 0, 0, 0, None, None)
+    if not perform_isolated_copy:
+        return IsolatedSidecarSnapshotReceipt(
+            "HOLD_EXPLICIT_ISOLATED_COPY_REQUIRED", 0, 0, 0, None, None)
+    archive = Path(archive).expanduser()
+    target = Path(isolated_restore).expanduser()
+    if (archive.is_symlink() or target.is_symlink()
+            or archive.exists() or target.exists()
+            or archive.resolve(strict=False).is_relative_to(store.root)
+            or target.resolve(strict=False).is_relative_to(store.root)
+            or target.resolve(strict=False).is_relative_to(archive.parent / archive.name)
+            or not archive.parent.is_dir() or not target.parent.is_dir()
+            or archive.parent.is_symlink() or target.parent.is_symlink()):
+        raise ValueError("fresh, separate, local destination paths required")
+    if not any(s != "NOT_PRESENT" for _, s in pre.sidecars):
+        return IsolatedSidecarSnapshotReceipt(
+            "HOLD_NO_SIDECARS_PRESENT", 0, 0, 0, None, None)
+    written = create_sidecar_bundle(store, archive)
+    restored = restore_sidecar_bundle(written, target)
+    audited = audit_isolated_sidecar_restore(store, written, restored)
+    if (audited.status != "ISOLATED_RESTORE_INTEGRITY_ONLY_UNVERIFIED"
+            or audited.original_data_modified or audited.bound_into_live_store):
+        raise ValueError("isolated restore audit was not safe")
+    return IsolatedSidecarSnapshotReceipt(
+        "ISOLATED_BACKUP_RESTORED_AUDITED_UNVERIFIED",
+        audited.archived_file_count, audited.validated_row_count,
+        audited.matched_anchor_count, written.name, restored.name)

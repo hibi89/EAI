@@ -84,3 +84,11 @@ class ResearchQuota:
             self._count += 1
             self._requests.append((stamp, input_tokens + output_cap_tokens))
             return QuotaDecision(True, "LOCAL_RESERVED_MOCK_ONLY", self._count)
+
+
+# EAI-SWU-036: opt-in persistent local-only quota factory.
+def open_durable_mock_quota(path, *, limits: ResearchLimits | None = None,
+                            allow_create: bool = False):
+    """Use a fresh isolated SQLite ledger, never expose real API permission."""
+    from .research_quota_store import DurableMockQuota
+    return DurableMockQuota(path, limits=limits, allow_create=allow_create)

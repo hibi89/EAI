@@ -119,3 +119,20 @@ def record_and_review_experience(
     return ExperienceMemoryDecision(
         digest, anchor_sha, tier, outcome,
         reviewed.disposition, reviewed.evidence_state)
+
+
+# EAI-SWU-022: direct replay by bounded exact episode record SHA.
+def replay_exact_episode(memory: AXNodeMemory, evidence: EvidenceLedger | None,
+                         memory_sha256: str, *, now: int | None = None
+                         ) -> EpisodeReplayDecision | None:
+    """Lookup actual immutable episode before interpreting review status."""
+    if type(memory) is not AXNodeMemory:
+        raise ValueError("explicit local memory required")
+    raw = memory.get(memory_sha256)
+    results = replay_memory_evidence(
+        memory, evidence, raw["label"], now=now, limit=25)
+    matching = [record for record in results
+                if record.memory_sha256 == memory_sha256]
+    if len(matching) > 1:
+        raise ValueError("duplicated replay episode identity")
+    return matching[0] if matching else None
