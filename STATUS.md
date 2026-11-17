@@ -1,3 +1,13 @@
+## 2026-11-17 KST — EAI original Architect/Player V3 canonical design (documentation only)
+- Owner scope: EAI = original independent general-purpose local architect + player + logic learner; `my_local_ai` = separate Codex-style coding/instruction executor. This is not a rename, integration, product delivery, model claim or release.
+- Canonical complete blueprint: `docs/EAI_FINAL_BLUEPRINT.md`; atomic task queue, implementation runbook and acceptance matrix: `docs/EAI_INSTANT_TASK_QUEUE.md`. ADR-0002 input-only Qwen CPU ownership remains controlling. Describes AXNODE node lifecycle, typed composition, alternative planning, independent verification, negative memory, verified experience learning, safe Player, benchmark and hardware constraints.
+- Changed scope: **documentation design only**. Existing EAI implementation (13 typed CPU kinds/P26), P38 synthetic candidate and old source remain unchanged. No full CI/local run/Windows/model/integration performed in this design change; new module gates `DESIGNED_NOT_IMPLEMENTED/NOT_RUN`. Prior P37 Linux CI applies to old SHA only.
+- GitHub baseline before this documentation patch: `5186cb1aa7928054d56b1cd0a40ea5943a5b3892` on `feature/kmong-eai-85-p31-20261112`. Actual final design commit SHA = this entry's containing HEAD, verify GitHub ref after write; no main merge.
+- Historical engineering 85% is legacy Kmong product rubric only. New EAI V3 implementation/verification `UNASSESSED` until user-approved denominator/weights and actual evidence. `RELEASE HOLD` remains for commercial candidate.
+- NEXT READY: `EAI-V3-01` typed contract and no-regression fixtures, followed by `EAI-V3-02` AXNODE pure parser; actual coding is separate future execution. Risk: new autonomous actions, file/DB writes, external model APIs/credentials and permissions require explicit consent. No external send or paid action occurred.
+
+---
+
 ## 2026-11-17 KST — P38 Hydrogen optional evaluation: design + offline benchmark implementation candidate
 - Active product branch `feature/kmong-eai-85-p31-20261112`, pre-change HEAD `bf1ef6ebbf2b260f6328fb02dc21233ed9ec509e`. ADR-0004 and EAI-H01–H08 task queue added; existing ADR-0002 CPU ownership, 13 typed goals, P26 SHA human execution gate and customer ZIP unchanged.
 - New offline-only `scripts/benchmark_model_candidates.py`, synthetic fixtures and adversarial tests. Zero API/remote/model invocation, no billing/permission changes. The fixture model names are synthetic labels, **not actual Hydrogen or Qwen execution**.

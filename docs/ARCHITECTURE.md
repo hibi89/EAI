@@ -1,3 +1,5 @@
+**CANONICAL FOR FUTURE (DESIGN, NOT CURRENT RUNTIME):** [EAI independent Architect/Player final blueprint](EAI_FINAL_BLUEPRINT.md). The code below describes the actually implemented CPU-first baseline; AXNODE/StrategySynthesizer/WorldModel/Player/Learner are *planned*, not present. [V3 task queue](EAI_INSTANT_TASK_QUEUE.md). ADR-0002 is still binding.
+
 # EAI Architecture — canonical CPU-first independent system (2026-10-31)
 
 The owner clarification [ADR-0002](ADR-0002_EAI_COGNITIVE_OWNERSHIP.md) supersedes the old Qwen-chatbot design.

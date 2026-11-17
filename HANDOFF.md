@@ -1,3 +1,17 @@
+## 2026-11-17 KST — EAI V3 original architect/player FINAL DESIGN handoff (10 points)
+1. Goal: return EAI to an independently cognitive local **Architect + Player + lifelong Logic Learner**, not `my_local_ai` Codex/instruction execution. Long-term research target, no GPT-parity claim.
+2. Decision: compared fixed CPU-only, pure AXNODE/RAG, Qwen-as-brain, verified neuro-symbolic composition, new foundation training. Selected EAI CPU-owned typed planning+synthesis+verification, AXNODE graph/episodes and small learned ranker; Qwen INPUT only per ADR-0002.
+3. Tests: docs-only change; compilation, CI, Windows, real local Qwen, benchmarks and player E2E `NOT_RUN`. Old P37 exact-SHA CI remains historical (636 PASS/1 Windows SKIP), not proof for V3.
+4. Progress: V3 new REQ C01–C28 are `DESIGNED_NOT_IMPLEMENTED` unless separately evidenced; implementation and official verification `UNASSESSED`; legacy 85% = historical product rubric, commercial `RELEASE HOLD`.
+5. Safety: model/AXNODE data untrusted, no arbitrary code exec; real action/privileged write/paid/remote/source/permissions needs separate owner approval. No mutable originals touched.
+6. Repo/branch/baseline: `hibi89/EAI` @ `feature/kmong-eai-85-p31-20261112`, parent `5186cb1aa7928054d56b1cd0a40ea5943a5b3892`. New docs and updated policy links are included in this entry's GitHub commit (verify actual ref/SHA). Main/local-first unchanged.
+7. Runtime: present local Python3.11 CLI/13 typed goal baseline preserved, V3 AXNODE/Planner/Learner/Player **not deployed**; no Vercel/Production, no Qwen/Hydrogen API call.
+8. Originals: old modules/P26 SHA approval/PR#1/P38 docs/backup paths/13 goals/history preserved; no tokens, raw private episodes, customer documents, local DB or model weights published.
+9. NEXT READY: read `docs/EAI_FINAL_BLUEPRINT.md` + `docs/EAI_INSTANT_TASK_QUEUE.md`; implement V3-01 schema contracts/golden fixtures and V3-02 schema guard with local safety tests in a new coding turn. No cross-repo changes. Full CI later at candidate gate unless mandatory.
+10. Time/evidence: 2026-11-17 KST. This handoff certifies **GitHub design update only**, exact production/model/Windows/independent research benchmarks `NOT_RUN`. Follow actual SHA over docs estimates.
+
+---
+
 ## 2026-11-17 KST — P38 Hydrogen optional offline evaluation (10-point handoff)
 1. Goal: compare Hydrogen/Qwen candidate INPUT classification without replacing EAI CPU cognition; original ADR-0002 controls, 13 bounded typed goals and existing product are preserved.
 2. Design: A cloud model as autonomous brain/GitHub actor rejected. B local-Qwen-only baseline preserved. C isolated offline synthetic precomputed-model comparison selected; remote connector and GitHub privilege later only with approval.
