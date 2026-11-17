@@ -1,3 +1,15 @@
+## 2026-11-17 KST — EAI source-only CPU ranking correction (10)
+1. Mission EAI V3.1 local Architect/Player/AXNODE/Experience Learner; continue P1 code candidate with original plan; P2 LOCKED.
+2. Real code SHA `a758cf507c9f5de026d379cc144f236a9721c126` changed `eai/strategy_research_ranker.py`, `eai/strategy_cost_stats.py`: measured process CPU vs wall deadline, bounded local synthetic strategy order uses actual process CPU sample; no baseline authority or original mutations.
+3. Source-static contract markers 14/14 PASS_STATIC, final blueprint SHA preserved; Python exact SHA runtime, SQLite/CI/E2E/Windows NOT_RUN.
+4. Provisional 36/42 (85.7%) unchanged, SWU-026 still unverified source candidate, 024 partial; official P1/P2 UNASSESSED and RELEASE HOLD.
+5. Blockers: SWU-007 shared DB epoch and dependent 008, SWU-020 independent reviewer/provenance and dependent 023/024. Need actual High / Codex GPT-6.1 Sol Max for indispensable review; SWU-039 external Hydrogen user GO blocked.
+6. GitHub `hibi89/EAI`, branch `feature/kmong-eai-85-p31-20261112`, code SHA `a758cf507c9f5de026d379cc144f236a9721c126`. Docs HEAD follows.
+7. Production none, no original/customer, security, ACTIVE, live Player, paid, remote API permissions; P26 and ADR preserved.
+8. Immutable blueprint blob `1b0712679d4171cd3681588e104ea5e8c6f6690d` unchanged; mandatory CI/branch-protection not changed.
+9. Owner 2+2 (first two failed attempts isolate, two redesigned attempts then batch Max; essential immediately owner Max request) remains; deferred batch empty, immediate 007/020 requests and model not actually run. Do not raise failure counts without evidence or claim review happened.
+10. Updated 2026-11-17 KST; source SHA `a758cf507c9f5de026d379cc144f236a9721c126`, actual local tests and P2 NOT_RUN.
+
 ## 2026-11-17 KST — owner retry policy 2+2 then Sol Max handoff (10)
 1. Mission still EAI V3.1 independent local Architect/Player/AXNODE/Experience Learner; do not switch projects.
 2. Updated documentation only: AGENTS top banner and old ceiling conflicts; SWU runbook step policy; 42-task JSON per-task stage and central Sol Max escalation. No product source code changed.
