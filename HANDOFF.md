@@ -1,3 +1,15 @@
+## 2026-11-17 KST — EAI P1 CLI + legacy bridge + safe research continuation (10-item)
+1. Goal: independent EAI V3.1 local Architect/Player/AXNODE/Experience Learner, distinct from MLA; P1 source code until 100% candidate, P2 locked.
+2. Actual source commits: `1bb57934be3a914dbb88741f96807215ad90a399`, `b25a68658217bc4efa7c993512e6c8ca4f3d1bc5`, and safety patch `9e0fd5f7237b18b38e111ae1df37b2637348cb93`; 8 distinct source files, SWU-017 P26 13 CPU goals via explicit owner gate, SWU-032 measured CPU RSS postflight and cancel HOLD, SWU-040 mock late/429 OFF with no paid fallback, SWU-042 `decide-local` CLI typed CPU answer/abstain/cancel.
+3. Checks: exact GitHub code/branch and 14 source safety predicates PASS_STATIC. Python syntax/smoke, CLI, P26 typed legacy security, local CPU RSS, mock status, full CI/P2, Windows/browser NOT_RUN; no runtime PASS claim.
+4. Candidate count 32/42 (76.2% provisional source-written ONLY), 29 unverified minimal runtime safety pending. Official implementation/verification UNASSESSED, RELEASE HOLD.
+5. Blocker: no executable exact-source checkout in previous attempts due GitHub DNS, use connector for source. Do not spend repeated attempts on unchanged method. P1 code is NOT accepted functionality without minimum safety tests; high-risk operation HOLD.
+6. Repo `hibi89/EAI` branch `feature/kmong-eai-85-p31-20261112`; feature code SHA `9e0fd5f7237b18b38e111ae1df37b2637348cb93`. This HANDOFF, STATUS and queue have a later docs commit; always confirm actual HEAD before work.
+7. Production none. Real external Hydrogen, paid, Active, real Player, original writes and main merge still prohibited; unchanged legacy run_approved owner ID and manifest+goal SHA requirements.
+8. Canonical final blueprint blob `1b0712679d4171cd3681588e104ea5e8c6f6690d` unchanged; preserve existing CPU 13, ADR-0002 Qwen INPUT-only, P26 and mandatory CI.
+9. Next: ordinary READY **none**. HIGH_REVIEW_REQUIRED SWU-007/008/020/021/029/030; especially 020 blocks 023→024→026. SWU-039 BLOCKED_APPROVAL requires explicit owner GO, cannot infer from ㄱ. High should safely classify and unlock required branches without violating original blueprint.
+10. Evidence: 2026-11-17 KST, actual code SHA `9e0fd5f7237b18b38e111ae1df37b2637348cb93`. GitHub docs checkpoint follows; no verification/release claimed.
+
 ## 2026-11-17 KST — EAI P1 5 SWU feature code handoff (10-point)
 1. Target: independent EAI V3.1 Architect + Player + AXNODE + Experience Learner; NOT My Local AI; P1 code candidate, P2 locked.
 2. Work: SWU-006 isolated sidecar snapshot+restore+audit (`eai/axnode_recovery.py`), 015 pinned hierarchical plan review (`eai/hierarchical_planner.py`), 022 pure observation→episode ledger (`eai/episode_observation.py`, `eai/episode_replay.py`), 036 durable mock quota/breaker (`eai/research_quota.py`, `eai/research_quota_store.py`), 041 EAI local advisory decision (`eai/offline_journey.py`, `eai/decision_engine.py`).
