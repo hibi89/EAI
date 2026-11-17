@@ -11,6 +11,7 @@ from typing import Callable
 from .axnode_store import AXNodeStore
 from .contracts import PlanSpec, ProblemSpec
 from .design_engine import DesignOutcome
+from .strategy_cost import rank_plan_costs
 
 _SUPPORTED = frozenset({
     "synthetic.noop.v1",
@@ -164,8 +165,15 @@ class HierarchicalPlanner:
                     "PLAN_RESOURCE_BUDGET_EXCEEDED",
                 } else "CANDIDATE_INTEGRITY_OR_CONTRACT_FAILURE"
                 blocked.append((alternative_id, code))
-        candidates.sort(key=lambda c: (
-            c.declared_step_count, c.declared_seconds_upper_bound, c.alternative_id))
+        try:
+            candidates = list(rank_plan_costs(
+                candidates, max_steps=problem.budget[0],
+                max_seconds=problem.budget[1], cancelled=cancelled))
+        except ValueError as exc:
+            if str(exc) != "planning cost ranking cancelled":
+                raise
+            return PlanningOutcome(digest, (), tuple(blocked),
+                                   "CANCELLED", expansions)
         status = ("CANDIDATES_UNVERIFIED" if len(candidates) >= 2 else
                   "PARTIAL_UNVERIFIED" if candidates else "BLOCKED")
         return PlanningOutcome(digest, tuple(candidates), tuple(blocked),

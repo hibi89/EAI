@@ -45,3 +45,14 @@ def preview_mock_ablation(
     return MockAblationPreview(
         disposition, checked.request_sha256(), same_off,
         len(receipt.ideas) if same_off else 0)
+
+
+def compare_local_off_mock(packet: ResearchPacket, baseline: object,
+                           coordinator, transport, *, approval=None,
+                           fixture_http_status: int = 200,
+                           now: float | None = None):
+    """Offline-only caller joining the coordinator, fake transport and quarantine."""
+    from .research_ablation_runtime import run_local_paired_ablation
+    return run_local_paired_ablation(
+        packet, baseline, coordinator, transport, approval=approval,
+        fixture_http_status=fixture_http_status, now=now)

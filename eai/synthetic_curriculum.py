@@ -59,3 +59,12 @@ def generate_synthetic_curriculum(seed: int = 0) -> SyntheticCurriculum:
         ],
     })).hexdigest()
     return SyntheticCurriculum(seed, train, heldout, manifest_hash)
+
+
+
+def schedule_next_synthetic_cases(coverage_counts: dict[str, int], *,
+                                  seed: int = 0, limit: int = 2):
+    """Public offline caller that builds a bounded curriculum then ranks gaps."""
+    from .curriculum_scheduler import select_curriculum_gaps
+    return select_curriculum_gaps(
+        generate_synthetic_curriculum(seed), coverage_counts, limit=limit)

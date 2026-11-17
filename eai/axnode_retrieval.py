@@ -9,6 +9,8 @@ import sqlite3
 
 from .axnode_store import AXNodeStore
 from .axnode_schema import SAFE_TYPES
+from .axnode_memory import AXNodeMemory
+from .axnode_memory_review import review_memory_reuse
 
 _TERM = re.compile(r"[\w가-힣]{1,40}", re.UNICODE)
 _MAX_LOOKUP = 3000
@@ -67,11 +69,22 @@ class AXNodeRetriever:
         ))
 
     def find(self, query: str, *, output_type: str | None = None,
-             related_to: str | None = None, limit: int = 8) -> tuple[NodeMatch, ...]:
+             related_to: str | None = None, limit: int = 8,
+             memory: AXNodeMemory | None = None,
+             withdrawn_hashes: tuple[str, ...] = (),
+             now: int | None = None) -> tuple[NodeMatch, ...]:
         if type(limit) is not int or not 1 <= limit <= 25:
             raise ValueError("invalid AXNODE result limit")
         if output_type is not None and (type(output_type) is not str or output_type not in SAFE_TYPES):
             raise ValueError("unknown AXNODE type filter")
+        if memory is not None and (type(memory) is not AXNodeMemory
+                                   or memory.store is not self.store):
+            raise ValueError("negative review must use the same local AXNODE store")
+        if (type(withdrawn_hashes) is not tuple or len(withdrawn_hashes) > 32
+                or len(set(withdrawn_hashes)) != len(withdrawn_hashes)):
+            raise ValueError("bounded withdrawn source list required")
+        for digest in withdrawn_hashes:
+            self.store.get(digest)
         tokens = self._tokens(query)
         if not tokens and related_to is None:
             return ()
@@ -123,6 +136,33 @@ class AXNodeRetriever:
             if raw["id"] != name or raw["kind"] != kind or raw["status"] != status or (
                     raw["signature"]["output"] != output):
                 raise ValueError("AXNODE search metadata/hash mismatch")
+            if withdrawn_hashes:
+                # A withdrawn ancestor is not an eligible proposal; neither
+                # FTS scoring nor a strong query match can override lineage.
+                visited, todo = set(), [digest]
+                denied = False
+                while todo:
+                    current = todo.pop()
+                    if current in visited:
+                        continue
+                    visited.add(current)
+                    if len(visited) > _MAX_LOOKUP:
+                        raise ValueError("AXNODE withdrawn lineage budget exceeded")
+                    if current in withdrawn_hashes:
+                        denied = True
+                    todo.extend(self.store.parents_of(current))
+                if denied:
+                    continue
+            if memory is not None:
+                # Review the actual matched node id, not the broad domain query.
+                # Negative records and contradicted observations cannot be
+                # hidden by FTS ranking or the result limit.
+                reviewed = review_memory_reuse(
+                    memory, name, withdrawn_hashes=withdrawn_hashes,
+                    now=now, limit=25)
+                if any(r.disposition != "UNVERIFIED_CANDIDATE_ONLY"
+                       and r.label == name for r in reviewed):
+                    continue
             matching = sum(t in haystack.casefold() for t in tokens)
             connected = digest in adjacent
             score = (100 if name.casefold() == query.casefold().strip() else 0)
