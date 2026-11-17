@@ -76,6 +76,16 @@ class CandidateReviewJournalTests(unittest.TestCase):
             CandidateReviewJournal(self.path, create=True)
         self.assertEqual(self.path.read_bytes(), b"original")
 
+    def test_quarantined_review_never_mutates_original_active_pointer(self):
+        active = self.root / "active-pointer.sha256"
+        active.write_text("a" * 64, encoding="ascii")
+        with CandidateReviewJournal(self.path, create=True) as journal:
+            receipt = journal.record(
+                self.review, state="QUARANTINED",
+                previous_active_sha256="a" * 64)
+            self.assertFalse(receipt.changes_active_node)
+        self.assertEqual(active.read_text(encoding="ascii"), "a" * 64)
+
     def test_symlinked_journal_rejected(self):
         source = self.root / "other.sqlite"
         source.write_bytes(b"original")

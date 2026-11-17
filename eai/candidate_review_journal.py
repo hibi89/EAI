@@ -6,7 +6,6 @@ authorization remains a separate unimplemented gate.
 """
 from __future__ import annotations
 
-from contextlib import closing
 from dataclasses import dataclass
 import hashlib
 import os
@@ -62,6 +61,11 @@ class CandidateReviewJournal:
                 or (not path.exists() and not create)):
             raise ValueError("safe explicit review journal path required")
         self.path = path.resolve(strict=False)
+        if create:
+            # Exclusive creation closes the time-of-check/time-of-use overwrite
+            # window: SQLite's ordinary connect can otherwise follow a new link.
+            fd = os.open(self.path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+            os.close(fd)
         self.db = sqlite3.connect(self.path, timeout=3)
         try:
             self.db.execute("PRAGMA busy_timeout=3000")
