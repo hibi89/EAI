@@ -103,6 +103,21 @@ class SidecarRecoveryAuditTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             audit_isolated_sidecar_restore(self.store,archive,root)
 
+    def test_missing_complete_marker_from_partial_isolation_is_rejected(self):
+        archive,root=self.make_bundle()
+        marker=root/".eai-restore-complete.sha256"
+        marker.unlink()
+        with self.assertRaises(ValueError):
+            audit_isolated_sidecar_restore(self.store,archive,root)
+        self.assertFalse(marker.exists())
+
+    def test_forged_completion_marker_is_rejected(self):
+        archive,root=self.make_bundle()
+        marker=root/".eai-restore-complete.sha256"
+        marker.write_text("0"*64+"\n",encoding="ascii")
+        with self.assertRaisesRegex(ValueError,"completion marker mismatched"):
+            audit_isolated_sidecar_restore(self.store,archive,root)
+
     def test_incomplete_isolation_is_not_auto_repaired(self):
         archive,root=self.make_bundle()
         (root/"memory.sqlite").unlink()
