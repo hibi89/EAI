@@ -131,6 +131,10 @@ def main(argv: list[str] | None = None) -> int:
     quick_cmd.add_argument('--max-results',type=int,default=10)
     quick_cmd.add_argument('--include-snippets',action='store_true')
     quick_cmd.add_argument('--json',action='store_true')
+    architect_cmd = sub.add_parser('architect-preview', help='local-only V3 advisory design/plan; never execute')
+    architect_cmd.add_argument('--problem-file', required=True, help='explicit local V3 ProblemSpec JSON <=32KiB')
+    architect_cmd.add_argument('--axnode-root', required=True, help='existing explicit local AXNODE library')
+    architect_cmd.add_argument('--max-expansions', type=int, default=8, help='bounded candidate expansions 1..8')
     review_cmd = sub.add_parser('customer-review', help='create a NEW offline HTML/JSON integrity-checked review folder')
     review_cmd.add_argument('--spec', required=True, help='owner-authorized local goal/manifest JSON')
     review_cmd.add_argument('--output-dir', required=True, help='unused local output directory')
@@ -138,6 +142,18 @@ def main(argv: list[str] | None = None) -> int:
     check_cmd = sub.add_parser('verify-review', help='read-only verify existing review folder (unsigned)')
     check_cmd.add_argument('--output-dir', required=True)
     args = p.parse_args(argv)
+    if args.command == 'architect-preview':
+        try:
+            from .architect_runtime import preview_architecture
+            report = preview_architecture(args.problem_file, args.axnode_root,
+                                          max_expansions=args.max_expansions)
+            print(json.dumps(report, ensure_ascii=False, indent=2))
+            return 0 if report['status'] == 'CANDIDATES_UNVERIFIED' else 2
+        except (ValueError, OSError, UnicodeError) as exc:
+            # Keep private problem paths and payloads out of diagnostic output.
+            print(json.dumps({'status':'REJECTED', 'reason':'ARCHITECT_PREVIEW_INVALID_OR_UNAVAILABLE'}),
+                  file=sys.stderr)
+            return 1
     if args.command == 'customer-review':
         try:
             result = create_review(args.spec, args.output_dir,
