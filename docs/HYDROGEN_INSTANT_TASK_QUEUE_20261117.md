@@ -1,0 +1,12 @@
+# EAI Hydrogen / P38 execution queue — 2026-11-17 KST
+Repo: hibi89/EAI; branch: feature/kmong-eai-85-p31-20261112. Source authority: AGENTS.md, ADR-0002, ADR-0004, REQUIREMENTS.md and source at exact HEAD. User requested design inclusion and work start. No changes to approved base 100% denominator. No unjustified progress percentage.
+
+| task_id | req_ids | depends_on | allowed_paths | acceptance | safety_checks | risk | status | evidence_sha | blockers |
+|---|---|---|---|---|---|---|---|---|---|
+| EAI-H-P38-01 | H01,H02,H03,H04,H07 | P24; P26 | scripts/benchmark_model_candidates.py; tests/test_model_candidate_benchmark_p38.py; examples/*hydrogen* | offline CLI aggregate comparison; unknown/duplicate IDs denied; SHA-pinned catalog; no network/write | no model/network, no private prompts in repository, exact tests | LOW | IMPLEMENTED_UNVERIFIED until CI | P38 code commit pending | actual model predictions not supplied |
+| EAI-H-P38-02 | H01,H03,H07 | P38-01 | scripts/*model*; tests/*benchmark*; docs/*HYDROGEN* | genuine Qwen localhost synthetic-only outputs compared, owner-run host only; latency and failure receipt | explicit opt-in, avoid customer data | MEDIUM | BLOCKED | none | actual host/model and approval |
+| EAI-H-P38-03 | H05 | P38-01,P38-02 | new isolated adapter only; docs/ | optional remote Hydrogen input-only classification, exact allowlist and no secrets; fail closed, no auto billing | explicit owner approval for external transfer/API activation, live quota and ToS | HIGH | BLOCKED_APPROVAL | none | owner authorization, account validation |
+| EAI-H-P38-04 | H06 | P38-01 | proposed .github/workflows only after approval | read-only automated PR review on isolated branch with permission scope documented | no GitHub App install or repo permission changes before GO | HIGH | BLOCKED_APPROVAL | none | owner authorization |
+| EAI-H-P38-05 | H01,H08 | previous READY | STATUS/HANDOFF; docs/ACCEPTANCE.md | official gate compares exact SHA CI, security, native Windows/real Qwen, legal/rights; RELEASE HOLD preserved | original/hash/backups, no customer files or paid setup | HIGH | READY after P38-01 | none | native Windows and live model |
+
+Next READY after the initial commit: inspect P38 offline CI exact SHA and fix only if newly failing; then safely expand synthetic classification cases and scoring. Run required immediate syntax+local isolated smoke if possible; defer full acceptance until implementation candidate. Record PASS/FAIL/SKIP/NOT_RUN separately. Do not assert model integration or verified completion from docs.

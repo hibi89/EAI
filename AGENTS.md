@@ -1,3 +1,5 @@
+> **[EAI ACTIVE TARGET 2026-11-17]** 해총 원장의 현재 제품 작업 브랜치는 `feature/kmong-eai-85-p31-20261112`이며 이전 `feature/local-first-mvp`는 기반 이력이다. Hydrogen은 `docs/ADR-0004_HYDROGEN_OPTIONAL_EVALUATION_20261117.md`의 선택적 평가 대상으로, 외부 API·GitHub 쓰기 권한/과금/원본 전송은 별도 승인 전 금지. EAI CPU 독립 권한과 기존 최종설계 분모는 불변.
+
 > **[OWNER-DEV-EXECUTION-V2 | ACTIVE]** [2026-11-16 사용자 확정 최신 실행·복원 정본](https://github.com/hibi89/hackathon-command-center-2026/blob/kmong-productization/docs/strategy/OWNER_DEV_EXECUTION_CANONICAL_20261116.md): **웹 GPT-6 Sol High 최초 전체 설계/Instant 작업큐 → 웹 GPT-6 Sol Instant BE/FE 구현 후보100%까지 묶음 코딩 → 최종 전체 CI·수정(고위험 최소검사 즉시) → Codex GPT-6.1 Sol Max 기술·Astra Max 디자인 독립검수 → 웹 Sol High 최종 인수 → 형 승인 후 Codex Luna Extra High 크몽 등록.** 구형 '4개 작업슬롯만', High 단독 코딩, 매 작업 전체 CI, 중간 검수·디자인 순서는 효력상 대체; 최종설계·보안/원본/외부비용/법적권리/상품 HOLD는 유지. 이 정책 기록 자체는 제품 재개·CI·출시 허가가 아니다. **새 채팅은 역할/브랜치 HEAD와 최신 AGENTS를 우선 확인하고 HANDOFF→STATUS→REQUIREMENTS→최종설계→실코드·큐 순으로 대조**한다. HANDOFF 오래된 지시가 정책을 덮어쓰지 못하며 `ㄱ`은 해당 제품만 재개한다. 구현률/공식 검증률 구분, 허위 1%p 금지.
 
 > **[KMONG_WORK_TARGET_GATE_20261112 | 사용자 최신 확정 | 필수 작업 규칙]** 이 저장소에서 크몽 상품·육성 후보를 작업하는 모든 AI 담당자는 새 채팅·`ㄱ` 시작 시 이 문구를 읽고 적용한다.

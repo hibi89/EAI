@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "predictions": [
+    {
+      "model": "fixture_hydrogen_not_live",
+      "case_id": "c_choose",
+      "raw_output": "{\"version\":1,\"selected_id\":\"choose\"}"
+    },
+    {
+      "model": "fixture_hydrogen_not_live",
+      "case_id": "c_schedule",
+      "raw_output": "{\"version\":1,\"selected_id\":\"schedule\"}"
+    },
+    {
+      "model": "fixture_hydrogen_not_live",
+      "case_id": "c_ambiguous",
+      "raw_output": "{\"version\":1,\"selected_id\":\"\"}"
+    },
+    {
+      "model": "fixture_qwen_not_live",
+      "case_id": "c_choose",
+      "raw_output": "{\"version\":1,\"selected_id\":\"choose\"}"
+    },
+    {
+      "model": "fixture_qwen_not_live",
+      "case_id": "c_schedule",
+      "raw_output": "{\"version\":1,\"selected_id\":\"\"}"
+    },
+    {
+      "model": "fixture_qwen_not_live",
+      "case_id": "c_ambiguous",
+      "raw_output": "{\"version\":1,\"selected_id\":\"\"}"
+    }
+  ]
+}

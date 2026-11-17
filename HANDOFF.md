@@ -1,3 +1,17 @@
+## 2026-11-17 KST — P38 Hydrogen optional offline evaluation (10-point handoff)
+1. Goal: compare Hydrogen/Qwen candidate INPUT classification without replacing EAI CPU cognition; original ADR-0002 controls, 13 bounded typed goals and existing product are preserved.
+2. Design: A cloud model as autonomous brain/GitHub actor rejected. B local-Qwen-only baseline preserved. C isolated offline synthetic precomputed-model comparison selected; remote connector and GitHub privilege later only with approval.
+3. Tests: `python -m compileall -q scripts/benchmark_model_candidates.py tests/test_model_candidate_benchmark_p38.py`; `python -m unittest tests.test_model_candidate_benchmark_p38 -v` (or discover); `python -m scripts.benchmark_model_candidates --manifest examples/sample_goal_batch.json --cases examples/hydrogen_benchmark_cases_synthetic.json --predictions examples/hydrogen_benchmark_predictions_synthetic.json`. **NOT_RUN at authoring; no actual model/API call**.
+4. Status: P38 offline implementation candidate only; no new official percentage; historical engineering 85% provisional remains, official revised acceptance `UNASSESSED`; RELEASE HOLD.
+5. Failure policy: invalid model outputs and unauthorized IDs counted invalid, malformed inputs/sha change fail closed, no retries; if exact CI fails diagnose and repair once.
+6. Repo/branch: hibi89/EAI@feature/kmong-eai-85-p31-20261112, baseline `bf1ef6ebbf2b260f6328fb02dc21233ed9ec509e`; P38 source commit SHA to be obtained after push, not invented.
+7. Runtime: CLI offline local Python3.11; no Vercel/Production. Hydrogen actual API, Google quota and GitHub App permission NOT CONFIGURED.
+8. Originals/security: no personal prompts, .env, tokens or customer original files uploaded; no change to main, LA/HAE, customer artifact, original 13 goal runtime, deploy, billing or permissions.
+9. Next READY: obtain exact P38 CI and verify synthetic benchmark/legacy tests; compare genuine local Qwen on approved host later; external Hydrogen or GitHub read/write automation requires separate user approval and privacy/account review.
+10. Updated 2026-11-17 KST, verification scope at write time DOC/CODE authored but all new tests NOT_RUN. See ADR-0004 and HYDROGEN_INSTANT_TASK_QUEUE for acceptance matrix.
+
+---
+
 ## 2026-11-12 KST — EAI P37 native Windows acceptance tool (10-point handoff)
 1. Goal/tech: advance EAI P85→P95 via actual customer-runner evidence without modifying 13 CPU goals or owner data; source-only portable Python3.11 ZIP.
 2. Design/decision: A auto PR Windows CI could incur unverified private Actions Windows runner charges; not enabled. B opt-in native-host test harness chosen; real `cmd.exe` and Korean-space path when a Windows host is authorized, no added paid services.

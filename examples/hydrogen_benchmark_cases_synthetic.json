@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "cases": [
+    {
+      "id": "c_choose",
+      "request": "choose",
+      "expected_id": "choose"
+    },
+    {
+      "id": "c_schedule",
+      "request": "schedule",
+      "expected_id": "schedule"
+    },
+    {
+      "id": "c_ambiguous",
+      "request": "choose and schedule",
+      "expected_id": ""
+    }
+  ]
+}
