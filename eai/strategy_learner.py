@@ -68,3 +68,124 @@ def derive_synthetic_strategy_prior(
         (total_steps + len(observations) - 1) // len(observations),
         "SYNTHETIC_RESEARCH_PRIOR_UNVERIFIED" if update_research_prior
         else "HOLD_EXPLICIT_RESEARCH_UPDATE_REQUIRED")
+
+
+# SWU-024: truly cumulative but NON-AUTHORIZING, bounded CPU research learner.
+@dataclass(frozen=True)
+class BoundedResearchPrior:
+    problem_sha256: str
+    candidate_sha256: tuple[str, ...]
+    curriculum_sha256: tuple[str, ...]
+    observed_synthetic_families: int
+    # Each row is (candidate SHA, number of independently replayed research
+    # batches, summed declared upper seconds, summed declared steps).
+    aggregates: tuple[tuple[str, int, int, int], ...]
+    status: str = "SYNTHETIC_CPU_RESEARCH_PRIOR_ONLY"
+    independent_real_world_truth: bool = False
+    trusted_training_permitted: bool = False
+    active_promotion_permitted: bool = False
+
+
+@dataclass(frozen=True)
+class BoundedResearchUpdate:
+    status: str
+    prior: BoundedResearchPrior
+    cost_ranked_candidate_sha256: tuple[str, ...]
+    accepted: bool
+    reason_codes: tuple[str, ...]
+    real_world_uplift_verified: bool = False
+    model_can_execute: bool = False
+
+
+def advance_bounded_research_prior(
+    store, problem, candidates, curriculum, prior: BoundedResearchPrior | None = None
+) -> BoundedResearchUpdate:
+    """Re-execute B0/B1 on a fresh disjoint synthetic curriculum before update.
+
+    A failed attempt does NOT mutate old research state; the returned prior is
+    the exact previous state. This is a research-only online cost preference:
+    it does not fit accuracy, mint rewards, or certify an external outcome.
+    """
+    from .axnode_store import AXNodeStore
+    from .contracts import ProblemSpec
+    from .logic_synthesis import SynthesisCandidate
+    from .strategy_research_ranker import rank_synthetic_strategy_previews
+    from .synthetic_curriculum import SyntheticCurriculum
+    if (type(store) is not AXNodeStore or type(problem) is not ProblemSpec
+            or type(candidates) is not tuple
+            or not 1 <= len(candidates) <= 4
+            or any(type(v) is not SynthesisCandidate for v in candidates)
+            or type(curriculum) is not SyntheticCurriculum
+            or (prior is not None and type(prior) is not BoundedResearchPrior)):
+        raise ValueError("typed local synthetic CPU candidate/observation required")
+    ids = tuple(sorted(c.candidate_sha256 for c in candidates))
+    if len(set(ids)) != len(ids):
+        raise ValueError("duplicate research candidate hash")
+    digest = problem.digest()
+    if prior is None:
+        prior = BoundedResearchPrior(
+            digest, ids, (), 0, tuple((x, 0, 0, 0) for x in ids))
+    if (prior.problem_sha256 != digest or prior.candidate_sha256 != ids
+            or prior.status != "SYNTHETIC_CPU_RESEARCH_PRIOR_ONLY"
+            or prior.independent_real_world_truth
+            or prior.trusted_training_permitted
+            or prior.active_promotion_permitted
+            or type(prior.curriculum_sha256) is not tuple
+            or len(prior.curriculum_sha256) > 8
+            or len(set(prior.curriculum_sha256)) != len(prior.curriculum_sha256)
+            or any(type(x) is not str or not _HASH.fullmatch(x)
+                   for x in prior.curriculum_sha256)
+            or type(prior.aggregates) is not tuple
+            or len(prior.aggregates) != len(ids)):
+        raise ValueError("untrusted research-only prior")
+    rows = dict()
+    for entry in prior.aggregates:
+        if (type(entry) is not tuple or len(entry) != 4
+                or type(entry[0]) is not str or entry[0] in rows
+                or entry[0] not in ids
+                or any(type(n) is not int or n < 0 for n in entry[1:])
+                or entry[1] != len(prior.curriculum_sha256)
+                or entry[2] > entry[1] * 300
+                or entry[3] > entry[1] * 64):
+            raise ValueError("unsafe research state aggregate")
+        rows[entry[0]] = entry[1:]
+    if set(rows) != set(ids):
+        raise ValueError("incomplete research prior")
+    def ordered(p):
+        return tuple(sorted(ids, key=lambda x: (
+            (p.aggregates[ids.index(x)][2] * 1000
+             // max(1, p.aggregates[ids.index(x)][1])) +
+            (p.aggregates[ids.index(x)][3] * 2000
+             // max(1, p.aggregates[ids.index(x)][1])),
+            x)))
+    if (curriculum.manifest_sha256 in prior.curriculum_sha256 or
+            len(prior.curriculum_sha256) >= 8):
+        return BoundedResearchUpdate(
+            "HOLD_REPLAYED_OR_EXHAUSTED_SYNTHETIC_FAMILY",
+            prior, ordered(prior), False, ("FAMILY_ALREADY_USED_OR_LIMIT",))
+    # Recompute B0/B1, including disjoint train/heldout checks. The newly
+    # ranked prior cannot grant trust because the oracle is synthetic only.
+    checked = rank_synthetic_strategy_previews(
+        store, problem, candidates, curriculum)
+    seen = {row.candidate_sha256: row for row in checked.ranked}
+    if (len(seen) != len(ids) or set(seen) != set(ids)
+            or checked.held or
+            checked.curriculum_sha256 != curriculum.manifest_sha256
+            or any(score.trusted_for_learning for score in checked.ranked)):
+        return BoundedResearchUpdate(
+            "HOLD_FAILED_SYNTHETIC_NO_REGRESSION_RETAIN_PREVIOUS",
+            prior, ordered(prior), False,
+            ("INDEPENDENT_SYNTHETIC_RECHECK_DID_NOT_COVER_EVERY_CANDIDATE",))
+    next_rows = tuple((
+        x, rows[x][0] + 1,
+        rows[x][1] + seen[x].declared_seconds,
+        rows[x][2] + seen[x].declared_steps,
+    ) for x in ids)
+    updated = BoundedResearchPrior(
+        digest, ids, prior.curriculum_sha256+(curriculum.manifest_sha256,),
+        prior.observed_synthetic_families + (
+            len(curriculum.train)+len(curriculum.heldout)),
+        next_rows)
+    return BoundedResearchUpdate(
+        "UPDATED_SYNTHETIC_CPU_PRIOR_UNVERIFIED",
+        updated, ordered(updated), True, ())

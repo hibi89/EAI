@@ -21,6 +21,7 @@ class StrategyCostEnvelope:
     status: str = "COST_ONLY_RESEARCH_UNVERIFIED"
     out_of_distribution_checked: bool = False
     permits_learning: bool = False
+    measured_synthetic_cpu_ms: int | None = None
 
 
 def build_bounded_strategy_cost_envelope(
@@ -45,13 +46,17 @@ def build_bounded_strategy_cost_envelope(
                 or type(item.compared_train) is not int
                 or type(item.compared_heldout) is not int
                 or not 1 <= item.compared_train <= 32
-                or not 1 <= item.compared_heldout <= 32):
+                or not 1 <= item.compared_heldout <= 32
+                or (item.measured_synthetic_cpu_ms is not None and (
+                    type(item.measured_synthetic_cpu_ms) is not int
+                    or not 0 <= item.measured_synthetic_cpu_ms <= max_seconds * 1000))):
             raise ValueError("untrusted or over-budget strategy cost")
         seen.add(item.candidate_sha256)
         result.append(StrategyCostEnvelope(
             item.candidate_sha256, item.declared_steps,
             item.declared_seconds, item.compared_train,
             item.compared_heldout,
-            item.declared_seconds + 2 * item.declared_steps))
+            item.declared_seconds + 2 * item.declared_steps,
+            measured_synthetic_cpu_ms=item.measured_synthetic_cpu_ms))
     return tuple(sorted(result, key=lambda x: (
         x.research_cost_score, x.step_upper_bound, x.candidate_sha256)))

@@ -7,6 +7,7 @@ The chosen order minimizes declared CPU cost only among eligible simulations.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from time import perf_counter_ns
 
 from .axnode_store import AXNodeStore
 from .contracts import ProblemSpec
@@ -24,6 +25,7 @@ class SyntheticStrategyScore:
     declared_steps: int
     declared_seconds: int
     trusted_for_learning: bool = False
+    measured_synthetic_cpu_ms: int | None = None
 
 
 @dataclass(frozen=True)
@@ -62,8 +64,15 @@ def rank_synthetic_strategy_previews(
                 held.append((candidate.candidate_sha256,
                              "CANDIDATE_STRUCTURE_OR_HASH_CHANGED"))
                 continue
+            start_ns = perf_counter_ns()
             report = benchmark_synthetic_candidate(
                 store, problem, candidate, curriculum.train, curriculum.heldout)
+            elapsed_ns = perf_counter_ns() - start_ns
+            if elapsed_ns < 0 or elapsed_ns > problem.budget[1] * 1_000_000_000:
+                held.append((candidate.candidate_sha256,
+                             "LOCAL_SYNTHETIC_CPU_BENCHMARK_TIME_BUDGET"))
+                continue
+            measured_ms = (elapsed_ns + 999_999) // 1_000_000
             valid = (
                 report.status == "B1_SYNTHETIC_PARITY_WITH_B0_UNVERIFIED"
                 and report.candidate_sha256 == candidate.candidate_sha256
@@ -85,7 +94,8 @@ def rank_synthetic_strategy_previews(
             scored.append(SyntheticStrategyScore(
                 candidate.candidate_sha256, report.status,
                 report.b1_train_compared, report.b1_heldout_compared,
-                candidate.step_count, candidate.predicted_seconds))
+                candidate.step_count, candidate.predicted_seconds,
+                measured_synthetic_cpu_ms=measured_ms))
         except (ValueError, KeyError):
             held.append((candidate.candidate_sha256,
                          "SYNTHETIC_CANDIDATE_RECHECK_REJECTED"))
@@ -109,6 +119,9 @@ class LocalResearchRanking:
     trained_for_real_use: bool = False
     permits_execution: bool = False
     permits_promotion: bool = False
+    # Research-only supplementary observations; not validated production timing.
+    measured_synthetic_cpu_ms: tuple[tuple[str, int], ...] = ()
+    research_cost_prior_sha256: tuple[str, ...] = ()
 
 
 def rank_bounded_strategy_research(
@@ -135,9 +148,13 @@ def rank_bounded_strategy_research(
             update_research_prior=True)
         if prior.can_train_trusted_model or prior.accuracy_established:
             raise ValueError("unverified local CPU prior exceeded authority")
+    measured = tuple(sorted((
+        score.candidate_sha256, score.measured_synthetic_cpu_ms
+    ) for score in reviewed.ranked
+        if score.measured_synthetic_cpu_ms is not None))
     return LocalResearchRanking(
         problem.digest(),
         "SYNTHETIC_CPU_COST_ORDER_NOT_TRAINED" if envelopes
         else "HOLD_NO_SYNTHETIC_STRATEGY",
         tuple(item.candidate_sha256 for item in envelopes),
-        reviewed.held)
+        reviewed.held, measured_synthetic_cpu_ms=measured)
