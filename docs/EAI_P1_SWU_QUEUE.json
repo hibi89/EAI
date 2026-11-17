@@ -11,17 +11,18 @@
   "req_coverage": "C01..C36",
   "C03_legacy_gap_fixed": true,
   "first_ready": [
-    "EAI-SWU-011",
-    "EAI-SWU-014",
-    "EAI-SWU-016",
-    "EAI-SWU-025",
-    "EAI-SWU-038"
+    "EAI-SWU-002",
+    "EAI-SWU-003",
+    "EAI-SWU-009",
+    "EAI-SWU-018",
+    "EAI-SWU-027"
   ],
   "status_counts": {
     "SOURCE_COMPLETE_P2_PENDING": 3,
-    "PARTIAL_SOURCE": 27,
-    "HIGH_REVIEW_REQUIRED": 6,
     "READY_CODE_ONLY": 5,
+    "PARTIAL_SOURCE": 22,
+    "HIGH_REVIEW_REQUIRED": 6,
+    "SOURCE_IMPLEMENTED_UNVERIFIED_MINIMAL_CHECK_PENDING": 5,
     "BLOCKED_APPROVAL": 1
   },
   "already_coded_candidate_count": 3,
@@ -368,7 +369,7 @@
         "total": 2
       },
       "score_rationale": "One bounded local caller-to-callee output and known contract",
-      "status": "PARTIAL_SOURCE",
+      "status": "READY_CODE_ONLY",
       "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
       "evidence_sha": null,
       "legacy_evidence_history": "b22a877e55ddab010ceb5c006e9d5016704e6366",
@@ -429,7 +430,7 @@
         "total": 3
       },
       "score_rationale": "One bounded local caller-to-callee output and known contract",
-      "status": "PARTIAL_SOURCE",
+      "status": "READY_CODE_ONLY",
       "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
       "evidence_sha": null,
       "legacy_evidence_history": "b22a877e55ddab010ceb5c006e9d5016704e6366",
@@ -787,7 +788,7 @@
         "total": 2
       },
       "score_rationale": "One bounded local caller-to-callee output and known contract",
-      "status": "PARTIAL_SOURCE",
+      "status": "READY_CODE_ONLY",
       "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
       "evidence_sha": null,
       "legacy_evidence_history": "98c72409f038bafdd404f12c53fea5d4092ac7e7; 9f7b82a3422cbf6341c6efaff2caed029bcd9258; 6bbc2ced2b1f80a3780b91327457de8f714545df",
@@ -906,12 +907,12 @@
         "total": 2
       },
       "score_rationale": "One bounded local caller-to-callee output and known contract",
-      "status": "READY_CODE_ONLY",
+      "status": "SOURCE_IMPLEMENTED_UNVERIFIED_MINIMAL_CHECK_PENDING",
       "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
-      "evidence_sha": null,
+      "evidence_sha": "208d81ecae4faef7f204a95e05d3142dadb3c240",
       "legacy_evidence_history": "98c72409f038bafdd404f12c53fea5d4092ac7e7; 9f7b82a3422cbf6341c6efaff2caed029bcd9258; 6bbc2ced2b1f80a3780b91327457de8f714545df",
       "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED",
-      "attempts_recorded": 0,
+      "attempts_recorded": 1,
       "historical_attempts": "UNKNOWN_NOT_RESET",
       "max_attempts": 2,
       "max3_exception_approved": false,
@@ -919,7 +920,12 @@
       "p2_status": "NOT_RUN_LOCKED",
       "runtime_authorization": "HOLD",
       "source_dependencies_are_code_only": true,
-      "operating_authorization_is_not_inferred_from_dependencies": true
+      "operating_authorization_is_not_inferred_from_dependencies": true,
+      "source_implementation_sha": "208d81ecae4faef7f204a95e05d3142dadb3c240",
+      "immediate_safety_result": "NOT_RUN_EXACT_SHA_PYTHON_EXECUTION_UNAVAILABLE",
+      "local_syntax_result": "NOT_RUN",
+      "completion_caveat": "Source connected only; cannot claim P1 accepted without required narrow checks. No real authority.",
+      "missing_code_gap": null
     },
     {
       "task_id": "EAI-SWU-012",
@@ -1082,12 +1088,12 @@
         "total": 3
       },
       "score_rationale": "One bounded local caller-to-callee output and known contract",
-      "status": "READY_CODE_ONLY",
+      "status": "SOURCE_IMPLEMENTED_UNVERIFIED_MINIMAL_CHECK_PENDING",
       "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
-      "evidence_sha": null,
+      "evidence_sha": "208d81ecae4faef7f204a95e05d3142dadb3c240",
       "legacy_evidence_history": "fbc02d0ce592c6562ef4a505e22d2b0bfee29494; 46400363eaf76cf23000ffc67417461ad59f1cdd; fae29a199f6a141401134d4f3de2066a0378652c; 65a9f868d01dcbac9851d4a3293e2269fe48ef5b; 9e3af302a17db70f61b7f67ec1a31b9392eed482; 671db2092edf4a823bbafb4585779604a0f6a390",
       "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED",
-      "attempts_recorded": 0,
+      "attempts_recorded": 1,
       "historical_attempts": "UNKNOWN_NOT_RESET",
       "max_attempts": 2,
       "max3_exception_approved": false,
@@ -1095,7 +1101,12 @@
       "p2_status": "NOT_RUN_LOCKED",
       "runtime_authorization": "HOLD",
       "source_dependencies_are_code_only": true,
-      "operating_authorization_is_not_inferred_from_dependencies": true
+      "operating_authorization_is_not_inferred_from_dependencies": true,
+      "source_implementation_sha": "208d81ecae4faef7f204a95e05d3142dadb3c240",
+      "immediate_safety_result": "NOT_RUN_EXACT_SHA_PYTHON_EXECUTION_UNAVAILABLE",
+      "local_syntax_result": "NOT_RUN",
+      "completion_caveat": "Source connected only; cannot claim P1 accepted without required narrow checks. No real authority.",
+      "missing_code_gap": null
     },
     {
       "task_id": "EAI-SWU-015",
@@ -1199,12 +1210,12 @@
         "total": 3
       },
       "score_rationale": "One bounded local caller-to-callee output and known contract",
-      "status": "READY_CODE_ONLY",
+      "status": "SOURCE_IMPLEMENTED_UNVERIFIED_MINIMAL_CHECK_PENDING",
       "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
-      "evidence_sha": null,
+      "evidence_sha": "208d81ecae4faef7f204a95e05d3142dadb3c240",
       "legacy_evidence_history": "cd946cf7de37455a1c33daeacca6136cbe595ea4; e3eec214f37f6bed77bfe213a173e394c6bbd29b",
       "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED",
-      "attempts_recorded": 0,
+      "attempts_recorded": 1,
       "historical_attempts": "UNKNOWN_NOT_RESET",
       "max_attempts": 2,
       "max3_exception_approved": false,
@@ -1212,7 +1223,12 @@
       "p2_status": "NOT_RUN_LOCKED",
       "runtime_authorization": "HOLD",
       "source_dependencies_are_code_only": true,
-      "operating_authorization_is_not_inferred_from_dependencies": true
+      "operating_authorization_is_not_inferred_from_dependencies": true,
+      "source_implementation_sha": "208d81ecae4faef7f204a95e05d3142dadb3c240",
+      "immediate_safety_result": "NOT_RUN_EXACT_SHA_PYTHON_EXECUTION_UNAVAILABLE",
+      "local_syntax_result": "NOT_RUN",
+      "completion_caveat": "Source connected only; cannot claim P1 accepted without required narrow checks. No real authority.",
+      "missing_code_gap": null
     },
     {
       "task_id": "EAI-SWU-017",
@@ -1318,7 +1334,7 @@
         "total": 2
       },
       "score_rationale": "One bounded local caller-to-callee output and known contract",
-      "status": "PARTIAL_SOURCE",
+      "status": "READY_CODE_ONLY",
       "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
       "evidence_sha": null,
       "legacy_evidence_history": "438f3b18684716e8a257580789283a6048d32fea; be7a8244758e7c427fa7886698771a6aa5c9448d; 3f5888a7de4673d2b2e1fb8a228b30a37c87ae8f; 9f75872098a4d75df0af6e5efc76d5e7739fe16c; eef0f1881e2fedce5d1403ab789e5906b2fe7a73; 5b10487b28e60c5c6c44883d600e9b2d0dff6239 ; 185081b1a1ae45bdf4fa4bdddcbf319d2b356aea; 8b31f3b82d3113be52b9965b3daf577a46730662; 7c1192cbf06a95a35577de2a9df03d61801c2a36; c6f3d3bb9dd248869d2e07cbcd001d9720c5bcbd; 67b05d786edca1d80a8b87def8c7e1c6c176145a; fe3b611f4ecc921b5bd4171351df18d2cc63698d",
@@ -1739,12 +1755,12 @@
         "total": 3
       },
       "score_rationale": "One bounded local caller-to-callee output and known contract",
-      "status": "READY_CODE_ONLY",
+      "status": "SOURCE_IMPLEMENTED_UNVERIFIED_MINIMAL_CHECK_PENDING",
       "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
-      "evidence_sha": null,
+      "evidence_sha": "208d81ecae4faef7f204a95e05d3142dadb3c240",
       "legacy_evidence_history": "7e0cf41cfc7c6cfce21b96b3e14c94c8dcb4e2a6; 2721906c07df995f82fb1a6cceec1efdd7eda5af; c2504ac95b97c0e9d053a01ea1559adb65fe4bc0; 55d4b89b49f3d3e302f58c7dfe4656f6f2eb22fa; e86932f9f1fe44629464f3b0f9106addfdfcd203; 2d89290c7e95af2cc90cfa198e3982fb644cd75a; 325e4ba5048d90782afe1dd8c29c14d5b910ec9f; ff7d5eaf88c502fbfe3e7607740d794481361022; 5bd1be759ecb37a5f7a25646fe1fe22f1648b886 ; 80e39916ed4234c3fa8171d7c1fefa426aacafc6; 933fbd7bdb680afc2e639189224d4faf060a2477; 8ed29e31d9bd4ef5697cc8ee6298fdc263db5397; 27761ba8bafae175a33a4146ac53ac2635c94b7e; 802f0e3e1f22c8b42c12fc52c17bdd8f56385775; a5801311fe0ae15748f2b792c4e415696219c1ea; 26e9a24b81c82d893e8a67e04be5d39c97dfa5b1; 0dbe85595b60e92f09c0d2fd6c6c8cdfe0f8b559",
       "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED",
-      "attempts_recorded": 0,
+      "attempts_recorded": 1,
       "historical_attempts": "UNKNOWN_NOT_RESET",
       "max_attempts": 2,
       "max3_exception_approved": false,
@@ -1752,7 +1768,12 @@
       "p2_status": "NOT_RUN_LOCKED",
       "runtime_authorization": "HOLD",
       "source_dependencies_are_code_only": true,
-      "operating_authorization_is_not_inferred_from_dependencies": true
+      "operating_authorization_is_not_inferred_from_dependencies": true,
+      "source_implementation_sha": "208d81ecae4faef7f204a95e05d3142dadb3c240",
+      "immediate_safety_result": "NOT_RUN_EXACT_SHA_PYTHON_EXECUTION_UNAVAILABLE",
+      "local_syntax_result": "NOT_RUN",
+      "completion_caveat": "Source connected only; cannot claim P1 accepted without required narrow checks. No real authority.",
+      "missing_code_gap": null
     },
     {
       "task_id": "EAI-SWU-026",
@@ -1858,7 +1879,7 @@
         "total": 1
       },
       "score_rationale": "One bounded local caller-to-callee output and known contract",
-      "status": "PARTIAL_SOURCE",
+      "status": "READY_CODE_ONLY",
       "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
       "evidence_sha": null,
       "legacy_evidence_history": "e92a3af30a1e63114de994489677b905254b7a46; 2099642b9e2515a7d2e9cf5198b92ff346151d0f; 92862fbe0f0a0c87fe5d0cc09562025a3ab81673",
@@ -2522,12 +2543,12 @@
         "total": 2
       },
       "score_rationale": "One bounded local caller-to-callee output and known contract",
-      "status": "READY_CODE_ONLY",
+      "status": "SOURCE_IMPLEMENTED_UNVERIFIED_MINIMAL_CHECK_PENDING",
       "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
-      "evidence_sha": null,
+      "evidence_sha": "208d81ecae4faef7f204a95e05d3142dadb3c240",
       "legacy_evidence_history": "9840e5df24f7c9a7df719983ac40acd059017e39; 386345a071dc88306864a30cf7fb0da1e817a05f; 40d943c9913bf1071bf3c6be054f99352c8b6a42",
       "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED_MOCK_ONLY",
-      "attempts_recorded": 0,
+      "attempts_recorded": 1,
       "historical_attempts": "UNKNOWN_NOT_RESET",
       "max_attempts": 2,
       "max3_exception_approved": false,
@@ -2535,7 +2556,12 @@
       "p2_status": "NOT_RUN_LOCKED",
       "runtime_authorization": "HOLD",
       "source_dependencies_are_code_only": true,
-      "operating_authorization_is_not_inferred_from_dependencies": true
+      "operating_authorization_is_not_inferred_from_dependencies": true,
+      "source_implementation_sha": "208d81ecae4faef7f204a95e05d3142dadb3c240",
+      "immediate_safety_result": "NOT_RUN_EXACT_SHA_PYTHON_EXECUTION_UNAVAILABLE",
+      "local_syntax_result": "NOT_RUN",
+      "completion_caveat": "Source connected only; cannot claim P1 accepted without required narrow checks. No real authority.",
+      "missing_code_gap": null
     },
     {
       "task_id": "EAI-SWU-039",
@@ -2784,5 +2810,11 @@
     }
   ],
   "code_dependency_rule": "Source candidate or code-complete predecessor only; never bypass independent verifier, owner GO or runtime authorization.",
-  "next_ready_rule": "After a code SWU becomes SOURCE_COMPLETE_P2_PENDING with actual functional source evidence, re-evaluate dependents and select disjoint safe units; leave HIGH_REVIEW_REQUIRED and BLOCKED_APPROVAL locked."
+  "next_ready_rule": "After a code SWU becomes SOURCE_COMPLETE_P2_PENDING with actual functional source evidence, re-evaluate dependents and select disjoint safe units; leave HIGH_REVIEW_REQUIRED and BLOCKED_APPROVAL locked.",
+  "implemented_source_candidate_count": 8,
+  "implemented_source_candidate_percent_preview": 19,
+  "implemented_source_candidate_caveat": "8/42 includes 5 new function paths whose exact-SHA Python syntax/smoke and safety have NOT_RUN; not officially accepted implementation rate",
+  "official_implementation_rate": "UNASSESSED",
+  "P2": "LOCKED",
+  "latest_feature_code_sha": "208d81ecae4faef7f204a95e05d3142dadb3c240"
 }

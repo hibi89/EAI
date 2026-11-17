@@ -1,3 +1,15 @@
+## 2026-11-17 KST — EAI next chat immediate handoff
+1. Project: EAI independent local Architect/Player/AXNODE, optional Hydrogen OFF; not MLA.
+2. Actual code: `208d81ecae4faef7f204a95e05d3142dadb3c240`, implemented source paths for EAI-SWU-011, EAI-SWU-014, EAI-SWU-016, EAI-SWU-025, EAI-SWU-038: negative memory retrieval, scoped evidence ingestion to Architect, plan cost ranking, synthetic gap sampling, OFF/mock-ON pairing.
+3. Checks: GitHub source commit/source file changes confirmed. Exact-SHA Python syntax/local smoke/SQLite safety **NOT_RUN** (GitHub checkout network barrier); full CI/Windows/E2E P2 LOCKED/NOT_RUN. No test PASS claim.
+4. Progress: 3 existing source candidates +5 new written functions = **8/42 / 19.0% provisional source-coding candidate**, **not accepted official implementation rate**; official P1 UNASSESSED; P2 UNASSESSED, release HOLD.
+5. Blocker: exact-source executable checkout inaccessible; do not repeatedly retry same DNS. Isolate local check debt in P1 without re-coding same 5; owner-safe code tasks continue.
+6. Repo: `hibi89/EAI@feature/kmong-eai-85-p31-20261112`; feature code SHA `208d81ecae4faef7f204a95e05d3142dadb3c240`, queue/handoff state commit SHA read actual HEAD after docs update.
+7. Deployment: not attempted, no Production URL, Hydrogen external calls or real Player.
+8. Safety: Blueprint blob `1b0712679d4171cd3681588e104ea5e8c6f6690d`, P26, original 13 CPU, originals, AXNODE ACTIVE, owner GO and CI/branch protection preserved.
+9. **Next ㄱ:** `EAI-SWU-002, EAI-SWU-003, EAI-SWU-009, EAI-SWU-018, EAI-SWU-027`, five nonoverlapping source paths; meaningful BE/FE/CPU feature code only. Do not re-run whole CI/browser/P2 tasks during P1. If safety-critical local checks cannot run, mark appropriately and HOLD affected authority.
+10. Record: 2026-11-17 KST, exact source checked via GitHub, actual Python tests NOT_RUN, implementation/verification official rates UNASSESSED.
+
 ## 2026-11-17 KST — EAI SWU 10-point handoff
 1. Objective: independent local Architect/Player/AXNODE, Hydrogen OFF, EAI not MLA.
 2. Change: all 15 original task families recast into 42 High-size code-only SWUs; C01..C36 mapped and C03 recovered.
