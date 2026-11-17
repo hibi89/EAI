@@ -71,9 +71,10 @@ class OfflineJourneyTests(unittest.TestCase):
             interpret_pure_noop=interpret, budget=budget)
 
     def test_full_cpu_architect_policy_blocks_local_file_operators(self):
-        with patch.object(socket, "socket", side_effect=AssertionError("network")), (
-             patch("eai.local_scheduler.observe_own_process_rss_bytes",
-                   return_value=100 * 1024 * 1024)):
+        with (patch.object(socket, "socket",
+                           side_effect=AssertionError("network")),
+              patch("eai.local_scheduler.observe_own_process_rss_bytes",
+                    return_value=100 * 1024 * 1024)):
             report = self.call(interpret=True)
         self.assertEqual(report["architect_status"], "CANDIDATES_UNVERIFIED")
         self.assertEqual(report["candidate_count"], 2)
@@ -157,6 +158,31 @@ class OfflineJourneyTests(unittest.TestCase):
         self.assertEqual(result["candidate_count"], 0)
         self.assertEqual(result["architect_status"], "BLOCKED")
         self.assertEqual(result["real_tool_invocations"], 0)
+
+    def test_research_optional_on_never_changes_off_candidates(self):
+        from eai.research_policy import ResearchMode, ResearchPolicy
+        on = ResearchPolicy(
+            mode=ResearchMode.RESEARCH_OPT_IN,
+            external_sends_approved=True, free_tier_verified=True)
+        with patch("eai.local_scheduler.observe_own_process_rss_bytes",
+                   return_value=100 * 1024 * 1024):
+            off = self.call(interpret=False)
+            from eai.offline_journey import preview_offline_journey
+            attempted = preview_offline_journey(
+                self.problem_file, self.axnode_dir,
+                research_policy=on)
+        self.assertEqual(off["research_mode_status"], "OFF")
+        self.assertEqual(attempted["research_mode_status"], "PAUSED_POLICY")
+        self.assertEqual(off["candidates"], attempted["candidates"])
+        self.assertEqual(attempted["research_candidates_admitted"], 0)
+        self.assertEqual(attempted["live_provider_invocations"], 0)
+
+    def test_manually_forged_research_policy_type_is_rejected(self):
+        from eai.offline_journey import preview_offline_journey
+        with self.assertRaises(ValueError):
+            preview_offline_journey(
+                self.problem_file, self.axnode_dir,
+                research_policy=object())
 
     def test_missing_existing_store_not_created(self):
         missing = self.root / "unknown"

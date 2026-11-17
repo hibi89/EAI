@@ -19,6 +19,8 @@ from .player_runtime import (
     execute_pure_synthetic_preview, audit_pure_player_trace)
 from .policy_gate import evaluate_plan_policy
 from .trace_renderer import render_architect_explanation
+from .research_policy import ResearchPolicy
+from .research_providers import ResearchCoordinator
 
 
 def preview_offline_journey(
@@ -26,10 +28,13 @@ def preview_offline_journey(
     max_expansions: int = 8,
     budget: LocalResourceBudget | None = None,
     interpret_pure_noop: bool = False,
+    research_policy: ResearchPolicy | None = None,
 ) -> dict:
     """Bounded full local decision path. Even a PASS gives zero real authority."""
     if type(interpret_pure_noop) is not bool:
         raise ValueError("explicit boolean synthetic interpretation switch")
+    if research_policy is not None and type(research_policy) is not ResearchPolicy:
+        raise ValueError("explicit typed offline research policy required")
     budget = (LocalResourceBudget(
         max_rss_mib=1024, max_elapsed_ms=300000, max_steps=64)
         if budget is None else budget)
@@ -39,6 +44,14 @@ def preview_offline_journey(
     # and refuses to auto-create a customer-selected path.
     source = preview_architecture(
         problem_file, axnode_root, max_expansions=max_expansions)
+    # Research proposals cannot replace the independent OFF baseline. This
+    # provider boundary stays inert in both OFF and simulated ON/paused modes.
+    research = ResearchCoordinator(research_policy)
+    fallback = research.evaluate(source)
+    if fallback.baseline is not source or fallback.candidates:
+        raise ValueError("external research changed original EAI baseline")
+    if fallback.mode_status not in ("OFF", "PAUSED_POLICY"):
+        raise ValueError("unrecognized optional research mode")
     explanation = render_architect_explanation(source)
     problem = ProblemSpec.validate(_read_local_contract(problem_file))
     digest = problem.digest()
@@ -132,6 +145,8 @@ def preview_offline_journey(
         "candidates": candidates,
         "run_mode": ("PURE_SYNTHETIC_EXPLICIT" if interpret_pure_noop
                      else "POLICY_RESOURCE_PREVIEW_ONLY"),
+        "research_mode_status": fallback.mode_status,
+        "research_candidates_admitted": 0,
         "network": "DISABLED_BY_DESIGN",
         "real_tool_invocations": 0,
         "original_writes": 0,
