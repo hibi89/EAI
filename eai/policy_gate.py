@@ -158,3 +158,46 @@ def evaluate_problem_review_policy(
             base.plan_sha256, base.problem_sha256, "HOLD_POLICY_DENIED",
             tuple(sorted(reasons)), ())
     return base
+
+
+# EAI-SWU-029: narrow operator port permission gate, NEVER a user GO.
+@dataclass(frozen=True)
+class IsolatedPlayerPortPolicy:
+    status: str
+    problem_sha256: str
+    plan_sha256: str
+    step_id: str
+    reason_codes: tuple[str, ...]
+    grants_external_tool_access: bool = False
+    grants_original_file_write: bool = False
+    grants_active_promotion: bool = False
+
+
+def evaluate_isolated_player_port(
+    problem: ProblemSpec, plan: PlanSpec, *,
+    step_id: str, architect_truth: str = "UNVERIFIED",
+    evidence_review_required: bool = False,
+) -> IsolatedPlayerPortPolicy:
+    """Recompute existing gate, then verify a single in-memory pure no-op step.
+
+    Does not authorize a Python function, shell, filesystem, network or adapter.
+    """
+    policy = evaluate_problem_review_policy(
+        problem, plan, architect_truth=architect_truth,
+        evidence_review_required=evidence_review_required)
+    if (type(step_id) is not str
+            or step_id not in {s[0] for s in plan.steps}):
+        raise ValueError("unbound isolated Player step")
+    reasons = set(policy.reason_codes)
+    if policy.disposition != "PURE_SYNTHETIC_PREVIEW_ONLY":
+        reasons.add("PLAN_POLICY_NOT_ELIGIBLE")
+    for sid, operator, _deps, capability in plan.steps:
+        if operator != "synthetic.noop.v1" or capability != "pure":
+            reasons.add("NON_PURE_OPERATOR_REQUIRES_SEPARATE_OWNER_GO")
+        if sid == step_id and capability != "pure":
+            reasons.add("STEP_CAPABILITY_NOT_ISOLATED")
+    return IsolatedPlayerPortPolicy(
+        "PURE_NOOP_IN_MEMORY_ONLY" if not reasons
+        else "HOLD_SCOPED_PLAYER_PORT",
+        policy.problem_sha256, policy.plan_sha256,
+        step_id, tuple(sorted(reasons)))
