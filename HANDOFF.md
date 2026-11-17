@@ -1,3 +1,15 @@
+## 2026-11-17 KST — EAI P1 5 SWU source code continuation (10-point)
+1. Goal: EAI independent local Architect + Player + AXNODE + Experience Learner; not MLA. P1 functional code only, P2 LOCKED.
+2. Actual source: `2f1a4e0053231524b353145d81c1db0333ef3c6a`, SWU-005/010/012/035/037 across 6 files: explicit AXNODE catalog reopen integrity, experience memory write→evidence replay, problem unknown→advisory abstention, append-only local research packet review, fake research idea quarantine→review. No real service or rights enabled.
+3. Test results: GitHub source/tree/commit and static safety conditions PASS_STATIC; exact-source Python syntax, local SQLite/permissions/no-network smoke and all P2 suite NOT_RUN. Do not count static as runtime PASS.
+4. Progress: provisional source-written 18/42 (42.9%) incl. 15 minimum-safety-pending; official P1 rate UNASSESSED, official P2 rate UNASSESSED, RELEASE HOLD.
+5. Barrier: exact SHA executable checkout blocked by previous GitHub DNS failure; connector code reads/writes work. Do not repeat same failed checkout without changed method. Block dangerous runtime, continue independent SWUs.
+6. Repo/branch: `hibi89/EAI` at `feature/kmong-eai-85-p31-20261112`; feature SHA `2f1a4e0053231524b353145d81c1db0333ef3c6a`; queue/status/handoff SHA follows after documentation fast-forward; verify HEAD before next.
+7. Production/real-model: none; no real Hydrogen send, no ACTIVE, no real Player or customer-original write. User local PC tests not requested.
+8. Integrity: final blueprint blob `1b0712679d4171cd3681588e104ea5e8c6f6690d`, original CPU13, P26, ADR-0002, mandatory CI, main and history preserved. Reviewed boolean is not actual remote owner GO.
+9. Next READY: `013,019,028,031,033` conflict-free source files. Keep all operational approval gates and source-only pending test debt.
+10. Evidence date: 2026-11-17 KST; GitHub change SHA `2f1a4e0053231524b353145d81c1db0333ef3c6a`; P1/P2 verified totals not asserted.
+
 ## 2026-11-17 KST — EAI P1 CPU-only 5 SWU handoff (10 points)
 1. Goal: independent EAI V3.1 Architect/Player/AXNODE and Experience Learner, local CPU default, distinct from MLA; P1 coding, P2 locked.
 2. Implemented functions (source candidate): `84817f4b845080dbfb818ef48331e1199fe3f7f4`, 7 files for SWU-002/003/009/018/027: typed advisory ResultSpec and abstention, optional INPUT-only Qwen/CPU fallback, AXNODE provenance-bound candidate choice, bounded typed DSL, restrictive policy HOLD. No real actions or authority.

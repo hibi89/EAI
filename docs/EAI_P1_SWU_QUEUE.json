@@ -11,22 +11,22 @@
   "req_coverage": "C01..C36",
   "C03_legacy_gap_fixed": true,
   "first_ready": [
-    "EAI-SWU-005",
-    "EAI-SWU-010",
-    "EAI-SWU-012",
-    "EAI-SWU-035",
-    "EAI-SWU-037"
+    "EAI-SWU-013",
+    "EAI-SWU-019",
+    "EAI-SWU-028",
+    "EAI-SWU-031",
+    "EAI-SWU-033"
   ],
   "status_counts": {
     "SOURCE_COMPLETE_P2_PENDING": 3,
-    "SOURCE_IMPLEMENTED_UNVERIFIED_MINIMAL_CHECK_PENDING": 10,
-    "READY_CODE_ONLY": 5,
-    "PARTIAL_SOURCE": 17,
+    "SOURCE_IMPLEMENTED_UNVERIFIED_MINIMAL_CHECK_PENDING": 15,
+    "PARTIAL_SOURCE": 12,
     "HIGH_REVIEW_REQUIRED": 6,
+    "READY_CODE_ONLY": 5,
     "BLOCKED_APPROVAL": 1
   },
   "already_coded_candidate_count": 3,
-  "remaining_code_or_holds": 29,
+  "remaining_code_or_holds": 24,
   "attempt_rule": {
     "target": 1,
     "maximum": 2,
@@ -548,12 +548,12 @@
         "total": 3
       },
       "score_rationale": "One bounded local caller-to-callee output and known contract",
-      "status": "READY_CODE_ONLY",
+      "status": "SOURCE_IMPLEMENTED_UNVERIFIED_MINIMAL_CHECK_PENDING",
       "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
-      "evidence_sha": null,
+      "evidence_sha": "2f1a4e0053231524b353145d81c1db0333ef3c6a",
       "legacy_evidence_history": "1a71a10a1bbedaae420d3c094f9ffaf5dca45906; 4b362c660bdc350adbe8ae139ae018e68ad02fba; c0654930f1d2fd51cd9ee1c5e0f457bee5b456b ; f0f07059f72c47cdc1236adf1de296a8b5b4ee4c; 280dadd83193e4335e180bfcf674cc22f36f22eb; dd31cc0ca89412c6056357bcb6fb32879d270e1c; 70bbb66e2fa407bb44d985b83657b63976817d57; 30d33643abaea5ee2b92b78ae02794486b7d6562",
       "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED",
-      "attempts_recorded": 0,
+      "attempts_recorded": 1,
       "historical_attempts": "UNKNOWN_NOT_RESET",
       "max_attempts": 2,
       "max3_exception_approved": false,
@@ -561,7 +561,8 @@
       "p2_status": "NOT_RUN_LOCKED",
       "runtime_authorization": "HOLD",
       "source_dependencies_are_code_only": true,
-      "operating_authorization_is_not_inferred_from_dependencies": true
+      "operating_authorization_is_not_inferred_from_dependencies": true,
+      "source_candidate_note": "GitHub source path added; exact-SHA Python syntax/local smoke/SQLite permission checks NOT_RUN, authority HOLD. P1 source presence only."
     },
     {
       "task_id": "EAI-SWU-006",
@@ -851,12 +852,12 @@
         "total": 3
       },
       "score_rationale": "One bounded local caller-to-callee output and known contract",
-      "status": "READY_CODE_ONLY",
+      "status": "SOURCE_IMPLEMENTED_UNVERIFIED_MINIMAL_CHECK_PENDING",
       "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
-      "evidence_sha": null,
+      "evidence_sha": "2f1a4e0053231524b353145d81c1db0333ef3c6a",
       "legacy_evidence_history": "98c72409f038bafdd404f12c53fea5d4092ac7e7; 9f7b82a3422cbf6341c6efaff2caed029bcd9258; 6bbc2ced2b1f80a3780b91327457de8f714545df",
       "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED",
-      "attempts_recorded": 0,
+      "attempts_recorded": 1,
       "historical_attempts": "UNKNOWN_NOT_RESET",
       "max_attempts": 2,
       "max3_exception_approved": false,
@@ -864,7 +865,8 @@
       "p2_status": "NOT_RUN_LOCKED",
       "runtime_authorization": "HOLD",
       "source_dependencies_are_code_only": true,
-      "operating_authorization_is_not_inferred_from_dependencies": true
+      "operating_authorization_is_not_inferred_from_dependencies": true,
+      "source_candidate_note": "GitHub source path added; exact-SHA Python syntax/local smoke/SQLite permission checks NOT_RUN, authority HOLD. P1 source presence only."
     },
     {
       "task_id": "EAI-SWU-011",
@@ -974,12 +976,12 @@
         "total": 2
       },
       "score_rationale": "One bounded local caller-to-callee output and known contract",
-      "status": "READY_CODE_ONLY",
+      "status": "SOURCE_IMPLEMENTED_UNVERIFIED_MINIMAL_CHECK_PENDING",
       "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
-      "evidence_sha": null,
+      "evidence_sha": "2f1a4e0053231524b353145d81c1db0333ef3c6a",
       "legacy_evidence_history": "fbc02d0ce592c6562ef4a505e22d2b0bfee29494; 46400363eaf76cf23000ffc67417461ad59f1cdd; fae29a199f6a141401134d4f3de2066a0378652c; 65a9f868d01dcbac9851d4a3293e2269fe48ef5b; 9e3af302a17db70f61b7f67ec1a31b9392eed482; 671db2092edf4a823bbafb4585779604a0f6a390",
       "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED",
-      "attempts_recorded": 0,
+      "attempts_recorded": 1,
       "historical_attempts": "UNKNOWN_NOT_RESET",
       "max_attempts": 2,
       "max3_exception_approved": false,
@@ -987,7 +989,8 @@
       "p2_status": "NOT_RUN_LOCKED",
       "runtime_authorization": "HOLD",
       "source_dependencies_are_code_only": true,
-      "operating_authorization_is_not_inferred_from_dependencies": true
+      "operating_authorization_is_not_inferred_from_dependencies": true,
+      "source_candidate_note": "GitHub source path added; exact-SHA Python syntax/local smoke/SQLite permission checks NOT_RUN, authority HOLD. P1 source presence only."
     },
     {
       "task_id": "EAI-SWU-013",
@@ -1033,7 +1036,7 @@
         "total": 2
       },
       "score_rationale": "One bounded local caller-to-callee output and known contract",
-      "status": "PARTIAL_SOURCE",
+      "status": "READY_CODE_ONLY",
       "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
       "evidence_sha": null,
       "legacy_evidence_history": "fbc02d0ce592c6562ef4a505e22d2b0bfee29494; 46400363eaf76cf23000ffc67417461ad59f1cdd; fae29a199f6a141401134d4f3de2066a0378652c; 65a9f868d01dcbac9851d4a3293e2269fe48ef5b; 9e3af302a17db70f61b7f67ec1a31b9392eed482; 671db2092edf4a823bbafb4585779604a0f6a390",
@@ -1398,7 +1401,7 @@
         "total": 3
       },
       "score_rationale": "One bounded local caller-to-callee output and known contract",
-      "status": "PARTIAL_SOURCE",
+      "status": "READY_CODE_ONLY",
       "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
       "evidence_sha": null,
       "legacy_evidence_history": "438f3b18684716e8a257580789283a6048d32fea; be7a8244758e7c427fa7886698771a6aa5c9448d; 3f5888a7de4673d2b2e1fb8a228b30a37c87ae8f; 9f75872098a4d75df0af6e5efc76d5e7739fe16c; eef0f1881e2fedce5d1403ab789e5906b2fe7a73; 5b10487b28e60c5c6c44883d600e9b2d0dff6239 ; 185081b1a1ae45bdf4fa4bdddcbf319d2b356aea; 8b31f3b82d3113be52b9965b3daf577a46730662; 7c1192cbf06a95a35577de2a9df03d61801c2a36; c6f3d3bb9dd248869d2e07cbcd001d9720c5bcbd; 67b05d786edca1d80a8b87def8c7e1c6c176145a; fe3b611f4ecc921b5bd4171351df18d2cc63698d",
@@ -1943,7 +1946,7 @@
         "total": 2
       },
       "score_rationale": "One bounded local caller-to-callee output and known contract",
-      "status": "PARTIAL_SOURCE",
+      "status": "READY_CODE_ONLY",
       "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
       "evidence_sha": null,
       "legacy_evidence_history": "e92a3af30a1e63114de994489677b905254b7a46; 2099642b9e2515a7d2e9cf5198b92ff346151d0f; 92862fbe0f0a0c87fe5d0cc09562025a3ab81673",
@@ -2126,7 +2129,7 @@
         "total": 2
       },
       "score_rationale": "One bounded local caller-to-callee output and known contract",
-      "status": "PARTIAL_SOURCE",
+      "status": "READY_CODE_ONLY",
       "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
       "evidence_sha": null,
       "legacy_evidence_history": "c093fcb9d5e73871fcde5309a3062b96e7d9c7d7; f004e6b262ce4b3341f6874e4ef9815c668431f3; d1228e6301c4956bcfb8a284f4c77f51fed22db1; 6904a445e306c6844bc8f4937709c0e3e0fe116a; 850318f8856b2a4f12a9763634366d5c62bff627",
@@ -2248,7 +2251,7 @@
         "total": 3
       },
       "score_rationale": "One bounded local caller-to-callee output and known contract",
-      "status": "PARTIAL_SOURCE",
+      "status": "READY_CODE_ONLY",
       "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
       "evidence_sha": null,
       "legacy_evidence_history": "c093fcb9d5e73871fcde5309a3062b96e7d9c7d7; f004e6b262ce4b3341f6874e4ef9815c668431f3; d1228e6301c4956bcfb8a284f4c77f51fed22db1; 6904a445e306c6844bc8f4937709c0e3e0fe116a; 850318f8856b2a4f12a9763634366d5c62bff627",
@@ -2371,12 +2374,12 @@
         "total": 3
       },
       "score_rationale": "One bounded local caller-to-callee output and known contract",
-      "status": "READY_CODE_ONLY",
+      "status": "SOURCE_IMPLEMENTED_UNVERIFIED_MINIMAL_CHECK_PENDING",
       "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
-      "evidence_sha": null,
+      "evidence_sha": "2f1a4e0053231524b353145d81c1db0333ef3c6a",
       "legacy_evidence_history": "35b77d59a642b5e7d64a08a3e4bce90f4d08d660",
       "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED",
-      "attempts_recorded": 0,
+      "attempts_recorded": 1,
       "historical_attempts": "UNKNOWN_NOT_RESET",
       "max_attempts": 2,
       "max3_exception_approved": false,
@@ -2384,7 +2387,8 @@
       "p2_status": "NOT_RUN_LOCKED",
       "runtime_authorization": "HOLD",
       "source_dependencies_are_code_only": true,
-      "operating_authorization_is_not_inferred_from_dependencies": true
+      "operating_authorization_is_not_inferred_from_dependencies": true,
+      "source_candidate_note": "GitHub source path added; exact-SHA Python syntax/local smoke/SQLite permission checks NOT_RUN, authority HOLD. P1 source presence only."
     },
     {
       "task_id": "EAI-SWU-036",
@@ -2490,12 +2494,12 @@
         "total": 1
       },
       "score_rationale": "One bounded local caller-to-callee output and known contract",
-      "status": "READY_CODE_ONLY",
+      "status": "SOURCE_IMPLEMENTED_UNVERIFIED_MINIMAL_CHECK_PENDING",
       "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
-      "evidence_sha": null,
+      "evidence_sha": "2f1a4e0053231524b353145d81c1db0333ef3c6a",
       "legacy_evidence_history": "9840e5df24f7c9a7df719983ac40acd059017e39; 386345a071dc88306864a30cf7fb0da1e817a05f; 40d943c9913bf1071bf3c6be054f99352c8b6a42",
       "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED_MOCK_ONLY",
-      "attempts_recorded": 0,
+      "attempts_recorded": 1,
       "historical_attempts": "UNKNOWN_NOT_RESET",
       "max_attempts": 2,
       "max3_exception_approved": false,
@@ -2503,7 +2507,8 @@
       "p2_status": "NOT_RUN_LOCKED",
       "runtime_authorization": "HOLD",
       "source_dependencies_are_code_only": true,
-      "operating_authorization_is_not_inferred_from_dependencies": true
+      "operating_authorization_is_not_inferred_from_dependencies": true,
+      "source_candidate_note": "GitHub source path added; exact-SHA Python syntax/local smoke/SQLite permission checks NOT_RUN, authority HOLD. P1 source presence only."
     },
     {
       "task_id": "EAI-SWU-038",
@@ -2816,10 +2821,11 @@
   ],
   "code_dependency_rule": "Source candidate or code-complete predecessor only; never bypass independent verifier, owner GO or runtime authorization.",
   "next_ready_rule": "After a code SWU becomes SOURCE_COMPLETE_P2_PENDING with actual functional source evidence, re-evaluate dependents and select disjoint safe units; leave HIGH_REVIEW_REQUIRED and BLOCKED_APPROVAL locked.",
-  "implemented_source_candidate_count": 13,
-  "implemented_source_candidate_percent_preview": 31,
-  "implemented_source_candidate_caveat": "13/42 (31.0%) provisional source-code presence only; 10 source-coded SWUs await exact-SHA minimal safety; P1 official UNASSESSED; P2 LOCKED",
+  "implemented_source_candidate_count": 18,
+  "implemented_source_candidate_percent_preview": 42.9,
+  "implemented_source_candidate_caveat": "18/42 (42.9%) provisional authored code candidate only; 15 candidates require exact-SHA minimum runtime safety; P1 and P2 official UNASSESSED; live permissions HOLD",
   "official_implementation_rate": "UNASSESSED",
   "P2": "LOCKED",
-  "latest_feature_code_sha": "84817f4b845080dbfb818ef48331e1199fe3f7f4"
+  "latest_feature_code_sha": "2f1a4e0053231524b353145d81c1db0333ef3c6a",
+  "source_candidate_count": 18
 }
