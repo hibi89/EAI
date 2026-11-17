@@ -633,7 +633,12 @@ def dispatch_live_hydrogen(
                 baseline, "UNTRUSTED_HYDROGEN_IDEAS_QUARANTINED",
                 sha, review.ideas, "OWNER_ATTESTED_FREE_NOT_PROVIDER_VERIFIED",
                 requests_attempted=1)
-        except (OSError, ValueError, TimeoutError):
+        except (OSError, ValueError, TimeoutError,
+                http.client.HTTPException):
+            # HTTPException covers malformed/truncated provider replies such as
+            # IncompleteRead, BadStatusLine and unexpected protocol state.
+            # They must be handled as a failed request rather than escaping
+            # with an active research coordinator.
             return LiveHydrogenResult(
                 baseline, "OFF_AFTER_PROVIDER_TRANSPORT_FAILURE", sha,
                 requests_attempted=1)
