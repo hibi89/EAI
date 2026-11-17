@@ -1,0 +1,77 @@
+{
+  "schema": "eai.p2.verification.v1",
+  "repo": "hibi89/EAI",
+  "branch": "feature/kmong-eai-85-p31-20261112",
+  "status": "LOCKED_P1_INCOMPLETE",
+  "verified_rate": "UNASSESSED",
+  "P1_attempt_limit_applies": false,
+  "requires": [
+    "P1_ALL_CODE_CANDIDATES",
+    "HIGH_APPROVED_EXACT_SHA",
+    "MANDATORY_SECURITY_CI_UNCHANGED"
+  ],
+  "real_machine": "NOT_RUN",
+  "release": "HOLD",
+  "tasks": [
+    {
+      "id": "EAI-P2-01",
+      "name": "Exact-SHA full Python compile/type and existing CI",
+      "status": "LOCKED",
+      "evidence": "NOT_RUN"
+    },
+    {
+      "id": "EAI-P2-02",
+      "name": "AXNODE crash-safe DB and privacy",
+      "status": "LOCKED",
+      "evidence": "NOT_RUN"
+    },
+    {
+      "id": "EAI-P2-03",
+      "name": "Architect evidence plus legacy 13 solver regression",
+      "status": "LOCKED",
+      "evidence": "NOT_RUN"
+    },
+    {
+      "id": "EAI-P2-04",
+      "name": "Independent synthesis/forged verifier/ACTIVE rejection",
+      "status": "LOCKED",
+      "evidence": "NOT_RUN"
+    },
+    {
+      "id": "EAI-P2-05",
+      "name": "Experience learner OOD heldout and cost",
+      "status": "LOCKED",
+      "evidence": "NOT_RUN"
+    },
+    {
+      "id": "EAI-P2-06",
+      "name": "Player permission/rollback/security integrations",
+      "status": "LOCKED",
+      "evidence": "NOT_RUN"
+    },
+    {
+      "id": "EAI-P2-07",
+      "name": "Hydrogen OFF/mock/owner-gated live 429/privacy",
+      "status": "LOCKED",
+      "evidence": "NOT_RUN"
+    },
+    {
+      "id": "EAI-P2-08",
+      "name": "Windows 11 CPU RSS offline and local model",
+      "status": "LOCKED",
+      "evidence": "NOT_RUN"
+    },
+    {
+      "id": "EAI-P2-09",
+      "name": "CLI/UX and browser if there is actual browser FE",
+      "status": "LOCKED",
+      "evidence": "NOT_RUN"
+    },
+    {
+      "id": "EAI-P2-10",
+      "name": "Independent audit and High/owner final release gate",
+      "status": "LOCKED",
+      "evidence": "NOT_RUN"
+    }
+  ]
+}

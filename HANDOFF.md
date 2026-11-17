@@ -1,3 +1,15 @@
+## 2026-11-17 KST — EAI SWU 10-point handoff
+1. Objective: independent local Architect/Player/AXNODE, Hydrogen OFF, EAI not MLA.
+2. Change: all 15 original task families recast into 42 High-size code-only SWUs; C01..C36 mapped and C03 recovered.
+3. Evidence: baseline source 5ff09af317f2fe1862f829bd94b7c10202edb14d, design blob 1b0712679d4171cd3681588e104ea5e8c6f6690d; GitHub static queue integrity only, Python/CI P1 exact-SHA NOT_RUN.
+4. Progress: 3 source path candidates (not proven completed), 39 remaining/held; official P1/P2 UNASSESSED; release HOLD.
+5. Failure/alternative: oversized 15-item queue replaced, source test/DNS execution not proven, no fabricated PASS.
+6. Repo/branch: hibi89/EAI@feature/kmong-eai-85-p31-20261112, code baseline 5ff09af317f2fe1862f829bd94b7c10202edb14d; docs new commit SHA from GitHub.
+7. Production: none. No network provider/real Windows model triggered.
+8. Safety: original CPU13/P26/ADR-0002/main/AXNODE ACTIVE/original customer DB and owner GO protected.
+9. Next READY: EAI-SWU-011, EAI-SWU-014, EAI-SWU-016, EAI-SWU-025, EAI-SWU-038, 4-6 code work per ㄱ with max 2 normal attempts and exact SHA.
+10. Date: 2026-11-17 KST, P2 locked, implementation and verification UNASSESSED.
+
 ## 2026-11-17 KST — EAI V3.1 P1 OFF cancel/resource/authenticity handoff (10)
 1. **Mission:** independent local EAI Architect→Player→AXNODE; optional Hydrogen OFF/paused, separate from MLA. Instant P1 implementation candidate, P2 full CI later. Release HOLD.
 2. **Changes:** from `b798df07d7107dd59883533863e41b3ae25e5718`, code commits `eb6650a479644ebefd3efadd1b689ab8cdf73058` and `a65a1e9d23ccf3bd074334047abc09a03f907743`. `eai/offline_journey.py` typed cancellation callback at boundaries, pre-Player and post-interpretation time/RSS gates, rejects rehashed false VERIFIED architect truth, conflicting counts, duplicate alternative/reasons; `eai/__main__.py` sanitized Ctrl-C exit 130. Still only synthetic.noop.v1 in-memory interpretation, never real side effects.

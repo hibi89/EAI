@@ -1,3 +1,7 @@
+> **[ACTIVE SWU REESTIMATION OWNER-SWU-HIGH-20261117]** Actual executable queue: [EAI_P1_SWU_QUEUE.json](EAI_P1_SWU_QUEUE.json); locked P2 tests: [EAI_P2_VERIFICATION_QUEUE.json](EAI_P2_VERIFICATION_QUEUE.json); current [EAI_P1_SWU_RUNBOOK.md](EAI_P1_SWU_RUNBOOK.md). Historic 15 table rows below remain immutable history, not the units for next ㄱ. Source audit 5ff09af317f2fe1862f829bd94b7c10202edb14d maps 15 groups to 42 code-only High-sized SWUs. C03 restored, first 5 READY EAI-SWU-011, EAI-SWU-014, EAI-SWU-016, EAI-SWU-025, EAI-SWU-038. No source implementation now; P1/P2 rates UNASSESSED, full P2 LOCKED, release HOLD. Mandatory CI/immediate safety gates unchanged.
+
+---
+
 ## 2026-11-17 OWNER — P1 실제 기능 완성 패스트패스 (MLA 개선안 EAI 적용)
 
 **적용 대상:** `hibi89/EAI@feature/kmong-eai-85-p31-20261112`의 기존 EAI V3.1 **15개 구현 작업군**. 기존 최종설계 `docs/EAI_FINAL_BLUEPRINT.md`, REQ/수용조건, 고유 Architect→Player→AXNODE 기능, 원본 13개 CPU 목표, P26 안전 게이트, ADR-0002/Qwen INPUT-only, 기본 OFF Hydrogen과 사용자 승인은 변경하지 않는다. MLA의 28개 작업/30개 REQ 분모는 이 저장소의 분모가 아니다.

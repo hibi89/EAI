@@ -1,0 +1,2628 @@
+{
+  "schema": "eai.p1.swu.v1",
+  "policy_id": "OWNER-SWU-HIGH-20261117",
+  "policy_blob_sha": "f7005d7375bde3088af73ae1386c01c914a3cfd4",
+  "repo": "hibi89/EAI",
+  "branch": "feature/kmong-eai-85-p31-20261112",
+  "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
+  "blueprint_blob": "1b0712679d4171cd3681588e104ea5e8c6f6690d",
+  "legacy_task_count": 15,
+  "swu_count": 42,
+  "req_coverage": "C01..C36",
+  "C03_legacy_gap_fixed": true,
+  "first_ready": [
+    "EAI-SWU-011",
+    "EAI-SWU-014",
+    "EAI-SWU-016",
+    "EAI-SWU-025",
+    "EAI-SWU-038"
+  ],
+  "status_counts": {
+    "SOURCE_COMPLETE_P2_PENDING": 3,
+    "PARTIAL_SOURCE": 27,
+    "HIGH_REVIEW_REQUIRED": 6,
+    "READY_CODE_ONLY": 5,
+    "BLOCKED_APPROVAL": 1
+  },
+  "already_coded_candidate_count": 3,
+  "remaining_code_or_holds": 39,
+  "attempt_rule": {
+    "target": 1,
+    "maximum": 2,
+    "high_max3_requires_approval": true,
+    "no_improvement_twice_HOLD": true,
+    "attempts_not_reset_by_new_ids": true
+  },
+  "batch_min": 4,
+  "batch_max": 6,
+  "implementation_rate": "UNASSESSED",
+  "verification_rate": "UNASSESSED",
+  "p2": "LOCKED",
+  "release": "HOLD",
+  "source_caveat": "SOURCE_COMPLETE_P2_PENDING is an existing code path candidate, not a test PASS, genuine runtime authorization or full REQ acceptance.",
+  "legacy_crosswalk": [
+    {
+      "legacy_id": "EAI-V3-01",
+      "req_ids": [
+        "C01",
+        "C02",
+        "C28"
+      ],
+      "new_swu_ids": [
+        "EAI-SWU-001",
+        "EAI-SWU-002",
+        "EAI-SWU-003"
+      ],
+      "history_status": "IMPLEMENTED_UNVERIFIED",
+      "history_sha": "b22a877e55ddab010ceb5c006e9d5016704e6366"
+    },
+    {
+      "legacy_id": "EAI-V3-02",
+      "req_ids": [
+        "C04"
+      ],
+      "new_swu_ids": [
+        "EAI-SWU-004"
+      ],
+      "history_status": "IMPLEMENTED_UNVERIFIED",
+      "history_sha": "b22a877e55ddab010ceb5c006e9d5016704e6366"
+    },
+    {
+      "legacy_id": "EAI-V3-03",
+      "req_ids": [
+        "C05",
+        "C26"
+      ],
+      "new_swu_ids": [
+        "EAI-SWU-005",
+        "EAI-SWU-006",
+        "EAI-SWU-007",
+        "EAI-SWU-008"
+      ],
+      "history_status": "PARTIAL_IMPLEMENTED_UNVERIFIED",
+      "history_sha": "1a71a10a1bbedaae420d3c094f9ffaf5dca45906; 4b362c660bdc350adbe8ae139ae018e68ad02fba; c0654930f1d2fd51cd9ee1c5e0f457bee5b456b ; f0f07059f72c47cdc1236adf1de296a8b5b4ee4c; 280dadd83193e4335e180bfcf674cc22f36f22eb; dd31cc0ca89412c6056357bcb6fb32879d270e1c; 70bbb66e2fa407bb44d985b83657b63976817d57; 30d33643abaea5ee2b92b78ae02794486b7d6562"
+    },
+    {
+      "legacy_id": "EAI-V3-04",
+      "req_ids": [
+        "C06",
+        "C07"
+      ],
+      "new_swu_ids": [
+        "EAI-SWU-009",
+        "EAI-SWU-010",
+        "EAI-SWU-011"
+      ],
+      "history_status": "PARTIAL_IMPLEMENTED_UNVERIFIED",
+      "history_sha": "98c72409f038bafdd404f12c53fea5d4092ac7e7; 9f7b82a3422cbf6341c6efaff2caed029bcd9258; 6bbc2ced2b1f80a3780b91327457de8f714545df"
+    },
+    {
+      "legacy_id": "EAI-V3-05",
+      "req_ids": [
+        "C08",
+        "C09",
+        "C19"
+      ],
+      "new_swu_ids": [
+        "EAI-SWU-012",
+        "EAI-SWU-013",
+        "EAI-SWU-014"
+      ],
+      "history_status": "PARTIAL_IMPLEMENTED_UNVERIFIED",
+      "history_sha": "fbc02d0ce592c6562ef4a505e22d2b0bfee29494; 46400363eaf76cf23000ffc67417461ad59f1cdd; fae29a199f6a141401134d4f3de2066a0378652c; 65a9f868d01dcbac9851d4a3293e2269fe48ef5b; 9e3af302a17db70f61b7f67ec1a31b9392eed482; 671db2092edf4a823bbafb4585779604a0f6a390"
+    },
+    {
+      "legacy_id": "EAI-V3-06",
+      "req_ids": [
+        "C10",
+        "C11",
+        "C12"
+      ],
+      "new_swu_ids": [
+        "EAI-SWU-015",
+        "EAI-SWU-016",
+        "EAI-SWU-017"
+      ],
+      "history_status": "PARTIAL_IMPLEMENTED_UNVERIFIED",
+      "history_sha": "cd946cf7de37455a1c33daeacca6136cbe595ea4; e3eec214f37f6bed77bfe213a173e394c6bbd29b"
+    },
+    {
+      "legacy_id": "EAI-V3-07",
+      "req_ids": [
+        "C13",
+        "C14",
+        "C15"
+      ],
+      "new_swu_ids": [
+        "EAI-SWU-018",
+        "EAI-SWU-019",
+        "EAI-SWU-020",
+        "EAI-SWU-021"
+      ],
+      "history_status": "PARTIAL_IMPLEMENTED_UNVERIFIED",
+      "history_sha": "438f3b18684716e8a257580789283a6048d32fea; be7a8244758e7c427fa7886698771a6aa5c9448d; 3f5888a7de4673d2b2e1fb8a228b30a37c87ae8f; 9f75872098a4d75df0af6e5efc76d5e7739fe16c; eef0f1881e2fedce5d1403ab789e5906b2fe7a73; 5b10487b28e60c5c6c44883d600e9b2d0dff6239 ; 185081b1a1ae45bdf4fa4bdddcbf319d2b356aea; 8b31f3b82d3113be52b9965b3daf577a46730662; 7c1192cbf06a95a35577de2a9df03d61801c2a36; c6f3d3bb9dd248869d2e07cbcd001d9720c5bcbd; 67b05d786edca1d80a8b87def8c7e1c6c176145a; fe3b611f4ecc921b5bd4171351df18d2cc63698d"
+    },
+    {
+      "legacy_id": "EAI-V3-08",
+      "req_ids": [
+        "C16",
+        "C17",
+        "C18",
+        "C25"
+      ],
+      "new_swu_ids": [
+        "EAI-SWU-022",
+        "EAI-SWU-023",
+        "EAI-SWU-024",
+        "EAI-SWU-025",
+        "EAI-SWU-026"
+      ],
+      "history_status": "PARTIAL_IMPLEMENTED_UNVERIFIED",
+      "history_sha": "7e0cf41cfc7c6cfce21b96b3e14c94c8dcb4e2a6; 2721906c07df995f82fb1a6cceec1efdd7eda5af; c2504ac95b97c0e9d053a01ea1559adb65fe4bc0; 55d4b89b49f3d3e302f58c7dfe4656f6f2eb22fa; e86932f9f1fe44629464f3b0f9106addfdfcd203; 2d89290c7e95af2cc90cfa198e3982fb644cd75a; 325e4ba5048d90782afe1dd8c29c14d5b910ec9f; ff7d5eaf88c502fbfe3e7607740d794481361022; 5bd1be759ecb37a5f7a25646fe1fe22f1648b886 ; 80e39916ed4234c3fa8171d7c1fefa426aacafc6; 933fbd7bdb680afc2e639189224d4faf060a2477; 8ed29e31d9bd4ef5697cc8ee6298fdc263db5397; 27761ba8bafae175a33a4146ac53ac2635c94b7e; 802f0e3e1f22c8b42c12fc52c17bdd8f56385775; a5801311fe0ae15748f2b792c4e415696219c1ea; 26e9a24b81c82d893e8a67e04be5d39c97dfa5b1; 0dbe85595b60e92f09c0d2fd6c6c8cdfe0f8b559"
+    },
+    {
+      "legacy_id": "EAI-V3-09",
+      "req_ids": [
+        "C20",
+        "C21",
+        "C26"
+      ],
+      "new_swu_ids": [
+        "EAI-SWU-027",
+        "EAI-SWU-028",
+        "EAI-SWU-029",
+        "EAI-SWU-030"
+      ],
+      "history_status": "PARTIAL_IMPLEMENTED_UNVERIFIED_REAL_APPROVAL_BLOCKED",
+      "history_sha": "e92a3af30a1e63114de994489677b905254b7a46; 2099642b9e2515a7d2e9cf5198b92ff346151d0f; 92862fbe0f0a0c87fe5d0cc09562025a3ab81673"
+    },
+    {
+      "legacy_id": "EAI-V3-10",
+      "req_ids": [
+        "C22",
+        "C23",
+        "C24",
+        "C27",
+        "C28"
+      ],
+      "new_swu_ids": [
+        "EAI-SWU-031",
+        "EAI-SWU-032",
+        "EAI-SWU-033"
+      ],
+      "history_status": "PARTIAL_IMPLEMENTED_UNVERIFIED",
+      "history_sha": "c093fcb9d5e73871fcde5309a3062b96e7d9c7d7; f004e6b262ce4b3341f6874e4ef9815c668431f3; d1228e6301c4956bcfb8a284f4c77f51fed22db1; 6904a445e306c6844bc8f4937709c0e3e0fe116a; 850318f8856b2a4f12a9763634366d5c62bff627"
+    },
+    {
+      "legacy_id": "EAI-V3-11",
+      "req_ids": [
+        "C29",
+        "C34",
+        "C36"
+      ],
+      "new_swu_ids": [
+        "EAI-SWU-034"
+      ],
+      "history_status": "IMPLEMENTED_UNVERIFIED",
+      "history_sha": "b22a877e55ddab010ceb5c006e9d5016704e6366"
+    },
+    {
+      "legacy_id": "EAI-V3-12",
+      "req_ids": [
+        "C30",
+        "C31",
+        "C35"
+      ],
+      "new_swu_ids": [
+        "EAI-SWU-035",
+        "EAI-SWU-036"
+      ],
+      "history_status": "PARTIAL_IMPLEMENTED_UNVERIFIED",
+      "history_sha": "35b77d59a642b5e7d64a08a3e4bce90f4d08d660"
+    },
+    {
+      "legacy_id": "EAI-V3-13",
+      "req_ids": [
+        "C32",
+        "C33"
+      ],
+      "new_swu_ids": [
+        "EAI-SWU-037",
+        "EAI-SWU-038"
+      ],
+      "history_status": "PARTIAL_IMPLEMENTED_UNVERIFIED_MOCK_ONLY",
+      "history_sha": "9840e5df24f7c9a7df719983ac40acd059017e39; 386345a071dc88306864a30cf7fb0da1e817a05f; 40d943c9913bf1071bf3c6be054f99352c8b6a42"
+    },
+    {
+      "legacy_id": "EAI-V3-14",
+      "req_ids": [
+        "C30",
+        "C31",
+        "C33",
+        "C35"
+      ],
+      "new_swu_ids": [
+        "EAI-SWU-039",
+        "EAI-SWU-040"
+      ],
+      "history_status": "BLOCKED_APPROVAL",
+      "history_sha": "none"
+    },
+    {
+      "legacy_id": "EAI-V3-15",
+      "req_ids": [
+        "C34",
+        "C36",
+        "C28"
+      ],
+      "new_swu_ids": [
+        "EAI-SWU-041",
+        "EAI-SWU-042"
+      ],
+      "history_status": "PARTIAL_IMPLEMENTED_UNVERIFIED_WINDOWS_PENDING",
+      "history_sha": "00b703691fbf6486144fdf90aeab9e0e76e88892; 5c07b5fd89ec6900a3cec8e1dcf8c293c0a4020a; f2715bc8a50e8148aaf7a88e08646adfd00c7e68; f5176fba6ee93f7f5ac4b51b2d4d5cd314a2d0b7; f7c35f1e66708ed123ced17a8e754426a9fd8048; 030bd61eb583842f018274cbbdd83903a4fd4faf; ac9b5e72d78b299eab97cb46c7d43e407fa82c02"
+    }
+  ],
+  "tasks": [
+    {
+      "task_id": "EAI-SWU-001",
+      "legacy_task_ids": [
+        "EAI-V3-01"
+      ],
+      "req_ids": [
+        "C01",
+        "C02"
+      ],
+      "phase": "P1_FEATURE_CODE_ONLY",
+      "caller_to_callee": "Typed ProblemSpec JSON -> digest",
+      "missing_function": null,
+      "allowed_paths": [
+        "eai/contracts.py"
+      ],
+      "code_depends_on": [],
+      "runtime_security_dependencies": [
+        "P0–P38",
+        "P26_ADR0002_EXISTING_GO",
+        "NO_NEW_ACTIVE_OR_REAL_PLAYER_OR_EXTERNAL"
+      ],
+      "p1_acceptance": "Implement Typed ProblemSpec JSON -> digest with normal output and fail-closed branch existing strict parsing and canonical digest; caller -> real callee -> state/output; code evidence SHA.",
+      "p2_deferred": [
+        "full_compile_types_and_CI",
+        "validation_test_harness",
+        "security_and_DB_recovery",
+        "integration_E2E",
+        "real_Windows_Qwen_browser_if_applicable"
+      ],
+      "local_immediate_safety": [
+        "mandatory_CI_preserved",
+        "syntax_smoke_if_available",
+        "auth_secret_DB_original_protection_if_changed"
+      ],
+      "score": {
+        "S": 0,
+        "C": 1,
+        "I": 0,
+        "D": 0,
+        "U": 0,
+        "total": 1
+      },
+      "score_rationale": "One bounded local caller-to-callee output and known contract",
+      "status": "SOURCE_COMPLETE_P2_PENDING",
+      "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
+      "evidence_sha": "b22a877e55ddab010ceb5c006e9d5016704e6366",
+      "legacy_evidence_history": "b22a877e55ddab010ceb5c006e9d5016704e6366",
+      "legacy_status": "IMPLEMENTED_UNVERIFIED",
+      "attempts_recorded": 0,
+      "historical_attempts": "UNKNOWN_NOT_RESET",
+      "max_attempts": 2,
+      "max3_exception_approved": false,
+      "same_cause_nonprogress_failures": 0,
+      "p2_status": "NOT_RUN_LOCKED",
+      "runtime_authorization": "HOLD"
+    },
+    {
+      "task_id": "EAI-SWU-002",
+      "legacy_task_ids": [
+        "EAI-V3-01"
+      ],
+      "req_ids": [
+        "C02",
+        "C28"
+      ],
+      "phase": "P1_FEATURE_CODE_ONLY",
+      "caller_to_callee": "Architect decision -> typed final ResultSpec",
+      "missing_function": "connect result/abstention to final caller",
+      "allowed_paths": [
+        "eai/contracts.py",
+        "eai/decision_engine.py"
+      ],
+      "code_depends_on": [],
+      "runtime_security_dependencies": [
+        "P0–P38",
+        "P26_ADR0002_EXISTING_GO",
+        "NO_NEW_ACTIVE_OR_REAL_PLAYER_OR_EXTERNAL"
+      ],
+      "p1_acceptance": "Implement Architect decision -> typed final ResultSpec with normal output and fail-closed branch connect result/abstention to final caller; caller -> real callee -> state/output; code evidence SHA.",
+      "p2_deferred": [
+        "full_compile_types_and_CI",
+        "validation_test_harness",
+        "security_and_DB_recovery",
+        "integration_E2E",
+        "real_Windows_Qwen_browser_if_applicable"
+      ],
+      "local_immediate_safety": [
+        "mandatory_CI_preserved",
+        "syntax_smoke_if_available",
+        "auth_secret_DB_original_protection_if_changed"
+      ],
+      "score": {
+        "S": 1,
+        "C": 1,
+        "I": 0,
+        "D": 0,
+        "U": 0,
+        "total": 2
+      },
+      "score_rationale": "One bounded local caller-to-callee output and known contract",
+      "status": "PARTIAL_SOURCE",
+      "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
+      "evidence_sha": null,
+      "legacy_evidence_history": "b22a877e55ddab010ceb5c006e9d5016704e6366",
+      "legacy_status": "IMPLEMENTED_UNVERIFIED",
+      "attempts_recorded": 0,
+      "historical_attempts": "UNKNOWN_NOT_RESET",
+      "max_attempts": 2,
+      "max3_exception_approved": false,
+      "same_cause_nonprogress_failures": 0,
+      "p2_status": "NOT_RUN_LOCKED",
+      "runtime_authorization": "HOLD"
+    },
+    {
+      "task_id": "EAI-SWU-003",
+      "legacy_task_ids": [
+        "EAI-V3-01"
+      ],
+      "req_ids": [
+        "C03"
+      ],
+      "phase": "P1_FEATURE_CODE_ONLY",
+      "caller_to_callee": "Optional Qwen INPUT -> CPU problem fallback",
+      "missing_function": "no Qwen final authority; wire optional parser fallback",
+      "allowed_paths": [
+        "eai/intent.py",
+        "eai/providers.py",
+        "eai/problem_model.py"
+      ],
+      "code_depends_on": [],
+      "runtime_security_dependencies": [
+        "P0–P38",
+        "P26_ADR0002_EXISTING_GO",
+        "NO_NEW_ACTIVE_OR_REAL_PLAYER_OR_EXTERNAL"
+      ],
+      "p1_acceptance": "Implement Optional Qwen INPUT -> CPU problem fallback with normal output and fail-closed branch no Qwen final authority; wire optional parser fallback; caller -> real callee -> state/output; code evidence SHA.",
+      "p2_deferred": [
+        "full_compile_types_and_CI",
+        "validation_test_harness",
+        "security_and_DB_recovery",
+        "integration_E2E",
+        "real_Windows_Qwen_browser_if_applicable"
+      ],
+      "local_immediate_safety": [
+        "mandatory_CI_preserved",
+        "syntax_smoke_if_available",
+        "auth_secret_DB_original_protection_if_changed"
+      ],
+      "score": {
+        "S": 2,
+        "C": 0,
+        "I": 1,
+        "D": 0,
+        "U": 0,
+        "total": 3
+      },
+      "score_rationale": "One bounded local caller-to-callee output and known contract",
+      "status": "PARTIAL_SOURCE",
+      "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
+      "evidence_sha": null,
+      "legacy_evidence_history": "b22a877e55ddab010ceb5c006e9d5016704e6366",
+      "legacy_status": "IMPLEMENTED_UNVERIFIED",
+      "attempts_recorded": 0,
+      "historical_attempts": "UNKNOWN_NOT_RESET",
+      "max_attempts": 2,
+      "max3_exception_approved": false,
+      "same_cause_nonprogress_failures": 0,
+      "p2_status": "NOT_RUN_LOCKED",
+      "runtime_authorization": "HOLD"
+    },
+    {
+      "task_id": "EAI-SWU-004",
+      "legacy_task_ids": [
+        "EAI-V3-02"
+      ],
+      "req_ids": [
+        "C04"
+      ],
+      "phase": "P1_FEATURE_CODE_ONLY",
+      "caller_to_callee": "Node JSON -> immutable AXNODE SHA",
+      "missing_function": null,
+      "allowed_paths": [
+        "eai/axnode_schema.py"
+      ],
+      "code_depends_on": [],
+      "runtime_security_dependencies": [
+        "V3-01",
+        "P26_ADR0002_EXISTING_GO",
+        "NO_NEW_ACTIVE_OR_REAL_PLAYER_OR_EXTERNAL"
+      ],
+      "p1_acceptance": "Implement Node JSON -> immutable AXNODE SHA with normal output and fail-closed branch existing bounded parser; caller -> real callee -> state/output; code evidence SHA.",
+      "p2_deferred": [
+        "full_compile_types_and_CI",
+        "validation_test_harness",
+        "security_and_DB_recovery",
+        "integration_E2E",
+        "real_Windows_Qwen_browser_if_applicable"
+      ],
+      "local_immediate_safety": [
+        "mandatory_CI_preserved",
+        "syntax_smoke_if_available",
+        "auth_secret_DB_original_protection_if_changed"
+      ],
+      "score": {
+        "S": 0,
+        "C": 1,
+        "I": 0,
+        "D": 0,
+        "U": 0,
+        "total": 1
+      },
+      "score_rationale": "One bounded local caller-to-callee output and known contract",
+      "status": "SOURCE_COMPLETE_P2_PENDING",
+      "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
+      "evidence_sha": "b22a877e55ddab010ceb5c006e9d5016704e6366",
+      "legacy_evidence_history": "b22a877e55ddab010ceb5c006e9d5016704e6366",
+      "legacy_status": "IMPLEMENTED_UNVERIFIED",
+      "attempts_recorded": 0,
+      "historical_attempts": "UNKNOWN_NOT_RESET",
+      "max_attempts": 2,
+      "max3_exception_approved": false,
+      "same_cause_nonprogress_failures": 0,
+      "p2_status": "NOT_RUN_LOCKED",
+      "runtime_authorization": "HOLD"
+    },
+    {
+      "task_id": "EAI-SWU-005",
+      "legacy_task_ids": [
+        "EAI-V3-03"
+      ],
+      "req_ids": [
+        "C05"
+      ],
+      "phase": "P1_FEATURE_CODE_ONLY",
+      "caller_to_callee": "AXNODE import -> catalog -> reload receipt",
+      "missing_function": "close import/reopen recovery boundary",
+      "allowed_paths": [
+        "eai/axnode_store.py"
+      ],
+      "code_depends_on": [],
+      "runtime_security_dependencies": [
+        "V3-02",
+        "P26_ADR0002_EXISTING_GO",
+        "NO_NEW_ACTIVE_OR_REAL_PLAYER_OR_EXTERNAL"
+      ],
+      "p1_acceptance": "Implement AXNODE import -> catalog -> reload receipt with normal output and fail-closed branch close import/reopen recovery boundary; caller -> real callee -> state/output; code evidence SHA.",
+      "p2_deferred": [
+        "full_compile_types_and_CI",
+        "validation_test_harness",
+        "security_and_DB_recovery",
+        "integration_E2E",
+        "real_Windows_Qwen_browser_if_applicable"
+      ],
+      "local_immediate_safety": [
+        "mandatory_CI_preserved",
+        "syntax_smoke_if_available",
+        "auth_secret_DB_original_protection_if_changed"
+      ],
+      "score": {
+        "S": 0,
+        "C": 1,
+        "I": 1,
+        "D": 1,
+        "U": 0,
+        "total": 3
+      },
+      "score_rationale": "One bounded local caller-to-callee output and known contract",
+      "status": "PARTIAL_SOURCE",
+      "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
+      "evidence_sha": null,
+      "legacy_evidence_history": "1a71a10a1bbedaae420d3c094f9ffaf5dca45906; 4b362c660bdc350adbe8ae139ae018e68ad02fba; c0654930f1d2fd51cd9ee1c5e0f457bee5b456b ; f0f07059f72c47cdc1236adf1de296a8b5b4ee4c; 280dadd83193e4335e180bfcf674cc22f36f22eb; dd31cc0ca89412c6056357bcb6fb32879d270e1c; 70bbb66e2fa407bb44d985b83657b63976817d57; 30d33643abaea5ee2b92b78ae02794486b7d6562",
+      "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED",
+      "attempts_recorded": 0,
+      "historical_attempts": "UNKNOWN_NOT_RESET",
+      "max_attempts": 2,
+      "max3_exception_approved": false,
+      "same_cause_nonprogress_failures": 0,
+      "p2_status": "NOT_RUN_LOCKED",
+      "runtime_authorization": "HOLD"
+    },
+    {
+      "task_id": "EAI-SWU-006",
+      "legacy_task_ids": [
+        "EAI-V3-03"
+      ],
+      "req_ids": [
+        "C05",
+        "C26"
+      ],
+      "phase": "P1_FEATURE_CODE_ONLY",
+      "caller_to_callee": "Owned sidecar -> staged backup/isolated restore",
+      "missing_function": "join current snapshot and commit marker",
+      "allowed_paths": [
+        "eai/axnode_sidecar_backup.py",
+        "eai/axnode_recovery.py"
+      ],
+      "code_depends_on": [],
+      "runtime_security_dependencies": [
+        "V3-02",
+        "P26_ADR0002_EXISTING_GO",
+        "NO_NEW_ACTIVE_OR_REAL_PLAYER_OR_EXTERNAL"
+      ],
+      "p1_acceptance": "Implement Owned sidecar -> staged backup/isolated restore with normal output and fail-closed branch join current snapshot and commit marker; caller -> real callee -> state/output; code evidence SHA.",
+      "p2_deferred": [
+        "full_compile_types_and_CI",
+        "validation_test_harness",
+        "security_and_DB_recovery",
+        "integration_E2E",
+        "real_Windows_Qwen_browser_if_applicable"
+      ],
+      "local_immediate_safety": [
+        "mandatory_CI_preserved",
+        "syntax_smoke_if_available",
+        "auth_secret_DB_original_protection_if_changed"
+      ],
+      "score": {
+        "S": 1,
+        "C": 0,
+        "I": 1,
+        "D": 1,
+        "U": 0,
+        "total": 3
+      },
+      "score_rationale": "One bounded local caller-to-callee output and known contract",
+      "status": "PARTIAL_SOURCE",
+      "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
+      "evidence_sha": null,
+      "legacy_evidence_history": "1a71a10a1bbedaae420d3c094f9ffaf5dca45906; 4b362c660bdc350adbe8ae139ae018e68ad02fba; c0654930f1d2fd51cd9ee1c5e0f457bee5b456b ; f0f07059f72c47cdc1236adf1de296a8b5b4ee4c; 280dadd83193e4335e180bfcf674cc22f36f22eb; dd31cc0ca89412c6056357bcb6fb32879d270e1c; 70bbb66e2fa407bb44d985b83657b63976817d57; 30d33643abaea5ee2b92b78ae02794486b7d6562",
+      "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED",
+      "attempts_recorded": 0,
+      "historical_attempts": "UNKNOWN_NOT_RESET",
+      "max_attempts": 2,
+      "max3_exception_approved": false,
+      "same_cause_nonprogress_failures": 0,
+      "p2_status": "NOT_RUN_LOCKED",
+      "runtime_authorization": "HOLD"
+    },
+    {
+      "task_id": "EAI-SWU-007",
+      "legacy_task_ids": [
+        "EAI-V3-03"
+      ],
+      "req_ids": [
+        "C05",
+        "C26"
+      ],
+      "phase": "P1_FEATURE_CODE_ONLY",
+      "caller_to_callee": "Sidecars -> cross-DB coherent epoch",
+      "missing_function": "missing shared checkpoint boundary",
+      "allowed_paths": [
+        "eai/sidecar_coherence_review.py",
+        "eai/axnode_epoch.py"
+      ],
+      "code_depends_on": [],
+      "runtime_security_dependencies": [
+        "V3-02",
+        "P26_ADR0002_EXISTING_GO",
+        "NO_NEW_ACTIVE_OR_REAL_PLAYER_OR_EXTERNAL"
+      ],
+      "p1_acceptance": "Implement Sidecars -> cross-DB coherent epoch with normal output and fail-closed branch missing shared checkpoint boundary; caller -> real callee -> state/output; code evidence SHA.",
+      "p2_deferred": [
+        "full_compile_types_and_CI",
+        "validation_test_harness",
+        "security_and_DB_recovery",
+        "integration_E2E",
+        "real_Windows_Qwen_browser_if_applicable"
+      ],
+      "local_immediate_safety": [
+        "mandatory_CI_preserved",
+        "syntax_smoke_if_available",
+        "auth_secret_DB_original_protection_if_changed"
+      ],
+      "score": {
+        "S": 1,
+        "C": 0,
+        "I": 0,
+        "D": 2,
+        "U": 0,
+        "total": 3
+      },
+      "score_rationale": "Protected operation: High safety review required",
+      "status": "HIGH_REVIEW_REQUIRED",
+      "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
+      "evidence_sha": null,
+      "legacy_evidence_history": "1a71a10a1bbedaae420d3c094f9ffaf5dca45906; 4b362c660bdc350adbe8ae139ae018e68ad02fba; c0654930f1d2fd51cd9ee1c5e0f457bee5b456b ; f0f07059f72c47cdc1236adf1de296a8b5b4ee4c; 280dadd83193e4335e180bfcf674cc22f36f22eb; dd31cc0ca89412c6056357bcb6fb32879d270e1c; 70bbb66e2fa407bb44d985b83657b63976817d57; 30d33643abaea5ee2b92b78ae02794486b7d6562",
+      "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED",
+      "attempts_recorded": 0,
+      "historical_attempts": "UNKNOWN_NOT_RESET",
+      "max_attempts": 2,
+      "max3_exception_approved": false,
+      "same_cause_nonprogress_failures": 0,
+      "p2_status": "NOT_RUN_LOCKED",
+      "runtime_authorization": "HOLD"
+    },
+    {
+      "task_id": "EAI-SWU-008",
+      "legacy_task_ids": [
+        "EAI-V3-03"
+      ],
+      "req_ids": [
+        "C05",
+        "C26"
+      ],
+      "phase": "P1_FEATURE_CODE_ONLY",
+      "caller_to_callee": "Staged restore -> isolated commit/rollback",
+      "missing_function": "protected recovery ledger; original writes blocked",
+      "allowed_paths": [
+        "eai/axnode_recovery.py",
+        "eai/axnode_restore.py"
+      ],
+      "code_depends_on": [],
+      "runtime_security_dependencies": [
+        "V3-02",
+        "P26_ADR0002_EXISTING_GO",
+        "NO_NEW_ACTIVE_OR_REAL_PLAYER_OR_EXTERNAL"
+      ],
+      "p1_acceptance": "Implement Staged restore -> isolated commit/rollback with normal output and fail-closed branch protected recovery ledger; original writes blocked; caller -> real callee -> state/output; code evidence SHA.",
+      "p2_deferred": [
+        "full_compile_types_and_CI",
+        "validation_test_harness",
+        "security_and_DB_recovery",
+        "integration_E2E",
+        "real_Windows_Qwen_browser_if_applicable"
+      ],
+      "local_immediate_safety": [
+        "mandatory_CI_preserved",
+        "syntax_smoke_if_available",
+        "auth_secret_DB_original_protection_if_changed"
+      ],
+      "score": {
+        "S": 1,
+        "C": 0,
+        "I": 0,
+        "D": 2,
+        "U": 0,
+        "total": 3
+      },
+      "score_rationale": "Protected operation: High safety review required",
+      "status": "HIGH_REVIEW_REQUIRED",
+      "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
+      "evidence_sha": null,
+      "legacy_evidence_history": "1a71a10a1bbedaae420d3c094f9ffaf5dca45906; 4b362c660bdc350adbe8ae139ae018e68ad02fba; c0654930f1d2fd51cd9ee1c5e0f457bee5b456b ; f0f07059f72c47cdc1236adf1de296a8b5b4ee4c; 280dadd83193e4335e180bfcf674cc22f36f22eb; dd31cc0ca89412c6056357bcb6fb32879d270e1c; 70bbb66e2fa407bb44d985b83657b63976817d57; 30d33643abaea5ee2b92b78ae02794486b7d6562",
+      "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED",
+      "attempts_recorded": 0,
+      "historical_attempts": "UNKNOWN_NOT_RESET",
+      "max_attempts": 2,
+      "max3_exception_approved": false,
+      "same_cause_nonprogress_failures": 0,
+      "p2_status": "NOT_RUN_LOCKED",
+      "runtime_authorization": "HOLD"
+    },
+    {
+      "task_id": "EAI-SWU-009",
+      "legacy_task_ids": [
+        "EAI-V3-04"
+      ],
+      "req_ids": [
+        "C06"
+      ],
+      "phase": "P1_FEATURE_CODE_ONLY",
+      "caller_to_callee": "Architect query -> typed AXNODE retrieval",
+      "missing_function": "connect negative/stale matches to advisory filtering",
+      "allowed_paths": [
+        "eai/axnode_retrieval.py"
+      ],
+      "code_depends_on": [],
+      "runtime_security_dependencies": [
+        "V3-02,V3-03",
+        "P26_ADR0002_EXISTING_GO",
+        "NO_NEW_ACTIVE_OR_REAL_PLAYER_OR_EXTERNAL"
+      ],
+      "p1_acceptance": "Implement Architect query -> typed AXNODE retrieval with normal output and fail-closed branch connect negative/stale matches to advisory filtering; caller -> real callee -> state/output; code evidence SHA.",
+      "p2_deferred": [
+        "full_compile_types_and_CI",
+        "validation_test_harness",
+        "security_and_DB_recovery",
+        "integration_E2E",
+        "real_Windows_Qwen_browser_if_applicable"
+      ],
+      "local_immediate_safety": [
+        "mandatory_CI_preserved",
+        "syntax_smoke_if_available",
+        "auth_secret_DB_original_protection_if_changed"
+      ],
+      "score": {
+        "S": 1,
+        "C": 0,
+        "I": 1,
+        "D": 0,
+        "U": 0,
+        "total": 2
+      },
+      "score_rationale": "One bounded local caller-to-callee output and known contract",
+      "status": "PARTIAL_SOURCE",
+      "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
+      "evidence_sha": null,
+      "legacy_evidence_history": "98c72409f038bafdd404f12c53fea5d4092ac7e7; 9f7b82a3422cbf6341c6efaff2caed029bcd9258; 6bbc2ced2b1f80a3780b91327457de8f714545df",
+      "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED",
+      "attempts_recorded": 0,
+      "historical_attempts": "UNKNOWN_NOT_RESET",
+      "max_attempts": 2,
+      "max3_exception_approved": false,
+      "same_cause_nonprogress_failures": 0,
+      "p2_status": "NOT_RUN_LOCKED",
+      "runtime_authorization": "HOLD"
+    },
+    {
+      "task_id": "EAI-SWU-010",
+      "legacy_task_ids": [
+        "EAI-V3-04"
+      ],
+      "req_ids": [
+        "C07"
+      ],
+      "phase": "P1_FEATURE_CODE_ONLY",
+      "caller_to_callee": "Local experience -> five-tier memory",
+      "missing_function": "connect memory to owned decision outcome",
+      "allowed_paths": [
+        "eai/axnode_memory.py",
+        "eai/episode_replay.py"
+      ],
+      "code_depends_on": [],
+      "runtime_security_dependencies": [
+        "V3-02,V3-03",
+        "P26_ADR0002_EXISTING_GO",
+        "NO_NEW_ACTIVE_OR_REAL_PLAYER_OR_EXTERNAL"
+      ],
+      "p1_acceptance": "Implement Local experience -> five-tier memory with normal output and fail-closed branch connect memory to owned decision outcome; caller -> real callee -> state/output; code evidence SHA.",
+      "p2_deferred": [
+        "full_compile_types_and_CI",
+        "validation_test_harness",
+        "security_and_DB_recovery",
+        "integration_E2E",
+        "real_Windows_Qwen_browser_if_applicable"
+      ],
+      "local_immediate_safety": [
+        "mandatory_CI_preserved",
+        "syntax_smoke_if_available",
+        "auth_secret_DB_original_protection_if_changed"
+      ],
+      "score": {
+        "S": 1,
+        "C": 0,
+        "I": 1,
+        "D": 1,
+        "U": 0,
+        "total": 3
+      },
+      "score_rationale": "One bounded local caller-to-callee output and known contract",
+      "status": "PARTIAL_SOURCE",
+      "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
+      "evidence_sha": null,
+      "legacy_evidence_history": "98c72409f038bafdd404f12c53fea5d4092ac7e7; 9f7b82a3422cbf6341c6efaff2caed029bcd9258; 6bbc2ced2b1f80a3780b91327457de8f714545df",
+      "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED",
+      "attempts_recorded": 0,
+      "historical_attempts": "UNKNOWN_NOT_RESET",
+      "max_attempts": 2,
+      "max3_exception_approved": false,
+      "same_cause_nonprogress_failures": 0,
+      "p2_status": "NOT_RUN_LOCKED",
+      "runtime_authorization": "HOLD"
+    },
+    {
+      "task_id": "EAI-SWU-011",
+      "legacy_task_ids": [
+        "EAI-V3-04"
+      ],
+      "req_ids": [
+        "C06",
+        "C07"
+      ],
+      "phase": "P1_FEATURE_CODE_ONLY",
+      "caller_to_callee": "Withdrawn parents -> negative result filter",
+      "missing_function": "candidate filtering from negative memory",
+      "allowed_paths": [
+        "eai/axnode_memory_review.py",
+        "eai/axnode_retrieval.py"
+      ],
+      "code_depends_on": [],
+      "runtime_security_dependencies": [
+        "V3-02,V3-03",
+        "P26_ADR0002_EXISTING_GO",
+        "NO_NEW_ACTIVE_OR_REAL_PLAYER_OR_EXTERNAL"
+      ],
+      "p1_acceptance": "Implement Withdrawn parents -> negative result filter with normal output and fail-closed branch candidate filtering from negative memory; caller -> real callee -> state/output; code evidence SHA.",
+      "p2_deferred": [
+        "full_compile_types_and_CI",
+        "validation_test_harness",
+        "security_and_DB_recovery",
+        "integration_E2E",
+        "real_Windows_Qwen_browser_if_applicable"
+      ],
+      "local_immediate_safety": [
+        "mandatory_CI_preserved",
+        "syntax_smoke_if_available",
+        "auth_secret_DB_original_protection_if_changed"
+      ],
+      "score": {
+        "S": 1,
+        "C": 0,
+        "I": 1,
+        "D": 0,
+        "U": 0,
+        "total": 2
+      },
+      "score_rationale": "One bounded local caller-to-callee output and known contract",
+      "status": "READY_CODE_ONLY",
+      "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
+      "evidence_sha": null,
+      "legacy_evidence_history": "98c72409f038bafdd404f12c53fea5d4092ac7e7; 9f7b82a3422cbf6341c6efaff2caed029bcd9258; 6bbc2ced2b1f80a3780b91327457de8f714545df",
+      "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED",
+      "attempts_recorded": 0,
+      "historical_attempts": "UNKNOWN_NOT_RESET",
+      "max_attempts": 2,
+      "max3_exception_approved": false,
+      "same_cause_nonprogress_failures": 0,
+      "p2_status": "NOT_RUN_LOCKED",
+      "runtime_authorization": "HOLD"
+    },
+    {
+      "task_id": "EAI-SWU-012",
+      "legacy_task_ids": [
+        "EAI-V3-05"
+      ],
+      "req_ids": [
+        "C08"
+      ],
+      "phase": "P1_FEATURE_CODE_ONLY",
+      "caller_to_callee": "ProblemSpec -> constraints/UNKNOWN",
+      "missing_function": "feed ambiguous unknown into decision",
+      "allowed_paths": [
+        "eai/problem_model.py"
+      ],
+      "code_depends_on": [],
+      "runtime_security_dependencies": [
+        "V3-01,V3-04",
+        "P26_ADR0002_EXISTING_GO",
+        "NO_NEW_ACTIVE_OR_REAL_PLAYER_OR_EXTERNAL"
+      ],
+      "p1_acceptance": "Implement ProblemSpec -> constraints/UNKNOWN with normal output and fail-closed branch feed ambiguous unknown into decision; caller -> real callee -> state/output; code evidence SHA.",
+      "p2_deferred": [
+        "full_compile_types_and_CI",
+        "validation_test_harness",
+        "security_and_DB_recovery",
+        "integration_E2E",
+        "real_Windows_Qwen_browser_if_applicable"
+      ],
+      "local_immediate_safety": [
+        "mandatory_CI_preserved",
+        "syntax_smoke_if_available",
+        "auth_secret_DB_original_protection_if_changed"
+      ],
+      "score": {
+        "S": 0,
+        "C": 1,
+        "I": 1,
+        "D": 0,
+        "U": 0,
+        "total": 2
+      },
+      "score_rationale": "One bounded local caller-to-callee output and known contract",
+      "status": "PARTIAL_SOURCE",
+      "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
+      "evidence_sha": null,
+      "legacy_evidence_history": "fbc02d0ce592c6562ef4a505e22d2b0bfee29494; 46400363eaf76cf23000ffc67417461ad59f1cdd; fae29a199f6a141401134d4f3de2066a0378652c; 65a9f868d01dcbac9851d4a3293e2269fe48ef5b; 9e3af302a17db70f61b7f67ec1a31b9392eed482; 671db2092edf4a823bbafb4585779604a0f6a390",
+      "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED",
+      "attempts_recorded": 0,
+      "historical_attempts": "UNKNOWN_NOT_RESET",
+      "max_attempts": 2,
+      "max3_exception_approved": false,
+      "same_cause_nonprogress_failures": 0,
+      "p2_status": "NOT_RUN_LOCKED",
+      "runtime_authorization": "HOLD"
+    },
+    {
+      "task_id": "EAI-SWU-013",
+      "legacy_task_ids": [
+        "EAI-V3-05"
+      ],
+      "req_ids": [
+        "C09"
+      ],
+      "phase": "P1_FEATURE_CODE_ONLY",
+      "caller_to_callee": "ProblemModeler -> 2 designs/abstain",
+      "missing_function": "connect tradeoffs to evidence obligations",
+      "allowed_paths": [
+        "eai/design_engine.py"
+      ],
+      "code_depends_on": [],
+      "runtime_security_dependencies": [
+        "V3-01,V3-04",
+        "P26_ADR0002_EXISTING_GO",
+        "NO_NEW_ACTIVE_OR_REAL_PLAYER_OR_EXTERNAL"
+      ],
+      "p1_acceptance": "Implement ProblemModeler -> 2 designs/abstain with normal output and fail-closed branch connect tradeoffs to evidence obligations; caller -> real callee -> state/output; code evidence SHA.",
+      "p2_deferred": [
+        "full_compile_types_and_CI",
+        "validation_test_harness",
+        "security_and_DB_recovery",
+        "integration_E2E",
+        "real_Windows_Qwen_browser_if_applicable"
+      ],
+      "local_immediate_safety": [
+        "mandatory_CI_preserved",
+        "syntax_smoke_if_available",
+        "auth_secret_DB_original_protection_if_changed"
+      ],
+      "score": {
+        "S": 1,
+        "C": 0,
+        "I": 1,
+        "D": 0,
+        "U": 0,
+        "total": 2
+      },
+      "score_rationale": "One bounded local caller-to-callee output and known contract",
+      "status": "PARTIAL_SOURCE",
+      "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
+      "evidence_sha": null,
+      "legacy_evidence_history": "fbc02d0ce592c6562ef4a505e22d2b0bfee29494; 46400363eaf76cf23000ffc67417461ad59f1cdd; fae29a199f6a141401134d4f3de2066a0378652c; 65a9f868d01dcbac9851d4a3293e2269fe48ef5b; 9e3af302a17db70f61b7f67ec1a31b9392eed482; 671db2092edf4a823bbafb4585779604a0f6a390",
+      "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED",
+      "attempts_recorded": 0,
+      "historical_attempts": "UNKNOWN_NOT_RESET",
+      "max_attempts": 2,
+      "max3_exception_approved": false,
+      "same_cause_nonprogress_failures": 0,
+      "p2_status": "NOT_RUN_LOCKED",
+      "runtime_authorization": "HOLD"
+    },
+    {
+      "task_id": "EAI-SWU-014",
+      "legacy_task_ids": [
+        "EAI-V3-05"
+      ],
+      "req_ids": [
+        "C19"
+      ],
+      "phase": "P1_FEATURE_CODE_ONLY",
+      "caller_to_callee": "Local claim -> evidence ledger -> Architect uncertainty",
+      "missing_function": "attach safe append/expiry/refutation caller",
+      "allowed_paths": [
+        "eai/evidence_ingest.py",
+        "eai/architect_runtime.py"
+      ],
+      "code_depends_on": [],
+      "runtime_security_dependencies": [
+        "V3-01,V3-04",
+        "P26_ADR0002_EXISTING_GO",
+        "NO_NEW_ACTIVE_OR_REAL_PLAYER_OR_EXTERNAL"
+      ],
+      "p1_acceptance": "Implement Local claim -> evidence ledger -> Architect uncertainty with normal output and fail-closed branch attach safe append/expiry/refutation caller; caller -> real callee -> state/output; code evidence SHA.",
+      "p2_deferred": [
+        "full_compile_types_and_CI",
+        "validation_test_harness",
+        "security_and_DB_recovery",
+        "integration_E2E",
+        "real_Windows_Qwen_browser_if_applicable"
+      ],
+      "local_immediate_safety": [
+        "mandatory_CI_preserved",
+        "syntax_smoke_if_available",
+        "auth_secret_DB_original_protection_if_changed"
+      ],
+      "score": {
+        "S": 1,
+        "C": 0,
+        "I": 1,
+        "D": 1,
+        "U": 0,
+        "total": 3
+      },
+      "score_rationale": "One bounded local caller-to-callee output and known contract",
+      "status": "READY_CODE_ONLY",
+      "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
+      "evidence_sha": null,
+      "legacy_evidence_history": "fbc02d0ce592c6562ef4a505e22d2b0bfee29494; 46400363eaf76cf23000ffc67417461ad59f1cdd; fae29a199f6a141401134d4f3de2066a0378652c; 65a9f868d01dcbac9851d4a3293e2269fe48ef5b; 9e3af302a17db70f61b7f67ec1a31b9392eed482; 671db2092edf4a823bbafb4585779604a0f6a390",
+      "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED",
+      "attempts_recorded": 0,
+      "historical_attempts": "UNKNOWN_NOT_RESET",
+      "max_attempts": 2,
+      "max3_exception_approved": false,
+      "same_cause_nonprogress_failures": 0,
+      "p2_status": "NOT_RUN_LOCKED",
+      "runtime_authorization": "HOLD"
+    },
+    {
+      "task_id": "EAI-SWU-015",
+      "legacy_task_ids": [
+        "EAI-V3-06"
+      ],
+      "req_ids": [
+        "C10"
+      ],
+      "phase": "P1_FEATURE_CODE_ONLY",
+      "caller_to_callee": "Design -> hierarchical bounded PlanSpec",
+      "missing_function": "send provenance and blocked reasons into decision",
+      "allowed_paths": [
+        "eai/hierarchical_planner.py"
+      ],
+      "code_depends_on": [],
+      "runtime_security_dependencies": [
+        "V3-05",
+        "P26_ADR0002_EXISTING_GO",
+        "NO_NEW_ACTIVE_OR_REAL_PLAYER_OR_EXTERNAL"
+      ],
+      "p1_acceptance": "Implement Design -> hierarchical bounded PlanSpec with normal output and fail-closed branch send provenance and blocked reasons into decision; caller -> real callee -> state/output; code evidence SHA.",
+      "p2_deferred": [
+        "full_compile_types_and_CI",
+        "validation_test_harness",
+        "security_and_DB_recovery",
+        "integration_E2E",
+        "real_Windows_Qwen_browser_if_applicable"
+      ],
+      "local_immediate_safety": [
+        "mandatory_CI_preserved",
+        "syntax_smoke_if_available",
+        "auth_secret_DB_original_protection_if_changed"
+      ],
+      "score": {
+        "S": 1,
+        "C": 0,
+        "I": 1,
+        "D": 0,
+        "U": 0,
+        "total": 2
+      },
+      "score_rationale": "One bounded local caller-to-callee output and known contract",
+      "status": "PARTIAL_SOURCE",
+      "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
+      "evidence_sha": null,
+      "legacy_evidence_history": "cd946cf7de37455a1c33daeacca6136cbe595ea4; e3eec214f37f6bed77bfe213a173e394c6bbd29b",
+      "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED",
+      "attempts_recorded": 0,
+      "historical_attempts": "UNKNOWN_NOT_RESET",
+      "max_attempts": 2,
+      "max3_exception_approved": false,
+      "same_cause_nonprogress_failures": 0,
+      "p2_status": "NOT_RUN_LOCKED",
+      "runtime_authorization": "HOLD"
+    },
+    {
+      "task_id": "EAI-SWU-016",
+      "legacy_task_ids": [
+        "EAI-V3-06"
+      ],
+      "req_ids": [
+        "C11"
+      ],
+      "phase": "P1_FEATURE_CODE_ONLY",
+      "caller_to_callee": "Candidate DAGs -> CPU cost rank",
+      "missing_function": "bounded cost-aware choice with cancellation",
+      "allowed_paths": [
+        "eai/hierarchical_planner.py",
+        "eai/strategy_cost.py"
+      ],
+      "code_depends_on": [],
+      "runtime_security_dependencies": [
+        "V3-05",
+        "P26_ADR0002_EXISTING_GO",
+        "NO_NEW_ACTIVE_OR_REAL_PLAYER_OR_EXTERNAL"
+      ],
+      "p1_acceptance": "Implement Candidate DAGs -> CPU cost rank with normal output and fail-closed branch bounded cost-aware choice with cancellation; caller -> real callee -> state/output; code evidence SHA.",
+      "p2_deferred": [
+        "full_compile_types_and_CI",
+        "validation_test_harness",
+        "security_and_DB_recovery",
+        "integration_E2E",
+        "real_Windows_Qwen_browser_if_applicable"
+      ],
+      "local_immediate_safety": [
+        "mandatory_CI_preserved",
+        "syntax_smoke_if_available",
+        "auth_secret_DB_original_protection_if_changed"
+      ],
+      "score": {
+        "S": 1,
+        "C": 1,
+        "I": 1,
+        "D": 0,
+        "U": 0,
+        "total": 3
+      },
+      "score_rationale": "One bounded local caller-to-callee output and known contract",
+      "status": "READY_CODE_ONLY",
+      "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
+      "evidence_sha": null,
+      "legacy_evidence_history": "cd946cf7de37455a1c33daeacca6136cbe595ea4; e3eec214f37f6bed77bfe213a173e394c6bbd29b",
+      "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED",
+      "attempts_recorded": 0,
+      "historical_attempts": "UNKNOWN_NOT_RESET",
+      "max_attempts": 2,
+      "max3_exception_approved": false,
+      "same_cause_nonprogress_failures": 0,
+      "p2_status": "NOT_RUN_LOCKED",
+      "runtime_authorization": "HOLD"
+    },
+    {
+      "task_id": "EAI-SWU-017",
+      "legacy_task_ids": [
+        "EAI-V3-06"
+      ],
+      "req_ids": [
+        "C12"
+      ],
+      "phase": "P1_FEATURE_CODE_ONLY",
+      "caller_to_callee": "Typed DAG -> 13 legacy skills read-only",
+      "missing_function": "bridge unchanged P26/legacy goals",
+      "allowed_paths": [
+        "eai/goal_dispatch.py",
+        "eai/goal_pipeline.py"
+      ],
+      "code_depends_on": [],
+      "runtime_security_dependencies": [
+        "V3-05",
+        "P26_ADR0002_EXISTING_GO",
+        "NO_NEW_ACTIVE_OR_REAL_PLAYER_OR_EXTERNAL"
+      ],
+      "p1_acceptance": "Implement Typed DAG -> 13 legacy skills read-only with normal output and fail-closed branch bridge unchanged P26/legacy goals; caller -> real callee -> state/output; code evidence SHA.",
+      "p2_deferred": [
+        "full_compile_types_and_CI",
+        "validation_test_harness",
+        "security_and_DB_recovery",
+        "integration_E2E",
+        "real_Windows_Qwen_browser_if_applicable"
+      ],
+      "local_immediate_safety": [
+        "mandatory_CI_preserved",
+        "syntax_smoke_if_available",
+        "auth_secret_DB_original_protection_if_changed"
+      ],
+      "score": {
+        "S": 1,
+        "C": 0,
+        "I": 1,
+        "D": 1,
+        "U": 0,
+        "total": 3
+      },
+      "score_rationale": "One bounded local caller-to-callee output and known contract",
+      "status": "PARTIAL_SOURCE",
+      "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
+      "evidence_sha": null,
+      "legacy_evidence_history": "cd946cf7de37455a1c33daeacca6136cbe595ea4; e3eec214f37f6bed77bfe213a173e394c6bbd29b",
+      "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED",
+      "attempts_recorded": 0,
+      "historical_attempts": "UNKNOWN_NOT_RESET",
+      "max_attempts": 2,
+      "max3_exception_approved": false,
+      "same_cause_nonprogress_failures": 0,
+      "p2_status": "NOT_RUN_LOCKED",
+      "runtime_authorization": "HOLD"
+    },
+    {
+      "task_id": "EAI-SWU-018",
+      "legacy_task_ids": [
+        "EAI-V3-07"
+      ],
+      "req_ids": [
+        "C13"
+      ],
+      "phase": "P1_FEATURE_CODE_ONLY",
+      "caller_to_callee": "Pinned nodes -> bounded typed synthesis",
+      "missing_function": "complete grammar effect/type caller",
+      "allowed_paths": [
+        "eai/logic_synthesis.py"
+      ],
+      "code_depends_on": [],
+      "runtime_security_dependencies": [
+        "V3-02,V3-06",
+        "P26_ADR0002_EXISTING_GO",
+        "NO_NEW_ACTIVE_OR_REAL_PLAYER_OR_EXTERNAL"
+      ],
+      "p1_acceptance": "Implement Pinned nodes -> bounded typed synthesis with normal output and fail-closed branch complete grammar effect/type caller; caller -> real callee -> state/output; code evidence SHA.",
+      "p2_deferred": [
+        "full_compile_types_and_CI",
+        "validation_test_harness",
+        "security_and_DB_recovery",
+        "integration_E2E",
+        "real_Windows_Qwen_browser_if_applicable"
+      ],
+      "local_immediate_safety": [
+        "mandatory_CI_preserved",
+        "syntax_smoke_if_available",
+        "auth_secret_DB_original_protection_if_changed"
+      ],
+      "score": {
+        "S": 0,
+        "C": 1,
+        "I": 1,
+        "D": 0,
+        "U": 0,
+        "total": 2
+      },
+      "score_rationale": "One bounded local caller-to-callee output and known contract",
+      "status": "PARTIAL_SOURCE",
+      "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
+      "evidence_sha": null,
+      "legacy_evidence_history": "438f3b18684716e8a257580789283a6048d32fea; be7a8244758e7c427fa7886698771a6aa5c9448d; 3f5888a7de4673d2b2e1fb8a228b30a37c87ae8f; 9f75872098a4d75df0af6e5efc76d5e7739fe16c; eef0f1881e2fedce5d1403ab789e5906b2fe7a73; 5b10487b28e60c5c6c44883d600e9b2d0dff6239 ; 185081b1a1ae45bdf4fa4bdddcbf319d2b356aea; 8b31f3b82d3113be52b9965b3daf577a46730662; 7c1192cbf06a95a35577de2a9df03d61801c2a36; c6f3d3bb9dd248869d2e07cbcd001d9720c5bcbd; 67b05d786edca1d80a8b87def8c7e1c6c176145a; fe3b611f4ecc921b5bd4171351df18d2cc63698d",
+      "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED",
+      "attempts_recorded": 0,
+      "historical_attempts": "UNKNOWN_NOT_RESET",
+      "max_attempts": 2,
+      "max3_exception_approved": false,
+      "same_cause_nonprogress_failures": 0,
+      "p2_status": "NOT_RUN_LOCKED",
+      "runtime_authorization": "HOLD"
+    },
+    {
+      "task_id": "EAI-SWU-019",
+      "legacy_task_ids": [
+        "EAI-V3-07"
+      ],
+      "req_ids": [
+        "C14"
+      ],
+      "phase": "P1_FEATURE_CODE_ONLY",
+      "caller_to_callee": "Counterexample -> bounded synthesis revision",
+      "missing_function": "new candidate revision from failure",
+      "allowed_paths": [
+        "eai/logic_counterexamples.py",
+        "eai/logic_synthesis.py"
+      ],
+      "code_depends_on": [],
+      "runtime_security_dependencies": [
+        "V3-02,V3-06",
+        "P26_ADR0002_EXISTING_GO",
+        "NO_NEW_ACTIVE_OR_REAL_PLAYER_OR_EXTERNAL"
+      ],
+      "p1_acceptance": "Implement Counterexample -> bounded synthesis revision with normal output and fail-closed branch new candidate revision from failure; caller -> real callee -> state/output; code evidence SHA.",
+      "p2_deferred": [
+        "full_compile_types_and_CI",
+        "validation_test_harness",
+        "security_and_DB_recovery",
+        "integration_E2E",
+        "real_Windows_Qwen_browser_if_applicable"
+      ],
+      "local_immediate_safety": [
+        "mandatory_CI_preserved",
+        "syntax_smoke_if_available",
+        "auth_secret_DB_original_protection_if_changed"
+      ],
+      "score": {
+        "S": 1,
+        "C": 1,
+        "I": 1,
+        "D": 0,
+        "U": 0,
+        "total": 3
+      },
+      "score_rationale": "One bounded local caller-to-callee output and known contract",
+      "status": "PARTIAL_SOURCE",
+      "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
+      "evidence_sha": null,
+      "legacy_evidence_history": "438f3b18684716e8a257580789283a6048d32fea; be7a8244758e7c427fa7886698771a6aa5c9448d; 3f5888a7de4673d2b2e1fb8a228b30a37c87ae8f; 9f75872098a4d75df0af6e5efc76d5e7739fe16c; eef0f1881e2fedce5d1403ab789e5906b2fe7a73; 5b10487b28e60c5c6c44883d600e9b2d0dff6239 ; 185081b1a1ae45bdf4fa4bdddcbf319d2b356aea; 8b31f3b82d3113be52b9965b3daf577a46730662; 7c1192cbf06a95a35577de2a9df03d61801c2a36; c6f3d3bb9dd248869d2e07cbcd001d9720c5bcbd; 67b05d786edca1d80a8b87def8c7e1c6c176145a; fe3b611f4ecc921b5bd4171351df18d2cc63698d",
+      "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED",
+      "attempts_recorded": 0,
+      "historical_attempts": "UNKNOWN_NOT_RESET",
+      "max_attempts": 2,
+      "max3_exception_approved": false,
+      "same_cause_nonprogress_failures": 0,
+      "p2_status": "NOT_RUN_LOCKED",
+      "runtime_authorization": "HOLD"
+    },
+    {
+      "task_id": "EAI-SWU-020",
+      "legacy_task_ids": [
+        "EAI-V3-07"
+      ],
+      "req_ids": [
+        "C14",
+        "C15"
+      ],
+      "phase": "P1_FEATURE_CODE_ONLY",
+      "caller_to_callee": "Independent receipt -> candidate review",
+      "missing_function": "trusted external receipt intake, no self-validation",
+      "allowed_paths": [
+        "eai/candidate_review_journal.py",
+        "eai/candidate_evidence_review.py"
+      ],
+      "code_depends_on": [],
+      "runtime_security_dependencies": [
+        "V3-02,V3-06",
+        "P26_ADR0002_EXISTING_GO",
+        "NO_NEW_ACTIVE_OR_REAL_PLAYER_OR_EXTERNAL"
+      ],
+      "p1_acceptance": "Implement Independent receipt -> candidate review with normal output and fail-closed branch trusted external receipt intake, no self-validation; caller -> real callee -> state/output; code evidence SHA.",
+      "p2_deferred": [
+        "full_compile_types_and_CI",
+        "validation_test_harness",
+        "security_and_DB_recovery",
+        "integration_E2E",
+        "real_Windows_Qwen_browser_if_applicable"
+      ],
+      "local_immediate_safety": [
+        "mandatory_CI_preserved",
+        "syntax_smoke_if_available",
+        "auth_secret_DB_original_protection_if_changed"
+      ],
+      "score": {
+        "S": 1,
+        "C": 0,
+        "I": 0,
+        "D": 2,
+        "U": 0,
+        "total": 3
+      },
+      "score_rationale": "Protected operation: High safety review required",
+      "status": "HIGH_REVIEW_REQUIRED",
+      "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
+      "evidence_sha": null,
+      "legacy_evidence_history": "438f3b18684716e8a257580789283a6048d32fea; be7a8244758e7c427fa7886698771a6aa5c9448d; 3f5888a7de4673d2b2e1fb8a228b30a37c87ae8f; 9f75872098a4d75df0af6e5efc76d5e7739fe16c; eef0f1881e2fedce5d1403ab789e5906b2fe7a73; 5b10487b28e60c5c6c44883d600e9b2d0dff6239 ; 185081b1a1ae45bdf4fa4bdddcbf319d2b356aea; 8b31f3b82d3113be52b9965b3daf577a46730662; 7c1192cbf06a95a35577de2a9df03d61801c2a36; c6f3d3bb9dd248869d2e07cbcd001d9720c5bcbd; 67b05d786edca1d80a8b87def8c7e1c6c176145a; fe3b611f4ecc921b5bd4171351df18d2cc63698d",
+      "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED",
+      "attempts_recorded": 0,
+      "historical_attempts": "UNKNOWN_NOT_RESET",
+      "max_attempts": 2,
+      "max3_exception_approved": false,
+      "same_cause_nonprogress_failures": 0,
+      "p2_status": "NOT_RUN_LOCKED",
+      "runtime_authorization": "HOLD"
+    },
+    {
+      "task_id": "EAI-SWU-021",
+      "legacy_task_ids": [
+        "EAI-V3-07"
+      ],
+      "req_ids": [
+        "C15"
+      ],
+      "phase": "P1_FEATURE_CODE_ONLY",
+      "caller_to_callee": "Reviewed node -> quarantine/activation intent",
+      "missing_function": "lifecycle without owner-approved ACTIVE",
+      "allowed_paths": [
+        "eai/candidate_activation_preflight.py",
+        "eai/axnode_maintenance.py"
+      ],
+      "code_depends_on": [],
+      "runtime_security_dependencies": [
+        "V3-02,V3-06",
+        "P26_ADR0002_EXISTING_GO",
+        "NO_NEW_ACTIVE_OR_REAL_PLAYER_OR_EXTERNAL"
+      ],
+      "p1_acceptance": "Implement Reviewed node -> quarantine/activation intent with normal output and fail-closed branch lifecycle without owner-approved ACTIVE; caller -> real callee -> state/output; code evidence SHA.",
+      "p2_deferred": [
+        "full_compile_types_and_CI",
+        "validation_test_harness",
+        "security_and_DB_recovery",
+        "integration_E2E",
+        "real_Windows_Qwen_browser_if_applicable"
+      ],
+      "local_immediate_safety": [
+        "mandatory_CI_preserved",
+        "syntax_smoke_if_available",
+        "auth_secret_DB_original_protection_if_changed"
+      ],
+      "score": {
+        "S": 1,
+        "C": 0,
+        "I": 0,
+        "D": 2,
+        "U": 0,
+        "total": 3
+      },
+      "score_rationale": "Protected operation: High safety review required",
+      "status": "HIGH_REVIEW_REQUIRED",
+      "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
+      "evidence_sha": null,
+      "legacy_evidence_history": "438f3b18684716e8a257580789283a6048d32fea; be7a8244758e7c427fa7886698771a6aa5c9448d; 3f5888a7de4673d2b2e1fb8a228b30a37c87ae8f; 9f75872098a4d75df0af6e5efc76d5e7739fe16c; eef0f1881e2fedce5d1403ab789e5906b2fe7a73; 5b10487b28e60c5c6c44883d600e9b2d0dff6239 ; 185081b1a1ae45bdf4fa4bdddcbf319d2b356aea; 8b31f3b82d3113be52b9965b3daf577a46730662; 7c1192cbf06a95a35577de2a9df03d61801c2a36; c6f3d3bb9dd248869d2e07cbcd001d9720c5bcbd; 67b05d786edca1d80a8b87def8c7e1c6c176145a; fe3b611f4ecc921b5bd4171351df18d2cc63698d",
+      "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED",
+      "attempts_recorded": 0,
+      "historical_attempts": "UNKNOWN_NOT_RESET",
+      "max_attempts": 2,
+      "max3_exception_approved": false,
+      "same_cause_nonprogress_failures": 0,
+      "p2_status": "NOT_RUN_LOCKED",
+      "runtime_authorization": "HOLD"
+    },
+    {
+      "task_id": "EAI-SWU-022",
+      "legacy_task_ids": [
+        "EAI-V3-08"
+      ],
+      "req_ids": [
+        "C16"
+      ],
+      "phase": "P1_FEATURE_CODE_ONLY",
+      "caller_to_callee": "Owned Player observation -> replayable episode",
+      "missing_function": "connect negative/positive outcomes to ledger",
+      "allowed_paths": [
+        "eai/episode_replay.py",
+        "eai/episode_observation.py"
+      ],
+      "code_depends_on": [],
+      "runtime_security_dependencies": [
+        "V3-07",
+        "P26_ADR0002_EXISTING_GO",
+        "NO_NEW_ACTIVE_OR_REAL_PLAYER_OR_EXTERNAL"
+      ],
+      "p1_acceptance": "Implement Owned Player observation -> replayable episode with normal output and fail-closed branch connect negative/positive outcomes to ledger; caller -> real callee -> state/output; code evidence SHA.",
+      "p2_deferred": [
+        "full_compile_types_and_CI",
+        "validation_test_harness",
+        "security_and_DB_recovery",
+        "integration_E2E",
+        "real_Windows_Qwen_browser_if_applicable"
+      ],
+      "local_immediate_safety": [
+        "mandatory_CI_preserved",
+        "syntax_smoke_if_available",
+        "auth_secret_DB_original_protection_if_changed"
+      ],
+      "score": {
+        "S": 1,
+        "C": 0,
+        "I": 1,
+        "D": 1,
+        "U": 0,
+        "total": 3
+      },
+      "score_rationale": "One bounded local caller-to-callee output and known contract",
+      "status": "PARTIAL_SOURCE",
+      "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
+      "evidence_sha": null,
+      "legacy_evidence_history": "7e0cf41cfc7c6cfce21b96b3e14c94c8dcb4e2a6; 2721906c07df995f82fb1a6cceec1efdd7eda5af; c2504ac95b97c0e9d053a01ea1559adb65fe4bc0; 55d4b89b49f3d3e302f58c7dfe4656f6f2eb22fa; e86932f9f1fe44629464f3b0f9106addfdfcd203; 2d89290c7e95af2cc90cfa198e3982fb644cd75a; 325e4ba5048d90782afe1dd8c29c14d5b910ec9f; ff7d5eaf88c502fbfe3e7607740d794481361022; 5bd1be759ecb37a5f7a25646fe1fe22f1648b886 ; 80e39916ed4234c3fa8171d7c1fefa426aacafc6; 933fbd7bdb680afc2e639189224d4faf060a2477; 8ed29e31d9bd4ef5697cc8ee6298fdc263db5397; 27761ba8bafae175a33a4146ac53ac2635c94b7e; 802f0e3e1f22c8b42c12fc52c17bdd8f56385775; a5801311fe0ae15748f2b792c4e415696219c1ea; 26e9a24b81c82d893e8a67e04be5d39c97dfa5b1; 0dbe85595b60e92f09c0d2fd6c6c8cdfe0f8b559",
+      "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED",
+      "attempts_recorded": 0,
+      "historical_attempts": "UNKNOWN_NOT_RESET",
+      "max_attempts": 2,
+      "max3_exception_approved": false,
+      "same_cause_nonprogress_failures": 0,
+      "p2_status": "NOT_RUN_LOCKED",
+      "runtime_authorization": "HOLD"
+    },
+    {
+      "task_id": "EAI-SWU-023",
+      "legacy_task_ids": [
+        "EAI-V3-08"
+      ],
+      "req_ids": [
+        "C16",
+        "C17"
+      ],
+      "phase": "P1_FEATURE_CODE_ONLY",
+      "caller_to_callee": "Independent episode SHA -> experience gate",
+      "missing_function": "verified-only training eligibility",
+      "allowed_paths": [
+        "eai/experience_admission.py",
+        "eai/episode_replay_fence.py"
+      ],
+      "code_depends_on": [],
+      "runtime_security_dependencies": [
+        "V3-07",
+        "P26_ADR0002_EXISTING_GO",
+        "NO_NEW_ACTIVE_OR_REAL_PLAYER_OR_EXTERNAL"
+      ],
+      "p1_acceptance": "Implement Independent episode SHA -> experience gate with normal output and fail-closed branch verified-only training eligibility; caller -> real callee -> state/output; code evidence SHA.",
+      "p2_deferred": [
+        "full_compile_types_and_CI",
+        "validation_test_harness",
+        "security_and_DB_recovery",
+        "integration_E2E",
+        "real_Windows_Qwen_browser_if_applicable"
+      ],
+      "local_immediate_safety": [
+        "mandatory_CI_preserved",
+        "syntax_smoke_if_available",
+        "auth_secret_DB_original_protection_if_changed"
+      ],
+      "score": {
+        "S": 1,
+        "C": 0,
+        "I": 1,
+        "D": 1,
+        "U": 0,
+        "total": 3
+      },
+      "score_rationale": "One bounded local caller-to-callee output and known contract",
+      "status": "PARTIAL_SOURCE",
+      "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
+      "evidence_sha": null,
+      "legacy_evidence_history": "7e0cf41cfc7c6cfce21b96b3e14c94c8dcb4e2a6; 2721906c07df995f82fb1a6cceec1efdd7eda5af; c2504ac95b97c0e9d053a01ea1559adb65fe4bc0; 55d4b89b49f3d3e302f58c7dfe4656f6f2eb22fa; e86932f9f1fe44629464f3b0f9106addfdfcd203; 2d89290c7e95af2cc90cfa198e3982fb644cd75a; 325e4ba5048d90782afe1dd8c29c14d5b910ec9f; ff7d5eaf88c502fbfe3e7607740d794481361022; 5bd1be759ecb37a5f7a25646fe1fe22f1648b886 ; 80e39916ed4234c3fa8171d7c1fefa426aacafc6; 933fbd7bdb680afc2e639189224d4faf060a2477; 8ed29e31d9bd4ef5697cc8ee6298fdc263db5397; 27761ba8bafae175a33a4146ac53ac2635c94b7e; 802f0e3e1f22c8b42c12fc52c17bdd8f56385775; a5801311fe0ae15748f2b792c4e415696219c1ea; 26e9a24b81c82d893e8a67e04be5d39c97dfa5b1; 0dbe85595b60e92f09c0d2fd6c6c8cdfe0f8b559",
+      "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED",
+      "attempts_recorded": 0,
+      "historical_attempts": "UNKNOWN_NOT_RESET",
+      "max_attempts": 2,
+      "max3_exception_approved": false,
+      "same_cause_nonprogress_failures": 0,
+      "p2_status": "NOT_RUN_LOCKED",
+      "runtime_authorization": "HOLD"
+    },
+    {
+      "task_id": "EAI-SWU-024",
+      "legacy_task_ids": [
+        "EAI-V3-08"
+      ],
+      "req_ids": [
+        "C17"
+      ],
+      "phase": "P1_FEATURE_CODE_ONLY",
+      "caller_to_callee": "Verified outcomes -> local StrategyLearner",
+      "missing_function": "real bounded CPU update and fallback",
+      "allowed_paths": [
+        "eai/strategy_learner.py",
+        "eai/strategy_research_ranker.py"
+      ],
+      "code_depends_on": [],
+      "runtime_security_dependencies": [
+        "V3-07",
+        "P26_ADR0002_EXISTING_GO",
+        "NO_NEW_ACTIVE_OR_REAL_PLAYER_OR_EXTERNAL"
+      ],
+      "p1_acceptance": "Implement Verified outcomes -> local StrategyLearner with normal output and fail-closed branch real bounded CPU update and fallback; caller -> real callee -> state/output; code evidence SHA.",
+      "p2_deferred": [
+        "full_compile_types_and_CI",
+        "validation_test_harness",
+        "security_and_DB_recovery",
+        "integration_E2E",
+        "real_Windows_Qwen_browser_if_applicable"
+      ],
+      "local_immediate_safety": [
+        "mandatory_CI_preserved",
+        "syntax_smoke_if_available",
+        "auth_secret_DB_original_protection_if_changed"
+      ],
+      "score": {
+        "S": 1,
+        "C": 1,
+        "I": 1,
+        "D": 0,
+        "U": 0,
+        "total": 3
+      },
+      "score_rationale": "One bounded local caller-to-callee output and known contract",
+      "status": "PARTIAL_SOURCE",
+      "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
+      "evidence_sha": null,
+      "legacy_evidence_history": "7e0cf41cfc7c6cfce21b96b3e14c94c8dcb4e2a6; 2721906c07df995f82fb1a6cceec1efdd7eda5af; c2504ac95b97c0e9d053a01ea1559adb65fe4bc0; 55d4b89b49f3d3e302f58c7dfe4656f6f2eb22fa; e86932f9f1fe44629464f3b0f9106addfdfcd203; 2d89290c7e95af2cc90cfa198e3982fb644cd75a; 325e4ba5048d90782afe1dd8c29c14d5b910ec9f; ff7d5eaf88c502fbfe3e7607740d794481361022; 5bd1be759ecb37a5f7a25646fe1fe22f1648b886 ; 80e39916ed4234c3fa8171d7c1fefa426aacafc6; 933fbd7bdb680afc2e639189224d4faf060a2477; 8ed29e31d9bd4ef5697cc8ee6298fdc263db5397; 27761ba8bafae175a33a4146ac53ac2635c94b7e; 802f0e3e1f22c8b42c12fc52c17bdd8f56385775; a5801311fe0ae15748f2b792c4e415696219c1ea; 26e9a24b81c82d893e8a67e04be5d39c97dfa5b1; 0dbe85595b60e92f09c0d2fd6c6c8cdfe0f8b559",
+      "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED",
+      "attempts_recorded": 0,
+      "historical_attempts": "UNKNOWN_NOT_RESET",
+      "max_attempts": 2,
+      "max3_exception_approved": false,
+      "same_cause_nonprogress_failures": 0,
+      "p2_status": "NOT_RUN_LOCKED",
+      "runtime_authorization": "HOLD"
+    },
+    {
+      "task_id": "EAI-SWU-025",
+      "legacy_task_ids": [
+        "EAI-V3-08"
+      ],
+      "req_ids": [
+        "C18"
+      ],
+      "phase": "P1_FEATURE_CODE_ONLY",
+      "caller_to_callee": "Synthetic curriculum -> gap-driven next case",
+      "missing_function": "coverage-driven sampler caller",
+      "allowed_paths": [
+        "eai/curriculum_scheduler.py",
+        "eai/synthetic_curriculum.py"
+      ],
+      "code_depends_on": [],
+      "runtime_security_dependencies": [
+        "V3-07",
+        "P26_ADR0002_EXISTING_GO",
+        "NO_NEW_ACTIVE_OR_REAL_PLAYER_OR_EXTERNAL"
+      ],
+      "p1_acceptance": "Implement Synthetic curriculum -> gap-driven next case with normal output and fail-closed branch coverage-driven sampler caller; caller -> real callee -> state/output; code evidence SHA.",
+      "p2_deferred": [
+        "full_compile_types_and_CI",
+        "validation_test_harness",
+        "security_and_DB_recovery",
+        "integration_E2E",
+        "real_Windows_Qwen_browser_if_applicable"
+      ],
+      "local_immediate_safety": [
+        "mandatory_CI_preserved",
+        "syntax_smoke_if_available",
+        "auth_secret_DB_original_protection_if_changed"
+      ],
+      "score": {
+        "S": 1,
+        "C": 1,
+        "I": 1,
+        "D": 0,
+        "U": 0,
+        "total": 3
+      },
+      "score_rationale": "One bounded local caller-to-callee output and known contract",
+      "status": "READY_CODE_ONLY",
+      "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
+      "evidence_sha": null,
+      "legacy_evidence_history": "7e0cf41cfc7c6cfce21b96b3e14c94c8dcb4e2a6; 2721906c07df995f82fb1a6cceec1efdd7eda5af; c2504ac95b97c0e9d053a01ea1559adb65fe4bc0; 55d4b89b49f3d3e302f58c7dfe4656f6f2eb22fa; e86932f9f1fe44629464f3b0f9106addfdfcd203; 2d89290c7e95af2cc90cfa198e3982fb644cd75a; 325e4ba5048d90782afe1dd8c29c14d5b910ec9f; ff7d5eaf88c502fbfe3e7607740d794481361022; 5bd1be759ecb37a5f7a25646fe1fe22f1648b886 ; 80e39916ed4234c3fa8171d7c1fefa426aacafc6; 933fbd7bdb680afc2e639189224d4faf060a2477; 8ed29e31d9bd4ef5697cc8ee6298fdc263db5397; 27761ba8bafae175a33a4146ac53ac2635c94b7e; 802f0e3e1f22c8b42c12fc52c17bdd8f56385775; a5801311fe0ae15748f2b792c4e415696219c1ea; 26e9a24b81c82d893e8a67e04be5d39c97dfa5b1; 0dbe85595b60e92f09c0d2fd6c6c8cdfe0f8b559",
+      "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED",
+      "attempts_recorded": 0,
+      "historical_attempts": "UNKNOWN_NOT_RESET",
+      "max_attempts": 2,
+      "max3_exception_approved": false,
+      "same_cause_nonprogress_failures": 0,
+      "p2_status": "NOT_RUN_LOCKED",
+      "runtime_authorization": "HOLD"
+    },
+    {
+      "task_id": "EAI-SWU-026",
+      "legacy_task_ids": [
+        "EAI-V3-08"
+      ],
+      "req_ids": [
+        "C25"
+      ],
+      "phase": "P1_FEATURE_CODE_ONLY",
+      "caller_to_callee": "Local cost results -> strategy ranker state",
+      "missing_function": "bounded cost metadata, OOD validation P2",
+      "allowed_paths": [
+        "eai/strategy_cost_stats.py",
+        "eai/strategy_research_ranker.py"
+      ],
+      "code_depends_on": [],
+      "runtime_security_dependencies": [
+        "V3-07",
+        "P26_ADR0002_EXISTING_GO",
+        "NO_NEW_ACTIVE_OR_REAL_PLAYER_OR_EXTERNAL"
+      ],
+      "p1_acceptance": "Implement Local cost results -> strategy ranker state with normal output and fail-closed branch bounded cost metadata, OOD validation P2; caller -> real callee -> state/output; code evidence SHA.",
+      "p2_deferred": [
+        "full_compile_types_and_CI",
+        "validation_test_harness",
+        "security_and_DB_recovery",
+        "integration_E2E",
+        "real_Windows_Qwen_browser_if_applicable"
+      ],
+      "local_immediate_safety": [
+        "mandatory_CI_preserved",
+        "syntax_smoke_if_available",
+        "auth_secret_DB_original_protection_if_changed"
+      ],
+      "score": {
+        "S": 1,
+        "C": 1,
+        "I": 1,
+        "D": 0,
+        "U": 0,
+        "total": 3
+      },
+      "score_rationale": "One bounded local caller-to-callee output and known contract",
+      "status": "PARTIAL_SOURCE",
+      "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
+      "evidence_sha": null,
+      "legacy_evidence_history": "7e0cf41cfc7c6cfce21b96b3e14c94c8dcb4e2a6; 2721906c07df995f82fb1a6cceec1efdd7eda5af; c2504ac95b97c0e9d053a01ea1559adb65fe4bc0; 55d4b89b49f3d3e302f58c7dfe4656f6f2eb22fa; e86932f9f1fe44629464f3b0f9106addfdfcd203; 2d89290c7e95af2cc90cfa198e3982fb644cd75a; 325e4ba5048d90782afe1dd8c29c14d5b910ec9f; ff7d5eaf88c502fbfe3e7607740d794481361022; 5bd1be759ecb37a5f7a25646fe1fe22f1648b886 ; 80e39916ed4234c3fa8171d7c1fefa426aacafc6; 933fbd7bdb680afc2e639189224d4faf060a2477; 8ed29e31d9bd4ef5697cc8ee6298fdc263db5397; 27761ba8bafae175a33a4146ac53ac2635c94b7e; 802f0e3e1f22c8b42c12fc52c17bdd8f56385775; a5801311fe0ae15748f2b792c4e415696219c1ea; 26e9a24b81c82d893e8a67e04be5d39c97dfa5b1; 0dbe85595b60e92f09c0d2fd6c6c8cdfe0f8b559",
+      "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED",
+      "attempts_recorded": 0,
+      "historical_attempts": "UNKNOWN_NOT_RESET",
+      "max_attempts": 2,
+      "max3_exception_approved": false,
+      "same_cause_nonprogress_failures": 0,
+      "p2_status": "NOT_RUN_LOCKED",
+      "runtime_authorization": "HOLD"
+    },
+    {
+      "task_id": "EAI-SWU-027",
+      "legacy_task_ids": [
+        "EAI-V3-09"
+      ],
+      "req_ids": [
+        "C20"
+      ],
+      "phase": "P1_FEATURE_CODE_ONLY",
+      "caller_to_callee": "Problem/Plan -> pure PolicyGate HOLD",
+      "missing_function": "pure policy implemented; real GO separate",
+      "allowed_paths": [
+        "eai/policy_gate.py"
+      ],
+      "code_depends_on": [],
+      "runtime_security_dependencies": [
+        "V3-06,V3-07",
+        "P26_ADR0002_EXISTING_GO",
+        "NO_NEW_ACTIVE_OR_REAL_PLAYER_OR_EXTERNAL"
+      ],
+      "p1_acceptance": "Implement Problem/Plan -> pure PolicyGate HOLD with normal output and fail-closed branch pure policy implemented; real GO separate; caller -> real callee -> state/output; code evidence SHA.",
+      "p2_deferred": [
+        "full_compile_types_and_CI",
+        "validation_test_harness",
+        "security_and_DB_recovery",
+        "integration_E2E",
+        "real_Windows_Qwen_browser_if_applicable"
+      ],
+      "local_immediate_safety": [
+        "mandatory_CI_preserved",
+        "syntax_smoke_if_available",
+        "auth_secret_DB_original_protection_if_changed"
+      ],
+      "score": {
+        "S": 0,
+        "C": 1,
+        "I": 0,
+        "D": 0,
+        "U": 0,
+        "total": 1
+      },
+      "score_rationale": "One bounded local caller-to-callee output and known contract",
+      "status": "PARTIAL_SOURCE",
+      "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
+      "evidence_sha": null,
+      "legacy_evidence_history": "e92a3af30a1e63114de994489677b905254b7a46; 2099642b9e2515a7d2e9cf5198b92ff346151d0f; 92862fbe0f0a0c87fe5d0cc09562025a3ab81673",
+      "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED_REAL_APPROVAL_BLOCKED",
+      "attempts_recorded": 0,
+      "historical_attempts": "UNKNOWN_NOT_RESET",
+      "max_attempts": 2,
+      "max3_exception_approved": false,
+      "same_cause_nonprogress_failures": 0,
+      "p2_status": "NOT_RUN_LOCKED",
+      "runtime_authorization": "HOLD"
+    },
+    {
+      "task_id": "EAI-SWU-028",
+      "legacy_task_ids": [
+        "EAI-V3-09"
+      ],
+      "req_ids": [
+        "C21"
+      ],
+      "phase": "P1_FEATURE_CODE_ONLY",
+      "caller_to_callee": "Pure plan -> synthetic Player trace",
+      "missing_function": "bounded no-op only; no real actions",
+      "allowed_paths": [
+        "eai/player_runtime.py"
+      ],
+      "code_depends_on": [],
+      "runtime_security_dependencies": [
+        "V3-06,V3-07",
+        "P26_ADR0002_EXISTING_GO",
+        "NO_NEW_ACTIVE_OR_REAL_PLAYER_OR_EXTERNAL"
+      ],
+      "p1_acceptance": "Implement Pure plan -> synthetic Player trace with normal output and fail-closed branch bounded no-op only; no real actions; caller -> real callee -> state/output; code evidence SHA.",
+      "p2_deferred": [
+        "full_compile_types_and_CI",
+        "validation_test_harness",
+        "security_and_DB_recovery",
+        "integration_E2E",
+        "real_Windows_Qwen_browser_if_applicable"
+      ],
+      "local_immediate_safety": [
+        "mandatory_CI_preserved",
+        "syntax_smoke_if_available",
+        "auth_secret_DB_original_protection_if_changed"
+      ],
+      "score": {
+        "S": 1,
+        "C": 0,
+        "I": 1,
+        "D": 0,
+        "U": 0,
+        "total": 2
+      },
+      "score_rationale": "One bounded local caller-to-callee output and known contract",
+      "status": "PARTIAL_SOURCE",
+      "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
+      "evidence_sha": null,
+      "legacy_evidence_history": "e92a3af30a1e63114de994489677b905254b7a46; 2099642b9e2515a7d2e9cf5198b92ff346151d0f; 92862fbe0f0a0c87fe5d0cc09562025a3ab81673",
+      "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED_REAL_APPROVAL_BLOCKED",
+      "attempts_recorded": 0,
+      "historical_attempts": "UNKNOWN_NOT_RESET",
+      "max_attempts": 2,
+      "max3_exception_approved": false,
+      "same_cause_nonprogress_failures": 0,
+      "p2_status": "NOT_RUN_LOCKED",
+      "runtime_authorization": "HOLD"
+    },
+    {
+      "task_id": "EAI-SWU-029",
+      "legacy_task_ids": [
+        "EAI-V3-09"
+      ],
+      "req_ids": [
+        "C21",
+        "C26"
+      ],
+      "phase": "P1_FEATURE_CODE_ONLY",
+      "caller_to_callee": "Scoped action -> isolated Player operator port",
+      "missing_function": "owner GO/High review required",
+      "allowed_paths": [
+        "eai/player_executor.py",
+        "eai/policy_gate.py"
+      ],
+      "code_depends_on": [],
+      "runtime_security_dependencies": [
+        "V3-06,V3-07",
+        "P26_ADR0002_EXISTING_GO",
+        "NO_NEW_ACTIVE_OR_REAL_PLAYER_OR_EXTERNAL"
+      ],
+      "p1_acceptance": "Implement Scoped action -> isolated Player operator port with normal output and fail-closed branch owner GO/High review required; caller -> real callee -> state/output; code evidence SHA.",
+      "p2_deferred": [
+        "full_compile_types_and_CI",
+        "validation_test_harness",
+        "security_and_DB_recovery",
+        "integration_E2E",
+        "real_Windows_Qwen_browser_if_applicable"
+      ],
+      "local_immediate_safety": [
+        "mandatory_CI_preserved",
+        "syntax_smoke_if_available",
+        "auth_secret_DB_original_protection_if_changed"
+      ],
+      "score": {
+        "S": 1,
+        "C": 0,
+        "I": 0,
+        "D": 2,
+        "U": 0,
+        "total": 3
+      },
+      "score_rationale": "Protected operation: High safety review required",
+      "status": "HIGH_REVIEW_REQUIRED",
+      "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
+      "evidence_sha": null,
+      "legacy_evidence_history": "e92a3af30a1e63114de994489677b905254b7a46; 2099642b9e2515a7d2e9cf5198b92ff346151d0f; 92862fbe0f0a0c87fe5d0cc09562025a3ab81673",
+      "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED_REAL_APPROVAL_BLOCKED",
+      "attempts_recorded": 0,
+      "historical_attempts": "UNKNOWN_NOT_RESET",
+      "max_attempts": 2,
+      "max3_exception_approved": false,
+      "same_cause_nonprogress_failures": 0,
+      "p2_status": "NOT_RUN_LOCKED",
+      "runtime_authorization": "HOLD"
+    },
+    {
+      "task_id": "EAI-SWU-030",
+      "legacy_task_ids": [
+        "EAI-V3-09"
+      ],
+      "req_ids": [
+        "C21",
+        "C26"
+      ],
+      "phase": "P1_FEATURE_CODE_ONLY",
+      "caller_to_callee": "Observed sandbox result -> compensation",
+      "missing_function": "idempotent rollback state, not original write",
+      "allowed_paths": [
+        "eai/player_observation.py",
+        "eai/player_runtime.py"
+      ],
+      "code_depends_on": [],
+      "runtime_security_dependencies": [
+        "V3-06,V3-07",
+        "P26_ADR0002_EXISTING_GO",
+        "NO_NEW_ACTIVE_OR_REAL_PLAYER_OR_EXTERNAL"
+      ],
+      "p1_acceptance": "Implement Observed sandbox result -> compensation with normal output and fail-closed branch idempotent rollback state, not original write; caller -> real callee -> state/output; code evidence SHA.",
+      "p2_deferred": [
+        "full_compile_types_and_CI",
+        "validation_test_harness",
+        "security_and_DB_recovery",
+        "integration_E2E",
+        "real_Windows_Qwen_browser_if_applicable"
+      ],
+      "local_immediate_safety": [
+        "mandatory_CI_preserved",
+        "syntax_smoke_if_available",
+        "auth_secret_DB_original_protection_if_changed"
+      ],
+      "score": {
+        "S": 1,
+        "C": 0,
+        "I": 0,
+        "D": 2,
+        "U": 0,
+        "total": 3
+      },
+      "score_rationale": "Protected operation: High safety review required",
+      "status": "HIGH_REVIEW_REQUIRED",
+      "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
+      "evidence_sha": null,
+      "legacy_evidence_history": "e92a3af30a1e63114de994489677b905254b7a46; 2099642b9e2515a7d2e9cf5198b92ff346151d0f; 92862fbe0f0a0c87fe5d0cc09562025a3ab81673",
+      "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED_REAL_APPROVAL_BLOCKED",
+      "attempts_recorded": 0,
+      "historical_attempts": "UNKNOWN_NOT_RESET",
+      "max_attempts": 2,
+      "max3_exception_approved": false,
+      "same_cause_nonprogress_failures": 0,
+      "p2_status": "NOT_RUN_LOCKED",
+      "runtime_authorization": "HOLD"
+    },
+    {
+      "task_id": "EAI-SWU-031",
+      "legacy_task_ids": [
+        "EAI-V3-10"
+      ],
+      "req_ids": [
+        "C22"
+      ],
+      "phase": "P1_FEATURE_CODE_ONLY",
+      "caller_to_callee": "Adapter handshake -> local OFF port registry",
+      "missing_function": "connect disabled adapter without cross-repo effect",
+      "allowed_paths": [
+        "eai/adapter_stub.py",
+        "eai/adapter_registry.py"
+      ],
+      "code_depends_on": [],
+      "runtime_security_dependencies": [
+        "V3-08,V3-09",
+        "P26_ADR0002_EXISTING_GO",
+        "NO_NEW_ACTIVE_OR_REAL_PLAYER_OR_EXTERNAL"
+      ],
+      "p1_acceptance": "Implement Adapter handshake -> local OFF port registry with normal output and fail-closed branch connect disabled adapter without cross-repo effect; caller -> real callee -> state/output; code evidence SHA.",
+      "p2_deferred": [
+        "full_compile_types_and_CI",
+        "validation_test_harness",
+        "security_and_DB_recovery",
+        "integration_E2E",
+        "real_Windows_Qwen_browser_if_applicable"
+      ],
+      "local_immediate_safety": [
+        "mandatory_CI_preserved",
+        "syntax_smoke_if_available",
+        "auth_secret_DB_original_protection_if_changed"
+      ],
+      "score": {
+        "S": 1,
+        "C": 0,
+        "I": 1,
+        "D": 0,
+        "U": 0,
+        "total": 2
+      },
+      "score_rationale": "One bounded local caller-to-callee output and known contract",
+      "status": "PARTIAL_SOURCE",
+      "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
+      "evidence_sha": null,
+      "legacy_evidence_history": "c093fcb9d5e73871fcde5309a3062b96e7d9c7d7; f004e6b262ce4b3341f6874e4ef9815c668431f3; d1228e6301c4956bcfb8a284f4c77f51fed22db1; 6904a445e306c6844bc8f4937709c0e3e0fe116a; 850318f8856b2a4f12a9763634366d5c62bff627",
+      "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED",
+      "attempts_recorded": 0,
+      "historical_attempts": "UNKNOWN_NOT_RESET",
+      "max_attempts": 2,
+      "max3_exception_approved": false,
+      "same_cause_nonprogress_failures": 0,
+      "p2_status": "NOT_RUN_LOCKED",
+      "runtime_authorization": "HOLD"
+    },
+    {
+      "task_id": "EAI-SWU-032",
+      "legacy_task_ids": [
+        "EAI-V3-10"
+      ],
+      "req_ids": [
+        "C23"
+      ],
+      "phase": "P1_FEATURE_CODE_ONLY",
+      "caller_to_callee": "CPU process RSS -> bounded scheduler decision",
+      "missing_function": "connect cancellation and postflight to decision",
+      "allowed_paths": [
+        "eai/local_scheduler.py",
+        "eai/offline_journey.py"
+      ],
+      "code_depends_on": [],
+      "runtime_security_dependencies": [
+        "V3-08,V3-09",
+        "P26_ADR0002_EXISTING_GO",
+        "NO_NEW_ACTIVE_OR_REAL_PLAYER_OR_EXTERNAL"
+      ],
+      "p1_acceptance": "Implement CPU process RSS -> bounded scheduler decision with normal output and fail-closed branch connect cancellation and postflight to decision; caller -> real callee -> state/output; code evidence SHA.",
+      "p2_deferred": [
+        "full_compile_types_and_CI",
+        "validation_test_harness",
+        "security_and_DB_recovery",
+        "integration_E2E",
+        "real_Windows_Qwen_browser_if_applicable"
+      ],
+      "local_immediate_safety": [
+        "mandatory_CI_preserved",
+        "syntax_smoke_if_available",
+        "auth_secret_DB_original_protection_if_changed"
+      ],
+      "score": {
+        "S": 1,
+        "C": 0,
+        "I": 1,
+        "D": 0,
+        "U": 0,
+        "total": 2
+      },
+      "score_rationale": "One bounded local caller-to-callee output and known contract",
+      "status": "PARTIAL_SOURCE",
+      "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
+      "evidence_sha": null,
+      "legacy_evidence_history": "c093fcb9d5e73871fcde5309a3062b96e7d9c7d7; f004e6b262ce4b3341f6874e4ef9815c668431f3; d1228e6301c4956bcfb8a284f4c77f51fed22db1; 6904a445e306c6844bc8f4937709c0e3e0fe116a; 850318f8856b2a4f12a9763634366d5c62bff627",
+      "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED",
+      "attempts_recorded": 0,
+      "historical_attempts": "UNKNOWN_NOT_RESET",
+      "max_attempts": 2,
+      "max3_exception_approved": false,
+      "same_cause_nonprogress_failures": 0,
+      "p2_status": "NOT_RUN_LOCKED",
+      "runtime_authorization": "HOLD"
+    },
+    {
+      "task_id": "EAI-SWU-033",
+      "legacy_task_ids": [
+        "EAI-V3-10"
+      ],
+      "req_ids": [
+        "C24",
+        "C27",
+        "C28"
+      ],
+      "phase": "P1_FEATURE_CODE_ONLY",
+      "caller_to_callee": "Decision -> redacted trace and research separation",
+      "missing_function": "grounded final uncertainty and no GPT claim",
+      "allowed_paths": [
+        "eai/trace_renderer.py",
+        "eai/decision_engine.py"
+      ],
+      "code_depends_on": [],
+      "runtime_security_dependencies": [
+        "V3-08,V3-09",
+        "P26_ADR0002_EXISTING_GO",
+        "NO_NEW_ACTIVE_OR_REAL_PLAYER_OR_EXTERNAL"
+      ],
+      "p1_acceptance": "Implement Decision -> redacted trace and research separation with normal output and fail-closed branch grounded final uncertainty and no GPT claim; caller -> real callee -> state/output; code evidence SHA.",
+      "p2_deferred": [
+        "full_compile_types_and_CI",
+        "validation_test_harness",
+        "security_and_DB_recovery",
+        "integration_E2E",
+        "real_Windows_Qwen_browser_if_applicable"
+      ],
+      "local_immediate_safety": [
+        "mandatory_CI_preserved",
+        "syntax_smoke_if_available",
+        "auth_secret_DB_original_protection_if_changed"
+      ],
+      "score": {
+        "S": 1,
+        "C": 1,
+        "I": 1,
+        "D": 0,
+        "U": 0,
+        "total": 3
+      },
+      "score_rationale": "One bounded local caller-to-callee output and known contract",
+      "status": "PARTIAL_SOURCE",
+      "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
+      "evidence_sha": null,
+      "legacy_evidence_history": "c093fcb9d5e73871fcde5309a3062b96e7d9c7d7; f004e6b262ce4b3341f6874e4ef9815c668431f3; d1228e6301c4956bcfb8a284f4c77f51fed22db1; 6904a445e306c6844bc8f4937709c0e3e0fe116a; 850318f8856b2a4f12a9763634366d5c62bff627",
+      "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED",
+      "attempts_recorded": 0,
+      "historical_attempts": "UNKNOWN_NOT_RESET",
+      "max_attempts": 2,
+      "max3_exception_approved": false,
+      "same_cause_nonprogress_failures": 0,
+      "p2_status": "NOT_RUN_LOCKED",
+      "runtime_authorization": "HOLD"
+    },
+    {
+      "task_id": "EAI-SWU-034",
+      "legacy_task_ids": [
+        "EAI-V3-11"
+      ],
+      "req_ids": [
+        "C29",
+        "C34",
+        "C36"
+      ],
+      "phase": "P1_FEATURE_CODE_ONLY",
+      "caller_to_callee": "OFF policy -> NullProvider -> same baseline",
+      "missing_function": null,
+      "allowed_paths": [
+        "eai/research_policy.py",
+        "eai/research_providers.py"
+      ],
+      "code_depends_on": [],
+      "runtime_security_dependencies": [
+        "V3-01",
+        "P26_ADR0002_EXISTING_GO",
+        "NO_NEW_ACTIVE_OR_REAL_PLAYER_OR_EXTERNAL"
+      ],
+      "p1_acceptance": "Implement OFF policy -> NullProvider -> same baseline with normal output and fail-closed branch existing OFF no network/SDK; caller -> real callee -> state/output; code evidence SHA.",
+      "p2_deferred": [
+        "full_compile_types_and_CI",
+        "validation_test_harness",
+        "security_and_DB_recovery",
+        "integration_E2E",
+        "real_Windows_Qwen_browser_if_applicable"
+      ],
+      "local_immediate_safety": [
+        "mandatory_CI_preserved",
+        "syntax_smoke_if_available",
+        "auth_secret_DB_original_protection_if_changed"
+      ],
+      "score": {
+        "S": 1,
+        "C": 0,
+        "I": 1,
+        "D": 0,
+        "U": 0,
+        "total": 2
+      },
+      "score_rationale": "One bounded local caller-to-callee output and known contract",
+      "status": "SOURCE_COMPLETE_P2_PENDING",
+      "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
+      "evidence_sha": "b22a877e55ddab010ceb5c006e9d5016704e6366",
+      "legacy_evidence_history": "b22a877e55ddab010ceb5c006e9d5016704e6366",
+      "legacy_status": "IMPLEMENTED_UNVERIFIED",
+      "attempts_recorded": 0,
+      "historical_attempts": "UNKNOWN_NOT_RESET",
+      "max_attempts": 2,
+      "max3_exception_approved": false,
+      "same_cause_nonprogress_failures": 0,
+      "p2_status": "NOT_RUN_LOCKED",
+      "runtime_authorization": "HOLD"
+    },
+    {
+      "task_id": "EAI-SWU-035",
+      "legacy_task_ids": [
+        "EAI-V3-12"
+      ],
+      "req_ids": [
+        "C30",
+        "C35"
+      ],
+      "phase": "P1_FEATURE_CODE_ONLY",
+      "caller_to_callee": "Synthetic ResearchPacket -> owner consent fence",
+      "missing_function": "durable per-send consent; no live use",
+      "allowed_paths": [
+        "eai/hydrogen_packet.py",
+        "eai/research_consent.py"
+      ],
+      "code_depends_on": [],
+      "runtime_security_dependencies": [
+        "V3-11",
+        "P26_ADR0002_EXISTING_GO",
+        "NO_NEW_ACTIVE_OR_REAL_PLAYER_OR_EXTERNAL"
+      ],
+      "p1_acceptance": "Implement Synthetic ResearchPacket -> owner consent fence with normal output and fail-closed branch durable per-send consent; no live use; caller -> real callee -> state/output; code evidence SHA.",
+      "p2_deferred": [
+        "full_compile_types_and_CI",
+        "validation_test_harness",
+        "security_and_DB_recovery",
+        "integration_E2E",
+        "real_Windows_Qwen_browser_if_applicable"
+      ],
+      "local_immediate_safety": [
+        "mandatory_CI_preserved",
+        "syntax_smoke_if_available",
+        "auth_secret_DB_original_protection_if_changed"
+      ],
+      "score": {
+        "S": 1,
+        "C": 0,
+        "I": 1,
+        "D": 1,
+        "U": 0,
+        "total": 3
+      },
+      "score_rationale": "One bounded local caller-to-callee output and known contract",
+      "status": "PARTIAL_SOURCE",
+      "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
+      "evidence_sha": null,
+      "legacy_evidence_history": "35b77d59a642b5e7d64a08a3e4bce90f4d08d660",
+      "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED",
+      "attempts_recorded": 0,
+      "historical_attempts": "UNKNOWN_NOT_RESET",
+      "max_attempts": 2,
+      "max3_exception_approved": false,
+      "same_cause_nonprogress_failures": 0,
+      "p2_status": "NOT_RUN_LOCKED",
+      "runtime_authorization": "HOLD"
+    },
+    {
+      "task_id": "EAI-SWU-036",
+      "legacy_task_ids": [
+        "EAI-V3-12"
+      ],
+      "req_ids": [
+        "C31"
+      ],
+      "phase": "P1_FEATURE_CODE_ONLY",
+      "caller_to_callee": "Local research quota -> durable breaker",
+      "missing_function": "persistent local 429/failure OFF state",
+      "allowed_paths": [
+        "eai/research_quota.py",
+        "eai/research_quota_store.py"
+      ],
+      "code_depends_on": [],
+      "runtime_security_dependencies": [
+        "V3-11",
+        "P26_ADR0002_EXISTING_GO",
+        "NO_NEW_ACTIVE_OR_REAL_PLAYER_OR_EXTERNAL"
+      ],
+      "p1_acceptance": "Implement Local research quota -> durable breaker with normal output and fail-closed branch persistent local 429/failure OFF state; caller -> real callee -> state/output; code evidence SHA.",
+      "p2_deferred": [
+        "full_compile_types_and_CI",
+        "validation_test_harness",
+        "security_and_DB_recovery",
+        "integration_E2E",
+        "real_Windows_Qwen_browser_if_applicable"
+      ],
+      "local_immediate_safety": [
+        "mandatory_CI_preserved",
+        "syntax_smoke_if_available",
+        "auth_secret_DB_original_protection_if_changed"
+      ],
+      "score": {
+        "S": 1,
+        "C": 0,
+        "I": 1,
+        "D": 1,
+        "U": 0,
+        "total": 3
+      },
+      "score_rationale": "One bounded local caller-to-callee output and known contract",
+      "status": "PARTIAL_SOURCE",
+      "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
+      "evidence_sha": null,
+      "legacy_evidence_history": "35b77d59a642b5e7d64a08a3e4bce90f4d08d660",
+      "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED",
+      "attempts_recorded": 0,
+      "historical_attempts": "UNKNOWN_NOT_RESET",
+      "max_attempts": 2,
+      "max3_exception_approved": false,
+      "same_cause_nonprogress_failures": 0,
+      "p2_status": "NOT_RUN_LOCKED",
+      "runtime_authorization": "HOLD"
+    },
+    {
+      "task_id": "EAI-SWU-037",
+      "legacy_task_ids": [
+        "EAI-V3-13"
+      ],
+      "req_ids": [
+        "C32"
+      ],
+      "phase": "P1_FEATURE_CODE_ONLY",
+      "caller_to_callee": "Untrusted mock idea -> quarantined metadata",
+      "missing_function": "connect review without promotion",
+      "allowed_paths": [
+        "eai/research_candidates.py"
+      ],
+      "code_depends_on": [],
+      "runtime_security_dependencies": [
+        "V3-07,V3-11,V3-12",
+        "P26_ADR0002_EXISTING_GO",
+        "NO_NEW_ACTIVE_OR_REAL_PLAYER_OR_EXTERNAL"
+      ],
+      "p1_acceptance": "Implement Untrusted mock idea -> quarantined metadata with normal output and fail-closed branch connect review without promotion; caller -> real callee -> state/output; code evidence SHA.",
+      "p2_deferred": [
+        "full_compile_types_and_CI",
+        "validation_test_harness",
+        "security_and_DB_recovery",
+        "integration_E2E",
+        "real_Windows_Qwen_browser_if_applicable"
+      ],
+      "local_immediate_safety": [
+        "mandatory_CI_preserved",
+        "syntax_smoke_if_available",
+        "auth_secret_DB_original_protection_if_changed"
+      ],
+      "score": {
+        "S": 0,
+        "C": 1,
+        "I": 0,
+        "D": 0,
+        "U": 0,
+        "total": 1
+      },
+      "score_rationale": "One bounded local caller-to-callee output and known contract",
+      "status": "PARTIAL_SOURCE",
+      "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
+      "evidence_sha": null,
+      "legacy_evidence_history": "9840e5df24f7c9a7df719983ac40acd059017e39; 386345a071dc88306864a30cf7fb0da1e817a05f; 40d943c9913bf1071bf3c6be054f99352c8b6a42",
+      "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED_MOCK_ONLY",
+      "attempts_recorded": 0,
+      "historical_attempts": "UNKNOWN_NOT_RESET",
+      "max_attempts": 2,
+      "max3_exception_approved": false,
+      "same_cause_nonprogress_failures": 0,
+      "p2_status": "NOT_RUN_LOCKED",
+      "runtime_authorization": "HOLD"
+    },
+    {
+      "task_id": "EAI-SWU-038",
+      "legacy_task_ids": [
+        "EAI-V3-13"
+      ],
+      "req_ids": [
+        "C33"
+      ],
+      "phase": "P1_FEATURE_CODE_ONLY",
+      "caller_to_callee": "OFF plus mock ON -> attributed comparison result",
+      "missing_function": "paired local decision output without uplift claims",
+      "allowed_paths": [
+        "eai/dual_mode_ablation.py",
+        "eai/research_ablation_runtime.py"
+      ],
+      "code_depends_on": [],
+      "runtime_security_dependencies": [
+        "V3-07,V3-11,V3-12",
+        "P26_ADR0002_EXISTING_GO",
+        "NO_NEW_ACTIVE_OR_REAL_PLAYER_OR_EXTERNAL"
+      ],
+      "p1_acceptance": "Implement OFF plus mock ON -> attributed comparison result with normal output and fail-closed branch paired local decision output without uplift claims; caller -> real callee -> state/output; code evidence SHA.",
+      "p2_deferred": [
+        "full_compile_types_and_CI",
+        "validation_test_harness",
+        "security_and_DB_recovery",
+        "integration_E2E",
+        "real_Windows_Qwen_browser_if_applicable"
+      ],
+      "local_immediate_safety": [
+        "mandatory_CI_preserved",
+        "syntax_smoke_if_available",
+        "auth_secret_DB_original_protection_if_changed"
+      ],
+      "score": {
+        "S": 1,
+        "C": 0,
+        "I": 1,
+        "D": 0,
+        "U": 0,
+        "total": 2
+      },
+      "score_rationale": "One bounded local caller-to-callee output and known contract",
+      "status": "READY_CODE_ONLY",
+      "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
+      "evidence_sha": null,
+      "legacy_evidence_history": "9840e5df24f7c9a7df719983ac40acd059017e39; 386345a071dc88306864a30cf7fb0da1e817a05f; 40d943c9913bf1071bf3c6be054f99352c8b6a42",
+      "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED_MOCK_ONLY",
+      "attempts_recorded": 0,
+      "historical_attempts": "UNKNOWN_NOT_RESET",
+      "max_attempts": 2,
+      "max3_exception_approved": false,
+      "same_cause_nonprogress_failures": 0,
+      "p2_status": "NOT_RUN_LOCKED",
+      "runtime_authorization": "HOLD"
+    },
+    {
+      "task_id": "EAI-SWU-039",
+      "legacy_task_ids": [
+        "EAI-V3-14"
+      ],
+      "req_ids": [
+        "C30",
+        "C35"
+      ],
+      "phase": "P1_FEATURE_CODE_ONLY",
+      "caller_to_callee": "Owner consented public packet -> live Hydrogen candidate",
+      "missing_function": "real provider blocked until free-tier and owner GO",
+      "allowed_paths": [
+        "eai/hydrogen_adapter.py"
+      ],
+      "code_depends_on": [],
+      "runtime_security_dependencies": [
+        "V3-12,V3-13",
+        "P26_ADR0002_EXISTING_GO",
+        "NO_NEW_ACTIVE_OR_REAL_PLAYER_OR_EXTERNAL"
+      ],
+      "p1_acceptance": "Implement Owner consented public packet -> live Hydrogen candidate with normal output and fail-closed branch real provider blocked until free-tier and owner GO; caller -> real callee -> state/output; code evidence SHA.",
+      "p2_deferred": [
+        "full_compile_types_and_CI",
+        "validation_test_harness",
+        "security_and_DB_recovery",
+        "integration_E2E",
+        "real_Windows_Qwen_browser_if_applicable"
+      ],
+      "local_immediate_safety": [
+        "mandatory_CI_preserved",
+        "syntax_smoke_if_available",
+        "auth_secret_DB_original_protection_if_changed"
+      ],
+      "score": {
+        "S": 0,
+        "C": 0,
+        "I": 0,
+        "D": 2,
+        "U": 1,
+        "total": 3
+      },
+      "score_rationale": "Protected operation: High safety review required",
+      "status": "BLOCKED_APPROVAL",
+      "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
+      "evidence_sha": null,
+      "legacy_evidence_history": "none",
+      "legacy_status": "BLOCKED_APPROVAL",
+      "attempts_recorded": 0,
+      "historical_attempts": "UNKNOWN_NOT_RESET",
+      "max_attempts": 2,
+      "max3_exception_approved": false,
+      "same_cause_nonprogress_failures": 0,
+      "p2_status": "NOT_RUN_LOCKED",
+      "runtime_authorization": "HOLD"
+    },
+    {
+      "task_id": "EAI-SWU-040",
+      "legacy_task_ids": [
+        "EAI-V3-14"
+      ],
+      "req_ids": [
+        "C31",
+        "C33"
+      ],
+      "phase": "P1_FEATURE_CODE_ONLY",
+      "caller_to_callee": "Late/429 research reply -> OFF result",
+      "missing_function": "generation fence and zero-paid fallback",
+      "allowed_paths": [
+        "eai/research_providers.py",
+        "eai/research_quota.py"
+      ],
+      "code_depends_on": [],
+      "runtime_security_dependencies": [
+        "V3-12,V3-13",
+        "P26_ADR0002_EXISTING_GO",
+        "NO_NEW_ACTIVE_OR_REAL_PLAYER_OR_EXTERNAL"
+      ],
+      "p1_acceptance": "Implement Late/429 research reply -> OFF result with normal output and fail-closed branch generation fence and zero-paid fallback; caller -> real callee -> state/output; code evidence SHA.",
+      "p2_deferred": [
+        "full_compile_types_and_CI",
+        "validation_test_harness",
+        "security_and_DB_recovery",
+        "integration_E2E",
+        "real_Windows_Qwen_browser_if_applicable"
+      ],
+      "local_immediate_safety": [
+        "mandatory_CI_preserved",
+        "syntax_smoke_if_available",
+        "auth_secret_DB_original_protection_if_changed"
+      ],
+      "score": {
+        "S": 1,
+        "C": 0,
+        "I": 1,
+        "D": 0,
+        "U": 0,
+        "total": 2
+      },
+      "score_rationale": "One bounded local caller-to-callee output and known contract",
+      "status": "PARTIAL_SOURCE",
+      "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
+      "evidence_sha": null,
+      "legacy_evidence_history": "none",
+      "legacy_status": "BLOCKED_APPROVAL",
+      "attempts_recorded": 0,
+      "historical_attempts": "UNKNOWN_NOT_RESET",
+      "max_attempts": 2,
+      "max3_exception_approved": false,
+      "same_cause_nonprogress_failures": 0,
+      "p2_status": "NOT_RUN_LOCKED",
+      "runtime_authorization": "HOLD"
+    },
+    {
+      "task_id": "EAI-SWU-041",
+      "legacy_task_ids": [
+        "EAI-V3-15"
+      ],
+      "req_ids": [
+        "C34",
+        "C36"
+      ],
+      "phase": "P1_FEATURE_CODE_ONLY",
+      "caller_to_callee": "Local goal -> Architect/Policy/Player -> decision",
+      "missing_function": "replace preview-only endpoint with grounded decision",
+      "allowed_paths": [
+        "eai/offline_journey.py",
+        "eai/decision_engine.py"
+      ],
+      "code_depends_on": [],
+      "runtime_security_dependencies": [
+        "V3-11,V3-13",
+        "P26_ADR0002_EXISTING_GO",
+        "NO_NEW_ACTIVE_OR_REAL_PLAYER_OR_EXTERNAL"
+      ],
+      "p1_acceptance": "Implement Local goal -> Architect/Policy/Player -> decision with normal output and fail-closed branch replace preview-only endpoint with grounded decision; caller -> real callee -> state/output; code evidence SHA.",
+      "p2_deferred": [
+        "full_compile_types_and_CI",
+        "validation_test_harness",
+        "security_and_DB_recovery",
+        "integration_E2E",
+        "real_Windows_Qwen_browser_if_applicable"
+      ],
+      "local_immediate_safety": [
+        "mandatory_CI_preserved",
+        "syntax_smoke_if_available",
+        "auth_secret_DB_original_protection_if_changed"
+      ],
+      "score": {
+        "S": 1,
+        "C": 1,
+        "I": 1,
+        "D": 0,
+        "U": 0,
+        "total": 3
+      },
+      "score_rationale": "One bounded local caller-to-callee output and known contract",
+      "status": "PARTIAL_SOURCE",
+      "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
+      "evidence_sha": null,
+      "legacy_evidence_history": "00b703691fbf6486144fdf90aeab9e0e76e88892; 5c07b5fd89ec6900a3cec8e1dcf8c293c0a4020a; f2715bc8a50e8148aaf7a88e08646adfd00c7e68; f5176fba6ee93f7f5ac4b51b2d4d5cd314a2d0b7; f7c35f1e66708ed123ced17a8e754426a9fd8048; 030bd61eb583842f018274cbbdd83903a4fd4faf; ac9b5e72d78b299eab97cb46c7d43e407fa82c02",
+      "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED_WINDOWS_PENDING",
+      "attempts_recorded": 0,
+      "historical_attempts": "UNKNOWN_NOT_RESET",
+      "max_attempts": 2,
+      "max3_exception_approved": false,
+      "same_cause_nonprogress_failures": 0,
+      "p2_status": "NOT_RUN_LOCKED",
+      "runtime_authorization": "HOLD"
+    },
+    {
+      "task_id": "EAI-SWU-042",
+      "legacy_task_ids": [
+        "EAI-V3-15"
+      ],
+      "req_ids": [
+        "C28",
+        "C36"
+      ],
+      "phase": "P1_FEATURE_CODE_ONLY",
+      "caller_to_callee": "EAI CLI goal -> independent CPU answer",
+      "missing_function": "nonpreview answer/abstain/cancel route",
+      "allowed_paths": [
+        "eai/__main__.py",
+        "eai/trace_renderer.py"
+      ],
+      "code_depends_on": [],
+      "runtime_security_dependencies": [
+        "V3-11,V3-13",
+        "P26_ADR0002_EXISTING_GO",
+        "NO_NEW_ACTIVE_OR_REAL_PLAYER_OR_EXTERNAL"
+      ],
+      "p1_acceptance": "Implement EAI CLI goal -> independent CPU answer with normal output and fail-closed branch nonpreview answer/abstain/cancel route; caller -> real callee -> state/output; code evidence SHA.",
+      "p2_deferred": [
+        "full_compile_types_and_CI",
+        "validation_test_harness",
+        "security_and_DB_recovery",
+        "integration_E2E",
+        "real_Windows_Qwen_browser_if_applicable"
+      ],
+      "local_immediate_safety": [
+        "mandatory_CI_preserved",
+        "syntax_smoke_if_available",
+        "auth_secret_DB_original_protection_if_changed"
+      ],
+      "score": {
+        "S": 1,
+        "C": 0,
+        "I": 1,
+        "D": 0,
+        "U": 0,
+        "total": 2
+      },
+      "score_rationale": "One bounded local caller-to-callee output and known contract",
+      "status": "PARTIAL_SOURCE",
+      "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
+      "evidence_sha": null,
+      "legacy_evidence_history": "00b703691fbf6486144fdf90aeab9e0e76e88892; 5c07b5fd89ec6900a3cec8e1dcf8c293c0a4020a; f2715bc8a50e8148aaf7a88e08646adfd00c7e68; f5176fba6ee93f7f5ac4b51b2d4d5cd314a2d0b7; f7c35f1e66708ed123ced17a8e754426a9fd8048; 030bd61eb583842f018274cbbdd83903a4fd4faf; ac9b5e72d78b299eab97cb46c7d43e407fa82c02",
+      "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED_WINDOWS_PENDING",
+      "attempts_recorded": 0,
+      "historical_attempts": "UNKNOWN_NOT_RESET",
+      "max_attempts": 2,
+      "max3_exception_approved": false,
+      "same_cause_nonprogress_failures": 0,
+      "p2_status": "NOT_RUN_LOCKED",
+      "runtime_authorization": "HOLD"
+    }
+  ]
+}
