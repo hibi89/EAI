@@ -6,6 +6,7 @@ client, paid quota or authorization to transmit any request. No reset routine.
 from __future__ import annotations
 
 from dataclasses import dataclass
+import os
 from pathlib import Path
 from time import time
 from contextlib import closing
@@ -46,10 +47,15 @@ class DurableMockQuota:
         exists = file.exists()
         if not exists and not allow_create:
             raise FileNotFoundError("owner must explicitly create a new mock ledger")
+        if not exists:
+            # An exclusive private file claim prevents a race with customer or
+            # another process data; never let sqlite mode=rwc open a surprise.
+            flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0)
+            fd = os.open(file, flags, 0o600)
+            os.close(fd)
         self.path = file
         # Existing files are opened rw, never recreated or auto-migrated.
-        uri = file.resolve(strict=exists).as_uri() + (
-            "?mode=rw" if exists else "?mode=rwc")
+        uri = file.resolve(strict=True).as_uri() + "?mode=rw"
         self.db = sqlite3.connect(uri, uri=True, timeout=3, isolation_level=None)
         try:
             self.db.execute("PRAGMA busy_timeout=3000")
