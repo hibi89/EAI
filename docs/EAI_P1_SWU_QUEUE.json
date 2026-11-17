@@ -661,14 +661,16 @@
       "runtime_authorization": "HOLD",
       "source_dependencies_are_code_only": true,
       "operating_authorization_is_not_inferred_from_dependencies": true,
-      "source_candidate_note": "Callable CPU-only implementation committed; source checked via GitHub PASS_STATIC. Exact-SHA Python runtime/syntax, DB/backup/permissions security smoke NOT_RUN; all original/real service authorizations HOLD.",
+      "source_candidate_note": "Callable CPU-only implementation committed; source checked via GitHub PASS_STATIC. Exact-SHA Python runtime/syntax, DB/backup/permissions security smoke NOT_RUN; all original/real service authorizations HOLD. Follow-up exact-source focused checks pass for canonical LF markers and legacy Windows CRLF markers.",
       "retry_policy": "OWNER_RETRY_2_PLUS_2_SOLMAX_20261117",
       "initial_nonprogress_limit": 2,
       "post_isolation_nonprogress_limit": 2,
       "retry_stage": "NOT_TRIGGERED_SOURCE_WRITTEN",
       "initial_nonprogress_attempts": null,
       "post_isolation_nonprogress_attempts": null,
-      "retry_evidence": []
+      "retry_evidence": [],
+      "latest_compatibility_fix_sha": "69987ec4455c9caadd7de8a632cb0b62a1f2ee3b",
+      "immediate_safety_result": "PASS_FOCUSED_SYNTHETIC_PATHS"
     },
     {
       "task_id": "EAI-SWU-007",
@@ -718,10 +720,10 @@
       "score_rationale": "Protected operation: High safety review required",
       "status": "HIGH_REVIEW_REQUIRED",
       "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
-      "evidence_sha": "5df0be08fce3525d819ee7a651671fe93ec10b39",
+      "evidence_sha": "69987ec4455c9caadd7de8a632cb0b62a1f2ee3b",
       "legacy_evidence_history": "1a71a10a1bbedaae420d3c094f9ffaf5dca45906; 4b362c660bdc350adbe8ae139ae018e68ad02fba; c0654930f1d2fd51cd9ee1c5e0f457bee5b456b ; f0f07059f72c47cdc1236adf1de296a8b5b4ee4c; 280dadd83193e4335e180bfcf674cc22f36f22eb; dd31cc0ca89412c6056357bcb6fb32879d270e1c; 70bbb66e2fa407bb44d985b83657b63976817d57; 30d33643abaea5ee2b92b78ae02794486b7d6562",
       "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED",
-      "attempts_recorded": 1,
+      "attempts_recorded": 2,
       "historical_attempts": "UNKNOWN_NOT_RESET",
       "max_attempts": 4,
       "max3_exception_approved": false,
@@ -731,14 +733,25 @@
       "source_dependencies_are_code_only": true,
       "operating_authorization_is_not_inferred_from_dependencies": true,
       "high_review_scope": "2026-11-17 CPU-only source attempt; no owner-approved ACTIVE, original restore, external receipt trust, independent real proof or trusted learning. Mandatory High/security/runtime hold unchanged.",
-      "source_candidate_note": "Read-only source/isolated source fingerprints implemented; shared cross-DB atomic epoch NOT ESTABLISHED, remain High review and incomplete.",
+      "source_candidate_note": "Common read checkpoint matches the catalog and both sidecars to the isolated copy. A concurrent commit, changed copy, or absent WAL coordination files produces HOLD. Historical atomic write epoch, crash-safe publication and production restore remain HOLD.",
       "retry_policy": "OWNER_RETRY_2_PLUS_2_SOLMAX_20261117",
       "initial_nonprogress_limit": 2,
       "post_isolation_nonprogress_limit": 2,
       "retry_stage": "IMMEDIATE_OWNER_SOLMAX_REQUEST",
       "initial_nonprogress_attempts": null,
       "post_isolation_nonprogress_attempts": null,
-      "retry_evidence": []
+      "retry_evidence": [
+        {
+          "attempt_id": "20261117-SWU-007-local",
+          "failure_cause": "Sequential fingerprints could agree across different read generations",
+          "method_change": "Pin all three read transactions and fence committed changes with same-connection data_version",
+          "evidence_sha": "69987ec4455c9caadd7de8a632cb0b62a1f2ee3b",
+          "outcome": "PARTIAL_PROGRESS_LOCAL_SAFETY_PASS"
+        }
+      ],
+      "previous_source_evidence_sha": "5df0be08fce3525d819ee7a651671fe93ec10b39",
+      "local_syntax_result": "PASS",
+      "immediate_safety_result": "PASS_FOCUSED_SYNTHETIC_PATHS"
     },
     {
       "task_id": "EAI-SWU-008",
@@ -808,7 +821,8 @@
       "retry_stage": "HISTORICAL_FAILURE_COUNTS_NOT_RECONCILED",
       "initial_nonprogress_attempts": null,
       "post_isolation_nonprogress_attempts": null,
-      "retry_evidence": []
+      "retry_evidence": [],
+      "latest_dependency_assessment": "HOLD: read checkpoint can support isolated integrity review. Protected commit/rollback, durable shared write epoch and independent restore acceptance are pending."
     },
     {
       "task_id": "EAI-SWU-009",
@@ -1608,10 +1622,10 @@
       "score_rationale": "Protected operation: High safety review required",
       "status": "HIGH_REVIEW_REQUIRED",
       "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
-      "evidence_sha": "db83d544e496da79599d766ecadb2fba1207da02",
+      "evidence_sha": "69987ec4455c9caadd7de8a632cb0b62a1f2ee3b",
       "legacy_evidence_history": "438f3b18684716e8a257580789283a6048d32fea; be7a8244758e7c427fa7886698771a6aa5c9448d; 3f5888a7de4673d2b2e1fb8a228b30a37c87ae8f; 9f75872098a4d75df0af6e5efc76d5e7739fe16c; eef0f1881e2fedce5d1403ab789e5906b2fe7a73; 5b10487b28e60c5c6c44883d600e9b2d0dff6239 ; 185081b1a1ae45bdf4fa4bdddcbf319d2b356aea; 8b31f3b82d3113be52b9965b3daf577a46730662; 7c1192cbf06a95a35577de2a9df03d61801c2a36; c6f3d3bb9dd248869d2e07cbcd001d9720c5bcbd; 67b05d786edca1d80a8b87def8c7e1c6c176145a; fe3b611f4ecc921b5bd4171351df18d2cc63698d",
       "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED",
-      "attempts_recorded": 1,
+      "attempts_recorded": 2,
       "historical_attempts": "UNKNOWN_NOT_RESET",
       "max_attempts": 4,
       "max3_exception_approved": false,
@@ -1621,14 +1635,25 @@
       "source_dependencies_are_code_only": true,
       "operating_authorization_is_not_inferred_from_dependencies": true,
       "high_review_scope": "2026-11-17 CPU-only source attempt; no owner-approved ACTIVE, original restore, external receipt trust, independent real proof or trusted learning. Mandatory High/security/runtime hold unchanged.",
-      "source_candidate_note": "P1 source-only signed metadata binding and opt-in quarantine review journal; SHA-pinned caller key is NOT an authorized trust anchor. Journal now performs verified chain/entry readback after opt-in write. True independent verifier identity, external provenance and semantic truth unavailable, remains HIGH_REVIEW_REQUIRED.",
+      "source_candidate_note": "Recomputed review and Ed25519 detached binding share one isolated journal chain entry. Nonce reuse is rejected across journal reopen. New journals support detached bindings; v1 journals still accept unsigned reviews. Independent verifier enrollment and real semantic proof remain HOLD.",
       "retry_policy": "OWNER_RETRY_2_PLUS_2_SOLMAX_20261117",
       "initial_nonprogress_limit": 2,
       "post_isolation_nonprogress_limit": 2,
       "retry_stage": "IMMEDIATE_OWNER_SOLMAX_REQUEST",
       "initial_nonprogress_attempts": null,
       "post_isolation_nonprogress_attempts": null,
-      "retry_evidence": []
+      "retry_evidence": [
+        {
+          "attempt_id": "20261117-SWU-020-local",
+          "failure_cause": "Validated detached signature metadata was discarded during journal append",
+          "method_change": "Atomically hash-chain the detached binding and signer-scoped nonce on the isolated review event",
+          "evidence_sha": "69987ec4455c9caadd7de8a632cb0b62a1f2ee3b",
+          "outcome": "PARTIAL_PROGRESS_LOCAL_SAFETY_PASS"
+        }
+      ],
+      "previous_source_evidence_sha": "db83d544e496da79599d766ecadb2fba1207da02",
+      "local_syntax_result": "PASS",
+      "immediate_safety_result": "PASS_FOCUSED_SYNTHETIC_PATHS"
     },
     {
       "task_id": "EAI-SWU-021",
@@ -1836,7 +1861,8 @@
       "retry_stage": "HISTORICAL_FAILURE_COUNTS_NOT_RECONCILED",
       "initial_nonprogress_attempts": null,
       "post_isolation_nonprogress_attempts": null,
-      "retry_evidence": []
+      "retry_evidence": [],
+      "latest_dependency_assessment": "HOLD: synthetic admission and replay denial pass locally. Independently verified episodic outcome and authority remain prerequisites."
     },
     {
       "task_id": "EAI-SWU-024",
@@ -1905,7 +1931,8 @@
       "retry_stage": "HISTORICAL_FAILURE_COUNTS_NOT_RECONCILED",
       "initial_nonprogress_attempts": null,
       "post_isolation_nonprogress_attempts": null,
-      "retry_evidence": []
+      "retry_evidence": [],
+      "latest_dependency_assessment": "HOLD on verified SWU-023 outcomes. The synthetic ranker also has eight test setup errors reproduced on the baseline and feature SHA: normalized fixture list was passed to canonical_bytes."
     },
     {
       "task_id": "EAI-SWU-025",
@@ -3149,13 +3176,13 @@
   "next_ready_rule": "After a code SWU becomes SOURCE_COMPLETE_P2_PENDING with actual functional source evidence, re-evaluate dependents and select disjoint safe units; leave HIGH_REVIEW_REQUIRED and BLOCKED_APPROVAL locked.",
   "implemented_source_candidate_count": 36,
   "implemented_source_candidate_percent_preview": 85.7,
-  "implemented_source_candidate_caveat": "36/42 (85.7%) provisional source-written candidates unchanged. Real CPU process-time ranking replaces declared-only order in SWU-026; no new SWU became source complete, no trusted learner or runtime proof. Official P1/P2 UNASSESSED.",
+  "implemented_source_candidate_caveat": "36/42 provisional source candidates. SWU-007 and SWU-020 have focused-check evidence for their local paths. Their High review and operational dependencies remain open. Official P1/P2 UNASSESSED.",
   "official_implementation_rate": "UNASSESSED",
   "P2": "LOCKED",
-  "latest_feature_code_sha": "b7f2361bf8d738eeab989d3495951a30b715f3b5",
+  "latest_feature_code_sha": "69987ec4455c9caadd7de8a632cb0b62a1f2ee3b",
   "source_candidate_count": 36,
-  "next_safe_queue_status": "NO_GENERAL_READY; SWU-020 INDEPENDENT VERIFIER TRUST ANCHOR BLOCKED; 007/008 CROSS-DB EPOCH HIGH; 023/024 verified training absent; 039 GO held",
-  "next_dependency_blocker": "007/008 missing common transaction epoch and independently verified non-destructive restore; 020 missing independently governed trust anchor and true semantics; 023 and 024 cannot learn verified real outcomes; 039 live Hydrogen user GO",
+  "next_safe_queue_status": "SWU-008/023/024 HOLD; 007 read checkpoint and 020 signed review binding have focused PASS; 007 atomic write and 020 independent trust High review pending; 039 GO held",
+  "next_dependency_blocker": "007/008 durable write epoch and independently verified isolated commit/rollback; 020 independently governed verifier trust anchor and real semantic proof; 023/024 verified outcomes; 024 existing synthetic fixture hash defect; 039 live Hydrogen GO",
   "retry_escalation_policy": {
     "schema": "eai.p1.retry.isolate.solmax.v1",
     "owner_order_date": "2026-11-17 KST",
@@ -3172,15 +3199,15 @@
     "immediate_request_candidates": [
       {
         "task_id": "EAI-SWU-007",
-        "root_cause": "cross-DB atomic epoch not established, SWU-008 depends on it",
-        "evidence": "source code current; prior attempts are not yet verifiable as four failures",
+        "root_cause": "Crash-safe shared write epoch and isolated commit/rollback require High review",
+        "evidence": "69987ec4455c9caadd7de8a632cb0b62a1f2ee3b: coherent read checkpoint and local safety PASS",
         "request_status": "OWNER_REQUEST_REQUIRED",
         "sol_max_executed": false
       },
       {
         "task_id": "EAI-SWU-020",
-        "root_cause": "no independently governed external verifier/trust anchor; SWU-023/024 trusted learner blocked",
-        "evidence": "local synthetic signed receipts are not independently verified semantic outcome",
+        "root_cause": "Independent trust enrollment and real semantic oracle require High review",
+        "evidence": "69987ec4455c9caadd7de8a632cb0b62a1f2ee3b: Ed25519 candidate binding and journal nonce gate PASS on synthetic evidence",
         "request_status": "OWNER_REQUEST_REQUIRED",
         "sol_max_executed": false
       }

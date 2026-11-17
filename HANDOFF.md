@@ -1,3 +1,11 @@
+## 2026-11-17 KST — SWU-007/020 implementation and remaining gates
+
+1. Work in `hibi89/EAI@feature/kmong-eai-85-p31-20261112`. Feature/test SHA `69987ec4455c9caadd7de8a632cb0b62a1f2ee3b`. Blueprint blob `1b0712679d4171cd3681588e104ea5e8c6f6690d`.
+2. `inspect_isolated_epoch_boundary` now reads the catalog and both sidecars at a shared observable checkpoint and checks the staged archive/copy. WAL churn, missing coordination files and restore mismatch block a checkpoint. The legacy Windows marker now passes the same strict digest check as LF.
+3. `intake_candidate_receipt_for_review` replays synthetic evidence, verifies detached Ed25519 and stores the evidence binding and signer-key nonce in a chain entry on explicit local write. New journals store detached bindings, and existing v1 journals keep unsigned behavior with no migration. Source authentication and semantic-verification flags stay false for this input.
+4. Reproduction from the repository root is `python -m unittest discover -s tests -p <pattern> -q` for the patterns in STATUS. Focused Python/SQLite tests 78 PASS, 3 platform skips. Ranker setup 8 FAIL on both `0bec0fa0c48a11e34279034eccaf2f3c841c58be` and `69987ec4455c9caadd7de8a632cb0b62a1f2ee3b`. Full P2 and actual operating-environment acceptance NOT_RUN.
+5. 008 remains HOLD for durable shared write epoch and independently verified isolated publication/rollback. 023 remains HOLD for independent verifier governance and verified outcomes. 024 remains HOLD on 023, with a reproducible synthetic fixture blocker. 007/020 High review remains with Codex under the current runbook. SWU-039 requires its owner GO. P1/P2 `UNASSESSED`, `RELEASE HOLD`.
+
 ## 2026-11-17 KST — EAI SWU-036 overflow-safe source checkpoint (10)
 1. Mission: EAI V3.1 independent local AI Architect, Player, AXNODE and Experience Learner, P1 source work; P2 LOCKED.
 2. Latest functional source SHA `b7f2361bf8d738eeab989d3495951a30b715f3b5` handles huge timestamp float overflow for local mock quota; prior quota monotonic backdate fix SHA `510d469ef23f6df455473d791e362c47c5c71433`. Changes confined to `eai/research_quota.py`.
