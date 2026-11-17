@@ -337,3 +337,70 @@ def finalize_redacted_architect_response(
         "hydrogen_input_used": False,
         "verified_real_world": False,
     }
+
+
+# EAI-SWU-041: independent CPU selection from audited local journey evidence.
+from dataclasses import dataclass
+
+
+@dataclass(frozen=True)
+class LocalJourneyDecision:
+    status: str
+    problem_sha256: str
+    selected_alternative_id: str | None
+    selected_plan_sha256: str | None
+    decision_reason_codes: tuple[str, ...]
+    compared_alternatives: tuple[str, ...]
+    architect_unknown_count: int
+    source_receipt_sha256: str
+    independent_real_world_verification: bool = False
+    real_actions_authorized: bool = False
+    automatic_learning_authorized: bool = False
+
+
+def select_audited_local_journey(report: dict) -> LocalJourneyDecision:
+    """Audit actual local Architect→Policy→Player report before a CPU choice.
+
+    A self-hashed untrusted report is NOT authentication: the output remains
+    an advisory ranking only, not proof of execution, facts or model parity.
+    """
+    from .offline_journey import audit_offline_journey_report
+    audit = audit_offline_journey_report(report)
+    if (audit["status"] != "LOCAL_JOURNEY_DIGEST_INTEGRITY_UNVERIFIED"
+            or audit["grants_real_authority"]):
+        raise ValueError("untrusted local journey audit outcome")
+    candidates = report["candidates"]
+    reasons = []
+    if report["architect_status"] != "CANDIDATES_UNVERIFIED":
+        reasons.append("ARCHITECT_NOT_DECISION_READY")
+    if report["truth_status"] != "UNVERIFIED" or report["contradiction_count"]:
+        reasons.append("CONFLICT_OR_UNSUPPORTED_TRUTH")
+    if report["evidence_review_required"]:
+        reasons.append("EVIDENCE_REVIEW_REQUIRED")
+    if len(candidates) < 2:
+        reasons.append("INDEPENDENT_ALTERNATIVES_NOT_AVAILABLE")
+    eligible_statuses = {
+        "PURE_ELIGIBLE_NOT_INTERPRETED",
+        "PURE_SYNTHETIC_INTERPRETED_UNVERIFIED",
+    }
+    if any(candidate["status"] not in eligible_statuses
+           or candidate["reason_codes"] for candidate in candidates):
+        reasons.append("POLICY_OR_RESOURCE_HOLD")
+    # One valid source and duplicate plan must not masquerade as 2 alternatives.
+    if (len({tuple(c["node_hashes"]) for c in candidates}) < 2 or
+            len({c["plan_sha256"] for c in candidates}) < 2):
+        reasons.append("DISTINCT_PINNED_PLANS_NOT_ESTABLISHED")
+    if reasons:
+        return LocalJourneyDecision(
+            "ABSTAINED", report["problem_sha256"], None, None,
+            tuple(sorted(set(reasons))),
+            tuple(c["alternative_id"] for c in candidates),
+            report["unknown_count"], report["receipt_sha256"])
+    # The incoming order is already the EAI cost-aware, bounded CPU plan rank.
+    chosen = candidates[0]
+    return LocalJourneyDecision(
+        "ADVISORY_CPU_SELECTION_UNVERIFIED", report["problem_sha256"],
+        chosen["alternative_id"], chosen["plan_sha256"],
+        ("INDEPENDENT_ORACLE_NOT_ESTABLISHED",),
+        tuple(c["alternative_id"] for c in candidates),
+        report["unknown_count"], report["receipt_sha256"])

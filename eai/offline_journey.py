@@ -364,3 +364,44 @@ def audit_offline_journey_report(report: dict) -> dict:
         "grants_real_authority": False,
         "independent_verification": "NOT_ESTABLISHED",
     }
+
+
+# EAI-SWU-041: actual local goal -> Architect/Policy/Player -> advisory choice.
+def decide_local_offline_journey(
+    problem_file: str | Path, axnode_root: str | Path, *,
+    max_expansions: int = 8,
+    budget: LocalResourceBudget | None = None,
+    interpret_pure_noop: bool = False,
+    research_policy: ResearchPolicy | None = None,
+    cancel_check: Callable[[], bool] | None = None,
+) -> dict:
+    """Return a bounded CPU-owned decision or abstention; never perform actions."""
+    from .decision_engine import select_audited_local_journey
+    local = preview_offline_journey(
+        problem_file, axnode_root, max_expansions=max_expansions,
+        budget=budget, interpret_pure_noop=interpret_pure_noop,
+        research_policy=research_policy, cancel_check=cancel_check)
+    choice = select_audited_local_journey(local)
+    if choice.problem_sha256 != local["problem_sha256"] or (
+            choice.independent_real_world_verification or
+            choice.real_actions_authorized or
+            choice.automatic_learning_authorized):
+        raise ValueError("local decision cannot widen preview authority")
+    return {
+        "schema": "eai.offline.decision.v1",
+        "problem_sha256": choice.problem_sha256,
+        "status": choice.status,
+        "selected_alternative_id": choice.selected_alternative_id,
+        "selected_plan_sha256": choice.selected_plan_sha256,
+        "reason_codes": list(choice.decision_reason_codes),
+        "compared_alternatives": list(choice.compared_alternatives),
+        "unknown_count": choice.architect_unknown_count,
+        "source_receipt_sha256": choice.source_receipt_sha256,
+        "origin": "LOCAL_CPU_ADVISORY_UNVERIFIED",
+        "external_actions": 0,
+        "original_writes": 0,
+        "provider_calls": 0,
+        "independent_verification": "NOT_ESTABLISHED",
+        "real_execution_authorized": False,
+        "active_promotion_authorized": False,
+    }
