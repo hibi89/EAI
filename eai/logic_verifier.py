@@ -8,9 +8,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 import hashlib
 
-from .contracts import ProblemSpec
+from .contracts import ProblemSpec, canonical_bytes
 from .axnode_store import AXNodeStore
-from .logic_synthesis import SynthesisCandidate, _composition_bytes
+from .logic_synthesis import SynthesisCandidate
 
 _ALLOWED = frozenset({"csv.reconcile.v1", "evidence.verify_receipt.v1"})
 
@@ -36,6 +36,8 @@ class StructuralVerifier:
             raise ValueError("typed candidate and problem required")
         failed = StructuralReceipt(candidate.candidate_sha256, "REJECTED_UNVERIFIED",
                                    "UNTRUSTED_COMPOSITION_OR_PROVENANCE")
+        if problem.risk == "HIGH":
+            return failed
         hashes = candidate.node_hashes
         if (candidate.trust != "LOCAL_SYNTHESIS_UNVERIFIED" or
                 candidate.problem_sha256 != problem.digest() or
@@ -86,8 +88,15 @@ class StructuralVerifier:
                     candidate.step_count != total_steps or
                     candidate.predicted_seconds != total_seconds):
                 return failed
-            actual_digest = hashlib.sha256(_composition_bytes(
-                problem.digest(), hashes, total_steps, total_seconds)).hexdigest()
+            independent_payload = {
+                "schema": "eai.synthesis.v1",
+                "problem_sha256": problem.digest(),
+                "node_hashes": list(hashes),
+                "step_count": total_steps,
+                "predicted_seconds": total_seconds,
+                "trust": "LOCAL_SYNTHESIS_UNVERIFIED",
+            }
+            actual_digest = hashlib.sha256(canonical_bytes(independent_payload)).hexdigest()
             if actual_digest != candidate.candidate_sha256:
                 return failed
         except (KeyError, ValueError, OSError, TypeError):
