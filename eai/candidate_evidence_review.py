@@ -171,3 +171,87 @@ def intake_candidate_receipt_for_review(
         candidate.candidate_sha256, review.review_sha256,
         written.entry_sha256 if written else None,
         tuple(sorted(set(review.reason_codes) | set(reason))))
+
+
+# EAI-SWU-020: detached signing can prove possession of a pinned verifier key,
+# but never prove the verifier's independence, the test's truth or owner GO.
+@dataclass(frozen=True)
+class DetachedCandidateSignatureReview:
+    status: str
+    candidate_sha256: str
+    evidence_review_sha256: str
+    verifier_id: str
+    signature_sha256: str
+    signer_key_sha256: str
+    independently_verified_real_world: bool = False
+    trusted_for_training: bool = False
+    permits_active_promotion: bool = False
+    grants_real_player_execution: bool = False
+
+
+def verify_detached_candidate_signature(
+    review: CandidateEvidenceReview, envelope: bytes, signature: bytes,
+    *, pinned_public_key: bytes, trusted_public_key_sha256: str,
+) -> DetachedCandidateSignatureReview:
+    """Fail-closed ED25519 verification against a separately pinned key.
+
+    Caller-selected or self-signed keys are not a configured trust authority.
+    A valid signature only binds bounded, canonical, local review metadata.
+    Proof of reviewer independence and semantic correctness remains external.
+    """
+    import re
+    from .contracts import strict_json
+    from hashlib import sha256
+    from .contracts import canonical_bytes
+    digest = re.compile(r"[0-9a-f]{64}\Z")
+    identifier = re.compile(r"[a-z][a-z0-9_.-]{0,63}\Z")
+    if (type(review) is not CandidateEvidenceReview
+            or type(envelope) is not bytes or not 1 <= len(envelope) <= 2048
+            or type(signature) is not bytes or len(signature) != 64
+            or type(pinned_public_key) is not bytes
+            or len(pinned_public_key) != 32
+            or type(trusted_public_key_sha256) is not str
+            or not digest.fullmatch(trusted_public_key_sha256)
+            or sha256(pinned_public_key).hexdigest() != trusted_public_key_sha256):
+        raise ValueError("independent externally pinned verifier input required")
+    raw = strict_json(envelope, max_bytes=2048)
+    if (type(raw) is not dict or set(raw) != {
+            "schema", "candidate_sha256", "review_sha256",
+            "fixture_sha256", "problem_sha256", "verifier_id",
+            "disposition", "nonce"}
+            or raw["schema"] != "eai.candidate.detached.review.v1"
+            or raw["candidate_sha256"] != review.candidate_sha256
+            or raw["review_sha256"] != review.review_sha256
+            or raw["fixture_sha256"] != review.fixture_sha256
+            or raw["problem_sha256"] != review.problem_sha256
+            or raw["disposition"] != "REVIEW_METADATA_ONLY"
+            or type(raw["verifier_id"]) is not str
+            or not identifier.fullmatch(raw["verifier_id"])
+            or type(raw["nonce"]) is not str
+            or not re.fullmatch(r"[a-zA-Z0-9_-]{16,64}", raw["nonce"])
+            or canonical_bytes(raw) != envelope):
+        raise ValueError("detached review must bind canonical exact evidence")
+    try:
+        from cryptography.hazmat.primitives.asymmetric.ed25519 import (
+            Ed25519PublicKey)
+        from cryptography.exceptions import InvalidSignature
+    except ImportError:
+        return DetachedCandidateSignatureReview(
+            "HOLD_CRYPTOGRAPHIC_VERIFIER_NOT_INSTALLED",
+            review.candidate_sha256, review.review_sha256,
+            raw["verifier_id"], sha256(signature).hexdigest(),
+            trusted_public_key_sha256)
+    try:
+        Ed25519PublicKey.from_public_bytes(pinned_public_key).verify(
+            signature, envelope)
+    except (InvalidSignature, ValueError):
+        return DetachedCandidateSignatureReview(
+            "HOLD_INVALID_DETACHED_SIGNATURE",
+            review.candidate_sha256, review.review_sha256,
+            raw["verifier_id"], sha256(signature).hexdigest(),
+            trusted_public_key_sha256)
+    return DetachedCandidateSignatureReview(
+        "DETACHED_SIGNATURE_MATCHES_PIN_UNVERIFIED_INDEPENDENCE",
+        review.candidate_sha256, review.review_sha256,
+        raw["verifier_id"], sha256(signature).hexdigest(),
+        trusted_public_key_sha256)
