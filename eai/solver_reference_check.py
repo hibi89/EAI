@@ -16,7 +16,7 @@ import tempfile
 from .logic_oracle import _ID
 
 from .axnode_store import AXNodeStore
-from .contracts import ProblemSpec
+from .contracts import ProblemSpec, canonical_bytes
 from .logic_synthesis import SynthesisCandidate
 from .logic_oracle import SyntheticComparison, _records
 from .logic_validation_pipeline import review_synthesis_candidate
@@ -31,6 +31,7 @@ class CPUSolverFixtureResult:
     actual_status: str
     baseline_executed: bool
     composed_candidate_executed: bool = False
+    verified_difference_sha256: str = ""
 
 
 @dataclass(frozen=True)
@@ -149,10 +150,19 @@ def compare_real_cpu_on_synthetic(
             agree = (reported == expected_status and
                      reported_counts == expected_counts and
                      valid_details and valid_hashes)
+            independently_reported_keys = (
+                tuple(sorted(e["key"] for e in reported_details))
+                if agree else ())
+            report_digest = (
+                hashlib.sha256(canonical_bytes({
+                    "schema": "eai.synthetic.mismatch.keys.v1",
+                    "keys": list(independently_reported_keys),
+                })).hexdigest() if agree else "")
             results.append(CPUSolverFixtureResult(
                 item.family,
                 "BASELINE_CPU_MATCH_UNVERIFIED" if agree else "BASELINE_CPU_MISMATCH",
-                expected_status, str(reported)[:32], True))
+                expected_status, str(reported)[:32], True,
+                verified_difference_sha256=report_digest))
     return tuple(results)
 
 
