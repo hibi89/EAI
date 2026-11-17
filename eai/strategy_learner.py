@@ -118,6 +118,9 @@ def advance_bounded_research_prior(
             or type(curriculum) is not SyntheticCurriculum
             or (prior is not None and type(prior) is not BoundedResearchPrior)):
         raise ValueError("typed local synthetic CPU candidate/observation required")
+    if any(type(c.candidate_sha256) is not str or
+           not _HASH.fullmatch(c.candidate_sha256) for c in candidates):
+        raise ValueError("untrusted research candidate fingerprint")
     ids = tuple(sorted(c.candidate_sha256 for c in candidates))
     if len(set(ids)) != len(ids):
         raise ValueError("duplicate research candidate hash")
@@ -178,6 +181,10 @@ def advance_bounded_research_prior(
             "HOLD_FAILED_SYNTHETIC_NO_REGRESSION_RETAIN_PREVIOUS",
             prior, ordered(prior), False,
             ("INDEPENDENT_SYNTHETIC_RECHECK_DID_NOT_COVER_EVERY_CANDIDATE",))
+    if checked.disposition != "SYNTHETIC_COST_ORDER_ONLY_NOT_LEARNING":
+        return BoundedResearchUpdate(
+            "HOLD_UNTRUSTED_SYNTHETIC_RESEARCH_RESULT",
+            prior, ordered(prior), False, ("RECHECKED_COST_ORDER_NOT_ESTABLISHED",))
     next_rows = tuple((
         x, rows[x][0] + 1,
         rows[x][1] + seen[x].declared_seconds,
