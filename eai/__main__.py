@@ -140,6 +140,12 @@ def main(argv: list[str] | None = None) -> int:
     player_cmd.add_argument('--problem-file', required=True, help='explicit local ProblemSpec JSON')
     player_cmd.add_argument('--plan-file', required=True, help='explicit local bounded PlanSpec JSON')
     player_cmd.add_argument('--cancel-before-step', help='optional plan step to cancel before')
+    rank_cmd = sub.add_parser('strategy-preview',
+                              help='offline synthetic cost ranking, not learning')
+    rank_cmd.add_argument('--problem-file', required=True)
+    rank_cmd.add_argument('--axnode-root', required=True)
+    rank_cmd.add_argument('--node-hashes', required=True)
+    rank_cmd.add_argument('--seed', type=int, default=0)
     b0_cmd = sub.add_parser('b0-preview', help='strict offline B0 CPU baseline on synthetic fixtures only')
     b0_cmd.add_argument('--problem-file', required=True, help='local EAI ProblemSpec JSON')
     b0_cmd.add_argument('--axnode-root', required=True, help='existing local AXNODE store')
@@ -179,6 +185,19 @@ def main(argv: list[str] | None = None) -> int:
         except (ValueError, OSError, UnicodeError) as exc:
             # Keep private problem paths and payloads out of diagnostic output.
             print(json.dumps({'status':'REJECTED', 'reason':'ARCHITECT_PREVIEW_INVALID_OR_UNAVAILABLE'}),
+                  file=sys.stderr)
+            return 1
+    if args.command == 'strategy-preview':
+        try:
+            from .research_rank_cli import preview_strategy
+            report = preview_strategy(
+                args.problem_file, args.axnode_root,
+                args.node_hashes, seed=args.seed)
+            print(json.dumps(report, ensure_ascii=False, indent=2))
+            return 0 if report['status'] == 'SYNTHETIC_COST_ORDER_ONLY_NOT_LEARNING' else 2
+        except (ValueError, KeyError, OSError, UnicodeError, sqlite3.DatabaseError):
+            print(json.dumps({'status': 'REJECTED',
+                              'reason': 'STRATEGY_PREVIEW_INVALID_OR_UNAVAILABLE'}),
                   file=sys.stderr)
             return 1
     if args.command == 'b0-preview':
