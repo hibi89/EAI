@@ -1,3 +1,17 @@
+## 2026-11-17 KST — EAI V3.1 P1 OFF cancel/resource/authenticity handoff (10)
+1. **Mission:** independent local EAI Architect→Player→AXNODE; optional Hydrogen OFF/paused, separate from MLA. Instant P1 implementation candidate, P2 full CI later. Release HOLD.
+2. **Changes:** from `b798df07d7107dd59883533863e41b3ae25e5718`, code commits `eb6650a479644ebefd3efadd1b689ab8cdf73058` and `a65a1e9d23ccf3bd074334047abc09a03f907743`. `eai/offline_journey.py` typed cancellation callback at boundaries, pre-Player and post-interpretation time/RSS gates, rejects rehashed false VERIFIED architect truth, conflicting counts, duplicate alternative/reasons; `eai/__main__.py` sanitized Ctrl-C exit 130. Still only synthetic.noop.v1 in-memory interpretation, never real side effects.
+3. **Checks:** nine new unittest methods **authored, NOT_RUN**, V3 cumulative 390 authored; P1 path enrollment unchanged 53 source/49 test files. GitHub exact HEAD/static constraints/blueprint PASS. `python scripts/check_eai_v3_p1.py`, exact-source compile/targeted tests, no-network/disk/Win RSS **NOT_RUN**; P2 whole CI/browser/real Windows **NOT_RUN**.
+4. **State:** 3/15 code candidates +11/15 partial +1/15 approval blocked. Official P1/P2 weighted rates UNASSESSED; V3-15 PARTIAL_IMPLEMENTED_UNVERIFIED_WINDOWS_PENDING; RELEASE HOLD.
+5. **Blocker/alternative:** GitHub connector supports SHA reads/writes but execution container lacks GitHub DNS. Do not repeat blocked checkout route; use only safe supported exact-SHA runner when available. No invented test successes.
+6. **Repo/branch/sha:** `hibi89/EAI@feature/kmong-eai-85-p31-20261112`; latest code SHA `a65a1e9d23ccf3bd074334047abc09a03f907743`; doc commit SHA confirm after publication. Allowed source paths: `eai/offline_journey.py`, `eai/__main__.py`, `tests/test_offline_journey.py`, status/queue/handoff.
+7. **Production:** no deployment, production URL, live model, external API or user-machine runtime measurements; no browser work in P1.
+8. **Safety:** Blueprint Blob `1b0712679d4171cd3681588e104ea5e8c6f6690d` and original 13 CPU solvers/P26/AXNODE ACTIVE/main/history/customer data remain untouched. No side effect approval from digest/callback.
+9. **Next READY:** exact-SHA targeted P1 Python safety tests, fallback independent OFF decision aggregation with explicit UNVERIFIED/recovery/cancel; defer C05 epoch, real Player and promotion to High+owner gate; no full P2 CI in P1.
+10. **Basis/time:** 2026-11-17 KST; verified code source SHA `a65a1e9d23ccf3bd074334047abc09a03f907743`; doc SHA after CAS, implementation and verification UNASSESSED.
+
+---
+
 ## 2026-11-17 KST — EAI P1 integration repair, next mobile `ㄱ` handoff (10)
 1. **Goal/phase:** independent local EAI Architect+Player+AXNODE, Hydrogen OFF default; P1 BE/FE code candidate before P2 full CI. No My Local AI or other project merge; RELEASE HOLD.
 2. **Changes:** starting `8669f57a3f9626f414f04c748a633c701d8f12cb`, commits `b4747540d48e58c4aba6b4d9011e718375c0fe26` and `c096491bf566c65cd7bdf075adebb598fef2ad66`. Reconcile AXNODE parser synthetic.noop allowlist with Player, one-candidate PARTIAL explanation, pin per-step operator/capability to on-disk content SHA, monotonic elapsed preflight and reason/status consistency audit. 3 source + 3 test modules touched; no new privilege.
