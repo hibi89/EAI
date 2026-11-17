@@ -11,6 +11,7 @@ from dataclasses import dataclass
 import hashlib
 import hmac
 import re
+import sqlite3
 
 from .contracts import canonical_bytes, strict_json
 from .hydrogen_packet import ResearchPacket
@@ -572,11 +573,21 @@ def dispatch_live_hydrogen(
         ledger = _LiveSendLedger(
             live_ledger_path, project_id=project, owner_key_sha256=owner_key,
             allow_create=allow_ledger_create)
-    except (OSError, ValueError, PermissionError, TypeError):
-        return LiveHydrogenResult(baseline, "HOLD_LIVE_LEDGER_UNAVAILABLE", sha)
+    except (OSError, ValueError, PermissionError, TypeError, sqlite3.Error):
+        # Any corrupt/missing/unusable local durable journal must turn ON off,
+        # not strand the coordinator in a retryable enabled state.
+        coordinator.disable()
+        return LiveHydrogenResult(baseline, "OFF_LIVE_LEDGER_UNAVAILABLE", sha)
     try:
-        gate = ledger.reserve(nonce=nonce, now=now,
-                              tokens=budget + _LIVE_MAX_OUTPUT_TOKENS)
+        try:
+            gate = ledger.reserve(nonce=nonce, now=now,
+                                  tokens=budget + _LIVE_MAX_OUTPUT_TOKENS)
+        except (sqlite3.Error, OSError):
+            # In particular, disk full/locked/corrupt reservation means no
+            # request is permissible; never attempt HTTP without commit.
+            coordinator.disable()
+            return LiveHydrogenResult(
+                baseline, "OFF_LIVE_RESERVATION_FAILED", sha)
         if gate != "RESERVED":
             return LiveHydrogenResult(baseline, gate, sha)
         # HTTPS endpoint, method and model are fixed; redirects and proxies
@@ -636,6 +647,13 @@ def dispatch_live_hydrogen(
             # settlement error raises closed; failure must still disable ON.
             try:
                 ledger.settle(nonce, success=ok)
+            except Exception:
+                # A response is not usable if its journal completion failed.
+                # Override even a pending "success" return with an OFF result.
+                coordinator.disable()
+                return LiveHydrogenResult(
+                    baseline, "OFF_LIVE_SETTLEMENT_FAILED", sha,
+                    requests_attempted=1)
             finally:
                 if not ok:
                     coordinator.disable()
