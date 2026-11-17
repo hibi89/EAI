@@ -9,6 +9,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 import hashlib
 
+from .logic_oracle import _ID
+
 from .axnode_store import AXNodeStore
 from .contracts import ProblemSpec, canonical_bytes
 from .logic_oracle import SyntheticComparison
@@ -34,7 +36,6 @@ def _fixture_hash(fixture: SyntheticComparison) -> str:
     return hashlib.sha256(canonical_bytes({
         "left": [list(row) for row in fixture.left],
         "right": [list(row) for row in fixture.right],
-        "claimed_different": list(fixture.claimed_different),
     })).hexdigest()
 
 
@@ -48,7 +49,9 @@ def compare_b0_train_and_heldout(
             type(train) is not tuple or type(heldout) is not tuple or
             not 2 <= len(train) <= 12 or not 2 <= len(heldout) <= 12):
         raise ValueError("two to twelve independent train and heldout fixtures required")
-    if (any(type(f) is not SyntheticComparison for f in train+heldout) or
+    if (any(type(f) is not SyntheticComparison or
+            type(f.family) is not str or not _ID.fullmatch(f.family)
+            for f in train+heldout) or
             len({f.family for f in train+heldout}) != len(train+heldout) or
             len({_fixture_hash(f) for f in train+heldout}) != len(train+heldout)):
         raise ValueError("duplicate family or leaked synthetic fixture across split")
