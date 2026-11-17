@@ -209,3 +209,16 @@ def observe_and_evaluate_local_budget(
         rss, elapsed_ms, steps_completed, running_tasks, cancelled,
         cold_start_ms, "PROCESS_RSS_LOCAL" if rss is not None
         else "CALLER_UNVERIFIED"))
+
+
+# EAI-SWU-032: current-process RSS and elapsed time, postflight decision gate.
+def review_local_journey_postflight(
+    budget: LocalResourceBudget, *, elapsed_ms: int,
+    cancelled: bool = False,
+) -> LocalBudgetDecision:
+    """Observe actual own-process RSS; caller cannot substitute fake samples."""
+    if type(cancelled) is not bool:
+        raise ValueError("typed cancellation required")
+    return observe_and_evaluate_local_budget(
+        budget, elapsed_ms=elapsed_ms, steps_completed=0,
+        running_tasks=1, cancelled=cancelled)

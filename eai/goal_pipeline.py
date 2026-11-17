@@ -233,3 +233,76 @@ def render_pipeline(report: dict) -> str:
                      (f" (선행 단계: {', '.join(row['blocked_by'])})" if row['blocked_by'] else ''))
     lines.append(report['scope'])
     return '\n'.join(lines)
+
+
+# EAI-SWU-017: owner-pinned P26 legacy goal steps, dependency gated.
+def dispatch_explicit_p26_dag(problem, plan, approvals: tuple[dict, ...], *,
+                              owner_explicit_run: bool = False) -> dict:
+    """A V3 DAG is not permission to run thirteen legacy CPU skills.
+
+    Every step needs an individual owner-provided P26 batch manifest ID and
+    two SHA256 values. Only the old P26 read-only route is invoked; never the
+    direct arbitrary goal dispatcher or pipeline child shortcut.
+    """
+    from .contracts import ProblemSpec, PlanSpec
+    from .goal_dispatch import dispatch_explicit_p26_plan_step
+    if (type(problem) is not ProblemSpec or type(plan) is not PlanSpec
+            or type(approvals) is not tuple
+            or len(plan.steps) > 6 or len(approvals) != len(plan.steps)
+            or type(owner_explicit_run) is not bool):
+        raise ValueError("bounded typed P26 DAG and explicit receipts required")
+    step_ids = [row[0] for row in plan.steps]
+    approved = {}
+    for row in approvals:
+        if (type(row) is not dict or set(row) != {
+                "step_id", "manifest_file", "goal_id",
+                "manifest_sha256", "goal_sha256"}
+                or type(row["step_id"]) is not str
+                or row["step_id"] not in step_ids
+                or row["step_id"] in approved
+                or any(type(row[key]) is not str
+                       or not row[key] for key in row)):
+            raise ValueError("invalid per-step owner P26 request")
+        approved[row["step_id"]] = row
+    if len(approved) != len(step_ids):
+        raise ValueError("missing P26 request for planned step")
+    # A dry run yields no side effects, no P26 approval and no goal invocation.
+    if not owner_explicit_run:
+        return {
+            "status": "HOLD_EXPLICIT_OWNER_P26_REQUIRED",
+            "steps": (), "automatic_authorization": False,
+            "v3_player_execution": False,
+        }
+    rows, succeeded = [], set()
+    for sid,operator,deps,capability in plan.steps:
+        if not set(deps).issubset(succeeded):
+            rows.append({"step_id":sid, "status":"HOLD_UNSATISFIED_DEPENDENCY"})
+            continue
+        if operator != "synthetic.noop.v1" or capability != "pure":
+            rows.append({"step_id":sid, "status":"HOLD_NON_PURE_PLAN_STEP"})
+            continue
+        auth = approved[sid]
+        try:
+            receipt = dispatch_explicit_p26_plan_step(
+                problem, plan, sid, auth["manifest_file"], auth["goal_id"],
+                auth["manifest_sha256"], auth["goal_sha256"],
+                owner_explicit_run=True)
+        except (OSError, ValueError, KeyError, PermissionError):
+            rows.append({"step_id":sid, "status":"HOLD_P26_VALIDATION_FAILURE"})
+            continue  # other independent, fully authorized goals are unaffected
+        if receipt["status"] != "P26_EXISTING_CPU_GOAL_COMPLETED_UNVERIFIED_REAL_WORLD":
+            rows.append({"step_id":sid, "status":receipt["status"]})
+            continue
+        legacy_status = receipt["legacy_status"]
+        rows.append({"step_id":sid, "status":legacy_status,
+                     "kind":receipt["legacy_kind"], "route":receipt["route"],
+                     "source_sha256":receipt["source_sha256"]})
+        if legacy_status in GOOD:
+            succeeded.add(sid)
+    return {
+        "status": "LEGACY_CPU_READ_ONLY_REVIEW" if len(succeeded)==len(rows)
+                  else "HOLD_UNFINISHED_LEGACY_DAG",
+        "steps": tuple(rows), "approved_goal_count":len(succeeded),
+        "automatic_authorization":False, "v3_player_execution":False,
+        "real_world_verified":False,
+    }

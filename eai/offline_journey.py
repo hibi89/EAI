@@ -405,3 +405,48 @@ def decide_local_offline_journey(
         "real_execution_authorized": False,
         "active_promotion_authorized": False,
     }
+
+
+# EAI-SWU-032: resource/cancellation result gates a local CPU decision.
+def decide_scheduled_local_journey(
+    problem_file: str | Path, axnode_root: str | Path, *,
+    max_expansions: int = 8,
+    budget: LocalResourceBudget | None = None,
+    interpret_pure_noop: bool = False,
+    cancel_check: Callable[[], bool] | None = None,
+) -> dict:
+    """Local decision never survives failed RSS/time/cancellation postflight."""
+    from .local_scheduler import review_local_journey_postflight
+    if budget is None:
+        budget = LocalResourceBudget(
+            max_rss_mib=1024, max_elapsed_ms=300000, max_steps=64)
+    if type(budget) is not LocalResourceBudget:
+        raise ValueError("typed local CPU budget required")
+    if cancel_check is not None and not callable(cancel_check):
+        raise ValueError("typed synchronous cancellation callback required")
+    _check_cancel(cancel_check)
+    started_ns = monotonic_ns()
+    result = decide_local_offline_journey(
+        problem_file, axnode_root, max_expansions=max_expansions,
+        budget=budget, interpret_pure_noop=interpret_pure_noop,
+        research_policy=ResearchPolicy(), cancel_check=cancel_check)
+    elapsed_ms = (monotonic_ns() - started_ns) // 1_000_000
+    cancelled = False
+    if cancel_check is not None:
+        cancelled = cancel_check()
+        if type(cancelled) is not bool:
+            raise ValueError("cancellation callback must return bool")
+    observed = review_local_journey_postflight(
+        budget, elapsed_ms=elapsed_ms, cancelled=cancelled)
+    if observed.status != "CPU_LOCAL_BUDGET_AVAILABLE_NOT_EXECUTION_AUTHORITY":
+        # Return the CPU-computed digest and reason ONLY; no selection.
+        return {
+            **result,
+            "status": "CANCELLED" if cancelled
+                      else "HOLD_LOCAL_RESOURCE_BUDGET",
+            "selected_alternative_id":None,
+            "selected_plan_sha256":None,
+            "reason_codes":list(observed.reason_codes),
+            "resource_postflight":"HOLD",
+        }
+    return {**result, "resource_postflight":"PROCESS_RSS_PASS_NOT_EXECUTION_AUTHORITY"}

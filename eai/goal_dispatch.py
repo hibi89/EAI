@@ -193,3 +193,60 @@ def render_goal_document(report: dict) -> str:
         if diag.get('hint'):
             lines.append(diag['hint'])
     return '\n'.join(lines)
+
+
+# EAI-SWU-017: a bounded typed DAG step only delegates to *existing* P26 gate.
+def dispatch_explicit_p26_plan_step(
+    problem, plan, step_id: str, manifest_file: str | Path,
+    goal_id: str, manifest_sha256: str, goal_sha256: str, *,
+    owner_explicit_run: bool = False,
+) -> dict:
+    """A model/AXNODE plan cannot create a P26 approval or execute a new tool.
+
+    The exact owner-selected legacy goal is independently rechecked by the
+    unchanged run_approved() ID + manifest SHA + goal SHA contract.
+    """
+    from .approved_run import run_approved
+    from .contracts import PlanSpec, ProblemSpec
+    from .policy_gate import evaluate_plan_policy, plan_digest
+    if (type(problem) is not ProblemSpec or type(plan) is not PlanSpec
+            or type(owner_explicit_run) is not bool or
+            type(step_id) is not str
+            or plan.problem_sha256 != problem.digest()):
+        raise ValueError("typed matching local goal and plan required")
+    # The V3 plan must not impersonate an actual 13-skill execution request.
+    step_ids = {sid for sid,op,deps,cap in plan.steps
+                if op == "synthetic.noop.v1" and cap == "pure"}
+    if step_id not in step_ids or len(step_ids) != len(plan.steps):
+        raise PermissionError("only pure placeholder V3 plan steps may bridge P26")
+    policy = evaluate_plan_policy(problem,plan)
+    if policy.disposition != "PURE_SYNTHETIC_PREVIEW_ONLY":
+        return {
+            "status": "HOLD_PLAN_POLICY", "step_id": step_id,
+            "plan_sha256": plan_digest(plan), "route": None,
+            "read_only_legacy_receipt": None, "can_promote": False,
+        }
+    if not owner_explicit_run:
+        return {
+            "status": "HOLD_EXPLICIT_P26_RUN_REQUIRED", "step_id": step_id,
+            "plan_sha256": plan_digest(plan), "route": None,
+            "read_only_legacy_receipt": None, "can_promote": False,
+        }
+    result = run_approved(
+        manifest_file, goal_id, manifest_sha256, goal_sha256)
+    receipt = result["receipt"]
+    if (receipt["kind"] not in ROUTED_KINDS
+            or receipt["verification"]["status"] != "PASS"
+            or receipt["input"]["sha256"] != goal_sha256
+            or result["authorization"]["mode"] != "SEPARATE_EXPLICIT_CALL"):
+        raise ValueError("P26 goal receipt failed independent local guard")
+    return {
+        "status": "P26_EXISTING_CPU_GOAL_COMPLETED_UNVERIFIED_REAL_WORLD",
+        "step_id": step_id, "plan_sha256": plan_digest(plan),
+        "legacy_kind": receipt["kind"], "route": receipt["route"],
+        "legacy_status": result["status"],
+        "source_sha256": goal_sha256,
+        "read_only_legacy_receipt": receipt,
+        "can_promote": False, "can_execute_v3_player": False,
+        "grants_extra_rights": False,
+    }
