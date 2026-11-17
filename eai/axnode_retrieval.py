@@ -129,6 +129,7 @@ class AXNodeRetriever:
             score += (20 if tokens and all(t in haystack.casefold() for t in tokens) else 0)
             score += 5 * matching
             score += 12 if connected else 0
+            score += 20 if related_to is not None and digest == related_to else 0
             if score == 0:
                 continue
             result.append(NodeMatch(digest,name,kind,status,output,score,
