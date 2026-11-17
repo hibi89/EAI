@@ -22,6 +22,7 @@ class StrategyCostEnvelope:
     out_of_distribution_checked: bool = False
     permits_learning: bool = False
     measured_synthetic_cpu_ms: int | None = None
+    cost_basis: str = "DECLARED_BUDGET_ONLY"
 
 
 def build_bounded_strategy_cost_envelope(
@@ -57,6 +58,13 @@ def build_bounded_strategy_cost_envelope(
             item.declared_seconds, item.compared_train,
             item.compared_heldout,
             item.declared_seconds + 2 * item.declared_steps,
-            measured_synthetic_cpu_ms=item.measured_synthetic_cpu_ms))
+            measured_synthetic_cpu_ms=item.measured_synthetic_cpu_ms,
+            cost_basis=("OBSERVED_SYNTHETIC_PROCESS_CPU_ONLY"
+                        if item.measured_synthetic_cpu_ms is not None
+                        else "DECLARED_BUDGET_ONLY")))
     return tuple(sorted(result, key=lambda x: (
-        x.research_cost_score, x.step_upper_bound, x.candidate_sha256)))
+        0 if x.measured_synthetic_cpu_ms is not None else 1,
+        x.measured_synthetic_cpu_ms
+        if x.measured_synthetic_cpu_ms is not None else 300001,
+        x.research_cost_score, x.step_upper_bound,
+        x.candidate_sha256)))

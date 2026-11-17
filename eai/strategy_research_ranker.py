@@ -7,7 +7,7 @@ The chosen order minimizes declared CPU cost only among eligible simulations.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from time import perf_counter_ns
+from time import perf_counter_ns, process_time_ns
 
 from .axnode_store import AXNodeStore
 from .contracts import ProblemSpec
@@ -65,15 +65,22 @@ def rank_synthetic_strategy_previews(
                 held.append((candidate.candidate_sha256,
                              "CANDIDATE_STRUCTURE_OR_HASH_CHANGED"))
                 continue
-            start_ns = perf_counter_ns()
+            # Wall time is the deadline; separate process CPU is the cost
+            # sample. Wall elapsed time must never be presented as CPU work.
+            start_wall_ns = perf_counter_ns()
+            start_cpu_ns = process_time_ns()
             report = benchmark_synthetic_candidate(
                 store, problem, candidate, curriculum.train, curriculum.heldout)
-            elapsed_ns = perf_counter_ns() - start_ns
-            if elapsed_ns < 0 or elapsed_ns > problem.budget[1] * 1_000_000_000:
+            elapsed_cpu_ns = process_time_ns() - start_cpu_ns
+            elapsed_wall_ns = perf_counter_ns() - start_wall_ns
+            budget_ns = problem.budget[1] * 1_000_000_000
+            if (elapsed_wall_ns < 0 or elapsed_cpu_ns < 0
+                    or elapsed_wall_ns > budget_ns
+                    or elapsed_cpu_ns > budget_ns):
                 held.append((candidate.candidate_sha256,
-                             "LOCAL_SYNTHETIC_CPU_BENCHMARK_TIME_BUDGET"))
+                             "LOCAL_SYNTHETIC_BENCHMARK_RESOURCE_BUDGET"))
                 continue
-            measured_ms = (elapsed_ns + 999_999) // 1_000_000
+            measured_ms = (elapsed_cpu_ns + 999_999) // 1_000_000
             valid = (
                 report.status == "B1_SYNTHETIC_PARITY_WITH_B0_UNVERIFIED"
                 and report.candidate_sha256 == candidate.candidate_sha256
@@ -100,7 +107,12 @@ def rank_synthetic_strategy_previews(
         except (ValueError, KeyError):
             held.append((candidate.candidate_sha256,
                          "SYNTHETIC_CANDIDATE_RECHECK_REJECTED"))
+    # The candidate ranking uses observed local process CPU as its primary
+    # *research-only* cost; estimated resource limits remain hard constraints.
+    # Timing cannot assert real-world correctness or future performance.
     scored.sort(key=lambda item: (
+        item.measured_synthetic_cpu_ms
+        if item.measured_synthetic_cpu_ms is not None else 300001,
         item.declared_seconds, item.declared_steps, item.candidate_sha256))
     return StrategyRankingPreview(
         "SYNTHETIC_COST_ORDER_ONLY_NOT_LEARNING" if scored
