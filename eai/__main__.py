@@ -135,6 +135,11 @@ def main(argv: list[str] | None = None) -> int:
     architect_cmd.add_argument('--problem-file', required=True, help='explicit local V3 ProblemSpec JSON <=32KiB')
     architect_cmd.add_argument('--axnode-root', required=True, help='existing explicit local AXNODE library')
     architect_cmd.add_argument('--max-expansions', type=int, default=8, help='bounded candidate expansions 1..8')
+    b0_cmd = sub.add_parser('b0-preview', help='strict offline B0 CPU baseline on synthetic fixtures only')
+    b0_cmd.add_argument('--problem-file', required=True, help='local EAI ProblemSpec JSON')
+    b0_cmd.add_argument('--axnode-root', required=True, help='existing local AXNODE store')
+    b0_cmd.add_argument('--fixture-file', required=True, help='bounded public/synthetic JSON manifest')
+    b0_cmd.add_argument('--node-hashes', required=True, help='2-4 comma-separated pinned AXNODE hashes')
     review_cmd = sub.add_parser('customer-review', help='create a NEW offline HTML/JSON integrity-checked review folder')
     review_cmd.add_argument('--spec', required=True, help='owner-authorized local goal/manifest JSON')
     review_cmd.add_argument('--output-dir', required=True, help='unused local output directory')
@@ -152,6 +157,20 @@ def main(argv: list[str] | None = None) -> int:
         except (ValueError, OSError, UnicodeError) as exc:
             # Keep private problem paths and payloads out of diagnostic output.
             print(json.dumps({'status':'REJECTED', 'reason':'ARCHITECT_PREVIEW_INVALID_OR_UNAVAILABLE'}),
+                  file=sys.stderr)
+            return 1
+    if args.command == 'b0-preview':
+        try:
+            from .b0_cli import b0_preview
+            report = b0_preview(args.problem_file, args.axnode_root,
+                                args.fixture_file, args.node_hashes)
+            print(json.dumps(report, ensure_ascii=False, indent=2))
+            return (0 if report['baseline']['status'] ==
+                    'B0_SYNTHETIC_HELDOUT_MATCH_UNVERIFIED' else 2)
+        except (ValueError, OSError, UnicodeError, csv.Error) as exc:
+            # A malformed manifest may contain private data: never echo inputs.
+            print(json.dumps({'status':'REJECTED',
+                              'reason':'B0_SYNTHETIC_PREVIEW_REJECTED'}),
                   file=sys.stderr)
             return 1
     if args.command == 'customer-review':
