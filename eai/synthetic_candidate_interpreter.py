@@ -81,7 +81,8 @@ def interpret_synthetic_candidate(
     steps = []
     for i, digest in enumerate(candidate.node_hashes):
         node = store.get(digest).as_dict()
-        if (node["signature"]["output"] != "difference_receipt" or
+        if ("csv_ref" not in node["signature"]["inputs"].values() or
+                node["signature"]["output"] != "difference_receipt" or
                 (i > 0 and "difference_receipt" not in
                  node["signature"]["inputs"].values()) or
                 "local.read" not in node["capabilities"] or
