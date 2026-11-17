@@ -238,6 +238,7 @@ _LIVE_MAX_OUTPUT_TOKENS = 512
 _LIVE_MAX_RPM = 2
 _LIVE_MAX_RPD = 5
 _LIVE_MAX_TPM = 2048
+_LIVE_NETWORK_TIMEOUT_SECONDS = 60  # Bounded response wait, never an auto-retry.
 
 
 def _read_external_owner_trust_root(path) -> tuple[str, str]:
@@ -610,7 +611,8 @@ def dispatch_live_hydrogen(
                 return LiveHydrogenResult(
                     baseline, "OFF_AUTHORIZATION_CHANGED_BEFORE_SEND", sha)
             conn = http.client.HTTPSConnection(
-                _LIVE_HOST, timeout=8, context=ssl.create_default_context())
+                _LIVE_HOST, timeout=_LIVE_NETWORK_TIMEOUT_SECONDS,
+                context=ssl.create_default_context())
             conn.request("POST", _LIVE_PATH, body=draft.payload, headers={
                 "x-goog-api-key": api_key, "Content-Type": "application/json",
                 "Accept": "application/json",
@@ -641,12 +643,22 @@ def dispatch_live_hydrogen(
                 baseline, "UNTRUSTED_HYDROGEN_IDEAS_QUARANTINED",
                 sha, review.ideas, "OWNER_ATTESTED_FREE_NOT_PROVIDER_VERIFIED",
                 requests_attempted=1)
-        except (OSError, ValueError, TimeoutError,
-                http.client.HTTPException):
-            # HTTPException covers malformed/truncated provider replies such as
-            # IncompleteRead, BadStatusLine and unexpected protocol state.
-            # They must be handled as a failed request rather than escaping
-            # with an active research coordinator.
+        except TimeoutError:
+            # A socket timeout may occur before or after bytes reach Google.
+            # The consumed nonce and persistent breaker still forbid retry.
+            return LiveHydrogenResult(
+                baseline, "OFF_AFTER_PROVIDER_TIMEOUT", sha,
+                requests_attempted=1)
+        except ssl.SSLError:
+            return LiveHydrogenResult(
+                baseline, "OFF_AFTER_PROVIDER_TLS_FAILURE", sha,
+                requests_attempted=1)
+        except http.client.HTTPException:
+            # IncompleteRead, RemoteDisconnected and malformed replies.
+            return LiveHydrogenResult(
+                baseline, "OFF_AFTER_PROVIDER_PROTOCOL_FAILURE", sha,
+                requests_attempted=1)
+        except (OSError, ValueError):
             return LiveHydrogenResult(
                 baseline, "OFF_AFTER_PROVIDER_TRANSPORT_FAILURE", sha,
                 requests_attempted=1)
