@@ -101,7 +101,9 @@ def compare_real_cpu_on_synthetic(
             a, b = Path(tmp) / "left.csv", Path(tmp) / "right.csv"
             _write_synthetic_csv(a, item.left)
             _write_synthetic_csv(b, item.right)
-            if a.read_bytes() == b.read_bytes():
+            before_a, before_b = (hashlib.sha256(a.read_bytes()).hexdigest(),
+                                  hashlib.sha256(b.read_bytes()).hexdigest())
+            if before_a == before_b:
                 results.append(CPUSolverFixtureResult(
                     item.family, "INCONCLUSIVE_IDENTICAL_SOURCE_BYTES",
                     expected_status, "NOT_RUN", False))
@@ -119,6 +121,14 @@ def compare_real_cpu_on_synthetic(
                     item.family, "BASELINE_CPU_MALFORMED",
                     expected_status, "MALFORMED", True))
                 continue
+            # A modified input is not a baseline check, even if a malicious
+            # solver forges source digests to match its own changed files.
+            if (hashlib.sha256(a.read_bytes()).hexdigest() != before_a or
+                    hashlib.sha256(b.read_bytes()).hexdigest() != before_b):
+                results.append(CPUSolverFixtureResult(
+                    item.family, "BASELINE_CPU_CHANGED_INPUT",
+                    expected_status, "UNTRUSTED", True))
+                continue
             reported = actual.get("status", "MALFORMED")
             reported_counts = actual.get("counts")
             reported_details = actual.get("differences")
@@ -126,8 +136,8 @@ def compare_real_cpu_on_synthetic(
             valid_hashes = (
                 type(source_hashes) is list and len(source_hashes) == 2 and
                 all(type(rec) is dict for rec in source_hashes) and
-                source_hashes[0].get("sha256") == hashlib.sha256(a.read_bytes()).hexdigest() and
-                source_hashes[1].get("sha256") == hashlib.sha256(b.read_bytes()).hexdigest()
+                source_hashes[0].get("sha256") == before_a and
+                source_hashes[1].get("sha256") == before_b
             )
             valid_details = (
                 type(reported_details) is list and
