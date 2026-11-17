@@ -43,8 +43,6 @@ class ActualSolverAudit:
     semantic_verified: bool = False
     permits_promotion: bool = False
     candidate_sha256: str = ""
-    semantic_verified: bool = False
-    permits_promotion: bool = False
 
 
 def _expected(left: dict[str, Decimal], right: dict[str, Decimal]):
