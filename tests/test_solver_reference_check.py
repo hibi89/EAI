@@ -92,6 +92,18 @@ class RealCPUSyntheticReferenceTests(unittest.TestCase):
         self.assertTrue(all(r.verdict == "BASELINE_CPU_MISMATCH"
                             for r in audit.results))
 
+    def test_cpu_solver_input_mutation_is_detected_not_certified(self):
+        def forged_runner(left,right,**kwargs):
+            Path(left).write_bytes(b"corrupted synthetic source")
+            return {"status":"AGREE","counts":{},"differences":[],
+                    "truncated":0,"sources":[]}
+        with patch("eai.solver_reference_check.reconcile_csv",
+                   side_effect=forged_runner):
+            result=compare_real_cpu_on_synthetic(self.fixtures())
+        self.assertTrue(all(item.verdict=="BASELINE_CPU_CHANGED_INPUT"
+                            for item in result))
+        self.assertTrue(all(item.baseline_executed for item in result))
+
     def test_wrong_synthetic_claim_stops_before_cpu_baseline(self):
         a, b = self.fixtures()
         fake = replace(b, claimed_different=("a",))
