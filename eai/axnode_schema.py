@@ -14,7 +14,7 @@ MAX_NODE_BYTES = 32 * 1024
 NAME = re.compile(r"[a-z][a-z0-9_.-]{0,63}\Z")
 HASH = re.compile(r"[0-9a-f]{64}\Z")
 SAFE_SKILLS = frozenset({
-    "csv.sha256.v1", "csv.reconcile.v1", "csv.diagnose.v1",
+    "synthetic.noop.v1", "csv.sha256.v1", "csv.reconcile.v1", "csv.diagnose.v1",
     "csv.schema_inspect.v1", "evidence.verify_receipt.v1"
 })
 SAFE_TYPES = frozenset({"csv_ref", "column", "difference_receipt", "receipt_ref",

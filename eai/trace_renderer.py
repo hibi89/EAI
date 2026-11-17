@@ -85,8 +85,11 @@ def render_architect_explanation(raw: dict) -> dict:
             "source_sha256": list(sources),
             "status": "ADVISORY_UNVERIFIED_NOT_EXECUTED",
         })
-    if raw["status"] != "CANDIDATES_UNVERIFIED" and plans:
+    if (raw["status"] not in ("CANDIDATES_UNVERIFIED", "PARTIAL_UNVERIFIED")
+            and plans):
         raise ValueError("blocked report cannot contain active candidates")
+    if raw["status"] == "PARTIAL_UNVERIFIED" and len(plans) != 1:
+        raise ValueError("partial architect report requires one advisory candidate")
     return {
         "schema": "eai.explanation.v1",
         "kind": "ARCHITECT",

@@ -49,6 +49,22 @@ class TraceRendererTests(unittest.TestCase):
         self.assertEqual(report["alternatives"][0]["source_sha256"],
                          ["b" * 64])
 
+    def test_partial_single_candidate_explanation_and_terminal_render(self):
+        from eai.trace_renderer import render_explanation_text
+        raw = self.architect()
+        raw["status"] = "PARTIAL_UNVERIFIED"
+        result = render_architect_explanation(raw)
+        self.assertEqual(result["status"], "PARTIAL_UNVERIFIED")
+        self.assertEqual(len(result["alternatives"]), 1)
+        self.assertIn("PARTIAL_UNVERIFIED", render_explanation_text(result))
+
+    def test_partial_requires_exactly_one_advisory_candidate(self):
+        raw = self.architect()
+        raw["status"] = "PARTIAL_UNVERIFIED"
+        raw["advisory_plans"] = []
+        with self.assertRaises(ValueError):
+            render_architect_explanation(raw)
+
     def test_architect_false_verified_or_side_effectful_status_rejected(self):
         for patch in ({"truth_status": "VERIFIED"},
                       {"execution": "EXECUTED"},

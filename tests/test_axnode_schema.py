@@ -35,6 +35,15 @@ class AXNodeSchemaTests(unittest.TestCase):
         self.assertEqual(len(a.as_dict()["steps"]), 2)
         self.assertEqual(len(a.sha256), 64)
 
+    def test_synthetic_noop_is_a_parse_only_pure_axnode_skill(self):
+        raw = self.node()
+        raw["steps"] = [{"skill": "synthetic.noop.v1"}]
+        raw["capabilities"] = ["pure"]
+        raw["budget"] = {"max_steps": 1, "max_seconds": 15}
+        parsed = parse_axnode(json.dumps(raw))
+        self.assertEqual(parsed.as_dict()["steps"], raw["steps"])
+        self.assertEqual(parsed.as_dict()["status"], "CANDIDATE")
+
     def test_dup_keys_and_untrusted_executable_skill_rejected(self):
         with self.assertRaisesRegex(ValueError, "duplicate"):
             parse_axnode('{"schema":"eai.axnode.v1","schema":"eai.axnode.v1"}')

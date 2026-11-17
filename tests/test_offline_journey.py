@@ -151,6 +151,31 @@ class OfflineJourneyTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "pinned"):
                 self.call()
 
+    def test_forged_operator_is_not_laundered_by_valid_axnode_sha(self):
+        self.problem["permissions"] = ["local.read", "pure"]
+        self.problem_file.write_text(json.dumps(self.problem), encoding="utf-8")
+        source = preview_architecture(self.problem_file, self.axnode_dir)
+        changed = dict(source)
+        changed["advisory_plans"] = [dict(item) for item in source["advisory_plans"]]
+        first = changed["advisory_plans"][0]
+        first["plan_steps"] = [dict(step) for step in first["plan_steps"]]
+        first["plan_steps"][0]["operator"] = "synthetic.noop.v1"
+        first["plan_steps"][0]["capability"] = "pure"
+        with patch("eai.offline_journey.preview_architecture", return_value=changed):
+            with self.assertRaisesRegex(ValueError, "not bound to pinned"):
+                self.call(interpret=True)
+
+    def test_forged_capability_cannot_claim_pure_local_read(self):
+        source = preview_architecture(self.problem_file, self.axnode_dir)
+        changed = dict(source)
+        changed["advisory_plans"] = [dict(item) for item in source["advisory_plans"]]
+        first = changed["advisory_plans"][0]
+        first["plan_steps"] = [dict(step) for step in first["plan_steps"]]
+        first["plan_steps"][0]["capability"] = "pure"
+        with patch("eai.offline_journey.preview_architecture", return_value=changed):
+            with self.assertRaisesRegex(ValueError, "not bound to pinned"):
+                self.call(interpret=True)
+
     def test_high_risk_architect_is_hold_not_unsafe_player(self):
         self.problem["risk"] = "HIGH"
         self.problem_file.write_text(json.dumps(self.problem), encoding="utf-8")

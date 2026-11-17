@@ -78,6 +78,7 @@ def preview_offline_journey(
                     or len(step_sources) != len(option["plan_steps"])):
                 raise ValueError("unbound plan source inventory")
             bound_steps = set()
+            source_inventory = {pinned: [] for pinned in node_hashes}
             for step, source_item in zip(option["plan_steps"], step_sources):
                 if (type(step) is not dict or type(source_item) is not dict
                         or set(source_item) != {"step", "axnode_sha256"}
@@ -86,10 +87,23 @@ def preview_offline_journey(
                         or source_item["axnode_sha256"] not in node_hashes):
                     raise ValueError("plan step is not pinned to AXNODE provenance")
                 bound_steps.add(source_item["step"])
+                source_inventory[source_item["axnode_sha256"]].append(
+                    (step.get("operator"), step.get("capability")))
             for pinned in node_hashes:
                 node = store.get(pinned)
                 if node.sha256 != pinned:
                     raise ValueError("stale pinned AXNODE")
+                # Match the *ordered* operator inventory and minimum capability
+                # to the content-addressed source; a caller-modified preview
+                # must not launder a real step into synthetic.noop.v1.
+                raw = node.as_dict()
+                expected = [
+                    (entry["skill"], "local.read"
+                     if entry["skill"] == "csv.reconcile.v1" else "pure")
+                    for entry in raw["steps"]
+                ]
+                if source_inventory[pinned] != expected:
+                    raise ValueError("plan operator/capability not bound to pinned AXNODE")
             plan = PlanSpec.validate({
                 "version": 1,
                 "problem_sha256": digest,
