@@ -104,6 +104,7 @@ class HierarchicalPlannerTests(unittest.TestCase):
         p = self.problem()
         report = self.planner.plan(p, self.designer.propose(p))
         self.assertEqual(len(report.candidates), 1)
+        self.assertEqual(report.status, "PARTIAL_UNVERIFIED")
         self.assertTrue(any(code == "MISSING_OR_CYCLIC_NODE_PARENT"
                             for _, code in report.blocked))
 
