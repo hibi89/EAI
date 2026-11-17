@@ -8,6 +8,7 @@ semantic trust/independent evidence.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from contextlib import closing
 import hashlib
 import json
 from pathlib import Path
@@ -84,8 +85,8 @@ def audit_isolated_sidecar_restore(
             _check_sqlite(file, name)
             # Opening this *offline* DB read-only cannot attach it to the live
             # original. Every anchor must exist, but that is not outcome truth.
-            with sqlite3.connect(file.resolve(strict=True).as_uri() +
-                                 "?mode=ro&immutable=1", uri=True) as db:
+            with closing(sqlite3.connect(file.resolve(strict=True).as_uri() +
+                                 "?mode=ro&immutable=1", uri=True)) as db:
                 field, table = (("anchor_sha", "entries") if name == "memory.sqlite"
                                 else ("source_sha256", "observations"))
                 rows = db.execute("SELECT " + field + " FROM " + table).fetchall()
