@@ -1,3 +1,8 @@
+## 2026-11-17 KST — EAI C18 synthetic fixture serialization regression repair (P1 source)
+- Actual feature commit `0462463a23db0d7baf67fadc94d7198e404337e1` changes `eai/synthetic_holdout.py` only. Prior `_fixture_hash` passed normalized row **lists** directly to `contracts.canonical_bytes`, which strictly requires a dict, raising `ValueError("canonical document must be an object")`. Both ordered-independent side digests now wrap the normalized row array in a versioned object while preserving numeric normalization, row sorting, source swapping symmetry, and split leakage checks.
+- This addresses the root cause of the **8 FAIL** Codex observed in `tests/test_strategy_research_ranker.py` on both pre-existing SHA and its new SWU-007/020 code SHA. **8 prior failures are NOT marked PASS**: exact-source Python runtime and those 8 test reruns **NOT_RUN** in this session (no Git checkout/DNS). Targeted GitHub source/static patch guard PASS_STATIC only.
+- Isolated defect correction under C18/adjacent SWU-025; no new SWU counted. **Provisional source candidates remain 36/42 = 85.7%**, official P1/P2 UNASSESSED, P2 LOCKED, RELEASE HOLD. SWU-007 and 020 remain HIGH_REVIEW_REQUIRED for cross-DB *write* epoch and independent verifier enrollment/semantic oracle; 008, 023, 024 remain HOLD, 039 external approval blocked. Canonical final blueprint, P26 and ADR-0002 untouched.
+
 ## 2026-11-17 KST — SWU-007/020 focused implementation and safety checks
 
 Development branch `feature/kmong-eai-85-p31-20261112`, feature and focused-test SHA `69987ec4455c9caadd7de8a632cb0b62a1f2ee3b`.

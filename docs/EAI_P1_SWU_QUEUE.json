@@ -2002,7 +2002,8 @@
       "retry_stage": "NOT_TRIGGERED_SOURCE_WRITTEN",
       "initial_nonprogress_attempts": null,
       "post_isolation_nonprogress_attempts": null,
-      "retry_evidence": []
+      "retry_evidence": [],
+      "source_candidate_note": " Adjacent C18 synthetic fixture digest regression repair in eai/synthetic_holdout.py at 0462463a23db0d7baf67fadc94d7198e404337e1: nested normalized list now wrapped in versioned object before canonical_bytes. This fixes the known object-only serializer mismatch (8 prior ranker setup failures), pending rerun; no trustworthy outcome or P2 acceptance inferred."
     },
     {
       "task_id": "EAI-SWU-026",
@@ -3179,7 +3180,7 @@
   "implemented_source_candidate_caveat": "36/42 provisional source candidates. SWU-007 and SWU-020 have focused-check evidence for their local paths. Their High review and operational dependencies remain open. Official P1/P2 UNASSESSED.",
   "official_implementation_rate": "UNASSESSED",
   "P2": "LOCKED",
-  "latest_feature_code_sha": "69987ec4455c9caadd7de8a632cb0b62a1f2ee3b",
+  "latest_feature_code_sha": "0462463a23db0d7baf67fadc94d7198e404337e1",
   "source_candidate_count": 36,
   "next_safe_queue_status": "SWU-008/023/024 HOLD; 007 read checkpoint and 020 signed review binding have focused PASS; 007 atomic write and 020 independent trust High review pending; 039 GO held",
   "next_dependency_blocker": "007/008 durable write epoch and independently verified isolated commit/rollback; 020 independently governed verifier trust anchor and real semantic proof; 023/024 verified outcomes; 024 existing synthetic fixture hash defect; 039 live Hydrogen GO",

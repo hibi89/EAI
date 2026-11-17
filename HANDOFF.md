@@ -1,3 +1,15 @@
+## 2026-11-17 KST — EAI isolated C18 regression code correction (10)
+1. EAI V3.1 only; feature branch `feature/kmong-eai-85-p31-20261112`, P1 source implementation while P2 remains LOCKED.
+2. Source SHA `0462463a23db0d7baf67fadc94d7198e404337e1` fixes object-only canonical serialization in `eai/synthetic_holdout.py` for normalized synthetic fixture row digests; does not change external/production behavior or owner permissions.
+3. Bug supported by exact previous source: `canonical_bytes` only takes dict; `_fixture_hash` sent list. New versioned dict supports existing symmetric fixture leakage comparison. GitHub source shape PASS_STATIC; 8 ranker tests and local Python runtime NOT_RUN after fix; historical 8 FAIL remain as reported until rerun. Full CI/P2 NOT_RUN.
+4. Provisional source implementation 36/42 (85.7%) unchanged; official implementation/verification UNASSESSED. No SWU added, SWU-025 remains source candidate pending P2; release HOLD.
+5. Sol Max committed SWU-007 read checkpoint and SWU-020 signed review chain (SHA 69987ec4455c9caadd7de8a632cb0b62a1f2ee3b); cross-DB durable atomic write epoch and independently governed semantic trust remain unsolved, so SWU-008/023/024 HOLD. SWU-039 blocked on owner approval.
+6. Latest code `0462463a23db0d7baf67fadc94d7198e404337e1`; docs commit SHA follows; verify actual HEAD next turn, do not infer tests PASS.
+7. No Production, no real Player, no network/paid/cloud, no original/customer DB or ACTIVE, no main merge.
+8. Blueprint blob `1b0712679d4171cd3681588e104ea5e8c6f6690d`, P26, ADR-0002, mandatory CI and original history preserved.
+9. Next: rerun prior 8 ranker tests in isolated source if available as targeted bug-fix safety; do not initiate entire P2. High architecture decision for 007/020 gates remains required; avoid new synthetic wrappers and unauthorized trusted-learning.
+10. 2026-11-17 KST, evidence scoped to GitHub source code/static comparison, runtime NOT_RUN.
+
 ## 2026-11-17 KST — SWU-007/020 implementation and remaining gates
 
 1. Work in `hibi89/EAI@feature/kmong-eai-85-p31-20261112`. Feature/test SHA `69987ec4455c9caadd7de8a632cb0b62a1f2ee3b`. Blueprint blob `1b0712679d4171cd3681588e104ea5e8c6f6690d`.
