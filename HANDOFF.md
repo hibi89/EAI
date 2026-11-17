@@ -1,3 +1,17 @@
+## 2026-11-17 KST — EAI V3-03 maintenance code batch handoff (10 items)
+1. **Mission:** EAI independent Architect + Player + AXNODE learner, not my_local_ai; resume with mobile `ㄱ` on EAI only. P1 code first, P2 browser and whole-system verification later.
+2. **Implemented now:** `eai/axnode_maintenance.py` added isolated ZIP/SQLite immutable backup, clean-root restore, and deterministic read-only descendant impact. Does not overwrite originals or auto-quarantine. Original AXNodeStore schema and 13 CPU skills/P26 untouched.
+3. **Tests:** `tests/test_axnode_maintenance.py` 5 authored synthetic unittest functions; cumulative new V3 authored tests 42. Local draft Python syntax compilation PASS, exact GitHub SHA tests/CI/Windows/Qwen/GUI/browser NOT_RUN; no falsely reported integration PASS.
+4. **Status:** V3-03 stays PARTIAL_IMPLEMENTED_UNVERIFIED pending transactional migration, crash recovery ledger and actionable invalidation; V3-01,02,11 candidates; V3-04,12 partial. Implementation completion UNASSESSED (3/15 candidate, 3/15 partial, not actual task completion %); verification UNASSESSED; RELEASE HOLD.
+5. **SHA:** GitHub source `3739968cd0d328fe8f0a3d5af48941fae4898618`, tests `c2a9d5725c8e2c8bf936204aced136d8b160a09d`, queue `fff5e82030bf004aaee70d2745cb36bc177a31f9`, STATUS `6a714b21a407a07fa4d20dc4106a52e7c2f5e5af`. This HANDOFF document's resulting commit becomes later HEAD; recheck live branch on next turn.
+6. **Repository:** `hibi89/EAI` / `feature/kmong-eai-85-p31-20261112`; main, my_local_ai, other repos and Production not changed by code batch.
+7. **Environment:** Python 3.11 stdlib/Windows 11 intended. Isolated authoring tool's `py_compile` PASS, but no byte-identical checkout integration test; browser/UI and real model gates deferred to P2.
+8. **Safety:** only synthetic candidate and local paths; backup refuses existing target, restore refuses existing root, archive integrity and orphan rejection; no live Hydrogen/remote, billing, credentials, risky migration or raw personal data uploaded.
+9. **Next READY:** V3-04 episodic/procedural/negative memory and provenance, V3-12 fake transport bound to human approval receipt; separately finish V3-03 migration/recovery/invalidation after focused local DB safety. V3-05 ProblemModeler after V3-04 prerequisite.
+10. **Time/authority:** 2026-11-17 KST; use latest AGENTS→HANDOFF→STATUS→REQUIREMENTS→blueprint→queue→code. This is evidence of code publication, not a test verdict or deployment authorization.
+
+---
+
 ## 2026-11-17 KST — New EAI mobile chat handoff, P1 browser deferral (10 items)
 1. **Mission LOCK:** EAI is *independent Architect + Player + AXNODE cognition/learning*, not my_local_ai coding assistant, not central hub GitHub App work. Input-only local Qwen, optional Hydrogen research OFF by default. Owner mobile `ㄱ` commands mean actually do the next EAI GitHub code batch, not status talk.
 2. **Scope/decision:** EAI canonical blueprint V3.1 `docs/EAI_FINAL_BLUEPRINT.md` and queue `docs/EAI_INSTANT_TASK_QUEUE.md` remain fixed. **Browser and device acceptance moved to P2 verification ONLY**, never P1 implementation. No browser/Playwright/Selenium/DOM/render/Console/Network/screenshots/responsive/a11y E2E or owner PC steps during P1. If no browser UI, P2 mark NOT_APPLICABLE.
