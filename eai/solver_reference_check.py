@@ -42,6 +42,9 @@ class ActualSolverAudit:
     composed_candidate_executed: bool = False
     semantic_verified: bool = False
     permits_promotion: bool = False
+    candidate_sha256: str = ""
+    semantic_verified: bool = False
+    permits_promotion: bool = False
 
 
 def _expected(left: dict[str, Decimal], right: dict[str, Decimal]):
@@ -156,7 +159,8 @@ def review_candidate_with_cpu_baseline(
     structural = review_synthesis_candidate(store, problem, candidate, fixtures)
     if structural.disposition != "SYNTHETIC_EVIDENCE_ONLY_NOT_PROMOTED":
         return ActualSolverAudit("HOLD_STRUCTURAL_OR_SYNTHETIC_CLAIM",
-                                 structural.disposition, (), False)
+                                 structural.disposition, (), False,
+                                 candidate_sha256=candidate.candidate_sha256)
     checked = compare_real_cpu_on_synthetic(fixtures)
     if all(item.verdict == "BASELINE_CPU_MATCH_UNVERIFIED" for item in checked):
         decision = "CPU_BASELINE_MATCHES_CANDIDATE_STILL_UNVERIFIED"
@@ -164,4 +168,5 @@ def review_candidate_with_cpu_baseline(
         decision = "HOLD_CPU_BASELINE_MISMATCH_OR_INCONCLUSIVE"
     return ActualSolverAudit(
         decision, structural.disposition, checked,
-        any(item.baseline_executed for item in checked))
+        any(item.baseline_executed for item in checked),
+        candidate_sha256=candidate.candidate_sha256)
