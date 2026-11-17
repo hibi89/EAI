@@ -1,14 +1,15 @@
-"""SWU-039 isolated Hydrogen proposal codec; no live API or outbound transport.
+"""SWU-039 fail-closed Hydrogen proposal codec and DORMANT live REST sender.
 
-These pure functions construct a REVIEW-ONLY draft and quarantine a previously
-obtained response. They do not prove provider provenance, ownership, free-tier
-entitlement, human outbound approval, or the truth of a model's ideas. Never
-connect this codec directly to a socket or promote its suggestions.
+The live entrypoint is OFF by default, requires a separately owner-provisioned
+local trust root, exact per-send detached signature and durable local ledger.
+No local self-attestation proves Google billing entitlement or sender identity.
+Returned ideas remain untrusted; never promote them to execution or learning.
 """
 from __future__ import annotations
 
 from dataclasses import dataclass
 import hashlib
+import hmac
 import re
 
 from .contracts import canonical_bytes, strict_json
@@ -94,7 +95,8 @@ def build_hydrogen_request_preview(packet: ResearchPacket) -> DraftHydrogenReque
         "Return one JSON object with exact keys schema, request_sha256, "
         "task_family, hypotheses. Each hypothesis has exact keys idea_id, "
         "summary, counterexamples, assumptions. Do not echo private data. "
-        "Schema: eai.hydrogen.candidate.idea.v1."
+        "Schema: eai.hydrogen.candidate.idea.v1. "
+        "Copy request_sha256 exactly as: " + checked.request_sha256() + "."
     )
     payload = canonical_bytes({
         "contents": [{"role": "user", "parts": [{"text":
@@ -234,9 +236,53 @@ _LIVE_MAX_RPD = 5
 _LIVE_MAX_TPM = 2048
 
 
+def _read_external_owner_trust_root(path) -> tuple[str, str]:
+    """Read a preexisting OS-protected root, never one embedded in a permit.
+
+    The owner provisions this file OUTSIDE the source repository. It is not
+    created, modified, signed or discovered automatically by EAI. Local OS
+    permissions and the caller's trusted configuration remain the trust
+    boundary; on Windows owner ACL review is an operational prerequisite.
+    """
+    from pathlib import Path
+    import os
+    import stat
+
+    if path is None:
+        raise PermissionError("separate owner trust root not provisioned")
+    try:
+        p = Path(path)
+        if (not p.is_absolute() or p.is_symlink() or p.parent.is_symlink()
+                or not p.is_file()):
+            raise PermissionError("explicit existing owner trust root required")
+        flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0)
+        fd = os.open(p, flags)
+        with os.fdopen(fd, "rb") as stream:
+            info = os.fstat(stream.fileno())
+            if (not stat.S_ISREG(info.st_mode)
+                    or (os.name == "posix" and info.st_mode & 0o022)):
+                raise PermissionError("unsafe owner trust file permissions")
+            content = stream.read(513)
+        if len(content) > 512:
+            raise PermissionError("owner trust root too large")
+        data = strict_json(content, max_bytes=512)
+        if (set(data) != {"schema", "project_id", "owner_key_sha256"}
+                or data["schema"] != "eai.hydrogen.owner.root.v1"
+                or type(data["project_id"]) is not str
+                or not _PROJECT.fullmatch(data["project_id"])
+                or type(data["owner_key_sha256"]) is not str
+                or not _SHA256.fullmatch(data["owner_key_sha256"])
+                or content != canonical_bytes(data)):
+            raise PermissionError("invalid pre-provisioned owner trust root")
+        return data["project_id"], data["owner_key_sha256"]
+    except (OSError, ValueError, TypeError) as exc:
+        raise PermissionError("owner trust root unavailable") from exc
+
+
 def _check_live_owner_permit(
     permit: SignedLiveSendPermit, packet: ResearchPacket,
     draft: DraftHydrogenRequest, api_key: str, now: int,
+    *, trusted_project_id: str, trusted_owner_key_sha256: str,
 ) -> tuple[str, str, str]:
     """Require a genuine detached owner signature over an exact single send.
 
@@ -251,8 +297,15 @@ def _check_live_owner_permit(
             or len(permit.owner_public_key) != 32
             or type(permit.trusted_owner_key_sha256) is not str
             or not _SHA256.fullmatch(permit.trusted_owner_key_sha256)
+            or type(trusted_project_id) is not str
+            or not _PROJECT.fullmatch(trusted_project_id)
+            or type(trusted_owner_key_sha256) is not str
+            or not _SHA256.fullmatch(trusted_owner_key_sha256)
+            or not hmac.compare_digest(
+                permit.trusted_owner_key_sha256,
+                trusted_owner_key_sha256)
             or hashlib.sha256(permit.owner_public_key).hexdigest()
-            != permit.trusted_owner_key_sha256):
+            != trusted_owner_key_sha256):
         raise PermissionError("missing or invalid externally pinned owner authority")
     raw = strict_json(permit.statement, max_bytes=2048)
     expected = {
@@ -274,6 +327,7 @@ def _check_live_owner_permit(
                 api_key.encode("ascii")).hexdigest()
             or type(raw["project_id"]) is not str
             or not _PROJECT.fullmatch(raw["project_id"])
+            or raw["project_id"] != trusted_project_id
             or type(raw["nonce"]) is not str
             or not _NONCE_LIVE.fullmatch(raw["nonce"])
             or raw["free_tier_attestation"] != "OWNER_REVIEWED_FREE_ONLY"
@@ -471,7 +525,8 @@ class _LiveSendLedger:
 def dispatch_live_hydrogen(
     packet: ResearchPacket, baseline: object, *, coordinator: ResearchCoordinator,
     api_key: str, owner_permit: SignedLiveSendPermit | None,
-    live_ledger_path, allow_ledger_create: bool = False,
+    live_ledger_path, owner_trust_root_path=None,
+    allow_ledger_create: bool = False,
 ) -> LiveHydrogenResult:
     """Real HTTPS code path; default OFF, no implicit credential or entitlement.
 
@@ -494,11 +549,19 @@ def dispatch_live_hydrogen(
     draft = build_hydrogen_request_preview(checked)
     from time import time
     now = int(time())
+    issued_generation = coordinator.generation
+    try:
+        trusted_project, trusted_key = _read_external_owner_trust_root(
+            owner_trust_root_path)
+    except PermissionError:
+        return LiveHydrogenResult(baseline, "HOLD_OWNER_TRUST_NOT_PROVISIONED", sha)
     try:
         if owner_permit is None:
             raise PermissionError("separately signed per-send approval required")
         project, nonce, owner_key = _check_live_owner_permit(
-            owner_permit, checked, draft, api_key, now)
+            owner_permit, checked, draft, api_key, now,
+            trusted_project_id=trusted_project,
+            trusted_owner_key_sha256=trusted_key)
     except (PermissionError, ValueError, TypeError):
         return LiveHydrogenResult(baseline, "HOLD_SIGNED_OWNER_APPROVAL", sha)
     # The existing mock quota is NEVER used to authorize real sends.
@@ -523,6 +586,10 @@ def dispatch_live_hydrogen(
         conn = None
         ok = False
         try:
+            if (issued_generation != coordinator.generation
+                    or not coordinator.policy.allows_remote_proposal()):
+                return LiveHydrogenResult(
+                    baseline, "OFF_AUTHORIZATION_CHANGED_BEFORE_SEND", sha)
             conn = http.client.HTTPSConnection(
                 _LIVE_HOST, timeout=8, context=ssl.create_default_context())
             conn.request("POST", _LIVE_PATH, body=draft.payload, headers={
@@ -545,7 +612,8 @@ def dispatch_live_hydrogen(
                 return LiveHydrogenResult(
                     baseline, "OFF_AFTER_INVALID_PROVIDER_CONTENT", sha,
                     requests_attempted=1)
-            if coordinator.policy.mode is ResearchMode.OFF:
+            if (issued_generation != coordinator.generation
+                    or not coordinator.policy.allows_remote_proposal()):
                 return LiveHydrogenResult(
                     baseline, "OFF_LATE_PROVIDER_RESPONSE_IGNORED", sha,
                     requests_attempted=1)
