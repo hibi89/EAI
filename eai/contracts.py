@@ -257,3 +257,53 @@ class CognitiveResult:
             raise ValueError("duplicate evidence reference")
         return cls(status, _hash(raw["problem_sha256"]), refs,
                    _texts(raw["unknowns"]))
+
+
+# EAI P1 SWU 002: final, non-authorizing architect output.
+@dataclass(frozen=True)
+class FinalResultSpec:
+    problem_sha256: str
+    status: str
+    selected_alternative: str | None
+    advisory_evidence_sha256: tuple[str, ...]
+    reason_codes: tuple[str, ...]
+    execution: str = "NOT_EXECUTED"
+    version: int = 1
+
+    @classmethod
+    def validate(cls, raw: dict) -> "FinalResultSpec":
+        _keys(raw, {"version", "problem_sha256", "status",
+                    "selected_alternative", "advisory_evidence_sha256",
+                    "reason_codes", "execution"})
+        _version(raw)
+        status = raw["status"]
+        if type(status) is not str or status not in ("ADVISORY_ONLY", "ABSTAINED"):
+            raise ValueError("final architect status cannot assert verification")
+        chosen = raw["selected_alternative"]
+        if chosen is not None:
+            chosen = _name(chosen)
+        if (status == "ADVISORY_ONLY") != (chosen is not None):
+            raise ValueError("final alternative/status mismatch")
+        evidence = raw["advisory_evidence_sha256"]
+        if type(evidence) is not list or len(evidence) > 32:
+            raise ValueError("invalid final evidence references")
+        refs = tuple(_hash(v) for v in evidence)
+        if len(set(refs)) != len(refs):
+            raise ValueError("duplicate final evidence reference")
+        reasons = raw["reason_codes"]
+        if (type(reasons) is not list or len(reasons) > 32 or
+                any(type(x) is not str or not re.fullmatch(r"[A-Z][A-Z0-9_]{0,63}", x)
+                    for x in reasons) or len(set(reasons)) != len(reasons)):
+            raise ValueError("invalid final reason codes")
+        if raw["execution"] != "NOT_EXECUTED":
+            raise ValueError("architect result cannot claim an execution")
+        return cls(_hash(raw["problem_sha256"]), status, chosen,
+                   refs, tuple(reasons))
+
+    def as_dict(self) -> dict:
+        return {
+            "version": 1, "problem_sha256": self.problem_sha256,
+            "status": self.status, "selected_alternative": self.selected_alternative,
+            "advisory_evidence_sha256": list(self.advisory_evidence_sha256),
+            "reason_codes": list(self.reason_codes), "execution": "NOT_EXECUTED",
+        }

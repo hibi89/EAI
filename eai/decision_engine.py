@@ -257,3 +257,59 @@ def render_decision(report: dict) -> str:
             lines.append('  증거 부족: ' + ', '.join(row['missing']))
     lines.append(report['scope'])
     return '\n'.join(lines)
+
+
+# EAI P1 SWU 002: separate V3 result path; legacy numeric decisions unchanged.
+from .contracts import FinalResultSpec, ProblemSpec
+from .design_engine import DesignOutcome
+
+
+def finalize_architect_decision(problem: ProblemSpec,
+                                outcome: DesignOutcome) -> FinalResultSpec:
+    """EAI-owned design -> typed final advisory or explicit abstention."""
+    if type(problem) is not ProblemSpec or type(outcome) is not DesignOutcome:
+        raise ValueError("typed local architect inputs required")
+    digest = problem.digest()
+    if (outcome.analysis.problem_sha256 != digest or
+            outcome.design.problem_sha256 != digest or
+            outcome.result.problem_sha256 != digest):
+        raise ValueError("cross-problem architect decision denied")
+    if outcome.result.status not in ("UNVERIFIED", "CONFLICT"):
+        raise ValueError("untrusted verified architect assertion")
+    alternatives = outcome.design.alternatives
+    ids = [a[0] for a in alternatives]
+    if len(set(ids)) != len(ids) or len(ids) > 8:
+        raise ValueError("invalid bounded architect alternatives")
+    blocked = (bool(outcome.design.blocked_reason) or
+               bool(outcome.analysis.contradictions) or
+               outcome.result.status == "CONFLICT" or len(ids) < 2)
+    reasons = []
+    if outcome.design.blocked_reason:
+        reasons.append("DESIGN_BLOCKED")
+    if outcome.analysis.contradictions or outcome.result.status == "CONFLICT":
+        reasons.append("EVIDENCE_CONFLICT")
+    if len(ids) < 2:
+        reasons.append("ALTERNATIVES_INSUFFICIENT")
+    if not reasons:
+        reasons.append("INDEPENDENT_VERIFICATION_REQUIRED")
+    return FinalResultSpec.validate({
+        "version": 1, "problem_sha256": digest,
+        "status": "ABSTAINED" if blocked else "ADVISORY_ONLY",
+        "selected_alternative": None if blocked else ids[0],
+        "advisory_evidence_sha256": list(outcome.result.evidence_sha256),
+        "reason_codes": sorted(set(reasons)), "execution": "NOT_EXECUTED",
+    })
+
+
+def render_final_architect_result(result: FinalResultSpec) -> dict:
+    """Structured response only; this renderer cannot authorize Player."""
+    if type(result) is not FinalResultSpec:
+        raise ValueError("typed final architect result required")
+    validated = FinalResultSpec.validate(result.as_dict())
+    if validated != result:
+        raise ValueError("forged final architect result")
+    return {
+        "schema": "eai.architect.final_result.v1",
+        **validated.as_dict(),
+        "verified_real_world": False, "grants_real_authority": False,
+    }

@@ -175,3 +175,48 @@ class AXNodeRetriever:
             result.append(NodeMatch(digest,name,kind,status,output,score,
                                     self.store.parents_of(digest)))
         return tuple(sorted(result, key=lambda x: (-x.score, x.node_id, x.sha256))[:limit])
+
+
+# EAI P1 SWU 009: explicit candidate choice, always source-bound and advisory.
+@dataclass(frozen=True)
+class AdvisoryNodeSelection:
+    status: str
+    selected: NodeMatch | None
+    candidates: tuple[NodeMatch, ...]
+    source_sha256: str | None
+    reason_codes: tuple[str, ...]
+
+
+def select_advisory_node(retriever: AXNodeRetriever, query: str, *,
+                         output_type: str | None = None,
+                         memory: AXNodeMemory | None = None,
+                         withdrawn_hashes: tuple[str, ...] = (),
+                         now: int | None = None) -> AdvisoryNodeSelection:
+    """Connect bounded typed retrieval to a deterministic, fail-closed choice."""
+    if type(retriever) is not AXNodeRetriever:
+        raise ValueError("explicit local AXNODE retriever required")
+    found = retriever.find(
+        query, output_type=output_type, memory=memory,
+        withdrawn_hashes=withdrawn_hashes, now=now, limit=8)
+    if not found:
+        return AdvisoryNodeSelection("ABSTAINED", None, (), None,
+                                     ("NO_ELIGIBLE_LOCAL_NODE",))
+    seen = set()
+    for match in found:
+        if (type(match) is not NodeMatch or
+                match.status not in ("DRAFT", "CANDIDATE") or
+                match.provenance != "LOCAL_CANDIDATE_UNVERIFIED"):
+            raise ValueError("untrusted AXNODE recommendation")
+        # Different versions for one ID are not silently promoted to a winner.
+        if match.node_id in seen:
+            return AdvisoryNodeSelection(
+                "ABSTAINED", None, found, None,
+                ("AMBIGUOUS_NODE_VERSION",))
+        seen.add(match.node_id)
+        node = retriever.store.get(match.sha256)
+        if node.sha256 != match.sha256 or node.as_dict()["id"] != match.node_id:
+            raise ValueError("stale or forged AXNODE provenance")
+    chosen = found[0]
+    return AdvisoryNodeSelection(
+        "LOCAL_CANDIDATE_UNVERIFIED", chosen, found,
+        chosen.sha256, ("INDEPENDENT_VERIFICATION_REQUIRED",))

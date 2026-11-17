@@ -95,3 +95,71 @@ class LogicSynthesizer:
             problem.digest(), node_hashes, step_count, seconds)).hexdigest()
         return SynthesisCandidate(problem.digest(), node_hashes,
                                   step_count, seconds, digest)
+
+
+# EAI P1 SWU 018: bounded declarative DSL, no evaluation or generated code.
+@dataclass(frozen=True)
+class TypedCompositionStep:
+    node_sha256: str
+    operator: str
+    required_inputs: tuple[str, ...]
+    output_type: str
+    effect: str
+
+
+@dataclass(frozen=True)
+class BoundedCompositionProgram:
+    grammar: str
+    problem_sha256: str
+    statements: tuple[TypedCompositionStep, ...]
+    candidate_sha256: str
+    program_sha256: str
+    status: str = "STRUCTURE_ONLY_UNVERIFIED"
+
+
+def compile_bounded_composition(synth: LogicSynthesizer,
+                                problem: ProblemSpec,
+                                node_hashes: tuple[str, ...]
+                                ) -> BoundedCompositionProgram:
+    """Check real pinned types/effects before emitting only data-shaped DSL."""
+    if type(synth) is not LogicSynthesizer:
+        raise ValueError("explicit local synthesizer required")
+    candidate = synth.compose(problem, node_hashes)
+    statements = []
+    previous_output = None
+    for digest in candidate.node_hashes:
+        node = synth.store.get(digest)
+        if node.sha256 != digest:
+            raise ValueError("stale DSL input")
+        raw = node.as_dict()
+        inputs = tuple(sorted(raw["signature"]["inputs"].values()))
+        output = raw["signature"]["output"]
+        if previous_output is not None and previous_output not in inputs:
+            raise ValueError("DSL chain has incompatible typed effect")
+        ops = tuple(step["skill"] for step in raw["steps"])
+        if not ops or any(op not in _ALLOWED for op in ops):
+            raise ValueError("unsafe DSL operator")
+        if len(statements) + len(ops) > problem.budget[0]:
+            raise ValueError("DSL step budget exceeded")
+        for op in ops:
+            effect = "local.read" if op == "csv.reconcile.v1" else "pure"
+            if effect not in problem.permissions or (
+                    effect == "local.read" and effect not in raw["capabilities"]):
+                raise ValueError("DSL effect capability denied")
+            statements.append(TypedCompositionStep(
+                digest, op, inputs, output, effect))
+        previous_output = output
+    serial = {
+        "grammar": "sequence.pinned.typed.v1",
+        "problem_sha256": problem.digest(),
+        "statements": [
+            {"source": s.node_sha256, "operator": s.operator,
+             "inputs": list(s.required_inputs), "output": s.output_type,
+             "effect": s.effect} for s in statements],
+        "candidate_sha256": candidate.candidate_sha256,
+        "status": "STRUCTURE_ONLY_UNVERIFIED",
+    }
+    return BoundedCompositionProgram(
+        serial["grammar"], problem.digest(), tuple(statements),
+        candidate.candidate_sha256,
+        hashlib.sha256(canonical_bytes(serial)).hexdigest())

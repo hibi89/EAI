@@ -127,3 +127,42 @@ class QwenIntentParser:
         if not isinstance(msg, dict) or not isinstance(msg.get('content'), str):
             raise ValueError('invalid Ollama parser response')
         return IntentSpec.validate(json.loads(msg['content']))
+
+
+# EAI P1 SWU 003: the optional model only labels input; CPU owns fallback.
+@dataclass(frozen=True)
+class InputParseOutcome:
+    intent: IntentSpec
+    source: str
+    fallback_reason: str = ""
+
+
+class OptionalInputParser:
+    """Rule-first CPU parser; local Qwen is inert unless explicitly selected."""
+
+    def __init__(self, qwen_parser: QwenIntentParser | None = None):
+        if qwen_parser is not None and type(qwen_parser) is not QwenIntentParser:
+            raise ValueError("local QwenIntentParser required")
+        self._qwen = qwen_parser
+        self._cpu = RuleIntentParser()
+
+    def parse(self, text: str, *, use_qwen: bool = False) -> InputParseOutcome:
+        if type(use_qwen) is not bool:
+            raise ValueError("explicit boolean local parser switch required")
+        cpu = self._cpu.parse(text)
+        if cpu.task != "unsupported" or not use_qwen:
+            return InputParseOutcome(cpu, "CPU_RULES")
+        if self._qwen is None:
+            return InputParseOutcome(cpu, "CPU_FALLBACK", "QWEN_NOT_CONFIGURED")
+        try:
+            candidate = self._qwen.parse(text)
+        except (ValueError, RuntimeError, OSError, TimeoutError,
+                ConnectionError, TypeError, KeyError, json.JSONDecodeError):
+            return InputParseOutcome(cpu, "CPU_FALLBACK", "QWEN_INPUT_UNAVAILABLE")
+        # A model cannot create a write command, approval, note lookup or tool
+        # execution request that the deterministic CPU parser did not see.
+        if candidate.task in {"remember", "notes", "search", "recall"}:
+            return InputParseOutcome(cpu, "CPU_FALLBACK", "MODEL_ACTION_IGNORED")
+        if candidate.task == "unsupported":
+            return InputParseOutcome(cpu, "CPU_FALLBACK", "MODEL_UNSUPPORTED")
+        return InputParseOutcome(candidate, "LOCAL_QWEN_INPUT_ONLY")

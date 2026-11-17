@@ -103,3 +103,44 @@ class ProblemModeler:
             problem.digest(), state, tuple(sorted(required)),
             tuple(sorted(forbidden)), contradictions,
             tuple(dict.fromkeys(unknown))[:32], tuple(evidence))
+
+
+# EAI P1 SWU 003: classified input -> bounded CPU-owned V3 ProblemSpec.
+from hashlib import sha256
+from .intent import OptionalInputParser, QwenIntentParser
+
+
+@dataclass(frozen=True)
+class InputProblemModel:
+    problem: ProblemSpec
+    input_source: str
+    input_task: str
+    status: str
+
+
+def model_local_problem_input(text: str, *,
+                              use_qwen: bool = False,
+                              qwen_parser: QwenIntentParser | None = None
+                              ) -> InputProblemModel:
+    """Never infer actions, permissions, verification or evidence from model text."""
+    if (type(text) is not str or not 1 <= len(text.strip()) <= 1200 or
+            any(ord(ch) < 32 and ch not in "\n\t" for ch in text)):
+        raise ValueError("bounded local input text required")
+    parsed = OptionalInputParser(qwen_parser).parse(text, use_qwen=use_qwen)
+    domain = {
+        "calculate": "arithmetic", "compare": "comparison",
+        "help": "capability", "recall": "memory", "notes": "memory",
+        "search": "research", "remember": "memory",
+    }.get(parsed.intent.task, "unknown")
+    identifier = "input." + sha256(text.encode("utf-8")).hexdigest()[:24]
+    problem = ProblemSpec.validate({
+        "version": 1, "id": identifier, "goal": text.strip(),
+        "domain": domain, "state_refs": [], "assumptions": [],
+        "hard_constraints": [], "objectives": ["examine_input_only"],
+        "oracle": "unverified.cpu.review", "permissions": ["pure"],
+        "budget": {"max_steps": 8, "max_seconds": 30}, "risk": "MEDIUM",
+    })
+    return InputProblemModel(
+        problem, parsed.source, parsed.intent.task,
+        "INPUT_CLASSIFIED_UNVERIFIED" if parsed.intent.task != "unsupported"
+        else "NEEDS_EXPLICIT_PROBLEM_SPEC")

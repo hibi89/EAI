@@ -123,3 +123,38 @@ def assert_pure_preview(
     if (fresh.disposition != "PURE_SYNTHETIC_PREVIEW_ONLY"
             or policy != fresh):
         raise PermissionError("untrusted or denied plan policy")
+
+
+# EAI P1 SWU 027: complete Problem/Plan -> local review gate without GO.
+def evaluate_problem_review_policy(
+    problem: ProblemSpec, plan: PlanSpec, *,
+    architect_truth: str,
+    evidence_review_required: bool = False,
+    proposed_approval_hash: str | None = None,
+) -> PlanPolicyDecision:
+    """Separate truth/negative evidence from executable approval.
+
+    Even an advisory architect result may only reach the existing pure
+    synthetic no-op preview, never a real tool or authorization transition.
+    """
+    if (type(architect_truth) is not str or
+            architect_truth not in ("UNVERIFIED", "CONFLICT", "UNSUPPORTED")):
+        raise ValueError("untrusted architect truth status")
+    if type(evidence_review_required) is not bool:
+        raise ValueError("explicit evidence review flag required")
+    base = evaluate_plan_policy(
+        problem, plan, proposed_approval_hash=proposed_approval_hash)
+    reasons = set(base.reason_codes)
+    if architect_truth != "UNVERIFIED":
+        reasons.add("ARCHITECT_TRUTH_NOT_REVIEWABLE")
+    if evidence_review_required:
+        reasons.add("NEGATIVE_OR_CONFLICTED_EVIDENCE")
+    # Explicitly deny ambiguous constraints which an input parser cannot prove.
+    for clause in _validated_problem(problem).hard_constraints:
+        if re.fullmatch(r"(?:must|forbid):[a-z][a-z0-9_.-]{0,63}", clause) is None:
+            reasons.add("UNMODELED_HARD_CONSTRAINT")
+    if reasons:
+        return PlanPolicyDecision(
+            base.plan_sha256, base.problem_sha256, "HOLD_POLICY_DENIED",
+            tuple(sorted(reasons)), ())
+    return base
