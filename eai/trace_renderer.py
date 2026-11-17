@@ -276,9 +276,8 @@ def render_local_decision_explanation(raw: dict) -> dict:
     receipt = _hash(raw["source_receipt_sha256"])
     choices = raw["compared_alternatives"]
     if (type(choices) is not list or len(choices) > 8
-            or len(set(choices)) != len(choices)
             or any(type(v) is not str or not _ID.fullmatch(v)
-                   for v in choices)):
+                   for v in choices) or len(set(choices)) != len(choices)):
         raise ValueError("invalid alternative identifiers")
     selected = raw["selected_alternative_id"]
     selected_sha = raw["selected_plan_sha256"]
@@ -332,6 +331,16 @@ def render_local_decision_text(result: dict) -> str:
         raise ValueError("unsupported local CPU decision status")
     _hash(result["problem_sha256"])
     _hash(result["source_receipt_sha256"])
+    selected = result.get("selected_alternative_id")
+    if (selected is not None and (
+            type(selected) is not str or not _ID.fullmatch(selected))):
+        raise ValueError("untrusted selected alternative")
+    reasons = result.get("reason_codes")
+    if (type(reasons) is not list or len(reasons) > 32 or
+            any(type(reason) is not str or
+                not re.fullmatch(r"[A-Z][A-Z0-9_]{0,63}", reason)
+                for reason in reasons)):
+        raise ValueError("untrusted CPU reason codes")
     if (result.get("execution") != "NOT_EXECUTED"
             or result.get("network") != "DISABLED_BY_DESIGN"
             or result.get("external_actions") != 0
