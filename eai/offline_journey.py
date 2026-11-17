@@ -7,6 +7,7 @@ requested 'synthetic.noop.v1' steps can be interpreted after revalidation.
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Callable
 import hashlib
 from time import monotonic_ns
 
@@ -24,12 +25,36 @@ from .research_policy import ResearchPolicy
 from .research_providers import ResearchCoordinator
 
 
+def _check_cancel(cancel_check: Callable[[], bool] | None) -> None:
+    """Fail closed at bounded journey stage boundaries; never run side effects."""
+    if cancel_check is None:
+        return
+    cancelled = cancel_check()
+    if type(cancelled) is not bool:
+        raise ValueError("cancellation callback must return bool")
+    if cancelled:
+        raise ValueError("offline journey cancelled before publishing a result")
+
+
+def _check_postflight(problem: ProblemSpec, plan: PlanSpec,
+                      budget: LocalResourceBudget, started_ns: int) -> None:
+    """No synthetic success receipt if the final measured budget was exceeded."""
+    elapsed_ms = (monotonic_ns() - started_ns) // 1_000_000
+    if elapsed_ms < 0:
+        raise ValueError("invalid monotonic journey duration")
+    postflight = observe_plan_resource_preflight(
+        problem, plan, budget, elapsed_ms=elapsed_ms, steps_completed=0)
+    if postflight.status != "PURE_SYNTHETIC_PLAN_PREFLIGHT_ONLY":
+        raise ValueError("post-interpretation resource budget not established")
+
+
 def preview_offline_journey(
     problem_file: str | Path, axnode_root: str | Path, *,
     max_expansions: int = 8,
     budget: LocalResourceBudget | None = None,
     interpret_pure_noop: bool = False,
     research_policy: ResearchPolicy | None = None,
+    cancel_check: Callable[[], bool] | None = None,
 ) -> dict:
     """Bounded full local decision path. Even a PASS gives zero real authority."""
     if type(interpret_pure_noop) is not bool:
@@ -41,11 +66,15 @@ def preview_offline_journey(
         if budget is None else budget)
     if type(budget) is not LocalResourceBudget:
         raise ValueError("explicit CPU budget required")
+    if cancel_check is not None and not callable(cancel_check):
+        raise ValueError("explicit local cancellation callback required")
+    _check_cancel(cancel_check)
     # Existing Architect independently confirms local store/schema constraints
     # and refuses to auto-create a customer-selected path.
     started_ns = monotonic_ns()
     source = preview_architecture(
         problem_file, axnode_root, max_expansions=max_expansions)
+    _check_cancel(cancel_check)
     # Research proposals cannot replace the independent OFF baseline. This
     # provider boundary stays inert in both OFF and simulated ON/paused modes.
     research = ResearchCoordinator(research_policy)
@@ -72,6 +101,7 @@ def preview_offline_journey(
     # real tools or assume a prior preview was an approved execution request.
     with AXNodeStore(axnode_root) as store:
         for option in plans:
+            _check_cancel(cancel_check)
             if type(option) is not dict:
                 raise ValueError("invalid architect alternative")
             node_hashes = tuple(option["node_hashes"])
@@ -131,15 +161,27 @@ def preview_offline_journey(
             if (gate.disposition == "PURE_SYNTHETIC_PREVIEW_ONLY"
                     and observation.status == "PURE_SYNTHETIC_PLAN_PREFLIGHT_ONLY"):
                 if interpret_pure_noop:
-                    receipt = execute_pure_synthetic_preview(
-                        problem, plan, gate)
-                    replay = audit_pure_player_trace(
-                        problem, plan, gate, receipt)
-                    if replay.status != "PURE_TRACE_REPLAY_MATCH_UNVERIFIED":
-                        raise ValueError("pure interpreter replay disagreement")
-                    status = "PURE_SYNTHETIC_INTERPRETED_UNVERIFIED"
-                    trace = replay.expected_trace_sha256
-                    steps = replay.matching_steps
+                    _check_cancel(cancel_check)
+                    # Recheck immediately before the bounded in-memory Player.
+                    # Reading AXNODEs or later options may consume the budget.
+                    pre_execute = observe_plan_resource_preflight(
+                        problem, plan, budget,
+                        elapsed_ms=(monotonic_ns() - started_ns) // 1_000_000,
+                        steps_completed=0)
+                    if pre_execute.status != "PURE_SYNTHETIC_PLAN_PREFLIGHT_ONLY":
+                        reasons.update(pre_execute.reason_codes)
+                    else:
+                        receipt = execute_pure_synthetic_preview(
+                            problem, plan, gate)
+                        replay = audit_pure_player_trace(
+                            problem, plan, gate, receipt)
+                        if replay.status != "PURE_TRACE_REPLAY_MATCH_UNVERIFIED":
+                            raise ValueError("pure interpreter replay disagreement")
+                        _check_postflight(problem, plan, budget, started_ns)
+                        _check_cancel(cancel_check)
+                        status = "PURE_SYNTHETIC_INTERPRETED_UNVERIFIED"
+                        trace = replay.expected_trace_sha256
+                        steps = replay.matching_steps
                 else:
                     status = "PURE_ELIGIBLE_NOT_INTERPRETED"
             candidates.append({
@@ -156,6 +198,7 @@ def preview_offline_journey(
                 "external_actions": 0,
                 "grants_real_authority": False,
             })
+    _check_cancel(cancel_check)
     report = {
         "schema": "eai.offline.journey.v1",
         "problem_sha256": digest,

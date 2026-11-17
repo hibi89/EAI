@@ -117,6 +117,83 @@ class OfflineJourneyTests(unittest.TestCase):
         self.assertNotEqual(result["receipt_sha256"], preview["receipt_sha256"])
         self.assertFalse(result["verified_real_world"])
 
+
+    def test_cancel_callback_prevents_pure_player_before_dispatch(self):
+        pure = self.root / "cancelled_pure_nodes"
+        with AXNodeStore(pure) as store:
+            for name in ("data.first", "data.second"):
+                store.import_node(json.dumps(self.node(name, "synthetic.noop.v1")))
+        self.problem["permissions"] = ["pure"]
+        self.problem_file.write_text(json.dumps(self.problem), encoding="utf-8")
+        decisions = iter([False, False, False, True])
+        with (patch("eai.local_scheduler.observe_own_process_rss_bytes",
+                    return_value=100 * 1024 * 1024),
+              patch("eai.offline_journey.execute_pure_synthetic_preview",
+                    side_effect=AssertionError("no Player dispatch expected"))):
+            with self.assertRaisesRegex(ValueError, "cancelled"):
+                preview_offline_journey(
+                    self.problem_file, pure, interpret_pure_noop=True,
+                    cancel_check=lambda: next(decisions))
+
+    def test_cancel_callback_rejects_nonboolean_or_noncallable(self):
+        for callback in ("stop", lambda: 1, lambda: "no"):
+            with self.subTest(callback=repr(callback)), self.assertRaises(ValueError):
+                preview_offline_journey(
+                    self.problem_file, self.axnode_dir, cancel_check=callback)
+
+    def test_cancel_after_architect_preserves_existing_store(self):
+        before = sorted(self.axnode_dir.rglob("*.axnode"))
+        decisions = iter([False, True])
+        with patch("eai.offline_journey.execute_pure_synthetic_preview",
+                   side_effect=AssertionError("no dispatch expected")):
+            with self.assertRaisesRegex(ValueError, "cancelled"):
+                preview_offline_journey(
+                    self.problem_file, self.axnode_dir,
+                    interpret_pure_noop=True,
+                    cancel_check=lambda: next(decisions))
+        self.assertEqual(sorted(self.axnode_dir.rglob("*.axnode")), before)
+
+    def test_delayed_pre_execute_budget_denies_pure_dispatch(self):
+        pure = self.root / "late_budget_pure_nodes"
+        with AXNodeStore(pure) as store:
+            for name in ("data.first", "data.second"):
+                store.import_node(json.dumps(self.node(name, "synthetic.noop.v1")))
+        self.problem["permissions"] = ["pure"]
+        self.problem_file.write_text(json.dumps(self.problem), encoding="utf-8")
+        with (patch("eai.offline_journey.monotonic_ns",
+                    side_effect=[0, 1_000_000, 61_000_000_000, 62_000_000_000]),
+              patch("eai.local_scheduler.observe_own_process_rss_bytes",
+                    return_value=100 * 1024 * 1024),
+              patch("eai.offline_journey.execute_pure_synthetic_preview",
+                    side_effect=AssertionError("budget denied Player"))):
+            result = preview_offline_journey(self.problem_file, pure,
+                interpret_pure_noop=True,
+                budget=LocalResourceBudget(max_rss_mib=128,
+                                           max_elapsed_ms=60000,
+                                           max_steps=64))
+        self.assertTrue(all(c["status"] == "POLICY_OR_RESOURCE_HELD"
+                            for c in result["candidates"]))
+        self.assertTrue(all("TIME_BUDGET_EXCEEDED" in c["reason_codes"]
+                            for c in result["candidates"]))
+
+    def test_postflight_budget_exceeded_never_returns_success_receipt(self):
+        pure = self.root / "overrun_pure_nodes"
+        with AXNodeStore(pure) as store:
+            for name in ("data.first", "data.second"):
+                store.import_node(json.dumps(self.node(name, "synthetic.noop.v1")))
+        self.problem["permissions"] = ["pure"]
+        self.problem_file.write_text(json.dumps(self.problem), encoding="utf-8")
+        with (patch("eai.offline_journey.monotonic_ns",
+                    side_effect=[0, 1_000_000, 2_000_000, 61_000_000_000]),
+              patch("eai.local_scheduler.observe_own_process_rss_bytes",
+                    return_value=100 * 1024 * 1024)):
+            with self.assertRaisesRegex(ValueError, "post-interpretation"):
+                preview_offline_journey(
+                    self.problem_file, pure, interpret_pure_noop=True,
+                    budget=LocalResourceBudget(max_rss_mib=128,
+                                               max_elapsed_ms=60000,
+                                               max_steps=64))
+
     def test_missing_rss_blocks_interpretation_not_current_source(self):
         with patch("eai.local_scheduler.observe_own_process_rss_bytes",
                    return_value=None):
