@@ -1,3 +1,15 @@
+## 2026-11-17 KST — EAI P1 High-scope code checkpoint (10)
+1. Mission: independent EAI V3.1 Architect/Player/AXNODE/Experience Learner, distinct from MLA. P1 source coding only; P2 LOCKED, release HOLD.
+2. Actual feature SHAs `7b92b520921d0124b0b25da1356412cedc236a22`, `5df0be08fce3525d819ee7a651671fe93ec10b39`: 007 cross-DB read-only coherence; 008 marker/coherence->manual HOLD; 020 synthetic independent recompute+optional quarantine journal; 021 AXNODE activation preflight + lineage->nonmutating intent; 023 replay/evidence gate; 024 synthetic local CPU cost prior; 026 deterministic bounded strategy cost envelope/rank. 8 source paths, 2 new modules. NO live restores, ACTIVE or learning authorization.
+3. Checks: GitHub exact branch SHA and 13 source security markers PASS_STATIC. Executable Python syntax, SQLite/journal, independent signing proof, full P2 acceptance and Windows NOT_RUN; no false PASS.
+4. Progress: provisional 33/42 source candidates (78.6%); only SWU-021 newly source-written and held for High review. Remaining seven source attempts are partial/High/unapproved; official P1/P2 UNASSESSED.
+5. Blockers: independently trusted external receipt verification still missing in 020; epoch transactional proof/isolated commit and rollback missing 007/008; verified learning unattainable from local synthetic alone; exact-SHA execution via previous checkout DNS failure. Avoid unsafe access or repeated failed route.
+6. GitHub `hibi89/EAI` `feature/kmong-eai-85-p31-20261112`, feature SHA `5df0be08fce3525d819ee7a651671fe93ec10b39`, docs SHA will follow. Always fetch actual branch HEAD.
+7. Production NONE. Real Hydrogen/paid transfer, original customer writes, ACTIVE, live Player and main merge HOLD. Existing P26 and Qwen INPUT-only preserved.
+8. Final blueprint blob `1b0712679d4171cd3681588e104ea5e8c6f6690d` unchanged; Git history, no other repo edits, existing CI preserved.
+9. Queue: no READY. HIGH_REQUIRED 007,008,020,029,030; SOURCE_WRITTEN_HIGH_REVIEW_PENDING 021; PARTIAL_SOURCE 023,024,026; BLOCKED_APPROVAL 039. Do not unlock dependencies from synthetic hash alone.
+10. 2026-11-17 KST evidence source `5df0be08fce3525d819ee7a651671fe93ec10b39`; official validation and release pending.
+
 ## 2026-11-17 KST — EAI P1 CLI + legacy bridge + safe research continuation (10-item)
 1. Goal: independent EAI V3.1 local Architect/Player/AXNODE/Experience Learner, distinct from MLA; P1 source code until 100% candidate, P2 locked.
 2. Actual source commits: `1bb57934be3a914dbb88741f96807215ad90a399`, `b25a68658217bc4efa7c993512e6c8ca4f3d1bc5`, and safety patch `9e0fd5f7237b18b38e111ae1df37b2637348cb93`; 8 distinct source files, SWU-017 P26 13 CPU goals via explicit owner gate, SWU-032 measured CPU RSS postflight and cancel HOLD, SWU-040 mock late/429 OFF with no paid fallback, SWU-042 `decide-local` CLI typed CPU answer/abstain/cancel.
