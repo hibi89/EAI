@@ -141,6 +141,11 @@ def main(argv: list[str] | None = None) -> int:
     b0_cmd.add_argument('--axnode-root', required=True, help='existing local AXNODE store')
     b0_cmd.add_argument('--fixture-file', required=True, help='bounded public/synthetic JSON manifest')
     b0_cmd.add_argument('--node-hashes', required=True, help='2-4 comma-separated pinned AXNODE hashes')
+    b1_cmd = sub.add_parser('b1-preview', help='offline B1 AXNODE synthetic steps versus B0 CPU (no promotion)')
+    b1_cmd.add_argument('--problem-file', required=True, help='local EAI ProblemSpec JSON')
+    b1_cmd.add_argument('--axnode-root', required=True, help='existing local AXNODE store')
+    b1_cmd.add_argument('--fixture-file', required=True, help='bounded synthetic train/heldout JSON')
+    b1_cmd.add_argument('--node-hashes', required=True, help='2-4 comma-separated pinned AXNODE hashes')
     review_cmd = sub.add_parser('customer-review', help='create a NEW offline HTML/JSON integrity-checked review folder')
     review_cmd.add_argument('--spec', required=True, help='owner-authorized local goal/manifest JSON')
     review_cmd.add_argument('--output-dir', required=True, help='unused local output directory')
@@ -173,6 +178,20 @@ def main(argv: list[str] | None = None) -> int:
             # A malformed manifest may contain private data: never echo inputs.
             print(json.dumps({'status':'REJECTED',
                               'reason':'B0_SYNTHETIC_PREVIEW_REJECTED'}),
+                  file=sys.stderr)
+            return 1
+    if args.command == 'b1-preview':
+        try:
+            from .b1_cli import b1_preview
+            report = b1_preview(args.problem_file, args.axnode_root,
+                                args.fixture_file, args.node_hashes)
+            print(json.dumps(report, ensure_ascii=False, indent=2))
+            return (0 if report['comparison']['status'] ==
+                    'B1_SYNTHETIC_PARITY_WITH_B0_UNVERIFIED' else 2)
+        except (ValueError, KeyError, OSError, UnicodeError,
+                csv.Error, sqlite3.DatabaseError):
+            print(json.dumps({'status':'REJECTED',
+                              'reason':'B1_SYNTHETIC_PREVIEW_REJECTED'}),
                   file=sys.stderr)
             return 1
     if args.command == 'customer-review':
