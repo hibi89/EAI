@@ -274,6 +274,24 @@ def audit_offline_journey_report(report: dict) -> dict:
             or not 0 <= report["contradiction_count"] <= 32
             or type(report["evidence_review_required"]) is not bool):
         raise ValueError("invalid uncertainty counters")
+    if (type(report["architect_status"]) is not str
+            or report["architect_status"] not in (
+                "CANDIDATES_UNVERIFIED", "PARTIAL_UNVERIFIED", "BLOCKED",
+                "BLOCKED_EVIDENCE_DISPUTE", "CANCELLED")
+            or type(report["truth_status"]) is not str
+            or report["truth_status"] not in (
+                "UNVERIFIED", "UNSUPPORTED", "CONFLICT")
+            or (report["architect_status"] == "CANDIDATES_UNVERIFIED"
+                and report["candidate_count"] < 2)
+            or (report["architect_status"] == "PARTIAL_UNVERIFIED"
+                and report["candidate_count"] != 1)
+            or (report["architect_status"] in (
+                "BLOCKED", "BLOCKED_EVIDENCE_DISPUTE", "CANCELLED")
+                and report["candidate_count"] != 0)
+            or (report["evidence_review_required"] !=
+                (report["architect_status"] == "BLOCKED_EVIDENCE_DISPUTE"))):
+        raise ValueError("untrusted architect status or outcome inventory")
+    seen_alternatives = set()
     for candidate in report["candidates"]:
         if (type(candidate) is not dict
                 or set(candidate) != {
@@ -312,9 +330,16 @@ def audit_offline_journey_report(report: dict) -> dict:
                 or type(candidate["interpreted_steps"]) is not int
                 or not 0 <= candidate["interpreted_steps"] <= candidate["declared_steps"]):
             raise ValueError("invalid journey candidate")
+        if candidate["alternative_id"] in seen_alternatives:
+            raise ValueError("duplicate advisory alternative")
+        seen_alternatives.add(candidate["alternative_id"])
+        if (candidate["reason_codes"] !=
+                sorted(set(candidate["reason_codes"]))):
+            raise ValueError("unsorted or repeated policy denial reasons")
         executed = candidate["status"] == "PURE_SYNTHETIC_INTERPRETED_UNVERIFIED"
         if ((candidate["status"] == "PURE_ELIGIBLE_NOT_INTERPRETED"
-             and candidate["reason_codes"])
+             and (candidate["reason_codes"] or
+                  report["run_mode"] != "POLICY_RESOURCE_PREVIEW_ONLY"))
                 or (candidate["status"] == "POLICY_OR_RESOURCE_HELD"
                     and not candidate["reason_codes"])):
             raise ValueError("journey candidate reason/status inconsistency")

@@ -212,6 +212,11 @@ def main(argv: list[str] | None = None) -> int:
             return 0 if report['architect_status'] in (
                 'CANDIDATES_UNVERIFIED', 'PARTIAL_UNVERIFIED'
             ) else 2
+        except KeyboardInterrupt:
+            print(json.dumps({'status': 'CANCELLED',
+                              'reason': 'OFFLINE_JOURNEY_INTERRUPTED'}),
+                  file=sys.stderr)
+            return 130
         except (ValueError, KeyError, OSError, UnicodeError,
                 PermissionError, sqlite3.DatabaseError):
             print(json.dumps({'status': 'REJECTED',

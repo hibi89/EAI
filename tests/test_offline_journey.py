@@ -385,6 +385,63 @@ class OfflineJourneyTests(unittest.TestCase):
         self.assertNotIn("PRIVATE", out.getvalue())
         self.assertEqual(report["real_tool_invocations"], 0)
 
+
+    def test_rehashed_verified_architect_and_truth_claims_are_denied(self):
+        from eai.offline_journey import audit_offline_journey_report
+        from eai.contracts import canonical_sha256
+        for key, spoof in (
+            ("architect_status", "VERIFIED"),
+            ("truth_status", "VERIFIED"),
+            ("architect_status", "PARTIAL_UNVERIFIED"),
+            ("evidence_review_required", True),
+        ):
+            with self.subTest(field=key, spoof=spoof):
+                report = self.call()
+                report[key] = spoof
+                report["receipt_sha256"] = canonical_sha256({
+                    k: v for k, v in report.items() if k != "receipt_sha256"
+                })
+                with self.assertRaisesRegex(ValueError, "architect status"):
+                    audit_offline_journey_report(report)
+
+    def test_rehashed_duplicate_alternative_is_denied(self):
+        from eai.offline_journey import audit_offline_journey_report
+        from eai.contracts import canonical_sha256
+        report = self.call()
+        report["candidates"][1]["alternative_id"] = (
+            report["candidates"][0]["alternative_id"])
+        report["receipt_sha256"] = canonical_sha256({
+            k: v for k, v in report.items() if k != "receipt_sha256"
+        })
+        with self.assertRaisesRegex(ValueError, "duplicate advisory"):
+            audit_offline_journey_report(report)
+
+    def test_rehashed_repeated_policy_reason_is_denied(self):
+        from eai.offline_journey import audit_offline_journey_report
+        from eai.contracts import canonical_sha256
+        report = self.call()
+        reason = report["candidates"][0]["reason_codes"][0]
+        report["candidates"][0]["reason_codes"] = [reason, reason]
+        report["receipt_sha256"] = canonical_sha256({
+            k: v for k, v in report.items() if k != "receipt_sha256"
+        })
+        with self.assertRaisesRegex(ValueError, "policy denial reasons"):
+            audit_offline_journey_report(report)
+
+    def test_journey_cli_ctrl_c_exits_without_private_stacktrace(self):
+        out, err = io.StringIO(), io.StringIO()
+        with patch("eai.offline_journey.preview_offline_journey",
+                   side_effect=KeyboardInterrupt):
+            with redirect_stdout(out), redirect_stderr(err):
+                code = main([
+                    "journey-preview", "--problem-file", str(self.problem_file),
+                    "--axnode-root", str(self.axnode_dir),
+                ])
+        self.assertEqual(code, 130)
+        self.assertEqual(out.getvalue(), "")
+        self.assertIn("OFFLINE_JOURNEY_INTERRUPTED", err.getvalue())
+        self.assertNotIn(str(self.root), err.getvalue())
+
     def test_journey_cli_bad_source_is_sanitized(self):
         out, err = io.StringIO(), io.StringIO()
         missing = self.root / "nothing"
