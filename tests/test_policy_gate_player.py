@@ -109,6 +109,40 @@ class PolicyGatePlayerTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             evaluate_plan_policy(p, forged)
 
+    def test_forged_problem_dataclass_is_revalidated(self):
+        p = self.problem()
+        plan = self.plan(p)
+        with self.assertRaises(ValueError):
+            evaluate_plan_policy(replace(p, permissions=("pure", "local.write")), plan)
+        with self.assertRaises(ValueError):
+            evaluate_plan_policy(replace(p, version=True), plan)
+
+    def test_untrusted_pure_trace_replay_is_detected(self):
+        from eai.player_runtime import audit_pure_player_trace
+        p = self.problem()
+        plan = self.plan(p)
+        gate = evaluate_plan_policy(p, plan)
+        receipt = execute_pure_synthetic_preview(p, plan, gate)
+        self.assertEqual(audit_pure_player_trace(
+            p, plan, gate, receipt).status, "PURE_TRACE_REPLAY_MATCH_UNVERIFIED")
+        forged = replace(receipt, trace_sha256="0" * 64)
+        failed = audit_pure_player_trace(p, plan, gate, forged)
+        self.assertEqual(failed.status, "REJECTED_UNREPRODUCIBLE_PURE_TRACE")
+        self.assertFalse(failed.grants_real_authority)
+
+    def test_cancelled_trace_cannot_masquerade_as_completed(self):
+        from eai.player_runtime import audit_pure_player_trace
+        p = self.problem()
+        plan = self.plan(p)
+        gate = evaluate_plan_policy(p, plan)
+        receipt = execute_pure_synthetic_preview(
+            p, plan, gate, cancel_before_step="step02")
+        self.assertEqual(audit_pure_player_trace(
+            p, plan, gate, receipt).status, "REJECTED_UNREPRODUCIBLE_PURE_TRACE")
+        self.assertEqual(audit_pure_player_trace(
+            p, plan, gate, receipt, cancel_before_step="step02").status,
+            "PURE_TRACE_REPLAY_MATCH_UNVERIFIED")
+
     def test_pure_plan_hash_is_pinned(self):
         p = self.problem()
         plan = self.plan(p)

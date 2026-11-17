@@ -14,7 +14,7 @@ import sqlite3
 
 from .episode_replay_dedup import EpisodeBatchReview
 
-_HASH = re.compile(r"[0-9a-f]{64}\\Z")
+_HASH = re.compile(r"[0-9a-f]{64}\Z")
 _MAX_ROWS = 4096
 
 

@@ -73,6 +73,12 @@ class EpisodeReplayDedupTests(unittest.TestCase):
         self.assertEqual(result.reviewed_fingerprints, ())
         self.assertIn("UNTRUSTED_OR_UNRELATED_SYNTHETIC_REVIEW", result.reasons)
 
+    def test_rejected_batch_exposes_no_accepted_subset(self):
+        another = replace(self.episode, memory_sha256="2" * 64)
+        result = self.screen((self.episode, another, self.episode))
+        self.assertIn("DUPLICATE_OR_REPLAYED_EPISODE", result.reasons)
+        self.assertEqual(result.reviewed_fingerprints, ())
+
     def test_duplicate_prior_index_rejected_as_untrusted(self):
         old = self.screen().reviewed_fingerprints[0]
         with self.assertRaises(ValueError):
