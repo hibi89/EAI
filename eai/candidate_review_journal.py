@@ -134,6 +134,15 @@ class CandidateReviewJournal:
             previous = item.entry_sha256
         return True
 
+    def latest_for(self, candidate_sha256: str) -> JournalEntry | None:
+        """Read-only current review state; never a promotion decision."""
+        _digest(candidate_sha256)
+        self.verify_chain()
+        for entry in reversed(self.entries()):
+            if entry.candidate_sha256 == candidate_sha256:
+                return entry
+        return None
+
     def record(self, review: CandidateEvidenceReview, *,
                state: str, previous_active_sha256: str | None = None
                ) -> JournalEntry:
@@ -158,10 +167,24 @@ class CandidateReviewJournal:
             existing = self.entries()
             if len(existing) >= 10000:
                 raise ValueError("bounded review journal full")
-            if state == "WITHDRAWN_FROM_REVIEW" and not any(
-                    e.candidate_sha256 == review.candidate_sha256
-                    for e in existing):
+            prior = [e for e in existing
+                     if e.candidate_sha256 == review.candidate_sha256]
+            if state == "REVIEW_HOLD" and (
+                    review.status != "SYNTHETIC_REVIEW_ONLY_NOT_AUTHORIZED"
+                    or review.reason_codes):
+                raise ValueError("untrusted review cannot return to hold")
+            if not prior and state == "WITHDRAWN_FROM_REVIEW":
                 raise ValueError("candidate not previously reviewed")
+            if prior:
+                latest = prior[-1]
+                if latest.previous_active_sha256 != previous_active_sha256:
+                    raise ValueError("existing ACTIVE pointer evidence changed")
+                if latest.state == "WITHDRAWN_FROM_REVIEW":
+                    raise ValueError("withdrawn review cannot be resurrected")
+                if latest.state == "QUARANTINED" and state == "REVIEW_HOLD":
+                    raise ValueError("quarantined review cannot self-reinstate")
+                if latest.state == state and latest.evidence_sha256 == review.review_sha256:
+                    raise ValueError("duplicate journal event")
             index = len(existing) + 1
             previous = existing[-1].entry_sha256 if existing else "0" * 64
             digest = _entry_hash(index, review.candidate_sha256,

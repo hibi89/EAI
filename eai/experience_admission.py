@@ -11,6 +11,7 @@ import hashlib
 import re
 
 from .axnode_store import AXNodeStore
+from .candidate_evidence_review import CandidateEvidenceReview
 from .contracts import ProblemSpec, canonical_bytes
 from .episode_replay import EpisodeReplayDecision
 from .logic_synthesis import SynthesisCandidate
@@ -36,13 +37,17 @@ class ExperienceGateResult:
 def inspect_learning_admission(
         store: AXNodeStore, problem: ProblemSpec,
         candidate: SynthesisCandidate, baseline: ActualSolverAudit,
-        episodes: tuple[EpisodeReplayDecision, ...]) -> ExperienceGateResult:
+        episodes: tuple[EpisodeReplayDecision, ...], *,
+        candidate_review: CandidateEvidenceReview | None = None
+        ) -> ExperienceGateResult:
     """Pure read-only review: no positive learning admission until new gate."""
     if (type(store) is not AXNodeStore or type(problem) is not ProblemSpec or
             type(candidate) is not SynthesisCandidate or
             type(baseline) is not ActualSolverAudit or
             type(episodes) is not tuple or len(episodes) > 32 or
-            any(type(e) is not EpisodeReplayDecision for e in episodes)):
+            any(type(e) is not EpisodeReplayDecision for e in episodes)
+            or (candidate_review is not None
+                and type(candidate_review) is not CandidateEvidenceReview)):
         raise ValueError("bounded trusted-contract input required")
     if type(candidate.candidate_sha256) is not str or not _HASH.fullmatch(
             candidate.candidate_sha256):
@@ -52,6 +57,21 @@ def inspect_learning_admission(
         reasons = ["CANDIDATE_STRUCTURE_NOT_REVERIFIED"]
     else:
         reasons = []
+    if candidate_review is not None:
+        # Synthetic cross-check remains advisory even when all hashes agree.
+        # A forged/unrelated review may not launder an episode into the queue.
+        if (candidate_review.candidate_sha256 != candidate.candidate_sha256
+                or candidate_review.problem_sha256 != problem.digest()
+                or candidate_review.status != "SYNTHETIC_REVIEW_ONLY_NOT_AUTHORIZED"
+                or candidate_review.reason_codes or candidate_review.counterexample_families
+                or candidate_review.permits_promotion
+                or candidate_review.permits_learning
+                or candidate_review.permits_real_execution
+                or type(candidate_review.review_sha256) is not str
+                or not _HASH.fullmatch(candidate_review.review_sha256)
+                or type(candidate_review.fixture_sha256) is not str
+                or not _HASH.fullmatch(candidate_review.fixture_sha256)):
+            reasons.append("UNTRUSTED_OR_UNRELATED_CANDIDATE_REVIEW")
     if baseline.candidate_sha256 != candidate.candidate_sha256:
         reasons.append("BASELINE_CANDIDATE_SHA_MISMATCH")
     if (baseline.composed_candidate_executed or baseline.semantic_verified or
@@ -97,6 +117,8 @@ def inspect_learning_admission(
     fingerprint = hashlib.sha256(canonical_bytes({
         "schema": "eai.experience.admission.review.v1",
         "candidate_sha256": candidate.candidate_sha256,
+        "candidate_review_sha256": (
+            candidate_review.review_sha256 if candidate_review else None),
         "review_memory_sha256": list(candidates),
         "decision": decision,
         "reasons": sorted(set(reasons)),

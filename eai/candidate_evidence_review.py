@@ -14,7 +14,9 @@ from .axnode_store import AXNodeStore
 from .contracts import ProblemSpec, canonical_bytes
 from .logic_oracle import SyntheticComparison
 from .logic_synthesis import SynthesisCandidate
-from .synthetic_candidate_interpreter import SyntheticCandidateExecution
+from .synthetic_candidate_interpreter import (
+    SyntheticCandidateExecution, interpret_synthetic_candidate,
+)
 from .synthetic_candidate_verifier import (
     SyntheticCandidateReceipt, verify_synthetic_interpretation,
 )
@@ -63,6 +65,17 @@ def review_candidate_evidence(
         "families": family_payload,
     })).hexdigest()
     reasons = []
+    # The receipt's "executed" flag is not proof of actual interpreter use.
+    # Execute the bounded candidate again on the same fixtures, rather than
+    # accepting a claimant-created witness as execution provenance.
+    replayed_witness_sha = None
+    try:
+        replay = interpret_synthetic_candidate(store, problem, candidate, fixtures)
+        replayed_witness_sha = replay.witness_sha256
+        if replay != execution:
+            reasons.append("EXECUTION_WITNESS_NOT_REPRODUCIBLE")
+    except (ValueError, KeyError):
+        reasons.append("INDEPENDENT_SYNTHETIC_REPLAY_REJECTED")
     if claimed != checked:
         reasons.append("CLAIMED_RECEIPT_DIFFERS_FROM_INDEPENDENT_RECOMPUTATION")
     if (claimed.real_world_verified or claimed.permits_promotion
@@ -89,6 +102,7 @@ def review_candidate_evidence(
         "nodes": list(candidate.node_hashes),
         "fixture_sha256": fixture_sha,
         "witness_sha256": execution.witness_sha256,
+        "replayed_witness_sha256": replayed_witness_sha,
         "independent_status": checked.status,
         "checked_families": list(checked.checked_families),
         "counterexamples": list(checked.counterexample_families),
