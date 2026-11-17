@@ -14,6 +14,7 @@ from .contracts import ProblemSpec
 from .logic_synthesis import LogicSynthesizer, SynthesisCandidate
 from .synthetic_candidate_benchmark import benchmark_synthetic_candidate
 from .synthetic_curriculum import SyntheticCurriculum, generate_synthetic_curriculum
+from .strategy_learner import BoundedResearchPrior, advance_bounded_research_prior
 
 
 @dataclass(frozen=True)
@@ -122,14 +123,22 @@ class LocalResearchRanking:
     # Research-only supplementary observations; not validated production timing.
     measured_synthetic_cpu_ms: tuple[tuple[str, int], ...] = ()
     research_cost_prior_sha256: tuple[str, ...] = ()
+    research_prior: BoundedResearchPrior | None = None
+    research_update_status: str = "NOT_REQUESTED"
 
 
 def rank_bounded_strategy_research(
     store: AXNodeStore, problem: ProblemSpec,
     candidates: tuple[SynthesisCandidate, ...],
     curriculum: SyntheticCurriculum,
+    *, prior: BoundedResearchPrior | None = None,
+    update_research: bool = False,
 ) -> LocalResearchRanking:
     """Actual synthetic CPU ranking -> cost envelope; out-of-domain is HOLD."""
+    if type(update_research) is not bool:
+        raise ValueError("explicit typed research-only update switch required")
+    if prior is not None and type(prior) is not BoundedResearchPrior:
+        raise ValueError("typed previously research-only state required")
     from .strategy_cost_stats import build_bounded_strategy_cost_envelope
     reviewed = rank_synthetic_strategy_previews(
         store, problem, candidates, curriculum)
@@ -152,9 +161,26 @@ def rank_bounded_strategy_research(
         score.candidate_sha256, score.measured_synthetic_cpu_ms
     ) for score in reviewed.ranked
         if score.measured_synthetic_cpu_ms is not None))
+    new_prior, change = prior, "NOT_REQUESTED"
+    if update_research:
+        # A true bounded CPU update re-evaluates both B0 and B1 independently.
+        # Failed/repeated/over-budget rounds return the SAME prior reference.
+        observation = advance_bounded_research_prior(
+            store, problem, candidates, curriculum, prior)
+        new_prior, change = observation.prior, observation.status
+        if not observation.accepted and prior is not None and new_prior != prior:
+            raise ValueError("failed research update mutated prior")
+        if observation.accepted and (
+                new_prior.trusted_training_permitted
+                or new_prior.active_promotion_permitted
+                or new_prior.independent_real_world_truth):
+            raise PermissionError("synthetic observation widened authority")
     return LocalResearchRanking(
         problem.digest(),
         "SYNTHETIC_CPU_COST_ORDER_NOT_TRAINED" if envelopes
         else "HOLD_NO_SYNTHETIC_STRATEGY",
         tuple(item.candidate_sha256 for item in envelopes),
-        reviewed.held, measured_synthetic_cpu_ms=measured)
+        reviewed.held, measured_synthetic_cpu_ms=measured,
+        research_cost_prior_sha256=(
+            () if new_prior is None else new_prior.curriculum_sha256),
+        research_prior=new_prior, research_update_status=change)

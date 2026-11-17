@@ -136,7 +136,9 @@ def advance_bounded_research_prior(
             or any(type(x) is not str or not _HASH.fullmatch(x)
                    for x in prior.curriculum_sha256)
             or type(prior.aggregates) is not tuple
-            or len(prior.aggregates) != len(ids)):
+            or len(prior.aggregates) != len(ids)
+            or type(prior.observed_synthetic_families) is not int
+            or prior.observed_synthetic_families != 4 * len(prior.curriculum_sha256)):
         raise ValueError("untrusted research-only prior")
     rows = dict()
     for entry in prior.aggregates:
@@ -152,11 +154,11 @@ def advance_bounded_research_prior(
     if set(rows) != set(ids):
         raise ValueError("incomplete research prior")
     def ordered(p):
+        # Stored tuple order is untrusted: always key by candidate SHA.
+        values = {row[0]: row for row in p.aggregates}
         return tuple(sorted(ids, key=lambda x: (
-            (p.aggregates[ids.index(x)][2] * 1000
-             // max(1, p.aggregates[ids.index(x)][1])) +
-            (p.aggregates[ids.index(x)][3] * 2000
-             // max(1, p.aggregates[ids.index(x)][1])),
+            (values[x][2] * 1000 // max(1, values[x][1])) +
+            (values[x][3] * 2000 // max(1, values[x][1])),
             x)))
     if (curriculum.manifest_sha256 in prior.curriculum_sha256 or
             len(prior.curriculum_sha256) >= 8):
