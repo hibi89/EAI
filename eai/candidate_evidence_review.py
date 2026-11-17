@@ -135,6 +135,10 @@ def intake_candidate_receipt_for_review(
     fixtures: tuple[SyntheticComparison, ...],
     execution: SyntheticCandidateExecution, claimed: SyntheticCandidateReceipt,
     journal, *, record_locally: bool = False,
+    detached_envelope: bytes | None = None,
+    detached_signature: bytes | None = None,
+    pinned_public_key: bytes | None = None,
+    pinned_key_sha256: str | None = None,
 ) -> CandidateReceiptIntake:
     """Recompute candidate effects, then optionally write only a quarantine log.
 
@@ -160,11 +164,30 @@ def intake_candidate_receipt_for_review(
     state = ("REVIEW_HOLD" if
              review.status == "SYNTHETIC_REVIEW_ONLY_NOT_AUTHORIZED"
              else "QUARANTINED")
+    # Signed payloads require all four independent parameters. Never
+    # downgrade a failed signature to an unsigned successful journal write.
+    supplied = (detached_envelope, detached_signature,
+                pinned_public_key, pinned_key_sha256)
+    if any(value is not None for value in supplied):
+        if any(value is None for value in supplied):
+            raise ValueError("partial detached signature inputs rejected")
+        detached = verify_detached_candidate_signature(
+            review, detached_envelope, detached_signature,
+            pinned_public_key=pinned_public_key,
+            trusted_public_key_sha256=pinned_key_sha256)
+        if detached.status != (
+                "DETACHED_SIGNATURE_MATCHES_PIN_UNVERIFIED_INDEPENDENCE"):
+            return CandidateReceiptIntake(
+                "HOLD_UNAUTHENTICATED_DETACHED_REVIEW",
+                candidate.candidate_sha256, review.review_sha256,
+                None, (detached.status, "NO_INDEPENDENT_SEMANTIC_PROOF"))
     written = None
     if record_locally:
         # Append-only isolated review, never the ACTIVE catalog.
         written = journal.record(review, state=state)
     reason = ("INDEPENDENT_EXTERNAL_ORACLE_UNAVAILABLE",)
+    if any(value is not None for value in supplied):
+        reason += ("REVIEWER_INDEPENDENCE_NOT_PROVEN",)
     return CandidateReceiptIntake(
         "LOCAL_SYNTHETIC_REVIEW_JOURNALLED_NOT_VERIFIED" if written else
         "HOLD_RECORD_REQUIRES_EXPLICIT_OPT_IN",
