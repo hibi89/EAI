@@ -41,8 +41,14 @@ def _fixture_hash(fixture: SyntheticComparison) -> str:
         return [[key, "0" if value == 0 else format(value.normalize(), "f")]
                 for key, value in sorted(values.items())]
     sides = sorted([
-        hashlib.sha256(canonical_bytes(normalized(fixture.left))).hexdigest(),
-        hashlib.sha256(canonical_bytes(normalized(fixture.right))).hexdigest(),
+        hashlib.sha256(canonical_bytes({
+            "schema": "eai.synthetic.fixture.normalized_rows.v1",
+            "rows": normalized(fixture.left),
+        })).hexdigest(),
+        hashlib.sha256(canonical_bytes({
+            "schema": "eai.synthetic.fixture.normalized_rows.v1",
+            "rows": normalized(fixture.right),
+        })).hexdigest(),
     ])
     return hashlib.sha256(canonical_bytes({"unordered_source_hashes": sides})).hexdigest()
 
