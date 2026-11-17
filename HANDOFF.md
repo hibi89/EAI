@@ -1,3 +1,17 @@
+## 2026-11-17 KST — EAI P1 second code batch (10-point handoff)
+1. Goal: original independent EAI Architect/Player/AXNODE knowledge-growth project, optional removable Hydrogen research aid; not my_local_ai.
+2. Code: store `b036a2c2e1af7f9a1d7558be2aa43999a9e5cc03`, retriever `4d29555487acffacb6c4118447bff19721a78221` + fix `c79b114807a0fa8a20a28bcc7f9cea667922ec6c`, Hydrogen synthetic packet/quota `8472faad7ebe25f62b0cc91ca0887aba2e541a63`. New modules only; old CPU/consent untouched.
+3. Tests: V3-03 7, V3-04 6, V3-12 5 new synthetic unittest functions, previous first 19 = 37 authored **NOT_RUN**. No verified exact-SHA GitHub CI; previous P37 PASS historical only. Python syntax/type/targeted smoke NOT_RUN (no GitHub local mirror/network access here).
+4. Progress: V3-01/V3-02/V3-11 isolated candidates IMPLEMENTED_UNVERIFIED; V3-03/V3-04/V3-12 PARTIAL_IMPLEMENTED_UNVERIFIED. 6/15 task rows contain code, but only 3 candidate plus 3 partial; **implementation completion UNASSESSED**, **verification completion UNASSESSED**; never convert 6/15 into final percentage. RELEASE HOLD.
+5. Safety: no model or shell code execution in AXNODE; FTS5+graph retrieval validates files against SHA, no remote embeddings. Hydrogen only synthetic contract and *mock-only* local quota, zero live provider implementation, no passwords/API tokens, no auth or bill changes.
+6. Repo: `hibi89/EAI@feature/kmong-eai-85-p31-20261112`, last code SHA `8472faad7ebe25f62b0cc91ca0887aba2e541a63`; verify latest HEAD after docs commit. main, local-first-mvp, my_local_ai, HAE/LA untouched; PR#1 open draft.
+7. Environment: Windows11/GTX1050Ti target, Python3.11 offline; actual owner native, local Qwen and actual Hydrogen NOT_RUN. No Vercel/Production.
+8. Backups/rights: new separate AXNODE root/SQLite DB only; legacy EAI Store and customer originals untouched. Need later DB backup/restore/parent invalidation tests before import use.
+9. Next READY: run minimum source syntax/37 tests and resolve discovered failures, finish V3-03 crash-safe backup/recovery and V3-04 procedural/negative memory; V3-12 fake consent and test double; then implement V3-05 ProblemModeler and design engine. Keep live Hydrogen blocked for consent and proven free tier.
+10. Date/evidence: 2026-11-17 KST; all new test results NOT_RUN, status documentary sync is not a CI proof.
+
+---
+
 ## 2026-11-17 KST — V3.1 implementation code checkpoint (10 items)
 1. Mission: EAI independent Architect/Player/AXNODE learner. my_local_ai separate coding system. Hydrogen optional research-only.
 2. Added: `eai/contracts.py`, `eai/axnode_schema.py`, `eai/research_policy.py`, `eai/research_providers.py`; typed bounded contracts + canonical AXNODE DRAFT/CANDIDATE parser + OFF-only NullProvider.

@@ -1,3 +1,5 @@
+> **P1 V3.1 second source checkpoint 2026-11-17:** Store `b036a2c2`, typed FTS5/graph search/fix `c79b1148`, mock-only Hydrogen packet/quota `8472faad`, all as isolated new modules. **PARTIAL_IMPLEMENTED_UNVERIFIED** V3-03/V3-04/V3-12; 37 newly authored test functions collectively **NOT_RUN**, no exact-SHA verification evidence. Full architect/learner/player and live cloud remain unimplemented and externally approval-blocked. [Task queue](EAI_INSTANT_TASK_QUEUE.md).
+
 > **2026-11-17 P1 candidate (not accepted):** Code SHA `b22a877e55ddab010ceb5c006e9d5016704e6366` adds strict cognitive contracts, parse-only AXNODE and NullProvider/OFF gate; 19 tests authored, NOT_RUN. Full EAI cognition runtime/Graph/Synthesizer/Learner/Player/Hydrogen provider remains prospective. [Queue](EAI_INSTANT_TASK_QUEUE.md) is authoritative for evidence.
 
 # EAI — Independent Cognitive Architect & Player: Canonical Final Blueprint
