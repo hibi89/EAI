@@ -57,9 +57,12 @@ class ResearchQuota:
     def pause_after_429(self, cooldown: int = 3600, *, now: float | None = None) -> None:
         if type(cooldown) is not int or not 1 <= cooldown <= 86400:
             raise ValueError("invalid cooldown")
-        if now is not None and (type(now) not in (int, float) or not isfinite(now)):
+        if now is not None and type(now) not in (int, float):
             raise ValueError("invalid monotonic quota time")
-        stamp = monotonic() if now is None else float(now)
+        try:
+            stamp = monotonic() if now is None else float(now)
+        except OverflowError as exc:
+            raise ValueError("invalid monotonic quota time") from exc
         if not isfinite(stamp) or stamp < 0:
             raise ValueError("invalid monotonic quota time")
         with self._lock:
@@ -74,9 +77,12 @@ class ResearchQuota:
                 or not 1 <= input_tokens <= self.limits.max_input_tokens
                 or not 1 <= output_cap_tokens <= self.limits.max_output_tokens):
             return QuotaDecision(False, "INVALID_TOKEN_BUDGET")
-        if now is not None and (type(now) not in (int, float) or not isfinite(now)):
+        if now is not None and type(now) not in (int, float):
             return QuotaDecision(False, "INVALID_TIME")
-        stamp = monotonic() if now is None else float(now)
+        try:
+            stamp = monotonic() if now is None else float(now)
+        except OverflowError:
+            return QuotaDecision(False, "INVALID_TIME")
         if not isfinite(stamp) or stamp < 0:
             return QuotaDecision(False, "INVALID_TIME")
         with self._lock:
