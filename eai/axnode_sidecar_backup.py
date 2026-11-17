@@ -29,6 +29,7 @@ _FILES = {
 }
 _MAX_DB = 16 * 1024 * 1024
 _MAX_ZIP = 35 * 1024 * 1024
+_COMPLETE_MARKER = ".eai-restore-complete.sha256"
 
 
 def _sha(data: bytes) -> str:
@@ -188,9 +189,18 @@ def restore_sidecar_bundle(archive: str | Path,
                 _check_sqlite(stage / name, name)
         # mkdir is exclusive: rename could replace an empty directory that
         # appeared between the exists check and rename on POSIX.
+        # Publication is intentionally not auto-rollback: a power loss may
+        # leave a partial isolated folder. Consumers MUST require the terminal
+        # completion marker. Do not delete a potentially user-modified folder.
         os.mkdir(dest, mode=0o700)
         for name in sorted(manifest["files"]):
             os.link(stage / name, dest / name)
+        digest = _sha(json.dumps(
+            manifest, sort_keys=True, separators=(",", ":")).encode("utf-8"))
+        with (dest / _COMPLETE_MARKER).open("x", encoding="ascii") as marker:
+            marker.write(digest + "\n")
+            marker.flush()
+            os.fsync(marker.fileno())
         return dest
     finally:
         if stage.exists():
