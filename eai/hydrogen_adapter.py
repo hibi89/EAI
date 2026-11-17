@@ -664,3 +664,118 @@ def dispatch_live_hydrogen(
                     coordinator.disable()
     finally:
         ledger.close()
+
+
+# SWU-039: optional local Windows Credential Manager key bridge.
+# This deliberately does not change the default OFF research coordinator.
+# Never print, log, store in source, transmit, or echo a credential. A locally
+# stored key is NOT consent for any external request and not free-tier proof.
+_WINDOWS_API_KEY_TARGET = "EAI_HYDROGEN_API_KEY"
+_WINDOWS_API_KEY_USER = "eai-local"
+
+
+def _decode_windows_hydrogen_secret(raw: bytes) -> str:
+    """Decode an ASCII-only Windows Generic Credential password blob."""
+    if type(raw) is not bytes or not 20 <= len(raw) <= 512:
+        raise PermissionError("Windows credential blob invalid")
+    if b"\x00" in raw:
+        if (len(raw) % 2 or raw[1::2] != b"\x00" * (len(raw) // 2)
+                or b"\x00" in raw[::2]):
+            raise PermissionError("noncanonical Windows credential encoding")
+        key_bytes = raw[::2]
+    else:
+        key_bytes = raw
+    try:
+        key = key_bytes.decode("ascii")
+    except UnicodeError as exc:
+        raise PermissionError("Windows credential must contain ASCII API key") from exc
+    if not _KEY.fullmatch(key):
+        raise PermissionError("Windows credential contains no valid API key")
+    return key
+
+
+def read_local_windows_hydrogen_api_key() -> str:
+    """Read only the explicitly named Generic Credential in the current user vault.
+
+    OFF/default policy never calls this function. No network, key export,
+    logging, env lookup or persistence. Credentials are protected by Windows,
+    but any program in the current user context may be able to read them.
+    """
+    import os
+    if os.name != "nt":
+        raise PermissionError("Windows Credential Manager required")
+    import ctypes
+    from ctypes import wintypes
+
+    class _FILETIME(ctypes.Structure):
+        _fields_ = [("low", wintypes.DWORD), ("high", wintypes.DWORD)]
+
+    class _CREDENTIALW(ctypes.Structure):
+        _fields_ = [
+            ("Flags", wintypes.DWORD), ("Type", wintypes.DWORD),
+            ("TargetName", wintypes.LPWSTR), ("Comment", wintypes.LPWSTR),
+            ("LastWritten", _FILETIME),
+            ("CredentialBlobSize", wintypes.DWORD),
+            ("CredentialBlob", ctypes.POINTER(ctypes.c_ubyte)),
+            ("Persist", wintypes.DWORD), ("AttributeCount", wintypes.DWORD),
+            ("Attributes", ctypes.c_void_p),
+            ("TargetAlias", wintypes.LPWSTR), ("UserName", wintypes.LPWSTR),
+        ]
+
+    advapi = ctypes.WinDLL("Advapi32", use_last_error=True)
+    read = advapi.CredReadW
+    read.argtypes = [wintypes.LPCWSTR, wintypes.DWORD, wintypes.DWORD,
+                     ctypes.POINTER(ctypes.POINTER(_CREDENTIALW))]
+    read.restype = wintypes.BOOL
+    free = advapi.CredFree
+    free.argtypes = [ctypes.c_void_p]
+    free.restype = None
+    pointer = ctypes.POINTER(_CREDENTIALW)()
+    if not read(_WINDOWS_API_KEY_TARGET, 1, 0, ctypes.byref(pointer)):
+        raise PermissionError("EAI local Windows credential not accessible")
+    try:
+        if not pointer:
+            raise PermissionError("EAI local Windows credential unavailable")
+        item = pointer.contents
+        if (item.Type != 1 or item.TargetName != _WINDOWS_API_KEY_TARGET
+                or item.UserName != _WINDOWS_API_KEY_USER):
+            raise PermissionError("unexpected Windows credential identity")
+        size = int(item.CredentialBlobSize)
+        if not 20 <= size <= 512 or not item.CredentialBlob:
+            raise PermissionError("EAI Windows credential data unavailable")
+        return _decode_windows_hydrogen_secret(
+            ctypes.string_at(item.CredentialBlob, size))
+    finally:
+        free(ctypes.cast(pointer, ctypes.c_void_p))
+
+
+def dispatch_live_hydrogen_from_windows_credential(
+    packet: ResearchPacket, baseline: object, *,
+    coordinator: ResearchCoordinator, owner_permit: SignedLiveSendPermit | None,
+    live_ledger_path, owner_trust_root_path=None,
+    allow_ledger_create: bool = False,
+) -> LiveHydrogenResult:
+    """Windows credential bridge; OFF/owner trust first, no implicit send."""
+    checked = _packet(packet)
+    if type(coordinator) is not ResearchCoordinator:
+        raise ValueError("typed coordinator required")
+    sha = checked.request_sha256()
+    if coordinator.policy.mode is ResearchMode.OFF:
+        return LiveHydrogenResult(baseline, "OFF", sha)
+    if not coordinator.policy.allows_remote_proposal():
+        return LiveHydrogenResult(baseline, "HOLD_OWNER_OR_FREE_TIER", sha)
+    if owner_permit is None:
+        return LiveHydrogenResult(baseline, "HOLD_SIGNED_OWNER_APPROVAL", sha)
+    try:
+        _read_external_owner_trust_root(owner_trust_root_path)
+    except PermissionError:
+        return LiveHydrogenResult(baseline, "HOLD_OWNER_TRUST_NOT_PROVISIONED", sha)
+    try:
+        key = read_local_windows_hydrogen_api_key()
+    except PermissionError:
+        return LiveHydrogenResult(baseline, "HOLD_LOCAL_WINDOWS_CREDENTIAL", sha)
+    return dispatch_live_hydrogen(
+        checked, baseline, coordinator=coordinator, api_key=key,
+        owner_permit=owner_permit, live_ledger_path=live_ledger_path,
+        owner_trust_root_path=owner_trust_root_path,
+        allow_ledger_create=allow_ledger_create)
