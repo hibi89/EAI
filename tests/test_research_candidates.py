@@ -81,6 +81,15 @@ class ResearchCandidateQuarantineTests(unittest.TestCase):
                 self.assertEqual(decision.ideas, ())
                 self.assertFalse(decision.permits_execution)
 
+    def test_malformed_mock_candidate_inventory_fails_closed(self):
+        result = self.outcome()
+        for inventory in (None, 42, "LOCAL_FAKE_UNVERIFIED"):
+            with self.subTest(inventory=inventory):
+                decision = quarantine_mock_research(
+                    self.packet, replace(result, candidates=inventory))
+                self.assertEqual(decision.ideas, ())
+                self.assertIn("UNTRUSTED_CANDIDATE_COUNT", decision.reason_codes)
+
     def test_off_mode_has_no_candidate_ideas(self):
         off = MockResearchTransport(ResearchCoordinator())
         outcome = off.dispatch(self.packet, None, "offline")

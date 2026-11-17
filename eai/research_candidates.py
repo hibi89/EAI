@@ -54,7 +54,9 @@ def quarantine_mock_research(
     if outcome.status != "MOCK_UNVERIFIED_ONLY":
         reasons.append("NO_ELIGIBLE_LOCAL_FAKE_OUTPUT")
     if type(outcome.candidates) is not tuple or len(outcome.candidates) != 1:
-        reasons.append("UNTRUSTED_CANDIDATE_COUNT")
+        return CandidateQuarantineReview(
+            "HOLD_UNTRUSTED_FAKE_RESEARCH", digest, (),
+            ("UNTRUSTED_CANDIDATE_COUNT",))
     if outcome.status == "MOCK_UNVERIFIED_ONLY" and (
             type(outcome.approval_sha256) is not str
             or len(outcome.approval_sha256) != 64
@@ -66,7 +68,9 @@ def quarantine_mock_research(
         if (type(proposal) is not MockProposal
                 or proposal.source != _MOCK_SOURCE
                 or proposal.trust != "LOCAL_FAKE_UNVERIFIED"
+                or type(proposal.idea_id) is not str
                 or proposal.idea_id not in _ALLOWED_LOCAL_IDEAS
+                or type(proposal.task_family) is not str
                 or proposal.task_family != checked.task_family):
             reasons.append("UNTRUSTED_MODEL_CANDIDATE")
     if reasons:
