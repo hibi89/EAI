@@ -97,6 +97,10 @@ def preview_offline_journey(
                 "budget": {"max_steps": problem.budget[0],
                            "max_seconds": problem.budget[1]},
             })
+            if (option["declared_step_count"] != len(plan.steps)
+                    or type(option["declared_seconds_upper_bound"]) is not int
+                    or not 1 <= option["declared_seconds_upper_bound"] <= problem.budget[1]):
+                raise ValueError("untrusted declared plan resource requirements")
             gate = evaluate_plan_policy(problem, plan)
             observation = observe_plan_resource_preflight(
                 problem, plan, budget, elapsed_ms=0, steps_completed=0)
@@ -157,3 +161,107 @@ def preview_offline_journey(
     }
     report["receipt_sha256"] = hashlib.sha256(canonical_bytes(report)).hexdigest()
     return report
+
+
+def audit_offline_journey_report(report: dict) -> dict:
+    """Untrusted report integrity and status cross-check, NOT authentication.
+
+    Anyone can compute a hash, so digest agreement is not verified execution.
+    This prevents accidental uplift/training/permission claims when archiving a
+    purely synthetic status report.
+    """
+    from .contracts import canonical_sha256
+    if (type(report) is not dict
+            or set(report) != {
+                "schema", "problem_sha256", "architect_status", "truth_status",
+                "unknown_count", "contradiction_count",
+                "evidence_review_required", "candidate_count", "candidates",
+                "run_mode", "research_mode_status", "research_candidates_admitted",
+                "network", "real_tool_invocations", "original_writes",
+                "live_provider_invocations", "verified_real_world",
+                "automatic_learning", "active_promotion", "receipt_sha256",
+            }
+            or report["schema"] != "eai.offline.journey.v1"
+            or report["network"] != "DISABLED_BY_DESIGN"
+            or report["research_mode_status"] not in ("OFF", "PAUSED_POLICY")
+            or report["research_candidates_admitted"] != 0
+            or report["real_tool_invocations"] != 0
+            or report["original_writes"] != 0
+            or report["live_provider_invocations"] != 0
+            or report["verified_real_world"] is not False
+            or report["automatic_learning"] is not False
+            or report["active_promotion"] is not False
+            or report["run_mode"] not in (
+                "PURE_SYNTHETIC_EXPLICIT", "POLICY_RESOURCE_PREVIEW_ONLY")
+            or type(report["candidate_count"]) is not int
+            or not 0 <= report["candidate_count"] <= 8
+            or type(report["candidates"]) is not list
+            or len(report["candidates"]) != report["candidate_count"]):
+        raise ValueError("unsafe or tampered journey envelope")
+    import re
+    _DIGEST = re.compile(r"[0-9a-f]{64}\\Z")
+    if (type(report["problem_sha256"]) is not str
+            or not _DIGEST.fullmatch(report["problem_sha256"])
+            or type(report["receipt_sha256"]) is not str
+            or not _DIGEST.fullmatch(report["receipt_sha256"])):
+        raise ValueError("invalid journey SHA")
+    if (type(report["unknown_count"]) is not int
+            or not 0 <= report["unknown_count"] <= 32
+            or type(report["contradiction_count"]) is not int
+            or not 0 <= report["contradiction_count"] <= 32
+            or type(report["evidence_review_required"]) is not bool):
+        raise ValueError("invalid uncertainty counters")
+    for candidate in report["candidates"]:
+        if (type(candidate) is not dict
+                or set(candidate) != {
+                    "alternative_id", "plan_sha256", "node_hashes", "status",
+                    "reason_codes", "declared_steps", "declared_seconds",
+                    "trace_sha256", "interpreted_steps", "original_writes",
+                    "external_actions", "grants_real_authority",
+                }
+                or candidate["status"] not in (
+                    "PURE_ELIGIBLE_NOT_INTERPRETED",
+                    "PURE_SYNTHETIC_INTERPRETED_UNVERIFIED",
+                    "POLICY_OR_RESOURCE_HELD")
+                or candidate["original_writes"] != 0
+                or candidate["external_actions"] != 0
+                or candidate["grants_real_authority"] is not False
+                or type(candidate["plan_sha256"]) is not str
+                or not _DIGEST.fullmatch(candidate["plan_sha256"])
+                or type(candidate["node_hashes"]) is not list
+                or not 1 <= len(candidate["node_hashes"]) <= 8
+                or any(type(h) is not str or not _DIGEST.fullmatch(h)
+                       for h in candidate["node_hashes"])
+                or type(candidate["reason_codes"]) is not list
+                or any(type(x) is not str or not x
+                       or len(x) > 80 or not x.replace("_", "").isalnum()
+                       or not x.isupper() for x in candidate["reason_codes"])
+                or type(candidate["declared_steps"]) is not int
+                or not 1 <= candidate["declared_steps"] <= 64
+                or type(candidate["declared_seconds"]) is not int
+                or not 1 <= candidate["declared_seconds"] <= 300
+                or type(candidate["interpreted_steps"]) is not int
+                or not 0 <= candidate["interpreted_steps"] <= candidate["declared_steps"]):
+            raise ValueError("invalid journey candidate")
+        executed = candidate["status"] == "PURE_SYNTHETIC_INTERPRETED_UNVERIFIED"
+        if (executed and (
+                report["run_mode"] != "PURE_SYNTHETIC_EXPLICIT"
+                or candidate["interpreted_steps"] != candidate["declared_steps"]
+                or candidate["reason_codes"]
+                or type(candidate["trace_sha256"]) is not str
+                or not _DIGEST.fullmatch(candidate["trace_sha256"]))
+                or (not executed and
+                    (candidate["interpreted_steps"] != 0
+                     or candidate["trace_sha256"] is not None))):
+            raise ValueError("contradictory player interpretation claim")
+    claimed = report["receipt_sha256"]
+    content = {k: v for k, v in report.items() if k != "receipt_sha256"}
+    if canonical_sha256(content) != claimed:
+        raise ValueError("journey payload checksum mismatch")
+    return {
+        "status": "LOCAL_JOURNEY_DIGEST_INTEGRITY_UNVERIFIED",
+        "receipt_sha256": claimed,
+        "candidate_count": report["candidate_count"],
+        "grants_real_authority": False,
+        "independent_verification": "NOT_ESTABLISHED",
+    }

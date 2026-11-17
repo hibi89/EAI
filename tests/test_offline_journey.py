@@ -184,6 +184,43 @@ class OfflineJourneyTests(unittest.TestCase):
                 self.problem_file, self.axnode_dir,
                 research_policy=object())
 
+    def test_report_digest_audit_never_grants_execution(self):
+        from eai.offline_journey import audit_offline_journey_report
+        with patch("eai.local_scheduler.observe_own_process_rss_bytes",
+                   return_value=100 * 1024 * 1024):
+            report = self.call(interpret=True)
+        reviewed = audit_offline_journey_report(report)
+        self.assertEqual(reviewed["status"],
+                         "LOCAL_JOURNEY_DIGEST_INTEGRITY_UNVERIFIED")
+        self.assertEqual(reviewed["candidate_count"], 2)
+        self.assertFalse(reviewed["grants_real_authority"])
+        self.assertEqual(reviewed["independent_verification"], "NOT_ESTABLISHED")
+
+    def test_claimed_verified_result_cannot_pass_report_audit(self):
+        from eai.offline_journey import audit_offline_journey_report
+        report = self.call()
+        report["verified_real_world"] = True
+        with self.assertRaises(ValueError):
+            audit_offline_journey_report(report)
+
+    def test_tampered_trace_checksum_rejected(self):
+        from eai.offline_journey import audit_offline_journey_report
+        report = self.call()
+        report["candidate_count"] = 0
+        with self.assertRaises(ValueError):
+            audit_offline_journey_report(report)
+
+    def test_declared_resource_tamper_denied_before_player(self):
+        original = preview_architecture(self.problem_file, self.axnode_dir)
+        changed = dict(original)
+        changed["advisory_plans"] = [
+            dict(option) for option in original["advisory_plans"]]
+        changed["advisory_plans"][0]["declared_step_count"] = 0
+        with patch("eai.offline_journey.preview_architecture",
+                   return_value=changed):
+            with self.assertRaisesRegex(ValueError, "resource requirements"):
+                self.call(interpret=True)
+
     def test_missing_existing_store_not_created(self):
         missing = self.root / "unknown"
         with self.assertRaises(ValueError):
