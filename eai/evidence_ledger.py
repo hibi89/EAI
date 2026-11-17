@@ -72,7 +72,11 @@ class ClaimAssessment:
 class EvidenceLedger:
     """Explicit local sidecar; preview uses read-only mode if one exists."""
 
-    def __init__(self, store: object, *, create: bool = False):
+    def __init__(self, store: object, *, create: bool = False,
+                 append_existing: bool = False):
+        if type(create) is not bool or type(append_existing) is not bool or (
+                create and append_existing):
+            raise ValueError("choose exactly one explicit ledger write mode")
         root = getattr(store, "root", None)
         if not isinstance(root, Path) or not callable(getattr(store, "get", None)):
             raise ValueError("explicit AXNODE store required")
@@ -103,9 +107,14 @@ class EvidenceLedger:
         else:
             if not self.path.is_file():
                 raise FileNotFoundError("no evidence sidecar; unknown remains unknown")
-            uri = "file:" + quote(str(self.path), safe="/") + "?mode=ro"
+            if append_existing:
+                # Explicit local append; never create or migrate an existing DB.
+                uri = "file:" + quote(str(self.path), safe="/") + "?mode=rw"
+            else:
+                uri = "file:" + quote(str(self.path), safe="/") + "?mode=ro"
             self.db = sqlite3.connect(uri, uri=True, timeout=3)
-            self.db.execute("PRAGMA query_only=ON")
+            if not append_existing:
+                self.db.execute("PRAGMA query_only=ON")
         try:
             if int(self.db.execute("PRAGMA user_version").fetchone()[0]) != 1:
                 raise ValueError("unsupported evidence ledger version")
@@ -117,7 +126,7 @@ class EvidenceLedger:
         except Exception:
             self.db.close()
             raise
-        self.writable = create
+        self.writable = create or append_existing
 
     def close(self) -> None:
         self.db.close()
