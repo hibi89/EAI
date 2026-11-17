@@ -3,6 +3,7 @@ import argparse
 import csv
 import os
 import json
+import sqlite3
 from pathlib import Path
 import sys
 
@@ -167,7 +168,8 @@ def main(argv: list[str] | None = None) -> int:
             print(json.dumps(report, ensure_ascii=False, indent=2))
             return (0 if report['baseline']['status'] ==
                     'B0_SYNTHETIC_HELDOUT_MATCH_UNVERIFIED' else 2)
-        except (ValueError, OSError, UnicodeError, csv.Error) as exc:
+        except (ValueError, KeyError, OSError, UnicodeError,
+                csv.Error, sqlite3.DatabaseError) as exc:
             # A malformed manifest may contain private data: never echo inputs.
             print(json.dumps({'status':'REJECTED',
                               'reason':'B0_SYNTHETIC_PREVIEW_REJECTED'}),
