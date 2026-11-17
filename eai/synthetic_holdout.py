@@ -9,7 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import hashlib
 
-from .logic_oracle import _ID
+from .logic_oracle import _ID, _records
 
 from .axnode_store import AXNodeStore
 from .contracts import ProblemSpec, canonical_bytes
@@ -33,10 +33,18 @@ class B0HeldoutReport:
 
 
 def _fixture_hash(fixture: SyntheticComparison) -> str:
-    return hashlib.sha256(canonical_bytes({
-        "left": [list(row) for row in fixture.left],
-        "right": [list(row) for row in fixture.right],
-    })).hexdigest()
+    # Data leakage is semantic, not a textual SHA match. Reordering rows,
+    # changing numeric formatting or swapping two sources cannot disguise
+    # an identical heldout comparison as a new test family.
+    def normalized(rows):
+        values = _records(rows)
+        return [[key, "0" if value == 0 else format(value.normalize(), "f")]
+                for key, value in sorted(values.items())]
+    sides = sorted([
+        hashlib.sha256(canonical_bytes(normalized(fixture.left))).hexdigest(),
+        hashlib.sha256(canonical_bytes(normalized(fixture.right))).hexdigest(),
+    ])
+    return hashlib.sha256(canonical_bytes({"unordered_source_hashes": sides})).hexdigest()
 
 
 def compare_b0_train_and_heldout(
