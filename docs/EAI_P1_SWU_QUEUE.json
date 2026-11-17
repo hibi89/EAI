@@ -2961,7 +2961,8 @@
       "retry_stage": "BLOCKED_SEPARATE_OWNER_GO",
       "initial_nonprogress_attempts": null,
       "post_isolation_nonprogress_attempts": null,
-      "retry_evidence": []
+      "retry_evidence": [],
+      "source_candidate_note": "2026-11-17 partial source at 60f9e882fc286ad3b0c92053312f87af852e11cf: eai/hydrogen_adapter.py contains exact public/synthetic Gemini payload preview + bounded strict JSON candidate-response parser, typed untrusted quarantined hypotheses, fail-closed OFF/consent gating, no network/SDK/credential. Function-level isolated codec local dependency-stub smoke 7/7 PASS, py_compile PASS, identical local/repo Git blob SHA a5c6286d09641ff39bb4f0782520db4e71ea194c. Exact repo-import tests, 8 prior ranker tests, CI/P2 NOT_RUN. Live transport, authentic per-send owner GO, verified free-tier project quota and genuine provider response remain unimplemented/unapproved; BLOCKED_APPROVAL, no +1 SWU."
     },
     {
       "task_id": "EAI-SWU-040",
@@ -3182,8 +3183,8 @@
   "P2": "LOCKED",
   "latest_feature_code_sha": "0462463a23db0d7baf67fadc94d7198e404337e1",
   "source_candidate_count": 36,
-  "next_safe_queue_status": "OWNER_FASTEST_42_PLAN: Two disjoint Codex Sol Max code lanes (A: 007->008, B: 020->023->024) plus Instant isolated SWU-039 gated adapter and targeted 8-failure retest; plan only, no code progress/GO. Ordinary READY zero pending dependency evidence; see EAI_P1_SWU_RUNBOOK.md.",
-  "next_dependency_blocker": "007/008 genuine crash-safe cross-DB isolated write/publish/rollback; 020 owner-governed independent verifier truth; 023/024 independently verified admission/learner; 039 live Hydrogen provider/owner GO. 8 existing ranker errors have source-level fix at 0462463, target rerun NOT_RUN.",
+  "next_safe_queue_status": "SWU-039 staged codec source at 60f9e88 (local preview + strict untrusted parsing) but remains BLOCKED_APPROVAL for live provider; 007/008 and 020/023/024 owned by pending Codex Sol Max critical paths; 8 ranker tests must be re-run against full repo after 0462463; no ordinary READY.",
+  "next_dependency_blocker": "007/008 genuine crash-safe cross-DB isolated write/publish/rollback; 020 owner-governed independent verifier truth; 023/024 independently verified admission/learner; 039 authentic per-send owner GO/free-tier and actual live provider transport. 8 existing ranker errors have source-level fix at 0462463, target rerun NOT_RUN.",
   "retry_escalation_policy": {
     "schema": "eai.p1.retry.isolate.solmax.v1",
     "owner_order_date": "2026-11-17 KST",

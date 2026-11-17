@@ -1,3 +1,15 @@
+## 2026-11-17 KST — EAI isolated Hydrogen codec code handoff (10)
+1. EAI V3.1 P1 on `feature/kmong-eai-85-p31-20261112` only; SWU-039 allowed path `eai/hydrogen_adapter.py`.
+2. Actual source SHA `60f9e882fc286ad3b0c92053312f87af852e11cf`, blob `a5c6286d09641ff39bb4f0782520db4e71ea194c`: Gemini request payload *preview* and strict untrusted-response-to-quarantined-idea parser; no live client, credential lookup or network, no CPU result override.
+3. Direct local `py_compile` PASS; isolated codec smoke 7/7 PASS with local dependency stubs; identical source blob matched. Actual EAI import graph, eight ranker tests, full CI, P2, original Windows runtime NOT_RUN.
+4. SWU-039 `BLOCKED_APPROVAL` despite meaningful partial source; requires genuine free-tier entitlement, separately approved per-send owner GO and live provider implementation before source-ready. No external bytes sent.
+5. Sol Max A (007→008) and B (020→023→024) remain separate critical implementation lanes; no new model execution claimed.
+6. Source `60f9e882fc286ad3b0c92053312f87af852e11cf`; documentation commit follows, verify remote HEAD before continuation.
+7. No permissions, secret, original/customer DB, Production, remote calls, real Player, ACTIVE or main change; RELEASE HOLD.
+8. Canonical blueprint SHA `1b0712679d4171cd3681588e104ea5e8c6f6690d` and P26/ADR-0002 protected.
+9. Next: Codex Sol Max A/B, rerun eight ranker tests after 0462463 using actual repository checkout, genuine approval only when owner elects to activate Hydrogen.
+10. 2026-11-17 KST, source implementation PARTIAL and full validation deferred P2; 36/42 provisional candidates (+0), official P1/P2 UNASSESSED.
+
 ## 2026-11-17 KST — EAI isolated C18 regression code correction (10)
 1. EAI V3.1 only; feature branch `feature/kmong-eai-85-p31-20261112`, P1 source implementation while P2 remains LOCKED.
 2. Source SHA `0462463a23db0d7baf67fadc94d7198e404337e1` fixes object-only canonical serialization in `eai/synthetic_holdout.py` for normalized synthetic fixture row digests; does not change external/production behavior or owner permissions.
