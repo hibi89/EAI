@@ -1,3 +1,15 @@
+## 2026-11-18 KST — EAI SWU-039 next-wave source handoff
+1. Mission EAI V3.1, `hibi89/EAI@feature/kmong-eai-85-p31-20261112`, current High direct P1, active hub §0J/§0E pinned b42134647bf6998c0df0932e32336b0bc8ae8ccc (current hub f633dcf1 changes read-only observations only).
+2. Actual source change `e208612e793ec1bcbc03ca39f680f403f62262bd`, sole allowed path `eai/hydrogen_adapter.py`; blob `84d3af6f2250c8568adedb1d96bc51c8c8193da0`. Ledger-open/reserve/settle failure OFF/error path implemented, no real network or credential.
+3. Exact fetched-blob static safety 11/11 PASS; isolated Python equivalent changed-branch probes 4/4 PASS. Full exact-module compile, actual full-repo imports, Python 3.11, CI, Google live, P2 NOT_RUN. Do not attach historic 27/27 to new source SHA.
+4. P1 provisional source 41/42 (97.6%, +0), official P1/P2 UNASSESSED, P2 LOCKED, RELEASE HOLD.
+5. SWU-039 (C30/C35) remains BLOCKED_APPROVAL, ordinary READY []; general owner approval exists, but no owner-authenticated Google AI Studio project free-tier/quota evidence, no safe per-send signing root, no exact approved public/synthetic outbound text or live provider response.
+6. Code basis `e208612e793ec1bcbc03ca39f680f403f62262bd`; recheck final docs commit HEAD before next work.
+7. No changes to model provider flags/permissions, Google project/billing, original/customer files, main/Production, ACTIVE/real Player/paid access. Do not assume Work/Codex launched.
+8. Final blueprint blob `1b0712679d4171cd3681588e104ea5e8c6f6690d`, P26/ADR-0002 unchanged.
+9. Next safe advance: authenticated account/model tier check and exact out-of-band per-send approval through user-authorized environment; without these, do not fabricate 42/42 or repeatedly issue docs-only updates. P2 remains separate.
+10. 2026-11-18 KST; source improvement committed and evidence bounded.
+
 ## 2026-11-18 KST — EAI-039 exact-source local evidence handoff
 - EAI repo `hibi89/EAI`, branch `feature/kmong-eai-85-p31-20261112`; code source `2f6aebda8dd415a7e97da6c2f9669befca7661d6`, blob `1aa66e719925418678a12bd038cd2e05ef27157f` verified exact by local Git hash. Latest origin head must be rechecked.
 - Python 3.13.5 `py_compile` PASS; isolated package stub codec 7/7, owner Ed25519/per-send trust gate/mock failure and ledger 12/12, synthetic success + quarantine + replay 8/8, **27/27 distinct local smoke PASS**. cryptography 46.0.4. All HTTP connections were fake; ephemeral synthetic keys and temporary disposable ledger, no outbound bytes.
