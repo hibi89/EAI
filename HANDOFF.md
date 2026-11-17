@@ -1,3 +1,15 @@
+## 2026-11-17 KST — EAI P1 5 SWU feature code handoff (10-point)
+1. Target: independent EAI V3.1 Architect + Player + AXNODE + Experience Learner; NOT My Local AI; P1 code candidate, P2 locked.
+2. Work: SWU-006 isolated sidecar snapshot+restore+audit (`eai/axnode_recovery.py`), 015 pinned hierarchical plan review (`eai/hierarchical_planner.py`), 022 pure observation→episode ledger (`eai/episode_observation.py`, `eai/episode_replay.py`), 036 durable mock quota/breaker (`eai/research_quota.py`, `eai/research_quota_store.py`), 041 EAI local advisory decision (`eai/offline_journey.py`, `eai/decision_engine.py`).
+3. Tests: GitHub exact SHA and static source safety guards PASS_STATIC. Exact-SHA Python syntax/smoke, SQLite isolation, quota persistence and Python/Windows/full P2 verification NOT_RUN. No execution PASS claim.
+4. Progress: provisional code-written 28/42 (66.7%) incl. 25 unverified/minimal safety pending, official P1 and P2 rates UNASSESSED, RELEASE HOLD.
+5. Blocker: executable checkout previously GitHub DNS blocked. Connector can read/write; avoid unchanged retry of failed checkout. DB/backup/capability-sensitive operations must remain operationally HOLD pending immediate local safety execution.
+6. GitHub: `hibi89/EAI` `feature/kmong-eai-85-p31-20261112`; current feature code HEAD `1a7a9de939c15c1a620042cf417182657954a816`; preceding code commits `00b68c0d`, `4ddd88d2`, final docs SHA follows. Check actual HEAD before next work.
+7. Production: none. All Hydrogen live API, real tool Player, original/customer DB writes, automatic learning, AXNODE ACTIVE, main merge remain NOT_AUTHORIZED / HOLD.
+8. Protected: final blueprint blob `1b0712679d4171cd3681588e104ea5e8c6f6690d`, ADR-0002 Qwen INPUT-only, 13 CPU goals, P26 approval, mandatory CI, original data and Git history.
+9. Next four READY: 017,032,040,042. Independent source allowed paths; 017 must maintain P26, 032 resource/cancel fail closed, 040 only local mock/no remote, 042 CLI typed redacted output. Six HIGH_REVIEW + one BLOCKED_APPROVAL unchanged.
+10. Evidence: 2026-11-17 KST GitHub source `1a7a9de939c15c1a620042cf417182657954a816`, source only; P2 testing, owner GO and product acceptance still outstanding.
+
 ## 2026-11-17 KST — EAI P1 five SWUs code+queue checkpoint (10-item)
 1. Mission: EAI V3.1 independent local Architect/Player/AXNODE/Experience Learner, distinct from MLA. P1 source coding, P2 LOCKED.
 2. Actual code: `81e3f7a156ac527467b5676932e096d47f14364c` seven source files for SWU-013/019/028/031/033: local design obligations, structurally rejected synthesis bounded revision, pure Player policy→noop→audit, disabled adapter registry, redacted Architect result trace. No external activity or authorization.

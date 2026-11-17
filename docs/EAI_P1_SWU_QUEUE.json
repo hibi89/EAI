@@ -11,21 +11,21 @@
   "req_coverage": "C01..C36",
   "C03_legacy_gap_fixed": true,
   "first_ready": [
-    "EAI-SWU-006",
-    "EAI-SWU-015",
-    "EAI-SWU-022",
-    "EAI-SWU-036"
+    "EAI-SWU-017",
+    "EAI-SWU-032",
+    "EAI-SWU-040",
+    "EAI-SWU-042"
   ],
   "status_counts": {
     "SOURCE_COMPLETE_P2_PENDING": 3,
-    "SOURCE_IMPLEMENTED_UNVERIFIED_MINIMAL_CHECK_PENDING": 20,
-    "READY_CODE_ONLY": 4,
+    "SOURCE_IMPLEMENTED_UNVERIFIED_MINIMAL_CHECK_PENDING": 25,
     "HIGH_REVIEW_REQUIRED": 6,
-    "PARTIAL_SOURCE": 8,
+    "READY_CODE_ONLY": 4,
+    "PARTIAL_SOURCE": 3,
     "BLOCKED_APPROVAL": 1
   },
   "already_coded_candidate_count": 3,
-  "remaining_code_or_holds": 19,
+  "remaining_code_or_holds": 14,
   "attempt_rule": {
     "target": 1,
     "maximum": 2,
@@ -609,12 +609,12 @@
         "total": 3
       },
       "score_rationale": "One bounded local caller-to-callee output and known contract",
-      "status": "READY_CODE_ONLY",
+      "status": "SOURCE_IMPLEMENTED_UNVERIFIED_MINIMAL_CHECK_PENDING",
       "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
-      "evidence_sha": null,
+      "evidence_sha": "1a7a9de939c15c1a620042cf417182657954a816",
       "legacy_evidence_history": "1a71a10a1bbedaae420d3c094f9ffaf5dca45906; 4b362c660bdc350adbe8ae139ae018e68ad02fba; c0654930f1d2fd51cd9ee1c5e0f457bee5b456b ; f0f07059f72c47cdc1236adf1de296a8b5b4ee4c; 280dadd83193e4335e180bfcf674cc22f36f22eb; dd31cc0ca89412c6056357bcb6fb32879d270e1c; 70bbb66e2fa407bb44d985b83657b63976817d57; 30d33643abaea5ee2b92b78ae02794486b7d6562",
       "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED",
-      "attempts_recorded": 0,
+      "attempts_recorded": 1,
       "historical_attempts": "UNKNOWN_NOT_RESET",
       "max_attempts": 2,
       "max3_exception_approved": false,
@@ -622,7 +622,8 @@
       "p2_status": "NOT_RUN_LOCKED",
       "runtime_authorization": "HOLD",
       "source_dependencies_are_code_only": true,
-      "operating_authorization_is_not_inferred_from_dependencies": true
+      "operating_authorization_is_not_inferred_from_dependencies": true,
+      "source_candidate_note": "Callable CPU-only implementation committed; source checked via GitHub PASS_STATIC. Exact-SHA Python runtime/syntax, DB/backup/permissions security smoke NOT_RUN; all original/real service authorizations HOLD."
     },
     {
       "task_id": "EAI-SWU-007",
@@ -1158,12 +1159,12 @@
         "total": 2
       },
       "score_rationale": "One bounded local caller-to-callee output and known contract",
-      "status": "READY_CODE_ONLY",
+      "status": "SOURCE_IMPLEMENTED_UNVERIFIED_MINIMAL_CHECK_PENDING",
       "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
-      "evidence_sha": null,
+      "evidence_sha": "1a7a9de939c15c1a620042cf417182657954a816",
       "legacy_evidence_history": "cd946cf7de37455a1c33daeacca6136cbe595ea4; e3eec214f37f6bed77bfe213a173e394c6bbd29b",
       "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED",
-      "attempts_recorded": 0,
+      "attempts_recorded": 1,
       "historical_attempts": "UNKNOWN_NOT_RESET",
       "max_attempts": 2,
       "max3_exception_approved": false,
@@ -1171,7 +1172,8 @@
       "p2_status": "NOT_RUN_LOCKED",
       "runtime_authorization": "HOLD",
       "source_dependencies_are_code_only": true,
-      "operating_authorization_is_not_inferred_from_dependencies": true
+      "operating_authorization_is_not_inferred_from_dependencies": true,
+      "source_candidate_note": "Callable CPU-only implementation committed; source checked via GitHub PASS_STATIC. Exact-SHA Python runtime/syntax, DB/backup/permissions security smoke NOT_RUN; all original/real service authorizations HOLD."
     },
     {
       "task_id": "EAI-SWU-016",
@@ -1281,7 +1283,7 @@
         "total": 3
       },
       "score_rationale": "One bounded local caller-to-callee output and known contract",
-      "status": "PARTIAL_SOURCE",
+      "status": "READY_CODE_ONLY",
       "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
       "evidence_sha": null,
       "legacy_evidence_history": "cd946cf7de37455a1c33daeacca6136cbe595ea4; e3eec214f37f6bed77bfe213a173e394c6bbd29b",
@@ -1583,12 +1585,12 @@
         "total": 3
       },
       "score_rationale": "One bounded local caller-to-callee output and known contract",
-      "status": "READY_CODE_ONLY",
+      "status": "SOURCE_IMPLEMENTED_UNVERIFIED_MINIMAL_CHECK_PENDING",
       "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
-      "evidence_sha": null,
+      "evidence_sha": "1a7a9de939c15c1a620042cf417182657954a816",
       "legacy_evidence_history": "7e0cf41cfc7c6cfce21b96b3e14c94c8dcb4e2a6; 2721906c07df995f82fb1a6cceec1efdd7eda5af; c2504ac95b97c0e9d053a01ea1559adb65fe4bc0; 55d4b89b49f3d3e302f58c7dfe4656f6f2eb22fa; e86932f9f1fe44629464f3b0f9106addfdfcd203; 2d89290c7e95af2cc90cfa198e3982fb644cd75a; 325e4ba5048d90782afe1dd8c29c14d5b910ec9f; ff7d5eaf88c502fbfe3e7607740d794481361022; 5bd1be759ecb37a5f7a25646fe1fe22f1648b886 ; 80e39916ed4234c3fa8171d7c1fefa426aacafc6; 933fbd7bdb680afc2e639189224d4faf060a2477; 8ed29e31d9bd4ef5697cc8ee6298fdc263db5397; 27761ba8bafae175a33a4146ac53ac2635c94b7e; 802f0e3e1f22c8b42c12fc52c17bdd8f56385775; a5801311fe0ae15748f2b792c4e415696219c1ea; 26e9a24b81c82d893e8a67e04be5d39c97dfa5b1; 0dbe85595b60e92f09c0d2fd6c6c8cdfe0f8b559",
       "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED",
-      "attempts_recorded": 0,
+      "attempts_recorded": 1,
       "historical_attempts": "UNKNOWN_NOT_RESET",
       "max_attempts": 2,
       "max3_exception_approved": false,
@@ -1596,7 +1598,8 @@
       "p2_status": "NOT_RUN_LOCKED",
       "runtime_authorization": "HOLD",
       "source_dependencies_are_code_only": true,
-      "operating_authorization_is_not_inferred_from_dependencies": true
+      "operating_authorization_is_not_inferred_from_dependencies": true,
+      "source_candidate_note": "Callable CPU-only implementation committed; source checked via GitHub PASS_STATIC. Exact-SHA Python runtime/syntax, DB/backup/permissions security smoke NOT_RUN; all original/real service authorizations HOLD."
     },
     {
       "task_id": "EAI-SWU-023",
@@ -2192,7 +2195,7 @@
         "total": 2
       },
       "score_rationale": "One bounded local caller-to-callee output and known contract",
-      "status": "PARTIAL_SOURCE",
+      "status": "READY_CODE_ONLY",
       "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
       "evidence_sha": null,
       "legacy_evidence_history": "c093fcb9d5e73871fcde5309a3062b96e7d9c7d7; f004e6b262ce4b3341f6874e4ef9815c668431f3; d1228e6301c4956bcfb8a284f4c77f51fed22db1; 6904a445e306c6844bc8f4937709c0e3e0fe116a; 850318f8856b2a4f12a9763634366d5c62bff627",
@@ -2439,12 +2442,12 @@
         "total": 3
       },
       "score_rationale": "One bounded local caller-to-callee output and known contract",
-      "status": "READY_CODE_ONLY",
+      "status": "SOURCE_IMPLEMENTED_UNVERIFIED_MINIMAL_CHECK_PENDING",
       "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
-      "evidence_sha": null,
+      "evidence_sha": "1a7a9de939c15c1a620042cf417182657954a816",
       "legacy_evidence_history": "35b77d59a642b5e7d64a08a3e4bce90f4d08d660",
       "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED",
-      "attempts_recorded": 0,
+      "attempts_recorded": 1,
       "historical_attempts": "UNKNOWN_NOT_RESET",
       "max_attempts": 2,
       "max3_exception_approved": false,
@@ -2452,7 +2455,8 @@
       "p2_status": "NOT_RUN_LOCKED",
       "runtime_authorization": "HOLD",
       "source_dependencies_are_code_only": true,
-      "operating_authorization_is_not_inferred_from_dependencies": true
+      "operating_authorization_is_not_inferred_from_dependencies": true,
+      "source_candidate_note": "Callable CPU-only implementation committed; source checked via GitHub PASS_STATIC. Exact-SHA Python runtime/syntax, DB/backup/permissions security smoke NOT_RUN; all original/real service authorizations HOLD."
     },
     {
       "task_id": "EAI-SWU-037",
@@ -2684,7 +2688,7 @@
         "total": 2
       },
       "score_rationale": "One bounded local caller-to-callee output and known contract",
-      "status": "PARTIAL_SOURCE",
+      "status": "READY_CODE_ONLY",
       "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
       "evidence_sha": null,
       "legacy_evidence_history": "none",
@@ -2746,12 +2750,12 @@
         "total": 3
       },
       "score_rationale": "One bounded local caller-to-callee output and known contract",
-      "status": "PARTIAL_SOURCE",
+      "status": "SOURCE_IMPLEMENTED_UNVERIFIED_MINIMAL_CHECK_PENDING",
       "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
-      "evidence_sha": null,
+      "evidence_sha": "1a7a9de939c15c1a620042cf417182657954a816",
       "legacy_evidence_history": "00b703691fbf6486144fdf90aeab9e0e76e88892; 5c07b5fd89ec6900a3cec8e1dcf8c293c0a4020a; f2715bc8a50e8148aaf7a88e08646adfd00c7e68; f5176fba6ee93f7f5ac4b51b2d4d5cd314a2d0b7; f7c35f1e66708ed123ced17a8e754426a9fd8048; 030bd61eb583842f018274cbbdd83903a4fd4faf; ac9b5e72d78b299eab97cb46c7d43e407fa82c02",
       "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED_WINDOWS_PENDING",
-      "attempts_recorded": 0,
+      "attempts_recorded": 1,
       "historical_attempts": "UNKNOWN_NOT_RESET",
       "max_attempts": 2,
       "max3_exception_approved": false,
@@ -2759,7 +2763,8 @@
       "p2_status": "NOT_RUN_LOCKED",
       "runtime_authorization": "HOLD",
       "source_dependencies_are_code_only": true,
-      "operating_authorization_is_not_inferred_from_dependencies": true
+      "operating_authorization_is_not_inferred_from_dependencies": true,
+      "source_candidate_note": "Callable CPU-only implementation committed; source checked via GitHub PASS_STATIC. Exact-SHA Python runtime/syntax, DB/backup/permissions security smoke NOT_RUN; all original/real service authorizations HOLD."
     },
     {
       "task_id": "EAI-SWU-042",
@@ -2807,7 +2812,7 @@
         "total": 2
       },
       "score_rationale": "One bounded local caller-to-callee output and known contract",
-      "status": "PARTIAL_SOURCE",
+      "status": "READY_CODE_ONLY",
       "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
       "evidence_sha": null,
       "legacy_evidence_history": "00b703691fbf6486144fdf90aeab9e0e76e88892; 5c07b5fd89ec6900a3cec8e1dcf8c293c0a4020a; f2715bc8a50e8148aaf7a88e08646adfd00c7e68; f5176fba6ee93f7f5ac4b51b2d4d5cd314a2d0b7; f7c35f1e66708ed123ced17a8e754426a9fd8048; 030bd61eb583842f018274cbbdd83903a4fd4faf; ac9b5e72d78b299eab97cb46c7d43e407fa82c02",
@@ -2825,11 +2830,11 @@
   ],
   "code_dependency_rule": "Source candidate or code-complete predecessor only; never bypass independent verifier, owner GO or runtime authorization.",
   "next_ready_rule": "After a code SWU becomes SOURCE_COMPLETE_P2_PENDING with actual functional source evidence, re-evaluate dependents and select disjoint safe units; leave HIGH_REVIEW_REQUIRED and BLOCKED_APPROVAL locked.",
-  "implemented_source_candidate_count": 23,
-  "implemented_source_candidate_percent_preview": 54.8,
-  "implemented_source_candidate_caveat": "23/42 provisional source-code paths including 20 unverified/minimal safety pending; 54.8% is not accepted functionality, P1/P2 official UNASSESSED, P2 LOCKED, RELEASE HOLD",
+  "implemented_source_candidate_count": 28,
+  "implemented_source_candidate_percent_preview": 66.7,
+  "implemented_source_candidate_caveat": "28/42 (66.7%) source-written provisional only: 3 historic source candidate +25 exact-SHA runtime/minimum safety unverified. Official implementation/verification UNASSESSED; no P2 or release gate cleared.",
   "official_implementation_rate": "UNASSESSED",
   "P2": "LOCKED",
-  "latest_feature_code_sha": "81e3f7a156ac527467b5676932e096d47f14364c",
-  "source_candidate_count": 23
+  "latest_feature_code_sha": "1a7a9de939c15c1a620042cf417182657954a816",
+  "source_candidate_count": 28
 }
