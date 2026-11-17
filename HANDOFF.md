@@ -1,3 +1,15 @@
+## 2026-11-17 KST — EAI mock-quota source repair, Sol Max critical escalation (10)
+1. Mission: EAI V3.1 independent Architect + Player + AXNODE + Experience Learner. P1 coding only; P2 LOCKED; separate from MLA.
+2. Actual source commit `510d469ef23f6df455473d791e362c47c5c71433`: `eai/research_quota.py` repairs backward/nonfinite injected mock monotonic time handling. Local RPM/TPM reservation and 429 cooldown preserve last observed clock in memory, fail closed on backdating. No cloud tool or authority.
+3. Source marker checks and GitHub commit/branch verification only; exact-SHA Python syntax/import, targeted runtime tests, CI/P2/Windows NOT_RUN (GitHub DNS prevented isolated checkout). Never claim verified executable safety.
+4. Provisional source candidate 36/42=85.7%, +0 SWU; SWU-036 remains unverified source candidate. Official P1/P2 UNASSESSED; RELEASE HOLD.
+5. Critical: SWU-007 cross-DB epoch blocks SWU-008; SWU-020 independent verifier/truth anchor blocks SWU-023/024. **Immediate owner Codex GPT-6.1 Sol Max request required**; Sol Max review NOT_RUN. SWU-039 live Hydrogen requires separate GO. No ordinary READY, four-failure batch empty.
+6. Repo `hibi89/EAI`, branch `feature/kmong-eai-85-p31-20261112`; code SHA `510d469ef23f6df455473d791e362c47c5c71433`; documentation tree commit follows. Recheck branch HEAD before working.
+7. No Production URL; no remote send, paid service, customer/original DB write, ACTIVE promotion, real Player execution or main merge allowed.
+8. Canonical blueprint blob `1b0712679d4171cd3681588e104ea5e8c6f6690d`, P26, ADR-0002, existing mandatory CI and original history preserved.
+9. Next: user starts Sol Max on 007/020 with design+source authority audit. After evidenced reviews, implement approved 008 and verified-learning 023/024. Independently fix only proved safe defects, never inflate P1 with HOLD wrappers. Owner 2+2 retry counting unchanged.
+10. Updated 2026-11-17 KST; scope GitHub source and static review only, current evidence code SHA `510d469ef23f6df455473d791e362c47c5c71433`; full P2 NOT_RUN.
+
 ## 2026-11-17 KST — EAI source-only CPU ranking correction (10)
 1. Mission EAI V3.1 local Architect/Player/AXNODE/Experience Learner; continue P1 code candidate with original plan; P2 LOCKED.
 2. Real code SHA `a758cf507c9f5de026d379cc144f236a9721c126` changed `eai/strategy_research_ranker.py`, `eai/strategy_cost_stats.py`: measured process CPU vs wall deadline, bounded local synthetic strategy order uses actual process CPU sample; no baseline authority or original mutations.
