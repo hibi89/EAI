@@ -3231,7 +3231,7 @@
   "P2": "LOCKED",
   "latest_feature_code_sha": "2210ca4b1248cd521bcd693c34ae339c15dade45",
   "source_candidate_count": 41,
-  "next_safe_queue_status": "SWU-039 real REST live transport code written at 2210ca4b, no API call performed; STATIC_ONLY guards 10/10 PASS; actual Python syntax/runtime P1 minimal check NOT_RUN; external owner per-send GO, actual free-tier/project evidence and verified live acceptance still blocked. 41/42 provisional candidates. Other source complete, P2 LOCKED.",
+  "next_safe_queue_status": "2026-11-18 central §0J/§0E applied from b42134647bf6998c0df0932e32336b0bc8ae8ccc; web GPT-6 Sol High current designer+P1 implementer, CPAA/WE 1–6 dynamically repeated safe waves; no automatic December Instant change, Sol Max only conditional. Current ordinary READY empty; SWU-039 remains BLOCKED_APPROVAL for authenticated free-tier/per-send owner GO/real external use; provisional 41/42 candidates (+0), P2 LOCKED, RELEASE HOLD.",
   "next_dependency_blocker": "SWU-039 external authorization/trust enrollment: owner must verify real project/account free-tier eligibility, inspect exact public/synthetic payload, separately sign approval and give GO for first live send; real live E2E NOT_RUN; no fabricated 42/42.",
   "retry_escalation_policy": {
     "schema": "eai.p1.retry.isolate.solmax.v1",
@@ -3269,7 +3269,7 @@
   },
   "policy_update_does_not_count_as_implementation": true,
   "execution_strategy": {
-    "id": "CPAA_WE_DYNAMIC_BOTTLENECK",
+    "id": "OWNER-P1-HIGH-CPAA-WE-20261118",
     "owner_selected": "2026-11-18 KST",
     "p1_current_lead": "WEB_GPT6_SOL_HIGH_DESIGN_AND_IMPLEMENTATION",
     "future_implementer": "WEB_GPT6_INSTANT_ONLY_AFTER_OWNER_ACTIVATES",
@@ -3282,6 +3282,21 @@
     "gates": "DESIGN_REQUIRES_OWNER_GO_FOR_NEW_SCOPE__P2_LOCKED__RELEASE_HOLD",
     "source_candidate_delta_from_policy": 0,
     "speedup_evidence": "UNMEASURED",
-    "runbook": "docs/EAI_P1_SWU_RUNBOOK.md"
+    "runbook": "docs/EAI_P1_SWU_RUNBOOK.md",
+    "authority_repo": "hibi89/hackathon-command-center-2026",
+    "authority_branch": "kmong-productization",
+    "authority_sha": "b42134647bf6998c0df0932e32336b0bc8ae8ccc",
+    "authority_sections": [
+      "OWNER_DEV_EXECUTION_CANONICAL_20261116.md#0J",
+      "GPT6_HIGH_STANDARD_WORK_UNIT_20261117.md#0E"
+    ],
+    "actual_model_until_user_transition": "WEB_GPT6_SOL_HIGH",
+    "auto_transition_on_december_first": false,
+    "swu_wave": "1_TO_6_DYNAMIC__USUALLY_3_TO_6__HIGH_RISK_1_TO_2",
+    "source_logic": "SINGLE_MODEL_SERIAL__INDEPENDENT_TOOL_IO_CAN_PARALLEL",
+    "next_wave": "RECHECK_NEW_HEAD_AND_READY_IN_SAME_USER_TURN_IF_SAFE",
+    "ordinary_retry": "SWU_LEVEL_2_PLUS_2",
+    "specialist": "ONLY_IF_TECHNICAL_TIME_OR_SAFETY_NET_BENEFIT__OWNER_REQUEST",
+    "no_source_ready": "NO_NEW_SWU__KEEP_APPROVAL_HOLD"
   }
 }
