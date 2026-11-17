@@ -14,13 +14,13 @@
   "status_counts": {
     "SOURCE_COMPLETE_P2_PENDING": 3,
     "SOURCE_IMPLEMENTED_UNVERIFIED_MINIMAL_CHECK_PENDING": 29,
-    "HIGH_REVIEW_REQUIRED": 5,
-    "SOURCE_WRITTEN_HIGH_REVIEW_PENDING": 1,
+    "HIGH_REVIEW_REQUIRED": 3,
+    "SOURCE_WRITTEN_HIGH_REVIEW_PENDING": 3,
     "PARTIAL_SOURCE": 3,
     "BLOCKED_APPROVAL": 1
   },
   "already_coded_candidate_count": 3,
-  "remaining_code_or_holds": 9,
+  "remaining_code_or_holds": 7,
   "attempt_rule": {
     "target": 1,
     "maximum": 2,
@@ -1467,7 +1467,7 @@
       "score_rationale": "Protected operation: High safety review required",
       "status": "HIGH_REVIEW_REQUIRED",
       "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
-      "evidence_sha": "5df0be08fce3525d819ee7a651671fe93ec10b39",
+      "evidence_sha": "e1d5b0fc096d8103cde03ec22e4e7bca6f18de25",
       "legacy_evidence_history": "438f3b18684716e8a257580789283a6048d32fea; be7a8244758e7c427fa7886698771a6aa5c9448d; 3f5888a7de4673d2b2e1fb8a228b30a37c87ae8f; 9f75872098a4d75df0af6e5efc76d5e7739fe16c; eef0f1881e2fedce5d1403ab789e5906b2fe7a73; 5b10487b28e60c5c6c44883d600e9b2d0dff6239 ; 185081b1a1ae45bdf4fa4bdddcbf319d2b356aea; 8b31f3b82d3113be52b9965b3daf577a46730662; 7c1192cbf06a95a35577de2a9df03d61801c2a36; c6f3d3bb9dd248869d2e07cbcd001d9720c5bcbd; 67b05d786edca1d80a8b87def8c7e1c6c176145a; fe3b611f4ecc921b5bd4171351df18d2cc63698d",
       "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED",
       "attempts_recorded": 1,
@@ -1480,7 +1480,7 @@
       "source_dependencies_are_code_only": true,
       "operating_authorization_is_not_inferred_from_dependencies": true,
       "high_review_scope": "2026-11-17 CPU-only source attempt; no owner-approved ACTIVE, original restore, external receipt trust, independent real proof or trusted learning. Mandatory High/security/runtime hold unchanged.",
-      "source_candidate_note": "Independent synthetic recomputation and append-only opt-in quarantine journal implemented; real independently authenticated external verifier receipt remains unimplemented; High review incomplete."
+      "source_candidate_note": "Signed local review intake source added: strict canonical SHA-bound detached metadata and owner-pinned Ed25519 public key verification optional; missing cryptography fails closed; invalid signature cannot write journal. Signature does not prove reviewer independence, semantic evidence authenticity or GO; external independent verifier provisioning and High security/runtime review still missing."
     },
     {
       "task_id": "EAI-SWU-021",
@@ -2023,12 +2023,12 @@
         "total": 3
       },
       "score_rationale": "Protected operation: High safety review required",
-      "status": "HIGH_REVIEW_REQUIRED",
+      "status": "SOURCE_WRITTEN_HIGH_REVIEW_PENDING",
       "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
-      "evidence_sha": null,
+      "evidence_sha": "e1d5b0fc096d8103cde03ec22e4e7bca6f18de25",
       "legacy_evidence_history": "e92a3af30a1e63114de994489677b905254b7a46; 2099642b9e2515a7d2e9cf5198b92ff346151d0f; 92862fbe0f0a0c87fe5d0cc09562025a3ab81673",
       "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED_REAL_APPROVAL_BLOCKED",
-      "attempts_recorded": 0,
+      "attempts_recorded": 1,
       "historical_attempts": "UNKNOWN_NOT_RESET",
       "max_attempts": 2,
       "max3_exception_approved": false,
@@ -2036,7 +2036,8 @@
       "p2_status": "NOT_RUN_LOCKED",
       "runtime_authorization": "HOLD",
       "source_dependencies_are_code_only": true,
-      "operating_authorization_is_not_inferred_from_dependencies": true
+      "operating_authorization_is_not_inferred_from_dependencies": true,
+      "source_candidate_note": "Actual typed scoped Player port -> recomputed pure-only policy -> bounded in-memory noop interpreter -> replay receipt. Strictly no real tool, file/network, or ACTIVE; owner GO and independent High review for real scoped actions remain HOLD; exact-SHA syntax/run NOT_RUN."
     },
     {
       "task_id": "EAI-SWU-030",
@@ -2084,12 +2085,12 @@
         "total": 3
       },
       "score_rationale": "Protected operation: High safety review required",
-      "status": "HIGH_REVIEW_REQUIRED",
+      "status": "SOURCE_WRITTEN_HIGH_REVIEW_PENDING",
       "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
-      "evidence_sha": null,
+      "evidence_sha": "e1d5b0fc096d8103cde03ec22e4e7bca6f18de25",
       "legacy_evidence_history": "e92a3af30a1e63114de994489677b905254b7a46; 2099642b9e2515a7d2e9cf5198b92ff346151d0f; 92862fbe0f0a0c87fe5d0cc09562025a3ab81673",
       "legacy_status": "PARTIAL_IMPLEMENTED_UNVERIFIED_REAL_APPROVAL_BLOCKED",
-      "attempts_recorded": 0,
+      "attempts_recorded": 1,
       "historical_attempts": "UNKNOWN_NOT_RESET",
       "max_attempts": 2,
       "max3_exception_approved": false,
@@ -2097,7 +2098,8 @@
       "p2_status": "NOT_RUN_LOCKED",
       "runtime_authorization": "HOLD",
       "source_dependencies_are_code_only": true,
-      "operating_authorization_is_not_inferred_from_dependencies": true
+      "operating_authorization_is_not_inferred_from_dependencies": true,
+      "source_candidate_note": "Actual synthetic trace observation -> independent deterministic replay -> idempotent in-memory no-op compensation receipt with stable SHA and denied/cancel path. This does NOT reverse or authorize real actions; real rollback and High review remain HOLD; exact-SHA runtime NOT_RUN."
     },
     {
       "task_id": "EAI-SWU-031",
@@ -2843,13 +2845,13 @@
   ],
   "code_dependency_rule": "Source candidate or code-complete predecessor only; never bypass independent verifier, owner GO or runtime authorization.",
   "next_ready_rule": "After a code SWU becomes SOURCE_COMPLETE_P2_PENDING with actual functional source evidence, re-evaluate dependents and select disjoint safe units; leave HIGH_REVIEW_REQUIRED and BLOCKED_APPROVAL locked.",
-  "implemented_source_candidate_count": 33,
-  "implemented_source_candidate_percent_preview": 78.6,
-  "implemented_source_candidate_caveat": "33/42=78.6% authored code candidates, not accepted or High-approved. Includes one new SWU-021 quarantine intent with High and runtime safety pending; 006/007/008/020/023/024/026 remain partial/high despite code authored. Official P1/P2 UNASSESSED.",
+  "implemented_source_candidate_count": 35,
+  "implemented_source_candidate_percent_preview": 83.3,
+  "implemented_source_candidate_caveat": "35/42 (83.3%) provisional P1 code-written candidates only, including new SWU-029 and 030 limited strictly to synthetic in-memory no-op, NOT real Player tool dispatch or original rollback. High review, owner GO, exact SHA runtime, independent signed evidence, P2 all not accepted. Official P1/P2 UNASSESSED.",
   "official_implementation_rate": "UNASSESSED",
   "P2": "LOCKED",
-  "latest_feature_code_sha": "5df0be08fce3525d819ee7a651671fe93ec10b39",
-  "source_candidate_count": 33,
-  "next_safe_queue_status": "NO_GENERAL_READY_HIGH_AND_AUTHENTIC_PROOF_REQUIRED",
-  "next_dependency_blocker": "EAI-SWU-020 High review required before EAI-SWU-023 -> 024 -> 026"
+  "latest_feature_code_sha": "e1d5b0fc096d8103cde03ec22e4e7bca6f18de25",
+  "source_candidate_count": 35,
+  "next_safe_queue_status": "NO_GENERAL_READY_020_INDEPENDENT_TRUST_HIGH_REVIEW_HOLD",
+  "next_dependency_blocker": "EAI-SWU-020 independent verifier signing authority and semantic evidence missing; 023->024->026 remain partial, 007->008 cross-DB atomic epoch absent; 039 owner Hydrogen GO blocked"
 }

@@ -1,3 +1,15 @@
+## 2026-11-17 KST — EAI source P1 029/030 + detached review 020 checkpoint (10)
+1. Mission: independent EAI V3.1 Architect + Player + AXNODE + Experience Learner, not MLA; P1 source candidate before separate P2.
+2. Actual code: `7fa358658af2c6a0d1d8e334fa96e6a4a4f564d7` adds `eai/player_executor.py` local scoped pure Player, `eai/player_observation.py` idempotent synthetic compensation and `eai/policy_gate.py` pure port policy; `f5212f2fd3f6c866ebb2013e61d272c45551a09a` + `e1d5b0fc096d8103cde03ec22e4e7bca6f18de25` add strict detached Ed25519 signature checking and integrate with existing `eai/candidate_evidence_review.py` quarantine gate. Not live tool/rollback.
+3. Checks: 16/16 PASS_STATIC exact GitHub SHA/source guards, immutable blueprint blob; exact SHA Python compilation and execution, crypto dependency/verification, database/real IO safety, full CI/P2/Windows NOT_RUN.
+4. Source-written provisional 35/42 (83.3%, +2 limited synthetic-only High review pending), official implementation/verification UNASSESSED, P2 LOCKED, RELEASE HOLD.
+5. Critical blocker: No independent verifier identity/trust anchor/semantic truth established by caller-supplied key SHA; signed receipt cannot promote outcomes; external trusted-learning and all real operators HOLD. Checkout previously blocked by network DNS, do not repeat identical unsuccessful route.
+6. GitHub: `hibi89/EAI` branch `feature/kmong-eai-85-p31-20261112`, code SHA `e1d5b0fc096d8103cde03ec22e4e7bca6f18de25`; docs SHA follows; check current HEAD fresh next turn.
+7. Production NONE. Original/customer DB untouched, no external API, real Player tools, ACTIVE, paid, new permissions, main merge.
+8. Blueprint blob `1b0712679d4171cd3681588e104ea5e8c6f6690d` and ADR-0002, P26, mandatory CI unchanged. All signer public keys are parameters only, no identities or secrets stored.
+9. Next ordinary READY zero. SWU-007/008 shared DB epoch and isolated recovery remain High, SWU-020 trusted verifier High, SWU-023/024/026 learning partial, SWU-039 explicit external owner GO blocked. 021/029/030 source pending High runtime/security review.
+10. Updated 2026-11-17 KST, GitHub evidence source `e1d5b0fc096d8103cde03ec22e4e7bca6f18de25`, acceptance/P2 NOT_RUN.
+
 ## 2026-11-17 KST — EAI P1 High-scope code checkpoint (10)
 1. Mission: independent EAI V3.1 Architect/Player/AXNODE/Experience Learner, distinct from MLA. P1 source coding only; P2 LOCKED, release HOLD.
 2. Actual feature SHAs `7b92b520921d0124b0b25da1356412cedc236a22`, `5df0be08fce3525d819ee7a651671fe93ec10b39`: 007 cross-DB read-only coherence; 008 marker/coherence->manual HOLD; 020 synthetic independent recompute+optional quarantine journal; 021 AXNODE activation preflight + lineage->nonmutating intent; 023 replay/evidence gate; 024 synthetic local CPU cost prior; 026 deterministic bounded strategy cost envelope/rank. 8 source paths, 2 new modules. NO live restores, ACTIVE or learning authorization.
