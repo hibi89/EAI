@@ -1,3 +1,9 @@
+## 2026-11-18 KST — High P1 source review handoff
+- Current P1 scope: **42/42 provisional source-code candidates**. Latest Luna source `d998a150697926550248ec040b37fe7a8dcf10af`; final three SWU-021/029/030 inspected by web GPT-6 High at the exact source blobs; see `docs/EAI_P1_SWU_QUEUE.json` for per-SWU evidence and source-only review limits.
+- Queue review commit `e0aa90ce1ffbca1a80745ffbeb888336ff3232ca`: 11 source complete/P2 pending, 31 implemented/unverified/minimal checks pending. Official P1/P2 `UNASSESSED`. Luna's 63/63 focused PASS + 118 import smoke are **reported**, not independently rerun here.
+- SWU-039 source complete as dormant signed sender; Google runtime owner free-tier/key/permit/actual success unproven and strictly HOLD. Never replay two prior failed requests or touch old ledger/credential. P2 `LOCKED`, independent technical/security/UI audits `NOT_RUN`, RELEASE HOLD.
+- Next: P2 full safety/functional/CI/DB recovery and real Windows checks under separate validation stage, followed by Sol Max independent technical audit, Astra UI review where applicable, High final acceptance. Google live send requires a fresh distinct packet and explicit GO; P2 alone grants none. No user Windows commands requested.
+
 ## 2026-11-18 KST — P1 source coverage and safe-path fixes
 1. Latest local source commit `d998a150697926550248ec040b37fe7a8dcf10af` on `hibi89/EAI@feature/kmong-eai-85-p31-20261112`, parent remote HEAD `0ff715b76690c8da31a02d928bc7663257a4944d`.
 2. P1 queue has 42 unique SWUs; all 73 allowed source-path mappings exist. Source-candidate count is now 42/42 after separating SWU-039's implemented dormant REST path from its independent live authorization gate. Counts: 8 source-complete/P2 pending, 31 source-implemented/minimal check pending, 3 High review pending. Official P1/P2 rates remain `UNASSESSED`; no accepted weighted rate is asserted.
