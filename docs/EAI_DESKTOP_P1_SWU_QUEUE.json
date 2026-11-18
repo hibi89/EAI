@@ -10,7 +10,7 @@
   "frontend_source_candidates": 6,
   "combined_source_candidates": 48,
   "combined_swu_count": 48,
-  "combined_percent_preview": 100.0,
+  "combined_percent_preview": 100,
   "official_implementation_rate": "UNASSESSED",
   "official_verification_rate": "UNASSESSED",
   "p2": "LOCKED",
@@ -32,7 +32,12 @@
       "status": "SOURCE_IMPLEMENTED_UNVERIFIED",
       "p1_source_candidate": true,
       "p2_status": "NOT_RUN_LOCKED",
-      "no_new_approval": true
+      "no_new_approval": true,
+      "evidence_code_sha": "ad09267e0ae70bb0c6164e1b214de513d05f2316",
+      "local_evidence": "SOURCE_CODE_AVAILABLE; PYTHON_3_13_SYNTAX_PASS; ISOLATED_STUBBED_7_PASS; VIRTUAL_DISPLAY_TK_NAV_PASS",
+      "full_eai_import": "NOT_RUN",
+      "win11_exe": "NOT_RUN",
+      "security_independent_review": "NOT_RUN"
     },
     {
       "swu_id": "EAI-FE-002",
@@ -48,7 +53,12 @@
       "status": "SOURCE_IMPLEMENTED_UNVERIFIED",
       "p1_source_candidate": true,
       "p2_status": "NOT_RUN_LOCKED",
-      "no_new_approval": true
+      "no_new_approval": true,
+      "evidence_code_sha": "6db927198b18b7fb7ca6b9e666f5edcb146cd4aa",
+      "local_evidence": "SOURCE_CODE_AVAILABLE; PYTHON_3_13_SYNTAX_PASS; ISOLATED_STUBBED_7_PASS; VIRTUAL_DISPLAY_TK_NAV_PASS",
+      "full_eai_import": "NOT_RUN",
+      "win11_exe": "NOT_RUN",
+      "security_independent_review": "NOT_RUN"
     },
     {
       "swu_id": "EAI-FE-003",
@@ -64,7 +74,12 @@
       "status": "SOURCE_IMPLEMENTED_UNVERIFIED",
       "p1_source_candidate": true,
       "p2_status": "NOT_RUN_LOCKED",
-      "no_new_approval": true
+      "no_new_approval": true,
+      "evidence_code_sha": "6db927198b18b7fb7ca6b9e666f5edcb146cd4aa",
+      "local_evidence": "SOURCE_CODE_AVAILABLE; PYTHON_3_13_SYNTAX_PASS; ISOLATED_STUBBED_7_PASS; VIRTUAL_DISPLAY_TK_NAV_PASS",
+      "full_eai_import": "NOT_RUN",
+      "win11_exe": "NOT_RUN",
+      "security_independent_review": "NOT_RUN"
     },
     {
       "swu_id": "EAI-FE-004",
@@ -80,7 +95,12 @@
       "status": "SOURCE_IMPLEMENTED_UNVERIFIED",
       "p1_source_candidate": true,
       "p2_status": "NOT_RUN_LOCKED",
-      "no_new_approval": true
+      "no_new_approval": true,
+      "evidence_code_sha": "6db927198b18b7fb7ca6b9e666f5edcb146cd4aa",
+      "local_evidence": "SOURCE_CODE_AVAILABLE; PYTHON_3_13_SYNTAX_PASS; ISOLATED_STUBBED_7_PASS; VIRTUAL_DISPLAY_TK_NAV_PASS",
+      "full_eai_import": "NOT_RUN",
+      "win11_exe": "NOT_RUN",
+      "security_independent_review": "NOT_RUN"
     },
     {
       "swu_id": "EAI-FE-005",
@@ -96,7 +116,12 @@
       "status": "SOURCE_IMPLEMENTED_UNVERIFIED",
       "p1_source_candidate": true,
       "p2_status": "NOT_RUN_LOCKED",
-      "no_new_approval": true
+      "no_new_approval": true,
+      "evidence_code_sha": "6db927198b18b7fb7ca6b9e666f5edcb146cd4aa",
+      "local_evidence": "SOURCE_CODE_AVAILABLE; PYTHON_3_13_SYNTAX_PASS; ISOLATED_STUBBED_7_PASS; VIRTUAL_DISPLAY_TK_NAV_PASS",
+      "full_eai_import": "NOT_RUN",
+      "win11_exe": "NOT_RUN",
+      "security_independent_review": "NOT_RUN"
     },
     {
       "swu_id": "EAI-FE-006",
@@ -115,7 +140,14 @@
       "status": "SOURCE_IMPLEMENTED_UNVERIFIED",
       "p1_source_candidate": true,
       "p2_status": "NOT_RUN_LOCKED",
-      "no_new_approval": true
+      "no_new_approval": true,
+      "evidence_code_sha": "dfdd9cec52d3c0f018d03f35b7d3e0f1aac916ba",
+      "local_evidence": "SOURCE_CODE_AVAILABLE; PYTHON_3_13_SYNTAX_PASS; ISOLATED_STUBBED_7_PASS; VIRTUAL_DISPLAY_TK_NAV_PASS",
+      "full_eai_import": "NOT_RUN",
+      "win11_exe": "NOT_RUN",
+      "security_independent_review": "NOT_RUN"
     }
-  ]
+  ],
+  "source_review_updated_kst": "2026-11-18 KST",
+  "scope_caveat": "Source-only code completeness, not full real EAI/Windows integration, real console readiness, independent P2, or retail shipping."
 }
