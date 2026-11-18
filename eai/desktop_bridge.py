@@ -154,8 +154,7 @@ class DesktopBridge:
             raise ValueError("invalid local AXNODE filter")
         path = _existing_store(root) / "axnodes.sqlite"
         # mode=ro keeps this viewer from migrating, indexing or editing the DB.
-        from urllib.parse import quote
-        uri = "file:" + quote(str(path.resolve()), safe="/:\\") + "?mode=ro"
+        uri = path.resolve().as_uri() + "?mode=ro"
         with sqlite3.connect(uri, uri=True, timeout=2) as db:
             db.execute("PRAGMA query_only=ON")
             version = db.execute("PRAGMA user_version").fetchone()[0]
