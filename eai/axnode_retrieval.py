@@ -36,6 +36,10 @@ class AXNodeRetriever:
             raise ValueError("AXNODE retriever needs an explicit local store")
         self.store = store
         self.fts_enabled = False
+        if store.read_only:
+            # The source FTS may be stale. Use the immutable index rows and
+            # the same token scoring and hash checks in find().
+            return
         # A search index is reconstructible: never remove the source of truth.
         try:
             with self.store.db:
@@ -110,10 +114,15 @@ class AXNodeRetriever:
         if tokens:
             # Substring fallback/recall for Korean compounds; bounded scan.
             # The source DB is local; no text is ever sent to an embedding API.
-            rows = self.store.db.execute(
-                "SELECT sha256,search_text FROM nodes ORDER BY node_id,version LIMIT ?",
-                (_MAX_LOOKUP,)
-            ).fetchall()
+            if self.store.read_only:
+                filters = " OR ".join("instr(lower(search_text), ?) > 0" for _ in tokens)
+                rows = self.store.db.execute(
+                    f"SELECT sha256,search_text FROM nodes WHERE {filters} "
+                    "ORDER BY node_id,version LIMIT ?", (*tokens, _MAX_LOOKUP))
+            else:
+                rows = self.store.db.execute(
+                    "SELECT sha256,search_text FROM nodes ORDER BY node_id,version LIMIT ?",
+                    (_MAX_LOOKUP,))
             for digest, words in rows:
                 if any(t in words.casefold() for t in tokens):
                     candidates.add(digest)
@@ -133,8 +142,9 @@ class AXNodeRetriever:
             # a search hint, not trusted content; tampering must fail closed.
             node = self.store.get(digest)
             raw = node.as_dict()
-            if raw["id"] != name or raw["kind"] != kind or raw["status"] != status or (
-                    raw["signature"]["output"] != output):
+            if (raw["id"] != name or raw["kind"] != kind or raw["status"] != status or
+                    raw["signature"]["output"] != output or
+                    self.store._keywords(raw) != haystack):
                 raise ValueError("AXNODE search metadata/hash mismatch")
             if withdrawn_hashes:
                 # A withdrawn ancestor is not an eligible proposal; neither

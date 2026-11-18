@@ -28,7 +28,7 @@ def _source(root: str | Path, supplied: str) -> tuple[Path, Path]:
     ):
         raise ValueError("source must be a short local relative CSV filename")
     relative = Path(supplied)
-    if relative.is_absolute() or ".." in relative.parts or relative.suffix.lower() != ".csv":
+    if relative.anchor or ".." in relative.parts or relative.suffix.lower() != ".csv":
         raise ValueError("CSV source must remain inside selected root")
     folder = Path(root).expanduser().resolve(strict=True)
     if not folder.is_dir():

@@ -29,8 +29,8 @@ class CandidatePackageTests(unittest.TestCase):
         self.installed = self.root / "unpacked" / PREFIX.rstrip("/")
 
     def call(self, *args, expected=0):
-        cmd = [sys.executable, "-I", "-B", str(self.installed / "eai.pyz"), *map(str, args)]
-        proc = subprocess.run(cmd, capture_output=True, text=True, cwd=self.root, timeout=50)
+        cmd = [sys.executable, "-I", "-X", "utf8", "-B", str(self.installed / "eai.pyz"), *map(str, args)]
+        proc = subprocess.run(cmd, capture_output=True, encoding="utf-8", cwd=self.root, timeout=50)
         self.assertEqual(expected, proc.returncode, proc.stderr)
         return proc
 

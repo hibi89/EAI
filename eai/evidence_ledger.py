@@ -14,6 +14,7 @@ from pathlib import Path
 import re
 import sqlite3
 import time
+from .local_files import sqlite_snapshot
 
 
 _NAME = re.compile(r"[a-z][a-z0-9_.-]{0,63}\Z")
@@ -81,6 +82,9 @@ class EvidenceLedger:
         if not isinstance(root, Path) or not callable(getattr(store, "get", None)):
             raise ValueError("explicit AXNODE store required")
         self.store = store
+        self._snapshot = None
+        if getattr(store, "read_only", False) and (create or append_existing):
+            raise PermissionError("read-only evidence store")
         self.path = root / "evidence_ledger.sqlite"
         if self.path.is_symlink():
             raise ValueError("symlinked evidence ledger is unsafe")
@@ -112,7 +116,11 @@ class EvidenceLedger:
                 uri = self.path.resolve(strict=True).as_uri() + "?mode=rw"
             else:
                 uri = self.path.resolve(strict=True).as_uri() + "?mode=ro"
-            self.db = sqlite3.connect(uri, uri=True, timeout=3)
+            if getattr(store, "read_only", False):
+                self._snapshot = sqlite_snapshot(self.path)
+                self.db = self._snapshot.__enter__()
+            else:
+                self.db = sqlite3.connect(uri, uri=True, timeout=3)
             if not append_existing:
                 self.db.execute("PRAGMA query_only=ON")
         try:
@@ -124,12 +132,15 @@ class EvidenceLedger:
             if self.db.execute("PRAGMA integrity_check").fetchone()[0] != "ok":
                 raise ValueError("corrupted evidence ledger")
         except Exception:
-            self.db.close()
+            self.close()
             raise
         self.writable = create or append_existing
 
     def close(self) -> None:
-        self.db.close()
+        if self._snapshot is None:
+            self.db.close()
+        else:
+            self._snapshot.__exit__(None, None, None)
 
     def __enter__(self) -> "EvidenceLedger":
         return self

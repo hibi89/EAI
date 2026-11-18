@@ -1,4 +1,5 @@
 """P18 SQLite CPU audit: private local DB, independent evidence and gating."""
+from contextlib import closing
 from copy import deepcopy
 import hashlib
 import json
@@ -48,7 +49,7 @@ class SqliteTableAuditP18Tests(unittest.TestCase):
         self.db = self.root / "synthetic.sqlite3"
         self.goal = self.root / "audit.json"
         self.write(audit_spec())
-        with sqlite3.connect(self.db) as con:
+        with closing(sqlite3.connect(self.db)) as con, con:
             con.execute("CREATE TABLE invoices (id TEXT, amount INTEGER, note TEXT)")
             con.executemany(
                 "INSERT INTO invoices (id, amount, note) VALUES (?, ?, ?)",
@@ -73,7 +74,7 @@ class SqliteTableAuditP18Tests(unittest.TestCase):
         return execute_goal_document(self.goal)
 
     def change_rows(self, rows):
-        with sqlite3.connect(self.db) as con:
+        with closing(sqlite3.connect(self.db)) as con, con:
             con.execute("DELETE FROM invoices")
             con.executemany(
                 "INSERT INTO invoices VALUES (?, ?, ?)", rows
@@ -194,7 +195,7 @@ class SqliteTableAuditP18Tests(unittest.TestCase):
                 self.run_goal(data)
 
     def test_refuses_views_and_generated_columns(self):
-        with sqlite3.connect(self.db) as con:
+        with closing(sqlite3.connect(self.db)) as con, con:
             con.execute("CREATE VIEW copy_invoice AS SELECT * FROM invoices")
             con.execute(
                 "CREATE TABLE generated (id TEXT, derived INTEGER "
@@ -249,7 +250,7 @@ class SqliteTableAuditP18Tests(unittest.TestCase):
         from eai.sqlite_table_audit import _connect_and_read
         def changing(goal):
             result = _connect_and_read(goal)
-            with sqlite3.connect(self.db) as con:
+            with closing(sqlite3.connect(self.db)) as con, con:
                 con.execute("INSERT INTO invoices VALUES ('new', 1, 'after')")
             return result
         with patch("eai.sqlite_table_audit._connect_and_read", side_effect=changing):

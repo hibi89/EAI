@@ -11,6 +11,7 @@ from pathlib import Path
 from .contracts import MAX_DOCUMENT_BYTES, ProblemSpec, PlanSpec, strict_json
 from .policy_gate import evaluate_plan_policy
 from .player_runtime import execute_pure_synthetic_preview
+from .local_files import read_bytes
 
 
 def _read_local_contract(path: str | Path) -> dict:
@@ -18,7 +19,7 @@ def _read_local_contract(path: str | Path) -> dict:
     if (source.is_symlink() or not source.is_file()
             or source.stat().st_size > MAX_DOCUMENT_BYTES):
         raise ValueError("explicit ordinary bounded local JSON file required")
-    return strict_json(source.read_bytes())
+    return strict_json(read_bytes(source, MAX_DOCUMENT_BYTES))
 
 
 def player_preview(

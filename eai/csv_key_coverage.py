@@ -42,7 +42,7 @@ def _safe_owner_csv(parent: Path, supplied: object) -> Path:
             any(ord(x) < 32 for x in supplied)):
         raise ValueError("invalid local CSV path")
     relative = Path(supplied)
-    if (relative.is_absolute() or ".." in relative.parts or
+    if (relative.anchor or ".." in relative.parts or
             relative.suffix.lower() != ".csv"):
         raise ValueError("source must be a relative CSV inside owner folder")
     target = parent / relative

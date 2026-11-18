@@ -47,7 +47,7 @@ def build_goal_manifest(
         if len(rel)>512 or any(ord(ch)<32 or ch in '\\:' for ch in rel):
             raise ValueError('goal path must be a short local POSIX-relative path')
         candidate = Path(rel)
-        if candidate.is_absolute() or '..' in candidate.parts:
+        if candidate.anchor or '..' in candidate.parts:
             raise ValueError('absolute or parent goal paths are not allowed')
         selected = (base/candidate).resolve(strict=True)
         if not selected.is_relative_to(base) or selected in sources:

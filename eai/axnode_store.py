@@ -13,6 +13,7 @@ import sqlite3
 import tempfile
 
 from .axnode_schema import MAX_NODE_BYTES, AXNode, parse_axnode
+from .local_files import local_path, read_bytes, sqlite_snapshot
 
 _DIGEST = re.compile(r"[0-9a-f]{64}\Z")
 _SCHEMA_VERSION = 1
@@ -27,7 +28,32 @@ def _hash(value: str) -> str:
 class AXNodeStore:
     """Immutable, additive SQLite WAL index + content-addressed AXNODE files."""
 
-    def __init__(self, root: str | Path):
+    def __init__(self, root: str | Path, *, read_only: bool = False):
+        self.read_only = read_only
+        if read_only:
+            self.root = local_path(root)
+            self.nodes_dir = local_path(self.root / "nodes")
+            self.db_path = local_path(self.root / "axnodes.sqlite")
+            if not self.nodes_dir.is_dir():
+                raise ValueError("existing AXNODE library required")
+            self._snapshot = sqlite_snapshot(self.db_path)
+            self.db = self._snapshot.__enter__()
+            try:
+                if self.db.execute("PRAGMA user_version").fetchone() != (1,):
+                    raise ValueError("unknown AXNODE schema")
+                expected = {"nodes": {"sha256", "node_id", "version", "status", "kind",
+                                      "output_type", "search_text"},
+                            "parents": {"child_sha", "parent_sha"}}
+                tables = {r[1]: r[2] for r in self.db.execute("PRAGMA main.table_list")}
+                for table, columns in expected.items():
+                    if (tables.get(table) != "table" or
+                            {r[1] for r in self.db.execute(f"PRAGMA table_info({table})")} != columns):
+                        raise ValueError("unexpected AXNODE catalog layout")
+                self.db.execute("PRAGMA query_only=ON")
+            except BaseException:
+                self.close()
+                raise
+            return
         root = Path(root).expanduser()
         if root.is_symlink():
             raise ValueError("AXNODE store root cannot be a symlink")
@@ -44,11 +70,11 @@ class AXNodeStore:
         self.db = sqlite3.connect(self.db_path, timeout=3)
         try:
             self.db.execute("PRAGMA busy_timeout = 3000")
-            self.db.execute("PRAGMA journal_mode = WAL")
             self.db.execute("PRAGMA foreign_keys = ON")
             version = int(self.db.execute("PRAGMA user_version").fetchone()[0])
             if existing and version != _SCHEMA_VERSION:
                 raise ValueError("unknown AXNODE DB version; do not migrate without backup")
+            self.db.execute("PRAGMA journal_mode = WAL")
             if version == 0:
                 self.db.executescript("""
                     CREATE TABLE nodes (
@@ -76,7 +102,10 @@ class AXNodeStore:
             raise
 
     def close(self) -> None:
-        self.db.close()
+        if self.read_only:
+            self._snapshot.__exit__(None, None, None)
+        else:
+            self.db.close()
 
     def __enter__(self) -> "AXNodeStore":
         return self
@@ -99,6 +128,8 @@ class AXNodeStore:
 
     def import_node(self, source: str | bytes) -> str:
         """Validate before touching disk; never replace a node or overwrite a version."""
+        if self.read_only:
+            raise PermissionError("read-only AXNODE library")
         node = parse_axnode(source)
         raw = node.as_dict()
         digest = node.sha256
@@ -146,6 +177,9 @@ class AXNodeStore:
                 (digest,raw["id"],raw["version"],raw["status"],
                  raw["kind"],output,self._keywords(raw))
             )
+            if self.db.execute("SELECT sha256 FROM nodes WHERE node_id=? AND version=?",
+                               (raw["id"], raw["version"])).fetchone() != (digest,):
+                raise ValueError("immutable AXNODE version conflict")
             for parent in parents:
                 self.db.execute(
                     "INSERT OR IGNORE INTO parents(child_sha,parent_sha) VALUES(?,?)",
@@ -160,7 +194,7 @@ class AXNodeStore:
         path = self._path(digest)
         if path.is_symlink() or not path.is_file() or path.stat().st_size > MAX_NODE_BYTES:
             raise ValueError("AXNODE content missing or unsafe")
-        node = parse_axnode(path.read_bytes())
+        node = parse_axnode(read_bytes(path, MAX_NODE_BYTES) if self.read_only else path.read_bytes())
         if node.sha256 != digest:
             raise ValueError("AXNODE content hash mismatch")
         return node

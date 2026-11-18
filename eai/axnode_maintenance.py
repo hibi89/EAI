@@ -5,6 +5,7 @@ A descendant impact is only a review plan, not automatic quarantine/promotion.
 """
 from __future__ import annotations
 
+from contextlib import closing
 from dataclasses import dataclass
 import hashlib
 import json
@@ -77,7 +78,7 @@ def create_offline_backup(store: AXNodeStore, destination: str | Path) -> Path:
     stage = Path(tempfile.mkdtemp(prefix=".eai-backup-", dir=destination.parent))
     try:
         db_file = stage / "catalog.sqlite"
-        with sqlite3.connect(db_file) as snapshot:
+        with closing(sqlite3.connect(db_file)) as snapshot, snapshot:
             store.db.backup(snapshot)
             snapshot.execute("PRAGMA foreign_keys = ON")
             if snapshot.execute("PRAGMA integrity_check").fetchone()[0] != "ok":

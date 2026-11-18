@@ -1,4 +1,5 @@
 """Local SQLite conversation, search cache and unverified source memory."""
+from contextlib import closing
 import hashlib
 import json
 import os
@@ -59,7 +60,7 @@ class Store:
         os.close(fd)
         backup_path = Path(name)
         try:
-            with sqlite3.connect(backup_path) as target:
+            with closing(sqlite3.connect(backup_path)) as target, target:
                 self.db.backup(target)
         except Exception:
             backup_path.unlink(missing_ok=True)

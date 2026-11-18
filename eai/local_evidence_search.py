@@ -53,7 +53,7 @@ def validate_search_goal(raw: object, goal_file: Path) -> EvidenceSearchGoal:
         ):
             raise ValueError("source must be a short local relative filename")
         loc = Path(supplied)
-        if loc.is_absolute() or ".." in loc.parts:
+        if loc.anchor or ".." in loc.parts:
             raise ValueError("source path traversal forbidden")
         if loc.suffix.lower() not in (".md", ".txt"):
             raise ValueError("source must be .txt or .md")

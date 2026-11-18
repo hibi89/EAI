@@ -29,7 +29,7 @@ def _inside(root: Path, value: object) -> Path:
     ):
         raise ValueError('schema drift source must be a relative local filename')
     path=Path(value)
-    if path.is_absolute() or '..' in path.parts:
+    if path.anchor or '..' in path.parts:
         raise ValueError('schema drift source escapes the selected directory')
     selected=(root/path).resolve(strict=True)
     if not selected.is_relative_to(root):

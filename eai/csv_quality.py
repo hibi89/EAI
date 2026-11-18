@@ -71,7 +71,7 @@ def validate_quality_goal(data: object, goal_file: Path) -> QualityGoal:
     ):
         raise ValueError('CSV source must be a local relative path')
     relative = Path(raw_path)
-    if relative.is_absolute() or '..' in relative.parts:
+    if relative.anchor or '..' in relative.parts:
         raise ValueError('CSV source must stay inside the goal directory')
     base = goal_file.parent.resolve(strict=True)
     source = (base / relative).resolve(strict=True)

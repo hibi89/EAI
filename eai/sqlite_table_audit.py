@@ -58,7 +58,7 @@ def validate_sqlite_goal(data: object, goal_file: Path) -> SqliteTableGoal:
     ):
         raise ValueError("SQLite source must be a local relative path")
     relative = Path(path)
-    if relative.is_absolute() or ".." in relative.parts:
+    if relative.anchor or ".." in relative.parts:
         raise ValueError("SQLite source must stay inside goal directory")
     root = goal_file.parent.resolve(strict=True)
     source = (root / relative).resolve(strict=True)
