@@ -1,3 +1,11 @@
+## 2026-11-18 KST — P1 42/42 source candidates reviewed by GPT-6 High (source-only)
+- Luna code `d998a150697926550248ec040b37fe7a8dcf10af`, documentation `c208be92550d7a108687578a6a18e4d44ced80c6`; High-reviewed queue commit `e0aa90ce1ffbca1a80745ffbeb888336ff3232ca`.
+- High directly inspected SWU-021 (activation/quarantine preview, read-only, never ACTIVE), SWU-029 (typed pure synthetic Player port + policy/replay gate) and SWU-030 (deterministic in-memory compensation, not real rollback). Exact source blob IDs are in `docs/EAI_P1_SWU_QUEUE.json`; no code edits in the High review.
+- P1 **42/42 provisional source candidates**; updated queue statuses: **11 SOURCE_COMPLETE_P2_PENDING, 31 SOURCE_IMPLEMENTED_UNVERIFIED_MINIMAL_CHECK_PENDING**, 0 remaining High source-review flags. This is **not** official weighted implementation/verification acceptance; both official rates remain `UNASSESSED`.
+- Luna reported Windows Python3.11.9 compileall, focused **63/63 PASS**, 118 imports, CLI smoke, mock HTTP + disposable SQLite at `d998a150`. High **did not rerun** these tests; source-only inspection is not independent audit.
+- SWU-039: dormant signed REST source candidate only. Real Google GenerateContent, verified account free-tier, credential/vault integration, new owner per-send consent, actual provider success and user SQLite are **NOT_RUN/HOLD**; old failed nonces/breaker remain preserved. Do **not** treat source candidacy as runtime authorization.
+- P2 `LOCKED` pending scoped verification handoff; independent code/security and UI audits `NOT_RUN`; `RELEASE HOLD`, no production, main or billing changes. No new user PowerShell actions requested.
+
 ## 2026-11-18 KST — P1 source audit, Hydrogen correlation and offline budget fixes
 - Code commit `d998a150697926550248ec040b37fe7a8dcf10af` on `feature/kmong-eai-85-p31-20261112`, based on remote/source HEAD `0ff715b76690c8da31a02d928bc7663257a4944d`.
 - SWU-039: GenerateContent payload remains the documented v1beta `models/{model}:generateContent` contract (`contents`, `generationConfig`, `x-goog-api-key`). Added a payload-bound local `request_id` to the result and existing reservation status; HTTP code and allowlisted Google status remain bounded. No Google-provided error request ID is assumed. No schema migration or old-row edit.
