@@ -12,9 +12,8 @@
   "C03_legacy_gap_fixed": true,
   "first_ready": [],
   "status_counts": {
-    "SOURCE_COMPLETE_P2_PENDING": 8,
-    "SOURCE_IMPLEMENTED_UNVERIFIED_MINIMAL_CHECK_PENDING": 31,
-    "SOURCE_WRITTEN_HIGH_REVIEW_PENDING": 3
+    "SOURCE_COMPLETE_P2_PENDING": 11,
+    "SOURCE_IMPLEMENTED_UNVERIFIED_MINIMAL_CHECK_PENDING": 31
   },
   "already_coded_candidate_count": 8,
   "remaining_code_or_holds": 1,
@@ -281,7 +280,7 @@
       ],
       "code_depends_on": [],
       "runtime_security_dependencies": [
-        "P0\u2013P38",
+        "P0–P38",
         "P26_ADR0002_EXISTING_GO",
         "NO_NEW_ACTIVE_OR_REAL_PLAYER_OR_EXTERNAL"
       ],
@@ -349,7 +348,7 @@
         "EAI-SWU-001"
       ],
       "runtime_security_dependencies": [
-        "P0\u2013P38",
+        "P0–P38",
         "P26_ADR0002_EXISTING_GO",
         "NO_NEW_ACTIVE_OR_REAL_PLAYER_OR_EXTERNAL"
       ],
@@ -418,7 +417,7 @@
         "EAI-SWU-001"
       ],
       "runtime_security_dependencies": [
-        "P0\u2013P38",
+        "P0–P38",
         "P26_ADR0002_EXISTING_GO",
         "NO_NEW_ACTIVE_OR_REAL_PLAYER_OR_EXTERNAL"
       ],
@@ -1724,7 +1723,7 @@
         "total": 3
       },
       "score_rationale": "Protected operation: High safety review required",
-      "status": "SOURCE_WRITTEN_HIGH_REVIEW_PENDING",
+      "status": "SOURCE_COMPLETE_P2_PENDING",
       "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
       "evidence_sha": "5df0be08fce3525d819ee7a651671fe93ec10b39",
       "legacy_evidence_history": "438f3b18684716e8a257580789283a6048d32fea; be7a8244758e7c427fa7886698771a6aa5c9448d; 3f5888a7de4673d2b2e1fb8a228b30a37c87ae8f; 9f75872098a4d75df0af6e5efc76d5e7739fe16c; eef0f1881e2fedce5d1403ab789e5906b2fe7a73; 5b10487b28e60c5c6c44883d600e9b2d0dff6239 ; 185081b1a1ae45bdf4fa4bdddcbf319d2b356aea; 8b31f3b82d3113be52b9965b3daf577a46730662; 7c1192cbf06a95a35577de2a9df03d61801c2a36; c6f3d3bb9dd248869d2e07cbcd001d9720c5bcbd; 67b05d786edca1d80a8b87def8c7e1c6c176145a; fe3b611f4ecc921b5bd4171351df18d2cc63698d",
@@ -1746,7 +1745,20 @@
       "retry_stage": "NOT_TRIGGERED_SOURCE_WRITTEN",
       "initial_nonprogress_attempts": null,
       "post_isolation_nonprogress_attempts": null,
-      "retry_evidence": []
+      "retry_evidence": [],
+      "high_source_review": {
+        "review_date": "2026-11-18 KST",
+        "reviewer": "WEB_GPT6_HIGH",
+        "scope": "STATIC_SOURCE_AND_CALL_PATH_INSPECTION_ONLY",
+        "code_blobs": {
+          "eai/candidate_activation_preflight.py": "97067b8b77fd453acf83264e5e66c3de15d92f6c",
+          "eai/axnode_maintenance.py": "7db51cbde86edec4f06d827b8e370494c600a846"
+        },
+        "findings": "High source inspection: activation forbidden with explicit no-write/no-ACTIVE fields; node lineage planning is read-only. Actual owner activation GO remains separate, NOT_RUN.",
+        "local_tests_this_review": "NOT_RUN",
+        "independent_security_audit": "NOT_RUN",
+        "runtime_go": "NOT_GRANTED"
+      }
     },
     {
       "task_id": "EAI-SWU-022",
@@ -2301,7 +2313,7 @@
         "total": 3
       },
       "score_rationale": "Protected operation: High safety review required",
-      "status": "SOURCE_WRITTEN_HIGH_REVIEW_PENDING",
+      "status": "SOURCE_COMPLETE_P2_PENDING",
       "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
       "evidence_sha": "e1d5b0fc096d8103cde03ec22e4e7bca6f18de25",
       "legacy_evidence_history": "e92a3af30a1e63114de994489677b905254b7a46; 2099642b9e2515a7d2e9cf5198b92ff346151d0f; 92862fbe0f0a0c87fe5d0cc09562025a3ab81673",
@@ -2322,7 +2334,20 @@
       "retry_stage": "NOT_TRIGGERED_SOURCE_WRITTEN",
       "initial_nonprogress_attempts": null,
       "post_isolation_nonprogress_attempts": null,
-      "retry_evidence": []
+      "retry_evidence": [],
+      "high_source_review": {
+        "review_date": "2026-11-18 KST",
+        "reviewer": "WEB_GPT6_HIGH",
+        "scope": "STATIC_SOURCE_AND_CALL_PATH_INSPECTION_ONLY",
+        "code_blobs": {
+          "eai/player_executor.py": "6a5846ed2685d1d25ec36adc058c6448c41fb779",
+          "eai/policy_gate.py": "fb40b73e59e71025c84eb610acb81e3b295081e6"
+        },
+        "findings": "High source inspection: typed scoped port recomputes review gate and permits only synthetic.noop.v1; no external tool, network or original-write grant. P2 behavior and real Player authorization NOT_RUN.",
+        "local_tests_this_review": "NOT_RUN",
+        "independent_security_audit": "NOT_RUN",
+        "runtime_go": "NOT_GRANTED"
+      }
     },
     {
       "task_id": "EAI-SWU-030",
@@ -2370,7 +2395,7 @@
         "total": 3
       },
       "score_rationale": "Protected operation: High safety review required",
-      "status": "SOURCE_WRITTEN_HIGH_REVIEW_PENDING",
+      "status": "SOURCE_COMPLETE_P2_PENDING",
       "source_baseline_sha": "5ff09af317f2fe1862f829bd94b7c10202edb14d",
       "evidence_sha": "e1d5b0fc096d8103cde03ec22e4e7bca6f18de25",
       "legacy_evidence_history": "e92a3af30a1e63114de994489677b905254b7a46; 2099642b9e2515a7d2e9cf5198b92ff346151d0f; 92862fbe0f0a0c87fe5d0cc09562025a3ab81673",
@@ -2391,7 +2416,20 @@
       "retry_stage": "NOT_TRIGGERED_SOURCE_WRITTEN",
       "initial_nonprogress_attempts": null,
       "post_isolation_nonprogress_attempts": null,
-      "retry_evidence": []
+      "retry_evidence": [],
+      "high_source_review": {
+        "review_date": "2026-11-18 KST",
+        "reviewer": "WEB_GPT6_HIGH",
+        "scope": "STATIC_SOURCE_AND_CALL_PATH_INSPECTION_ONLY",
+        "code_blobs": {
+          "eai/player_observation.py": "6fb46bf4e6c7f4e7538d3eb49a057842b7efca38",
+          "eai/player_runtime.py": "9ad6eca5dfb5315bd853578479e71d23d4fd7241"
+        },
+        "findings": "High source inspection: compensation requires explicit request, deterministic replay equality and in-memory-only receipt; no claim of real rollback. P2 functional/independent review NOT_RUN.",
+        "local_tests_this_review": "NOT_RUN",
+        "independent_security_audit": "NOT_RUN",
+        "runtime_go": "NOT_GRANTED"
+      }
     },
     {
       "task_id": "EAI-SWU-031",
@@ -3008,7 +3046,7 @@
       "initial_nonprogress_attempts": null,
       "post_isolation_nonprogress_attempts": null,
       "retry_evidence": [],
-      "source_candidate_note": "2026-11-18 current High SWU-039 source hardening at 2f6aebda8dd415a7e97da6c2f9669befca7661d6, blob 1aa66e719925418678a12bd038cd2e05ef27157f: preexisting owner-provisioned local canonical trust root is checked independently of signed permit and must match project/key; reply instructions explicitly carry exact request SHA; stale coordinator generation and policy rechecked before HTTP and after reply. No trust file/key created, no external data sent or live Google tier proven. 14/14 exact-blob structural safety guards PASS; actual Python syntax/import/test and live network NOT_RUN. Remains BLOCKED_APPROVAL until real project free-tier evidence, true owner-provisioned trust, exact per-send GO. Source candidates 41/42 (+0). 2026-11-18 KST exact code blob independently restored into local Python runtime and git hash-object verified MATCH 1aa66e719925418678a12bd038cd2e05ef27157f. Python 3.13.5 py_compile PASS. Local isolated stub-import smoke: prior codec 7/7 PASS; per-send signature/trust-root/ledger denial and mocked transport failure 12/12 PASS; positive mocked HTTPS untrusted candidate quarantine/replay 8/8 PASS. Total distinct focused cases 27/27 PASS on Python 3.13.5 / cryptography 46.0.4, with cryptographic signing only synthetic temporary keys, fake HTTP constructor and temporary synthetic ledger, no outbound network or real credential. Full actual EAI import graph, Python 3.11 target, GitHub CI, actual Google project tier, real send, real Power failure, P2 independent acceptance NOT_RUN. SWU-039 remains BLOCKED_APPROVAL, no +1. 2026-11-18 next SWU-039 source SHA e208612e793ec1bcbc03ca39f680f403f62262bd, blob 84d3af6f2250c8568adedb1d96bc51c8c8193da0: fail closed on corrupt/unopenable SQLite live ledger, persist-reservation exception before HTTPS, or failed settlement after a response. Even in a previously allowed ON policy, new errors disable coordinator and reject candidate; no live API/paid/remote data used. Exact fetched blob static safety guards 11/11 PASS. Isolated Python grammar and equivalent-branch simulation PASS 4/4; full exact-module py_compile, actual repository import, current GitHub Actions and live E2E NOT_RUN at new source SHA. Existing historical 27/27 evidence applies only to prior SHA 2f6aebd and is not reasserted for this commit. User's general 2026-11-18 approval to proceed is recorded, but it does not supply signed exact outbound packet, verified actual Google project free-tier/billing/quota or preprovisioned local root. SWU-039 BLOCKED_APPROVAL; provisional 41/42 unchanged. 2026-11-18 code fix 468ffd61bffb6596624d2352cdd7c43c8a42b4ce / blob 77e0e862497033d19536407a568a45b4d4a334ec: catch http.client.HTTPException from malformed/incomplete HTTP reply, ensure existing finally ledger breaker disables coordinator and never publishes candidate. Exact GitHub code static gates 7/7 PASS. Local Python 3.13 stdlib HTTPException subtype examples IncompleteRead, BadStatusLine, CannotSendRequest 3/3 PASS (exception classification only, not full EAI module). Current full module Python syntax/import, 3.11 target, HTTP mock at new SHA, full CI/P2 and live Google API NOT_RUN. No external data or credentials accessed. Existing owner's general approval does not establish project free tier, local owner root or exact per-send authorization. 41/42 remains; BLOCKED_APPROVAL. 2026-11-18 UI credential evidence and High Windows bridge: user screenshot visibly shows named Windows Generic Credential EAI_HYDROGEN_API_KEY created/updated; screenshot does NOT disclose/verify secret bytes, API project binding, real model entitlement, owner signature or network. Actual function commit d99512f8f526aa91ca35820ee636d697d1c559ac (blob df63a7891525f0fe0ebeea531cbc9fbaa5ea9f77) appends Windows CredReadW+CredFree narrow target/username strict ASCII or UTF16LE bounded key decode, and optional caller dispatch_live_hydrogen_from_windows_credential. Bridge does NOT access vault in OFF/without verified policy/owner permit/external trust root, passes credential solely to existing signed/fail-closed live dispatch, never persists or prints it. Exact fetched source static guards 13/13 PASS. Isolated new helper Python 3.13.5 py_compile PASS; 9/9 synthetic no-network no-vault mock/local control cases PASS. Complete assembled module Python 3.11 / Windows vault real read / real EAI imports / real provider API / P2 NOT_RUN. Owner screenshots show a Free tier and nonzero Hydrogen limits but no authenticated live response nor guaranteed $0. SWU-039 remains BLOCKED_APPROVAL, 41/42 (+0), P2 LOCKED. 2026-11-18 High SHA 0ab6e7ec7259370b4745543e42ca42477b658014 (blob fc1b4eb365dd0c68dbc9e2bc83a7acf114d66c93): before any Windows CredReadW, wrapper now cryptographically verifies exact owner-signed request/packet/project/expiry against preexisting external pinned root with api_key=None preflight; actual dispatch repeats full validation with genuine API key hash after vault read. Source-only change 1 file +24/-8; no live Google/credential access. Exact fetched GitHub blob static guards 8/8 PASS; synthetic isolated Python 3.13.5 Ed25519 preflight reconstruction 10/10 PASS (NOT full exact source module). Complete assembled Python3.11/Python3.13 module compile, real Windows vault, real provider, P2 NOT_RUN; remains BLOCKED_APPROVAL, 41/42, official UNASSESSED. 2026-11-18 KST latest code SHA 2f3adb4909263f940e3c7012668fb1b524ebc2fb blob be0813787db7a15387cb6bcb9f931af0325d9724 fixes overly narrow Gemini API key guard: allows legacy 20..256 char [A-Za-z0-9_-] or current AQ. prefix followed by 17..253 chars same charset. Does NOT allow arbitrary dots/whitespace. Google official docs describe auth keys default since May 28, 2026; user Codex reports dot in local credential but actual prefix was not disclosed or verified, actual credential was not accessed by this model. Exact fetched GitHub blob static check PASS; isolated regex synthetic examples 8/8 PASS Python 3.13; full exact EAI module Python 3.11 import, user's real Windows signer, actual Ed25519 signing, Google endpoint NOT_RUN. Local narrow patch script provided for owner Windows PC with backup, not observed executed. 41/42 and BLOCKED_APPROVAL unchanged, no release or P2. 2026-11-18 owner PC one-shot approved signed synthetic request (packet SHA e982ff054a7747552a0072e637a67865d1f95ced58c942a17cd7692342c01a97) passed source 5/5, local trust/permit and pre-send gates. User output: LIVE_STATUS=OFF_AFTER_PROVIDER_TRANSPORT_FAILURE; REQUESTS_ATTEMPTED=1, IDEAS_UNTRUSTED_COUNT=0, EAI baseline preserved, no paid retry, externally verified response NOT_RUN. After attempting transport prior code consumes nonce and persists breaker HOLD on failed settlement; do not reset ledger or reuse nonce. Exact failure subtype UNKNOWN (8s socket timeout was a possible cause, NOT confirmed). High code correction 51c80cbd44fc23fbc0ab4d9fb99a4354e02c436c blob a679ea20cb18f365383aebd447e3e1fa304b551a increases bounded HTTPS timeout to 60 seconds and distinguishes timeout vs TLS vs protocol vs other transport; no auto retry or untrusted promotion. Isolated exception branch classification 5/5 PASS, synthetic branch syntax PASS; full exact module Python 3.11 / Windows / followup live NOT_RUN. Product status remains 41/42 provisional, SWU039 BLOCKED_APPROVAL, P2 LOCKED, RELEASE HOLD, official rates UNASSESSED. Next: owner read-only network DNS/TCP/TLS and ledger diagnosis; new owner approval is required before any separate future outbound trial. 2026-11-18 owner-approved second NEW signed synthetic send: source 5/5 PASS, ledger backup verified, old failed nonce preserved, breaker HOLD\u2192READY, new request sent once; LIVE_STATUS=OFF_AFTER_PROVIDER_HTTP_ERROR, requests_attempted=1, ideas=0, FINAL_BREAKER=HOLD, new reservation FAILED_HOLD. Prior client discarded numeric HTTP status and Google error.status, actual subtype UNKNOWN. Official Google docs verify gemini-4-hydrogen model ID + GenerateContent support generally, not owner's entitlement. Code feature SHA 798f3bf0e47d71b27f406401fd49e429516d5e45 now extracts bounded 4096-byte error and emits only numeric HTTP code and allowlisted status in result.reason, no raw body, no credentials, HOLD and no retries. Isolated helper syntax PASS, synthetic HTTP classification 7/7 PASS; full exact-source Windows Python 3.11 / provider success / P2 NOT_RUN. Existing owner-run pinned scripts won't show the new reason unless updated. A new single GET model metadata probe was prepared but owner Windows run NOT_RUN. Original failures remain immutable; no further model POST without fresh consent. Candidate 41/42 provisional, official rates UNASSESSED, P2 LOCKED, RELEASE HOLD. 2026-11-18 source/runtime split: classify the existing dormant REST sender as a source candidate, while external operation remains HOLD. Source d998a150697926550248ec040b37fe7a8dcf10af adds a payload-bound local request_id to the result and existing reservation status; bounded HTTP code/status diagnosis remains fail-closed. Windows Python 3.11.9 compileall PASS; focused fake-HTTP/temp-SQLite tests 63/63 PASS across 5 modules; 118 EAI module imports PASS with sockets blocked. No real Google request, owner key/API credential/vault read, live entitlement proof, schema migration or user SQLite access. Runtime authorization HOLD, owner-specific free-tier/per-send GO and real provider acceptance NOT_RUN, P2 LOCKED.",
+      "source_candidate_note": "2026-11-18 current High SWU-039 source hardening at 2f6aebda8dd415a7e97da6c2f9669befca7661d6, blob 1aa66e719925418678a12bd038cd2e05ef27157f: preexisting owner-provisioned local canonical trust root is checked independently of signed permit and must match project/key; reply instructions explicitly carry exact request SHA; stale coordinator generation and policy rechecked before HTTP and after reply. No trust file/key created, no external data sent or live Google tier proven. 14/14 exact-blob structural safety guards PASS; actual Python syntax/import/test and live network NOT_RUN. Remains BLOCKED_APPROVAL until real project free-tier evidence, true owner-provisioned trust, exact per-send GO. Source candidates 41/42 (+0). 2026-11-18 KST exact code blob independently restored into local Python runtime and git hash-object verified MATCH 1aa66e719925418678a12bd038cd2e05ef27157f. Python 3.13.5 py_compile PASS. Local isolated stub-import smoke: prior codec 7/7 PASS; per-send signature/trust-root/ledger denial and mocked transport failure 12/12 PASS; positive mocked HTTPS untrusted candidate quarantine/replay 8/8 PASS. Total distinct focused cases 27/27 PASS on Python 3.13.5 / cryptography 46.0.4, with cryptographic signing only synthetic temporary keys, fake HTTP constructor and temporary synthetic ledger, no outbound network or real credential. Full actual EAI import graph, Python 3.11 target, GitHub CI, actual Google project tier, real send, real Power failure, P2 independent acceptance NOT_RUN. SWU-039 remains BLOCKED_APPROVAL, no +1. 2026-11-18 next SWU-039 source SHA e208612e793ec1bcbc03ca39f680f403f62262bd, blob 84d3af6f2250c8568adedb1d96bc51c8c8193da0: fail closed on corrupt/unopenable SQLite live ledger, persist-reservation exception before HTTPS, or failed settlement after a response. Even in a previously allowed ON policy, new errors disable coordinator and reject candidate; no live API/paid/remote data used. Exact fetched blob static safety guards 11/11 PASS. Isolated Python grammar and equivalent-branch simulation PASS 4/4; full exact-module py_compile, actual repository import, current GitHub Actions and live E2E NOT_RUN at new source SHA. Existing historical 27/27 evidence applies only to prior SHA 2f6aebd and is not reasserted for this commit. User's general 2026-11-18 approval to proceed is recorded, but it does not supply signed exact outbound packet, verified actual Google project free-tier/billing/quota or preprovisioned local root. SWU-039 BLOCKED_APPROVAL; provisional 41/42 unchanged. 2026-11-18 code fix 468ffd61bffb6596624d2352cdd7c43c8a42b4ce / blob 77e0e862497033d19536407a568a45b4d4a334ec: catch http.client.HTTPException from malformed/incomplete HTTP reply, ensure existing finally ledger breaker disables coordinator and never publishes candidate. Exact GitHub code static gates 7/7 PASS. Local Python 3.13 stdlib HTTPException subtype examples IncompleteRead, BadStatusLine, CannotSendRequest 3/3 PASS (exception classification only, not full EAI module). Current full module Python syntax/import, 3.11 target, HTTP mock at new SHA, full CI/P2 and live Google API NOT_RUN. No external data or credentials accessed. Existing owner's general approval does not establish project free tier, local owner root or exact per-send authorization. 41/42 remains; BLOCKED_APPROVAL. 2026-11-18 UI credential evidence and High Windows bridge: user screenshot visibly shows named Windows Generic Credential EAI_HYDROGEN_API_KEY created/updated; screenshot does NOT disclose/verify secret bytes, API project binding, real model entitlement, owner signature or network. Actual function commit d99512f8f526aa91ca35820ee636d697d1c559ac (blob df63a7891525f0fe0ebeea531cbc9fbaa5ea9f77) appends Windows CredReadW+CredFree narrow target/username strict ASCII or UTF16LE bounded key decode, and optional caller dispatch_live_hydrogen_from_windows_credential. Bridge does NOT access vault in OFF/without verified policy/owner permit/external trust root, passes credential solely to existing signed/fail-closed live dispatch, never persists or prints it. Exact fetched source static guards 13/13 PASS. Isolated new helper Python 3.13.5 py_compile PASS; 9/9 synthetic no-network no-vault mock/local control cases PASS. Complete assembled module Python 3.11 / Windows vault real read / real EAI imports / real provider API / P2 NOT_RUN. Owner screenshots show a Free tier and nonzero Hydrogen limits but no authenticated live response nor guaranteed $0. SWU-039 remains BLOCKED_APPROVAL, 41/42 (+0), P2 LOCKED. 2026-11-18 High SHA 0ab6e7ec7259370b4745543e42ca42477b658014 (blob fc1b4eb365dd0c68dbc9e2bc83a7acf114d66c93): before any Windows CredReadW, wrapper now cryptographically verifies exact owner-signed request/packet/project/expiry against preexisting external pinned root with api_key=None preflight; actual dispatch repeats full validation with genuine API key hash after vault read. Source-only change 1 file +24/-8; no live Google/credential access. Exact fetched GitHub blob static guards 8/8 PASS; synthetic isolated Python 3.13.5 Ed25519 preflight reconstruction 10/10 PASS (NOT full exact source module). Complete assembled Python3.11/Python3.13 module compile, real Windows vault, real provider, P2 NOT_RUN; remains BLOCKED_APPROVAL, 41/42, official UNASSESSED. 2026-11-18 KST latest code SHA 2f3adb4909263f940e3c7012668fb1b524ebc2fb blob be0813787db7a15387cb6bcb9f931af0325d9724 fixes overly narrow Gemini API key guard: allows legacy 20..256 char [A-Za-z0-9_-] or current AQ. prefix followed by 17..253 chars same charset. Does NOT allow arbitrary dots/whitespace. Google official docs describe auth keys default since May 28, 2026; user Codex reports dot in local credential but actual prefix was not disclosed or verified, actual credential was not accessed by this model. Exact fetched GitHub blob static check PASS; isolated regex synthetic examples 8/8 PASS Python 3.13; full exact EAI module Python 3.11 import, user's real Windows signer, actual Ed25519 signing, Google endpoint NOT_RUN. Local narrow patch script provided for owner Windows PC with backup, not observed executed. 41/42 and BLOCKED_APPROVAL unchanged, no release or P2. 2026-11-18 owner PC one-shot approved signed synthetic request (packet SHA e982ff054a7747552a0072e637a67865d1f95ced58c942a17cd7692342c01a97) passed source 5/5, local trust/permit and pre-send gates. User output: LIVE_STATUS=OFF_AFTER_PROVIDER_TRANSPORT_FAILURE; REQUESTS_ATTEMPTED=1, IDEAS_UNTRUSTED_COUNT=0, EAI baseline preserved, no paid retry, externally verified response NOT_RUN. After attempting transport prior code consumes nonce and persists breaker HOLD on failed settlement; do not reset ledger or reuse nonce. Exact failure subtype UNKNOWN (8s socket timeout was a possible cause, NOT confirmed). High code correction 51c80cbd44fc23fbc0ab4d9fb99a4354e02c436c blob a679ea20cb18f365383aebd447e3e1fa304b551a increases bounded HTTPS timeout to 60 seconds and distinguishes timeout vs TLS vs protocol vs other transport; no auto retry or untrusted promotion. Isolated exception branch classification 5/5 PASS, synthetic branch syntax PASS; full exact module Python 3.11 / Windows / followup live NOT_RUN. Product status remains 41/42 provisional, SWU039 BLOCKED_APPROVAL, P2 LOCKED, RELEASE HOLD, official rates UNASSESSED. Next: owner read-only network DNS/TCP/TLS and ledger diagnosis; new owner approval is required before any separate future outbound trial. 2026-11-18 owner-approved second NEW signed synthetic send: source 5/5 PASS, ledger backup verified, old failed nonce preserved, breaker HOLD→READY, new request sent once; LIVE_STATUS=OFF_AFTER_PROVIDER_HTTP_ERROR, requests_attempted=1, ideas=0, FINAL_BREAKER=HOLD, new reservation FAILED_HOLD. Prior client discarded numeric HTTP status and Google error.status, actual subtype UNKNOWN. Official Google docs verify gemini-4-hydrogen model ID + GenerateContent support generally, not owner's entitlement. Code feature SHA 798f3bf0e47d71b27f406401fd49e429516d5e45 now extracts bounded 4096-byte error and emits only numeric HTTP code and allowlisted status in result.reason, no raw body, no credentials, HOLD and no retries. Isolated helper syntax PASS, synthetic HTTP classification 7/7 PASS; full exact-source Windows Python 3.11 / provider success / P2 NOT_RUN. Existing owner-run pinned scripts won't show the new reason unless updated. A new single GET model metadata probe was prepared but owner Windows run NOT_RUN. Original failures remain immutable; no further model POST without fresh consent. Candidate 41/42 provisional, official rates UNASSESSED, P2 LOCKED, RELEASE HOLD. 2026-11-18 source/runtime split: classify the existing dormant REST sender as a source candidate, while external operation remains HOLD. Source d998a150697926550248ec040b37fe7a8dcf10af adds a payload-bound local request_id to the result and existing reservation status; bounded HTTP code/status diagnosis remains fail-closed. Windows Python 3.11.9 compileall PASS; focused fake-HTTP/temp-SQLite tests 63/63 PASS across 5 modules; 118 EAI module imports PASS with sockets blocked. No real Google request, owner key/API credential/vault read, live entitlement proof, schema migration or user SQLite access. Runtime authorization HOLD, owner-specific free-tier/per-send GO and real provider acceptance NOT_RUN, P2 LOCKED.",
       "source_only_code_sha": "51c80cbd44fc23fbc0ab4d9fb99a4354e02c436c",
       "latest_http_diagnostic_fix_sha": "bef73523aceef6a3ca587f084226eb7bafe78649",
       "latest_http_diagnostic_checks": {
@@ -3273,14 +3311,14 @@
   "code_dependency_rule": "Source candidate or code-complete predecessor only; never bypass independent verifier, owner GO or runtime authorization.",
   "next_ready_rule": "After a code SWU becomes SOURCE_COMPLETE_P2_PENDING with actual functional source evidence, re-evaluate dependents and select disjoint safe units; leave HIGH_REVIEW_REQUIRED and BLOCKED_APPROVAL locked.",
   "implemented_source_candidate_count": 42,
-  "implemented_source_candidate_percent_preview": 100.0,
+  "implemented_source_candidate_percent_preview": 100,
   "implemented_source_candidate_caveat": "42/42 provisional source candidates at latest source SHA; source candidacy is separate from SWU-039 runtime authorization and from P2/REQ acceptance. Three HIGH_REVIEW_PENDING and 31 MINIMAL_CHECK_PENDING states remain recorded; official implementation and verification rates UNASSESSED.",
   "official_implementation_rate": "UNASSESSED",
   "P2": "LOCKED",
   "latest_feature_code_sha": "d998a150697926550248ec040b37fe7a8dcf10af",
   "source_candidate_count": 42,
-  "next_safe_queue_status": "At d998a150697926550248ec040b37fe7a8dcf10af, source candidates are 42/42 provisional after separating the implemented dormant SWU-039 sender from its independent external runtime authorization HOLD. SWU-039 adds a payload-bound local request_id and persists only bounded error code/status/request correlation on the current reservation. Offline journey cumulative step cap now holds later candidates instead of exceeding the total budget. Windows Python 3.11.9: compileall PASS; focused 63/63 PASS; 118 EAI imports PASS with network socket blocked; fake HTTP and disposable SQLite only. Historical Google HTTP code remains unrecoverable; no new Google request or credential read. Official P1/P2 UNASSESSED, P2 LOCKED, RELEASE HOLD.",
-  "next_dependency_blocker": "SWU-039 runtime remains HOLD until the owner separately provisions/validates the trust root, reviews current exact outbound bytes and Google project free-tier entitlement, and grants one fresh per-send authorization. No previous request is replayable; no full P2 acceptance or release.",
+  "next_safe_queue_status": "P1 source review: all 42 SWUs have provisional code candidates at d998a150; High inspected SWU-021/029/030 fail-closed source paths and checked code blob identities. Luna reported Windows focused 63/63 PASS at source commit; High did not rerun. Source candidate 42/42; SWU-039 runtime approval/actual provider acceptance remains HOLD; P2 LOCKED; RELEASE HOLD.",
+  "next_dependency_blocker": "P1 source candidate no remaining missing code. SWU-039 external owner trust/verified project free tier/new per-send signed approval, real vault integration and genuine Google response are untested approval/operating gates, not automatically granted by P1 source completion.",
   "retry_escalation_policy": {
     "schema": "eai.p1.retry.isolate.solmax.v1",
     "owner_order_date": "2026-11-17 KST",
@@ -3378,5 +3416,24 @@
     "allowed_source_path_mappings": 73,
     "missing_allowed_paths": 0,
     "audit": "STATIC_PATH_EXISTENCE_ONLY_NOT_FULL_REQ_ACCEPTANCE"
+  },
+  "high_p1_source_review": {
+    "review_date": "2026-11-18 KST",
+    "source_head_reviewed": "c208be92550d7a108687578a6a18e4d44ced80c6",
+    "code_commit": "d998a150697926550248ec040b37fe7a8dcf10af",
+    "reviewed_swu": [
+      "EAI-SWU-021",
+      "EAI-SWU-029",
+      "EAI-SWU-030"
+    ],
+    "source_candidates": 42,
+    "total_swu": 42,
+    "scope": "STATIC_P1_SOURCE_REVIEW_ONLY; NOT_P2_OR_INDEPENDENT_AUDIT",
+    "tests": "LUNA_REPORTED_63_PASS; WEB_HIGH_RERUN_NOT_RUN",
+    "hydrogen_runtime": "HOLD",
+    "live_api": "NOT_RUN",
+    "official_rates": "UNASSESSED",
+    "p2": "LOCKED",
+    "release": "HOLD"
   }
 }
