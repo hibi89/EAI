@@ -1,0 +1,121 @@
+{
+  "schema": "eai.desktop.p1.swu.v1",
+  "owner_decision_date": "2026-11-18 KST",
+  "parent_p1": {
+    "candidate_swu_count": 42,
+    "existing_swu_count": 42,
+    "source_ref": "docs/EAI_P1_SWU_QUEUE.json"
+  },
+  "frontend_new_swu_count": 6,
+  "frontend_source_candidates": 6,
+  "combined_source_candidates": 48,
+  "combined_swu_count": 48,
+  "combined_percent_preview": 100.0,
+  "official_implementation_rate": "UNASSESSED",
+  "official_verification_rate": "UNASSESSED",
+  "p2": "LOCKED",
+  "release": "HOLD",
+  "standard_ref": "docs/EAI_DESKTOP_UI_STANDARD_20261118.md",
+  "design_reference": "hibi89/Freelancer@feature/axdev-owner-product-ui-20261117/docs/design/AXDEV_DESKTOP_REFERENCE_20261117.webp",
+  "source_only_evidence": "Static source authored, local Python3.13 syntax PASS, isolated dependency-stubbed 7/7 PASS, Linux virtual-display Tk navigation probe PASS; real current EAI dependency import, target Windows3.11 GUI, actual Windows EXE, full CI/independent audits NOT_RUN.",
+  "tasks": [
+    {
+      "swu_id": "EAI-FE-001",
+      "req_ids": [
+        "EAI-FE-C01"
+      ],
+      "description": "Native dark desktop shell with persistent natural-language composer and navigation",
+      "allowed_paths": [
+        "eai/desktop_app.py"
+      ],
+      "acceptance": "Tk window renders navigation, truthful OFF/HOLD header, bounded console, bottom text input, local status; no server or fake metrics.",
+      "status": "SOURCE_IMPLEMENTED_UNVERIFIED",
+      "p1_source_candidate": true,
+      "p2_status": "NOT_RUN_LOCKED",
+      "no_new_approval": true
+    },
+    {
+      "swu_id": "EAI-FE-002",
+      "req_ids": [
+        "EAI-FE-C02"
+      ],
+      "description": "Literal rule intent -> existing CPU EAI answer and explicit note consent",
+      "allowed_paths": [
+        "eai/desktop_bridge.py",
+        "eai/desktop_app.py"
+      ],
+      "acceptance": "Command from GUI reaches RuleIntentParser -> EAIRunner -> local ResultSpec, unsupported and search hold, notes require separate user confirmation.",
+      "status": "SOURCE_IMPLEMENTED_UNVERIFIED",
+      "p1_source_candidate": true,
+      "p2_status": "NOT_RUN_LOCKED",
+      "no_new_approval": true
+    },
+    {
+      "swu_id": "EAI-FE-003",
+      "req_ids": [
+        "EAI-FE-C03"
+      ],
+      "description": "Local goal draft editor -> validated new ProblemSpec -> Architect CPU preview",
+      "allowed_paths": [
+        "eai/desktop_bridge.py",
+        "eai/desktop_app.py"
+      ],
+      "acceptance": "Typed editable draft validated and exclusively created to private path; chosen ProblemSpec+existing AXNODE root go to preview_architecture and sanitized explanation.",
+      "status": "SOURCE_IMPLEMENTED_UNVERIFIED",
+      "p1_source_candidate": true,
+      "p2_status": "NOT_RUN_LOCKED",
+      "no_new_approval": true
+    },
+    {
+      "swu_id": "EAI-FE-004",
+      "req_ids": [
+        "EAI-FE-C04"
+      ],
+      "description": "AXNODE read-only graph, local metadata and provenance",
+      "allowed_paths": [
+        "eai/desktop_bridge.py",
+        "eai/desktop_app.py"
+      ],
+      "acceptance": "Existing selected SQLite catalog queried with URI mode=ro; version and node-parent hashes returned, Canvas relationship graph; no node activation/write.",
+      "status": "SOURCE_IMPLEMENTED_UNVERIFIED",
+      "p1_source_candidate": true,
+      "p2_status": "NOT_RUN_LOCKED",
+      "no_new_approval": true
+    },
+    {
+      "swu_id": "EAI-FE-005",
+      "req_ids": [
+        "EAI-FE-C05"
+      ],
+      "description": "Verifier and Player no-op simulator, consent and review gating",
+      "allowed_paths": [
+        "eai/desktop_bridge.py",
+        "eai/desktop_app.py"
+      ],
+      "acceptance": "Explicit selected JSON inputs and simulated-only confirmation; audit_offline_journey_report and player_preview sanitized via validated renderer; no real-world authority.",
+      "status": "SOURCE_IMPLEMENTED_UNVERIFIED",
+      "p1_source_candidate": true,
+      "p2_status": "NOT_RUN_LOCKED",
+      "no_new_approval": true
+    },
+    {
+      "swu_id": "EAI-FE-006",
+      "req_ids": [
+        "EAI-FE-C06"
+      ],
+      "description": "Native EXE entrypoint and reproducible Windows unsigned candidate packaging",
+      "allowed_paths": [
+        "scripts/eai_desktop_entry.py",
+        "RUN_EAI_DESKTOP.cmd",
+        "BUILD_EAI_EXE.cmd",
+        ".github/workflows/eai-desktop-windows.yml",
+        "tests/test_desktop_bridge.py"
+      ],
+      "acceptance": "Launcher targets local Tk UI and optional existing EXE; reproducible manual Windows build and isolated probe source included; actual Windows artifact build, signing and device GUI E2E deferred to P2.",
+      "status": "SOURCE_IMPLEMENTED_UNVERIFIED",
+      "p1_source_candidate": true,
+      "p2_status": "NOT_RUN_LOCKED",
+      "no_new_approval": true
+    }
+  ]
+}
