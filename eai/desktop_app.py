@@ -1,452 +1,547 @@
-"""EAI V3.1 native dark workstation; stdlib Tkinter, no web server.
-
-Launch with `python -m eai.desktop_app` or bundled Windows EAI.exe.
-The UI does not mint approval, enable Hydrogen, run arbitrary shell commands,
-or treat an unverified Architect/Player preview as real-world execution.
-"""
+"""Native Windows workstation for the local, CPU-owned EAI engine."""
 from __future__ import annotations
 
+import os
 import json
 from pathlib import Path
 from queue import Empty, Queue
+import sqlite3
+import sys
 import threading
+from tempfile import TemporaryDirectory
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
+from uuid import uuid4
 
 from .desktop_bridge import DesktopBridge
-from .contracts import ProblemSpec, strict_json
+from .desktop_example import PracticeWorkspace
+from .desktop_presentation import ERROR_TEXT, OPS, PAGES, caption
+from .desktop_state import WorkspaceLimits
+from .desktop_views import VIEWS
+from .desktop_widgets import (AMBER, BG, FONT, LINE, MUTED, PANEL, PRIMARY, RAIL, RED,
+                              SURFACE, TEAL, TEXT, VIOLET, button, edit_problem, frame,
+                              label, setup_style, textbox)
 
-BG = "#0a1020"
-PANEL = "#111b30"
-PANEL2 = "#17243b"
-EDGE = "#273651"
-TEXT = "#e8eefc"
-MUTED = "#94a6c6"
-PURPLE = "#7966ea"
-CYAN = "#49d5cd"
-AMBER = "#e8bb68"
-RED = "#ee777b"
+
+def diagnostic(exc):
+    if isinstance(exc, (OSError, KeyError)) and not isinstance(exc, sqlite3.Error):
+        return "FILE_UNAVAILABLE"
+    if isinstance(exc, sqlite3.Error):
+        return "LOCAL_STORE_ERROR"
+    if isinstance(exc, (ValueError, TypeError, OverflowError)):
+        return "INPUT_INVALID"
+    return "LOCAL_OPERATION_FAILED"
 
 
 class EAIDesktopApp:
-    TABS = ("현황", "Architect", "AXNODE", "Verifier", "Player", "기록")
-
-    def __init__(self, root: tk.Tk, bridge: DesktopBridge | None = None):
+    def __init__(self, root, bridge=None):
         self.root = root
         self.bridge = bridge if bridge is not None else DesktopBridge()
-        self.problem_path: str | None = None
-        self.store_path: str | None = None
-        self.plan_path: str | None = None
-        self.report_path: str | None = None
-        self.last_draft: dict | None = None
-        self.last_catalog: dict | None = None
-        self.last_result: dict | None = None
-        self.records: list[tuple[str, str]] = []
-        self.events: Queue = Queue()
-        self.busy = False
-        self.tab = "현황"
-        self.nav_buttons: dict[str, tk.Button] = {}
-        self.path_labels: dict[str, tk.Label] = {}
-        root.title("EAI V3.1 — Independent Local AI")
+        self.page = "home"
+        self.rows = []
+        self.limits = WorkspaceLimits()
+        self.limit_vars = [tk.StringVar(root, v) for v in ("8", "60", "8")]
+        self.results = {}
+        self.example = None
+        self.artifacts = None
+        self.problem = self.library = self.plan = self.receipt = None
+        self.draft = self.review = self.catalog_data = self.node_data = None
+        self.query = tk.StringVar(root)
+        self.filter = tk.StringVar(root, "전체")
+        self.stop_step = tk.StringVar(root, "끝까지")
+        self.chosen_plan = tk.StringVar(root)
+        self.busy = self.closing = False
+        self.cancel_event = self.worker = None
+        self.events = Queue()
+        self.nav = {}
+        self.poll_id = None
+        root.title("EAI · 로컬 워크스페이스")
         root.configure(bg=BG)
-        root.geometry("1440x860")
-        root.minsize(950, 650)
-        root.protocol("WM_DELETE_WINDOW", self._close)
-        self._build()
-        self._select("현황")
-        root.after(100, self._poll)
+        root.geometry(f"{min(1240, root.winfo_screenwidth()-32)}x{min(820, root.winfo_screenheight()-84)}")
+        root.minsize(760, 475)
+        setup_style(root)
+        self.build()
+        self.select("home")
+        root.protocol("WM_DELETE_WINDOW", self.close)
+        root.bind("<Control-l>", self.focus_command)
+        root.bind("<Control-L>", self.focus_command)
+        for i, key in enumerate(PAGES, 1):
+            root.bind(f"<Alt-Key-{i}>", lambda e, k=key: self.select(k))
+        root.bind_all("<MouseWheel>", self.wheel, add="+")
+        self.run("home", "startup", lambda: {"status": "OK", "limits": self.bridge.state.limits()})
+        self.poll_id = root.after(30, self.poll)
 
-    def _label(self, parent, text: str, *, size: int = 11, color: str = TEXT,
-               bold: bool = False, **kw):
-        return tk.Label(parent, text=text, bg=parent.cget("bg"), fg=color,
-                        font=("Segoe UI", size, "bold" if bold else "normal"), **kw)
+    def build(self):
+        root = self.root
+        root.columnconfigure(1, weight=1)
+        root.rowconfigure(0, weight=1)
+        rail = frame(root, RAIL, padx=12, pady=14)
+        rail.grid(row=0, column=0, sticky="nsew")
+        brand = frame(rail)
+        brand.pack(fill="x", pady=(0, 16))
+        logo = tk.Canvas(brand, width=36, height=36, bg=RAIL, bd=0, highlightthickness=0)
+        logo.pack(side="left", padx=(2, 7))
+        for points, color in (((3, 12, 18, 4, 33, 12, 18, 20), VIOLET),
+                              ((3, 19, 18, 27, 33, 19), "#9581e4"), ((3, 26, 18, 34, 33, 26), TEAL)):
+            logo.create_line(*points, fill=color, width=3, joinstyle="round")
+        label(brand, "EAI", size=21, bold=True).pack(side="left")
+        label(brand, "v3.1", fg=MUTED, size=9).pack(side="left", padx=7, anchor="s", pady=7)
+        label(rail, "작업 공간", size=9, fg=MUTED).pack(fill="x", padx=6, pady=(2, 6))
+        for i, (key, (title, _, icon)) in enumerate(PAGES.items()):
+            if i == 5:
+                frame(rail, LINE, height=1).pack(fill="x", pady=9)
+            row = frame(rail)
+            row.pack(fill="x", pady=2)
+            glyph = tk.Label(row, text=icon, bg=RAIL, fg=MUTED,
+                             font=("Segoe MDL2 Assets", 13), width=2)
+            glyph.pack(side="left")
+            glyph.bind("<Button-1>", lambda e, k=key: self.select(k))
+            b = button(row, title, lambda k=key: self.select(k), quiet=True, anchor="w", width=12)
+            b.pack(side="left", expand=True, fill="x")
+            self.nav[key] = (row, glyph, b)
+        label(rail, "●  로컬 CPU", fg=TEAL, size=9).pack(side="bottom", anchor="w", padx=6)
+        main = frame(root, BG, padx=14, pady=10)
+        main.grid(row=0, column=1, sticky="nsew")
+        main.columnconfigure(0, weight=1)
+        main.rowconfigure(1, weight=1)
+        head = frame(main)
+        head.grid(row=0, column=0, sticky="ew", pady=(0, 8))
+        self.heading = label(head, "", size=19, bold=True)
+        self.heading.pack(side="left")
+        self.english = label(head, "", fg=MUTED, size=10)
+        self.english.pack(side="left", padx=12, anchor="s", pady=5)
+        viewport = frame(main)
+        viewport.grid(row=1, column=0, sticky="nsew")
+        self.canvas = tk.Canvas(viewport, bg=BG, highlightthickness=0, bd=0)
+        sb = ttk.Scrollbar(viewport, command=self.canvas.yview)
+        self.canvas.configure(yscrollcommand=sb.set)
+        sb.pack(side="right", fill="y")
+        self.canvas.pack(side="left", fill="both", expand=True)
+        self.body = frame(self.canvas, BG)
+        self.body_id = self.canvas.create_window(0, 0, anchor="nw", window=self.body)
+        self.body.bind("<Configure>", lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all")))
+        self.canvas.bind("<Configure>", lambda e: self.canvas.itemconfigure(self.body_id, width=e.width))
+        root = self.root
+        root.bind_all("<FocusIn>", self.reveal, add="+")
+        dock = frame(main, "#1c2036", highlightthickness=1, highlightbackground="#665895", padx=11, pady=7)
+        dock.grid(row=2, column=0, sticky="ew", pady=(9, 0))
+        top = frame(dock)
+        top.pack(fill="x")
+        label(top, "자연어 명령", bold=True).pack(side="left")
+        self.status = label(top, "준비", size=9, fg=TEAL)
+        self.status.pack(side="right")
+        row = frame(dock)
+        row.pack(fill="x", pady=(5, 3))
+        self.command = textbox(row, 2)
+        self.command.pack(side="left", fill="both", expand=True)
+        actions = frame(row)
+        actions.pack(side="left", padx=(6, 0))
+        self.send = button(actions, "CPU 전송  ↵", self.ask, primary=True)
+        self.send.pack(fill="x")
+        self.newdraft = button(actions, "설계 초안", self.new_draft, quiet=True)
+        self.newdraft.pack(fill="x")
+        label(dock, "계산 · 비교 · 메모 · 도움말     |     Enter 전송    Shift+Enter 줄바꿈    Ctrl+L 입력", fg=MUTED, size=9).pack(fill="x")
+        self.command.bind("<Return>", lambda e: (self.ask(), "break")[1])
+        self.command.bind("<Shift-Return>", lambda e: (self.command.insert("insert", "\n"), "break")[1])
+        self.command.bind("<Control-Return>", lambda e: (self.ask(), "break")[1])
 
-    def _button(self, parent, text: str, command, *, accent=False, width=None):
-        options = dict(text=text, command=command, bd=0, relief="flat", cursor="hand2",
-                       bg=PURPLE if accent else PANEL2, fg="#ffffff" if accent else TEXT,
-                       activebackground="#6555ce" if accent else "#22324e",
-                       activeforeground="white", padx=13, pady=10,
-                       font=("Segoe UI", 10, "bold"))
-        if width is not None:
-            options["width"] = width
-        return tk.Button(parent, **options)
+    def wheel(self, event):
+        if str(event.widget).startswith(str(self.body)) and not isinstance(event.widget, (tk.Text, ttk.Treeview, ttk.Combobox)):
+            self.canvas.yview_scroll(-int(event.delta / 120) * 3, "units")
 
-    def _build(self):
-        header = tk.Frame(self.root, bg=BG, height=72)
-        header.pack(side="top", fill="x", padx=22, pady=(12, 10))
-        header.pack_propagate(False)
-        self._label(header, "⬡  EAI V3.1", size=20, bold=True).pack(side="left")
-        self._label(header, "  ·  Independent Architect / Player / AXNODE",
-                    color=MUTED).pack(side="left", padx=10)
-        for name, color in (("HYDROGEN HOLD", RED), ("EXTERNAL OFF", AMBER),
-                            ("LOCAL CPU", CYAN)):
-            pill = tk.Label(header, text=name, bg=PANEL, fg=color,
-                            padx=11, pady=9, font=("Segoe UI", 10, "bold"))
-            pill.pack(side="right", padx=5)
-
-        work = tk.Frame(self.root, bg=BG)
-        work.pack(side="top", fill="both", expand=True, padx=20)
-        sidebar = tk.Frame(work, bg=PANEL, width=188, highlightthickness=1,
-                           highlightbackground=EDGE)
-        sidebar.pack(side="left", fill="y", padx=(0, 12))
-        sidebar.pack_propagate(False)
-        self._label(sidebar, "WORKSPACE", color=MUTED, size=9, bold=True).pack(
-            anchor="w", padx=17, pady=(22, 16))
-        for tab in self.TABS:
-            button = self._button(sidebar, tab, lambda tab=tab: self._select(tab))
-            button.configure(anchor="w", width=17, padx=15)
-            button.pack(fill="x", padx=9, pady=3)
-            self.nav_buttons[tab] = button
-        tk.Frame(sidebar, bg=EDGE, height=1).pack(fill="x", padx=15, pady=20)
-        self._label(sidebar, "권한 / 보안", bold=True).pack(anchor="w", padx=17)
-        self._label(sidebar, "외부 전송 · 비활성\n실제 Player · 승인 필요\nAXNODE · 읽기/검토",
-                    color=MUTED, justify="left", size=10).pack(
-                        anchor="w", padx=17, pady=12)
-
-        main = tk.Frame(work, bg=BG)
-        main.pack(side="left", fill="both", expand=True)
-        metrics = tk.Frame(main, bg=BG)
-        metrics.pack(fill="x", pady=(0, 12))
-        for title, value, color in (
-            ("컴퓨팅", "CPU 우선", CYAN),
-            ("원격 모델", "OFF / HOLD", RED),
-            ("실제 실행", "별도 승인", AMBER),
-            ("검증 상태", "미인수", MUTED),
-        ):
-            card = tk.Frame(metrics, bg=PANEL, highlightthickness=1,
-                            highlightbackground=EDGE)
-            card.pack(side="left", fill="both", expand=True, padx=(0, 8))
-            self._label(card, title, size=9, color=MUTED).pack(anchor="w", padx=16, pady=(13, 1))
-            self._label(card, value, size=14, color=color, bold=True).pack(
-                anchor="w", padx=16, pady=(0, 14))
-
-        center = tk.Frame(main, bg=PANEL, highlightbackground=EDGE,
-                          highlightthickness=1)
-        center.pack(side="left", fill="both", expand=True, padx=(0, 10))
-        self.title = self._label(center, "", size=15, bold=True)
-        self.title.pack(anchor="w", padx=20, pady=(17, 5))
-        self.description = self._label(center, "", color=MUTED, justify="left", wraplength=590)
-        self.description.pack(anchor="w", fill="x", padx=20)
-        self.result = tk.Text(center, bg="#0e172a", fg=TEXT,
-                              insertbackground=TEXT, selectbackground="#3a4679",
-                              wrap="word", bd=0, relief="flat", padx=17, pady=15,
-                              font=("Consolas", 10), height=14)
-        self.result.pack(fill="both", expand=True, padx=14, pady=(14, 14))
-        self.result.configure(state="disabled")
-        self.graph = tk.Canvas(center, bg="#0e172a", bd=0,
-                               highlightthickness=0, height=175)
-
-        right = tk.Frame(main, bg=PANEL, width=264, highlightbackground=EDGE,
-                         highlightthickness=1)
-        right.pack(side="right", fill="y")
-        right.pack_propagate(False)
-        self._label(right, "로컬 입력 · 파일 연결", size=13, bold=True).pack(
-            anchor="w", padx=16, pady=(18, 9))
-        pickers = (
-            ("problem", "ProblemSpec JSON", self._pick_problem),
-            ("store", "AXNODE 폴더", self._pick_store),
-            ("plan", "PlanSpec JSON", self._pick_plan),
-            ("report", "검증 보고서 JSON", self._pick_report),
-        )
-        for key, name, callback in pickers:
-            self._button(right, "선택 · " + name, callback).pack(
-                fill="x", padx=13, pady=(8, 0))
-            lbl = self._label(right, "선택 안 됨", color=MUTED, size=9,
-                              anchor="w")
-            lbl.pack(fill="x", padx=17, pady=(3, 3))
-            self.path_labels[key] = lbl
-        tk.Frame(right, bg=EDGE, height=1).pack(fill="x", padx=13, pady=(13, 8))
-        self.action_title = self._label(right, "기능", color=MUTED, bold=True)
-        self.action_title.pack(anchor="w", padx=17, pady=4)
-        self.actions = tk.Frame(right, bg=PANEL)
-        self.actions.pack(fill="x", padx=13)
-        self._label(right, "실행은 GUI 입력 → 기존 EAI 계약\n→ 실패 시 HOLD. 별도 권한을\n자동으로 생성하지 않습니다.",
-                    color=MUTED, size=9, justify="left").pack(
-                        anchor="w", padx=16, pady=(18, 0))
-
-        composer = tk.Frame(self.root, bg=PANEL, highlightthickness=1,
-                            highlightbackground="#483e83")
-        composer.pack(side="bottom", fill="x", padx=20, pady=(12, 16))
-        top = tk.Frame(composer, bg=PANEL)
-        top.pack(fill="x", padx=15, pady=(9, 5))
-        self._label(top, "자연어 명령 입력", bold=True, color=TEXT).pack(side="left")
-        self.state = self._label(top, "준비 · 외부 전송 없음", color=CYAN, size=9)
-        self.state.pack(side="right")
-        line = tk.Frame(composer, bg=PANEL)
-        line.pack(fill="x", padx=15, pady=(0, 13))
-        self.command = tk.Text(line, height=3, wrap="word", bg="#0d172b", fg=TEXT,
-                               insertbackground=TEXT, selectbackground="#3a4679",
-                               font=("Segoe UI", 11), bd=0, relief="flat", padx=11, pady=10)
-        self.command.pack(side="left", fill="x", expand=True)
-        buttons = tk.Frame(line, bg=PANEL)
-        buttons.pack(side="right", padx=(9, 0))
-        self._button(buttons, "CPU 답변", self._ask, accent=True).pack(fill="x", pady=(0, 7))
-        self._button(buttons, "설계 초안", self._draft).pack(fill="x")
-        self.command.bind("<Control-Return>", lambda _e: self._ask())
-
-    def _select(self, tab: str):
-        self.tab = tab
-        for label, button in self.nav_buttons.items():
-            button.configure(bg=PURPLE if label == tab else PANEL2)
-        descriptions = {
-            "현황": "로컬 독립 EAI. 숫자·명령·설계는 별도 검증 전에는 확정 사실이 아닙니다.",
-            "Architect": "선택한 ProblemSpec과 기존 AXNODE를 이용한 CPU 계획 후보 미리보기. 실제 실행 없음.",
-            "AXNODE": "선택한 기존 SQLite 카탈로그의 메타데이터만 읽기 전용 조회합니다.",
-            "Verifier": "오프라인 Journey 영수증 무결성 검사. 독립적인 현실 검증과는 구분합니다.",
-            "Player": "사용자가 승인한 순수 메모리 no-op만 시뮬레이션합니다. 실제 OS 작업 불가.",
-            "기록": "현재 GUI 세션의 요약 상태만 표시합니다. 비밀정보·명령 원문 기록 안 함.",
-        }
-        self.title.configure(text=tab + "  /  EAI LOCAL")
-        self.description.configure(text=descriptions[tab])
-        for widget in self.actions.winfo_children():
-            widget.destroy()
-        buttons = {
-            "현황": (("명령 사용법", self._help), ("설계 초안 저장", self._save_draft)),
-            "Architect": (("Architect 설계 미리보기", self._architect),
-                          ("설계 초안 저장", self._save_draft),
-                          ("초안 JSON 편집", self._edit_draft)),
-            "AXNODE": (("AXNODE 검색", self._catalog),),
-            "Verifier": (("보고서 무결성 검사", self._verify),),
-            "Player": (("순수 시뮬레이션", self._player),),
-            "기록": (("상태 이력 보기", self._show_history),),
-        }[tab]
-        for name, action in buttons:
-            self._button(self.actions, name, action, accent=name.endswith("미리보기")).pack(
-                fill="x", pady=5)
-        if tab == "AXNODE":
-            self.graph.pack(fill="x", padx=14, pady=(0, 12))
-            self._draw_graph()
-        else:
-            self.graph.pack_forget()
-        self._display_text({"status": "READY", "page": tab,
-                            "help": descriptions[tab]}, save=False)
-
-    def _display_text(self, payload: dict, *, save: bool = True):
-        rendered = json.dumps(payload, ensure_ascii=False, indent=2)
-        if len(rendered) > 16000:
-            rendered = rendered[:16000] + "\n... (표시 제한, 원본은 수정하지 않음)"
-        self.result.configure(state="normal")
-        self.result.delete("1.0", "end")
-        self.result.insert("1.0", rendered)
-        self.result.configure(state="disabled")
-        if save:
-            self.last_result = payload
-            status = str(payload.get("status", "LOCAL"))
-            self.records.append((self.tab, status[:80]))
-            del self.records[:-100]
-            self.state.configure(text=status[:45], fg=CYAN if status == "READY" else AMBER)
-
-    def _read_command(self) -> str:
-        command = self.command.get("1.0", "end-1c").strip()
-        if not command or len(command) > 4000:
-            raise ValueError("1..4000자 명령을 입력하세요")
-        return command
-
-    def _submit(self, job):
-        if self.busy:
+    def reveal(self, event):
+        widget = event.widget
+        if not str(widget).startswith(str(self.body)) or not widget.winfo_viewable():
             return
-        self.busy = True
-        self.state.configure(text="CPU 작업 중...", fg=AMBER)
-        def target():
-            try:
-                result = job()
-                self.events.put(("result", result))
-            except Exception as exc:
-                # No arbitrary raw exception strings: they may contain private paths.
-                self.events.put(("error", type(exc).__name__))
-        threading.Thread(target=target, daemon=True).start()
+        height = self.body.winfo_height()
+        top = widget.winfo_rooty() - self.body.winfo_rooty()
+        first = self.canvas.canvasy(0)
+        view = self.canvas.winfo_height()
+        if top < first or top + widget.winfo_height() > first + view:
+            self.canvas.yview_moveto(max(0, top-20) / max(1, height))
 
-    def _poll(self):
+    def focus_command(self, _event=None):
+        self.command.focus_set()
+        return "break"
+
+    def fill_command(self, value):
+        self.command.delete("1.0", "end")
+        self.command.insert("1.0", value)
+        self.focus_command()
+
+    def select(self, page):
+        self.page = page
+        for key, (row, glyph, b) in self.nav.items():
+            color = "#35304f" if key == page else RAIL
+            row.configure(bg=color)
+            glyph.configure(bg=color, fg=VIOLET if key == page else MUTED)
+            b.configure(bg=color, highlightbackground=color, fg=TEXT if key == page else MUTED)
+        self.heading.configure(text=PAGES[page][0])
+        self.english.configure(text=PAGES[page][1])
+        self.render()
+        self.canvas.yview_moveto(0)
+
+    def render(self):
+        for child in self.body.winfo_children():
+            child.destroy()
+        VIEWS[self.page](self, self.body)
+
+    def notice(self, message, color=AMBER):
+        self.status.configure(text=message, fg=color)
+
+    def ready(self):
+        if self.busy:
+            self.notice("현재 작업을 마친 뒤 다시 시도해 주세요.")
+        return not self.busy and not self.closing
+
+    def run(self, page, op, fn, *, cancel=None):
+        if not self.ready():
+            return
+        self.busy, self.cancel_event = True, cancel
+        self.notice(OPS.get(op, "작업 공간 열기") + " 진행 중…", VIOLET)
+        self.send.configure(state="disabled")
+        self.newdraft.configure(state="disabled")
+        if cancel is not None:
+            self.render()
+
+        def work():
+            try:
+                data = fn()
+            except Exception as exc:
+                data = {"status": diagnostic(exc)}
+            failed_journal = False
+            rows = None
+            try:
+                if op != "startup":
+                    self.bridge.state.record(page, op, data["status"])
+                rows = self.bridge.state.history()
+            except (OSError, ValueError, sqlite3.Error):
+                failed_journal = True
+            self.events.put((page, op, data, rows, failed_journal))
+
+        self.worker = threading.Thread(target=work, name="EAI-local-worker")
+        self.worker.start()
+
+    def poll(self):
         try:
-            while True:
-                kind, result = self.events.get_nowait()
-                self.busy = False
-                if kind == "error":
-                    self._display_text({"status": "HOLD_LOCAL_ERROR", "error_type": result,
-                                        "external_calls": 0})
-                elif isinstance(result, dict):
-                    if result.get("kind") == "AXNODE":
-                        self.last_catalog = result
-                        if self.tab == "AXNODE":
-                            self._draw_graph()
-                    self._display_text(result)
-                else:
-                    self._display_text({"status": "HOLD_UNEXPECTED_RESULT"})
+            page, op, data, rows, failed_journal = self.events.get_nowait()
         except Empty:
             pass
-        self.root.after(100, self._poll)
+        else:
+            self.worker.join()
+            self.busy, self.worker, self.cancel_event = False, None, None
+            self.send.configure(state="normal")
+            self.newdraft.configure(state="normal")
+            if rows is not None:
+                self.rows = rows
+            code = data["status"]
+            if op == "startup":
+                if code == "OK":
+                    self.apply_limits(data["limits"])
+            else:
+                self.results[page] = (op, data)
+                self.apply_result(op, data)
+            self.render()
+            good = code in ("OK", "DRAFT_SAVED", "DRAFT_OPENED", "SETTINGS_SAVED", "EXAMPLE_READY")
+            message = "준비" if op == "startup" and code == "OK" else caption(code)
+            if failed_journal:
+                message += " · 기록 읽기/저장 실패"
+            self.notice(message, RED if failed_journal or code in ERROR_TEXT else TEAL if good else AMBER)
+            if self.closing:
+                self.destroy()
+                return
+        self.poll_id = self.root.after(30, self.poll)
 
-    def _ask(self):
+    def apply_limits(self, limits):
+        self.limits = limits
+        for var, value in zip(self.limit_vars, (limits.steps, limits.seconds, limits.expansions)):
+            var.set(str(value))
+
+    def apply_result(self, op, data):
+        code = data["status"]
+        if op == "design":
+            self.chosen_plan.set(next(iter(data.get("plan_specs", {})), ""))
+        if op == "journey" and "path" in data:
+            self.receipt = data.pop("path")
+        if op == "plan" and "path" in data:
+            self.plan = data.pop("path")
+        if code == "EXAMPLE_READY":
+            self.example = data.pop("workspace")
+            self.problem, self.library = self.example.problem, self.example.library
+            self.plan, self.receipt = self.example.plan, self.example.receipt
+            self.draft = data.pop("draft")
+            self.clear_library()
+            self.clear_plan()
+            self.results.pop("verifier", None)
+        elif code in ("DRAFT_OPENED", "DRAFT_SAVED"):
+            self.problem, self.draft = data.pop("path"), data.pop("draft")
+            self.clear_plan()
+            if op == "draft_open" and self.page == "home":
+                self.select("architect")
+        elif code == "LOCAL_CATALOG_UNVERIFIED":
+            self.catalog_data, self.node_data = data, None
+        elif code == "NODE_DIGEST_MATCH":
+            self.node_data = data
+        elif op == "node":
+            self.node_data = None
+        elif op == "catalog":
+            self.catalog_data = self.node_data = None
+        elif op == "plan":
+            self.review = data if "steps" in data else None
+            self.stop_step.set("끝까지")
+        elif code == "HOLD_PLAN_CHANGED":
+            self.review = None
+        elif code == "SETTINGS_SAVED":
+            self.apply_limits(data.pop("limits"))
+
+    def ask(self):
+        if not self.ready():
+            return
+        command = self.command.get("1.0", "end-1c").strip()
         try:
-            command = self._read_command()
             intent = self.bridge.rule_parser.parse(command)
-        except ValueError as exc:
-            messagebox.showwarning("명령 확인", str(exc), parent=self.root)
+        except ValueError:
+            self.notice("명령 길이와 형식을 확인하세요. 최대 4,000자입니다.", RED)
             return
-        approved = False
+        self.select("home")
+        consent = False
         if intent.task == "remember":
-            approved = messagebox.askyesno("로컬 메모 저장 승인",
-                "이 문장을 사용자 전용 로컬 SQLite 메모로 저장할까요?", parent=self.root)
-            if not approved:
-                self._display_text({"status": "HOLD_NOTE_NOT_APPROVED"})
+            consent = messagebox.askyesno("로컬 메모 저장", "이 메모의 원문을 개인 SQLite에 보존할까요?", parent=self.root)
+            if not consent:
+                self.run("home", "command", lambda: {"status": "HOLD_NOTE_NOT_APPROVED", "text": "메모 저장을 취소했습니다."})
                 return
-        self._submit(lambda: self.bridge.ask(command, consent_to_note=approved))
+        self.run("home", "command", lambda: self.bridge.ask(command, consent_to_note=consent))
 
-    def _draft(self):
+    def new_draft(self):
+        if not self.ready():
+            return
         try:
-            proposal = self.bridge.make_problem_draft(self._read_command())
-        except ValueError as exc:
-            messagebox.showwarning("초안 확인", str(exc), parent=self.root)
+            proposal = self.bridge.make_problem_draft(self.command.get("1.0", "end-1c"), max_steps=self.limits.steps,
+                                                      max_seconds=self.limits.seconds)
+        except ValueError:
+            self.notice("설계 목표를 1~2,000자로 입력하세요.", RED)
             return
-        self.last_draft = proposal
-        self._select("Architect")
-        self._display_text({"status": "DRAFT_UNVERIFIED_REVIEW_REQUIRED",
-                            "problem_spec": proposal,
-                            "note": "자동 승인되지 않습니다. 저장 전 제약·위험·검증 기준을 검토하세요."})
+        self.draft, self.problem = proposal, None
+        self.clear_plan()
+        self.results.pop("architect", None)
+        self.select("architect")
+        self.notice("새 초안 · 조건을 검토하고 저장하세요.", VIOLET)
 
-    def _edit_draft(self):
-        if self.last_draft is None:
-            messagebox.showinfo("초안", "하단의 '설계 초안'을 먼저 사용하세요.", parent=self.root)
+    def edit(self):
+        if not self.ready() or self.draft is None:
             return
-        popup = tk.Toplevel(self.root, bg=BG)
-        popup.title("ProblemSpec — 로컬 JSON 편집")
-        popup.geometry("760x590")
-        area = tk.Text(popup, bg=PANEL, fg=TEXT, insertbackground=TEXT,
-                       font=("Consolas", 10), wrap="word", padx=12, pady=12)
-        area.pack(fill="both", expand=True, padx=15, pady=15)
-        area.insert("1.0", json.dumps(self.last_draft, ensure_ascii=False, indent=2))
-        def apply_changes():
-            try:
-                raw = strict_json(area.get("1.0", "end-1c"))
-                ProblemSpec.validate(raw)
-            except (ValueError, TypeError) as exc:
-                messagebox.showerror("계약 불일치", type(exc).__name__, parent=popup)
-                return
-            self.last_draft = raw
-            self._display_text({"status": "DRAFT_REVIEWED_NOT_EXECUTED",
-                                "problem_spec": raw,
-                                "note": "저장 버튼을 누르기 전까지 파일 변경 없음."})
-            popup.destroy()
-        self._button(popup, "JSON 검증 · 초안 반영", apply_changes, accent=True).pack(
-            fill="x", padx=15, pady=(0, 15))
-        popup.transient(self.root)
-        popup.grab_set()
+        def apply(data):
+            self.draft, self.problem = data, None
+            self.clear_plan()
+            self.results.pop("architect", None)
+            self.render()
+            self.notice("초안 수정됨 · 새 사본으로 저장하세요.", VIOLET)
+        edit_problem(self.root, self.draft, apply)
 
-    def _save_draft(self):
-        if self.last_draft is None:
-            messagebox.showinfo("설계 초안", "하단 입력창에서 '설계 초안'을 먼저 누르세요.", parent=self.root)
+    def save(self):
+        if not self.ready() or self.draft is None:
             return
-        if not messagebox.askyesno("파일 생성 확인",
-                "사용자 전용 새 ProblemSpec 파일을 생성할까요? 기존 파일은 덮어쓰지 않습니다.",
-                parent=self.root):
+        raw = dict(self.draft, id="draft_" + uuid4().hex[:16])
+        def save_copy():
+            path = self.bridge.save_new_draft(raw)
+            return {"status": "DRAFT_SAVED", "path": path, "draft": raw, "text": "개인 초안 폴더에 저장했습니다. 이 사본으로 설계 대안을 비교할 수 있습니다."}
+        self.run("architect", "draft_save", save_copy)
+
+    def open_problem(self, page):
+        if not self.ready():
             return
-        self._submit(lambda: {"status": "DRAFT_SAVED_PRIVATE_LOCAL",
-                              "file": str(self.bridge.save_new_draft(self.last_draft)),
-                              "execution": "NOT_EXECUTED"})
-
-    def _pick_problem(self):
-        self._pick_file("problem", "problem_path", ("ProblemSpec JSON", "*.json"))
-
-    def _pick_plan(self):
-        self._pick_file("plan", "plan_path", ("PlanSpec JSON", "*.json"))
-
-    def _pick_report(self):
-        self._pick_file("report", "report_path", ("Journey JSON", "*.json"))
-
-    def _pick_file(self, key, attr, filetype):
-        value = filedialog.askopenfilename(parent=self.root, title="로컬 파일 선택",
-                                           filetypes=[filetype, ("모든 파일", "*.*")])
-        if value:
-            setattr(self, attr, value)
-            self.path_labels[key].configure(text=Path(value).name[:34], fg=CYAN)
-
-    def _pick_store(self):
-        value = filedialog.askdirectory(parent=self.root, title="기존 AXNODE 폴더 선택")
-        if value:
-            self.store_path = value
-            self.path_labels["store"].configure(text=Path(value).name[:34], fg=CYAN)
-
-    def _require(self, *attrs):
-        if not all(getattr(self, attr) for attr in attrs):
-            messagebox.showwarning("입력 필요", "오른쪽에서 필요한 로컬 파일/폴더를 먼저 선택하세요.",
-                                   parent=self.root)
-            return False
-        return True
-
-    def _architect(self):
-        if self._require("problem_path", "store_path"):
-            self._submit(lambda: self.bridge.architect(self.problem_path, self.store_path))
-
-    def _catalog(self):
-        if not self._require("store_path"):
+        options = {}
+        draft_folder = self.bridge.state_root / "drafts"
+        from .local_files import local_path
+        try:
+            if local_path(draft_folder).is_dir():
+                options["initialdir"] = str(draft_folder)
+        except (OSError, ValueError):
+            pass
+        name = filedialog.askopenfilename(parent=self.root, title="로컬 ProblemSpec 열기", filetypes=[("ProblemSpec JSON", "*.json")], **options)
+        if not name:
             return
-        phrase = self.command.get("1.0", "end-1c").strip()
-        self._submit(lambda: self.bridge.axnode_catalog(self.store_path, query=phrase[:120]))
+        path = Path(name)
+        self.select(page)
+        def load():
+            return {"status": "DRAFT_OPENED", "draft": self.bridge.load_draft(path),
+                    "path": path, "text": "ProblemSpec 형식 검사를 통과했습니다."}
+        self.run(page, "draft_open", load)
 
-    def _verify(self):
-        if self._require("report_path"):
-            self._submit(lambda: self.bridge.verify_journey(self.report_path))
+    def clear_plan(self):
+        self.review = None
+        self.stop_step.set("끝까지")
+        self.results.pop("player", None)
 
-    def _player(self):
-        if not self._require("problem_path", "plan_path"):
+    def clear_library(self):
+        self.catalog_data = self.node_data = None
+        self.results.pop("atlas", None)
+        self.results.pop("architect", None)
+
+    def choose_library(self):
+        if not self.ready():
             return
-        yes = messagebox.askyesno("순수 시뮬레이션만 허용",
-                 "실제 파일·외부 시스템 작업이 없는 synthetic.noop.v1 시뮬레이션만 실행합니다. 계속할까요?",
-                 parent=self.root)
-        if yes:
-            self._submit(lambda: self.bridge.player(
-                self.problem_path, self.plan_path, acknowledged_pure_only=True))
+        name = filedialog.askdirectory(parent=self.root, title="기존 AXNODE 저장소 선택", mustexist=True)
+        if name:
+            self.library = Path(name)
+            self.clear_library()
+            if self.page == "atlas":
+                self.catalog()
+            self.render()
 
-    def _show_history(self):
-        self._display_text({"status": "LOCAL_SESSION_ONLY", "records": [
-            {"panel": p, "status": s} for p, s in self.records[-60:]],
-            "note": "원본 명령과 비밀정보는 GUI 상태 기록에 저장하지 않습니다."}, save=False)
-
-    def _help(self):
-        self._display_text({"status": "SUPPORTED_LOCAL_INPUTS", "examples": [
-            "계산: 12 * (3 + 4)", "비교: a=1, b=2", "도움말",
-            "기억해: 로컬 메모 (별도 확인 필요)",
-            "자유 목표: '설계 초안' 후 ProblemSpec 확인 및 Architect 미리보기"],
-            "disallowed": ["임의 Python/셸 실행", "자동 클라우드 송신", "실제 Player 실행", "무단 파일 덮어쓰기"]})
-
-    def _draw_graph(self):
-        import math
-        can = self.graph
-        can.delete("all")
-        w = max(500, can.winfo_width())
-        h = 175
-        nodes = (self.last_catalog or {}).get("nodes", [])[:16]
-        if not nodes:
-            can.create_text(w//2, h//2, text="AXNODE 조회 후 제한된 관계 그래프를 표시합니다",
-                            fill=MUTED, font=("Segoe UI", 10))
+    def choose(self, field):
+        if not self.ready():
             return
-        coords = {}
-        for i, n in enumerate(nodes):
-            angle = i * 2 * math.pi / len(nodes)
-            coords[n["sha256"]] = (w//2 + 0.38*w*math.cos(angle),
-                                    h//2 + 58*math.sin(angle))
-        for n in nodes:
-            x,y = coords[n["sha256"]]
-            for parent in n["parents"]:
-                if parent in coords:
-                    px,py = coords[parent]
-                    can.create_line(px, py, x, y, fill="#394e72", width=2)
-        for n in nodes:
-            x,y = coords[n["sha256"]]
-            can.create_oval(x-13,y-13,x+13,y+13,fill=PURPLE,outline=CYAN)
-            can.create_text(x,y+23,text=n["node_id"][:18],fill=TEXT,
-                            font=("Segoe UI", 8))
+        name = filedialog.askopenfilename(parent=self.root, title="로컬 JSON 선택", filetypes=[("JSON", "*.json")])
+        if not name:
+            return
+        setattr(self, field, Path(name))
+        if field == "plan":
+            self.clear_plan()
+        else:
+            self.results.pop("verifier", None)
+        self.render()
 
-    def _close(self):
+    def practice(self):
+        if not self.ready():
+            return
+        previous = self.example
+        def open_example():
+            workspace = previous or PracticeWorkspace()
+            return {"status": "EXAMPLE_READY", "workspace": workspace, "draft": self.bridge.load_draft(workspace.problem),
+                    "text": "합성 목표, 노드 3개, 순수 계획, 검증 영수증을 열었습니다. 왼쪽에서 설계 대안, 노드 계보, 모의 실행, 영수증을 확인하세요."}
+        self.run("home", "example", open_example)
+
+    def design(self):
+        if not self.problem or not self.library:
+            self.notice("초안을 저장하거나 열고 AXNODE 저장소를 선택하세요.")
+            return
+        signal = threading.Event()
+        p, lib, limit = self.problem, self.library, self.limits.expansions
+        self.run("architect", "design", lambda: self.bridge.architect(p, lib, max_expansions=limit, cancelled=signal.is_set), cancel=signal)
+
+    def request_cancel(self):
+        if self.cancel_event:
+            self.cancel_event.set()
+            self.notice("다음 탐색 경계에서 중단 요청 확인 중…", AMBER)
+
+    def stage_json(self, name, raw):
+        # Called only by the single worker. Never publish into a chosen library.
+        if self.artifacts is None:
+            self.artifacts = TemporaryDirectory(prefix="eai-review-")
+        file = Path(self.artifacts.name) / (name + "-" + uuid4().hex[:8] + ".json")
+        with file.open("x", encoding="utf-8") as stream:
+            json.dump(raw, stream, ensure_ascii=False)
+        return file
+
+    def review_alternative(self):
+        if not self.ready():
+            return
+        design = self.results.get("architect", ("", {}))[1]
+        raw = design.get("plan_specs", {}).get(self.chosen_plan.get())
+        if raw is None or not self.problem:
+            return
+        source = self.problem
+        self.clear_plan()
+        self.select("player")
+        def prepare():
+            path = self.stage_json("plan", raw)
+            return dict(self.bridge.inspect_plan(source, path), path=path)
+        self.run("player", "plan", prepare)
+
+    def review_journey(self):
+        if not self.ready() or not self.problem or not self.library:
+            return
+        design = self.results.get("architect", ("", {}))[1]
+        digest = design.get("problem_sha256")
+        if digest is None:
+            return
+        source, library, expansions = self.problem, self.library, self.limits.expansions
+        self.select("verifier")
+        def prepare():
+            raw = self.bridge.journey_receipt(source, library, max_expansions=expansions, expected_problem=digest)
+            path = self.stage_json("journey", raw)
+            return dict(self.bridge.verify_journey(path), path=path)
+        self.run("verifier", "journey", prepare)
+
+    def catalog(self):
+        if not self.library:
+            self.notice("조회할 기존 AXNODE 저장소를 선택하세요.")
+            return
+        lib, query, state = self.library, self.query.get(), self.filter.get()
+        self.run("atlas", "catalog", lambda: self.bridge.axnode_catalog(lib, query=query, status="" if state == "전체" else state))
+
+    def inspect_node(self, digest):
+        lib = self.library
+        self.run("atlas", "node", lambda: self.bridge.node_detail(lib, digest))
+
+    def inspect_plan(self):
+        if not self.problem or not self.plan:
+            self.notice("검토할 목표와 계획 파일을 선택하세요.")
+            return
+        p, plan = self.problem, self.plan
+        self.run("player", "plan", lambda: self.bridge.inspect_plan(p, plan))
+
+    def simulate(self):
+        if not self.ready() or not self.review or self.review["status"] != "PURE_SYNTHETIC_PREVIEW_ONLY":
+            return
+        if not messagebox.askyesno("순수 시뮬레이션", "검토한 계획을 메모리 안에서 모의 실행할까요?", parent=self.root):
+            self.notice("모의 실행을 시작하지 않았습니다.")
+            return
+        p, plan = self.problem, self.plan
+        digests = (self.review["problem_sha256"], self.review["plan_sha256"])
+        stop = None if self.stop_step.get() == "끝까지" else self.stop_step.get()
+        self.run("player", "simulate", lambda: self.bridge.player(p, plan, acknowledged_pure_only=True,
+                 reviewed_digests=digests, cancel_before_step=stop))
+
+    def verify(self):
+        if not self.receipt:
+            self.notice("검사할 로컬 Journey 영수증을 선택하세요.")
+            return
+        path = self.receipt
+        self.run("verifier", "verify", lambda: self.bridge.verify_journey(path))
+
+    def set_limits(self):
+        try:
+            limits = WorkspaceLimits(*(int(var.get()) for var in self.limit_vars))
+        except ValueError:
+            self.notice("단계 1–64, 시간 1–300초, 검색 확장 1–8의 정수를 입력하세요.", RED)
+            return
+        def persist():
+            self.bridge.state.set_limits(limits)
+            return {"status": "SETTINGS_SAVED", "limits": limits}
+        self.run("settings", "settings", persist)
+
+    def close(self):
         if self.busy:
-            messagebox.showwarning("작업 진행 중", "현재 로컬 작업 종료 후 닫을 수 있습니다.",
-                                   parent=self.root)
-            return
+            self.closing = True
+            self.request_cancel()
+            self.notice("현재 작업을 정리한 뒤 종료합니다.")
+        else:
+            self.destroy()
+
+    def destroy(self):
+        if self.poll_id:
+            self.root.after_cancel(self.poll_id)
+        if self.example:
+            self.example.close()
+        if self.artifacts:
+            self.artifacts.cleanup()
         self.root.destroy()
 
 
 def main() -> int:
+    if os.name == "nt":
+        import ctypes
+        ctypes.windll.user32.SetProcessDPIAware()
     root = tk.Tk()
+    if os.name == "nt":
+        if getattr(sys, "frozen", False):
+            icon = Path(getattr(sys, "_MEIPASS")) / "assets" / "eai_desktop.ico"
+        else:
+            icon = Path(__file__).resolve().parents[1] / "scripts" / "eai_desktop.ico"
+        if icon.is_file():
+            root.iconbitmap(default=str(icon))
     EAIDesktopApp(root)
     root.mainloop()
     return 0

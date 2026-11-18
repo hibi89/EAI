@@ -84,6 +84,8 @@ TESTS = (
 
 
 def main() -> int:
+    # Direct script execution puts scripts/, not the checkout, on sys.path.
+    sys.path.insert(0, str(ROOT))
     failed = []
     for relative in SOURCES:
         file = ROOT / relative

@@ -20,7 +20,8 @@ class EAIRunner:
         self.cognition = CognitiveEngine(store, search_tool)
         self.renderer = ResponseEngine()
 
-    def ask(self, question: str, *, allow_online: bool = False) -> Answer:
+    def ask(self, question: str, *, allow_online: bool = False,
+            persist_turns: bool = True) -> Answer:
         fallback = False
         # A model's classification is NEVER sufficient authority to save user data.
         # Explicit note commands are parsed directly from the original text on CPU.
@@ -40,6 +41,7 @@ class EAIRunner:
         if fallback:
             result.warnings.append('Qwen 입력 분류 실패: 규칙 기반 CPU 분류기로 전환했습니다.')
         rendered = self.renderer.render(result)
-        self.store.add_turn('user', question)
-        self.store.add_turn('assistant', rendered)
+        if persist_turns:
+            self.store.add_turn('user', question)
+            self.store.add_turn('assistant', rendered)
         return Answer(text=rendered, result=result, parser_fallback=fallback)
