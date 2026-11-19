@@ -30,7 +30,15 @@ jobs:
             eai/logic_synthesis.py eai/logic_verifier.py eai/solver_reference_check.py \
             eai/architect_runtime.py eai/design_engine.py eai/hierarchical_planner.py \
             eai/axnode_retrieval.py eai/axnode_store.py eai/axnode_schema.py \
-            eai/player_executor.py eai/desktop_bridge.py eai/desktop_state.py
+            eai/player_executor.py eai/desktop_bridge.py eai/desktop_state.py \
+            eai/desktop_app.py eai/desktop_views.py eai/desktop_widgets.py \
+            eai/desktop_presentation.py eai/plan_engine.py eai/desktop_example.py \
+            eai/player_cli.py eai/player_observation.py eai/axnode_maintenance.py \
+            eai/axnode_memory.py eai/axnode_memory_review.py eai/axnode_recovery.py \
+            eai/axnode_restore.py eai/axnode_sidecar_backup.py eai/sidecar_recovery_audit.py \
+            eai/sidecar_coherence_review.py eai/evidence_ledger.py eai/evidence_ingest.py \
+            eai/receipt_guard.py eai/candidate_evidence_review.py eai/candidate_review_journal.py \
+            eai/episode_replay.py eai/episode_replay_dedup.py eai/episode_replay_fence.py
       - name: P2 optional Ed25519 safety test dependency (runner only)
         run: |
           python -m pip install --disable-pip-version-check --only-binary=:all: cryptography==46.0.4
