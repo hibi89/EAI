@@ -1,0 +1,91 @@
+{
+  "schema": "eai.p2.v32_exact_sha_gate_evidence.v1",
+  "date_kst": "2026-11-19",
+  "repo": "hibi89/EAI",
+  "branch": "feature/eai-v32-owner-rebuild-20261119",
+  "exact_functional_sha": "9f4c63e44e26dc5a9c28aab9acdcfada838abb6c",
+  "acceptance_id": "EAI-P2-01",
+  "acceptance_state": "PASS_EXACT_SHA_OFFLINE_STATIC_TYPE_LINUX_WINDOWS_SYNTHETIC_13_ROUTES",
+  "scope": "source/test compile/type/static + exact SHA mandatory Linux/Windows + real registered 13 CPU route synthetic baseline",
+  "linux": {
+    "run_id": 44534836032,
+    "conclusion": "SUCCESS",
+    "total": 1172,
+    "passed": 1155,
+    "skipped": 17,
+    "failed": 0,
+    "tk_xvfb_pass": 34,
+    "mypy": "PASS_236_PYTHON_FILES_eai_scripts_tests",
+    "mypy_flags": [
+      "--python-version 3.11",
+      "--follow-imports=normal",
+      "--explicit-package-bases",
+      "--ignore-missing-imports",
+      "--check-untyped-defs"
+    ],
+    "ruff": "PASS_E4_E7_E9_F63_F7_F82_all_eai_tests_scripts",
+    "python_compileall": "PASS",
+    "p2_13_cpu_routes": "PASS_SYNTHETIC_OFFLINE",
+    "offline_review_zip": "PASS"
+  },
+  "windows": {
+    "run_id": 44534835774,
+    "conclusion": "SUCCESS",
+    "total": 1172,
+    "passed": 1171,
+    "skipped": 1,
+    "failed": 0,
+    "native_tk_focused_pass": 40,
+    "native_tk_unattended_focus_skip": 1,
+    "p2_13_cpu_routes": "PASS_SYNTHETIC_OFFLINE",
+    "unsigned_exe": "PASS_UNSIGNED_BUNDLE_IMPORTS",
+    "artifact_zip_id": 14536550554,
+    "artifact_zip_sha256": "7934bac9761b51664294f36abbe2e1567b96673a41deabca130ad8ec9ea92e8a",
+    "owner_physical_win11": "NOT_RUN"
+  },
+  "progress": {
+    "p1_source_candidate_done": 60,
+    "p1_source_candidate_total": 60,
+    "p1_provisional": true,
+    "p1_inherited_semantic_intake_pending": 48,
+    "p2_accepted": 8,
+    "p2_total": 14,
+    "p2_unweighted_percent": 57.14,
+    "p2_accepted_ids": [
+      "EAI-P2-01",
+      "EAI-P2-02",
+      "EAI-P2-03",
+      "EAI-P2-04",
+      "EAI-P2-06",
+      "EAI-P2-09",
+      "EAI-V32-P2-UX01",
+      "EAI-V32-P2-UX02"
+    ],
+    "official_weighted_p1": "UNASSESSED",
+    "official_weighted_p2": "UNASSESSED"
+  },
+  "attempts": {
+    "initial_full_mypy_sha": "296ce31d1f03d988ac6739a1c73a8d81c41b9931",
+    "initial_full_mypy_run_id": 44532009761,
+    "initial_errors": 117,
+    "mid_error_counts": [
+      61,
+      31
+    ],
+    "final_errors": 0,
+    "historical_initial_ruff_warnings": 121,
+    "historical_test_E701_E702_warnings": 86,
+    "now_ruff_E4_E7_E9_F63_F7_F82": "PASS_ALL_EAI_SCRIPTS_TESTS",
+    "no_blanket_ignore_rules": true
+  },
+  "non_claims": {
+    "strict_mypy": "NOT_RUN",
+    "owner_physical_win11": "NOT_RUN",
+    "independent_technical_security_ux_audits": "NOT_RUN",
+    "real_world_ood": "NOT_RUN",
+    "real_hydrogen_send": "NOT_RUN",
+    "real_player_or_active": "HOLD",
+    "release": "HOLD"
+  },
+  "windows_zip_hash_not_exe_hash": true
+}
