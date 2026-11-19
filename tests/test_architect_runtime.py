@@ -109,7 +109,7 @@ class ArchitectRuntimeTests(unittest.TestCase):
             replace(validated, permissions=("local.read", "write.original")),
             replace(validated, budget=(999, 60)),
             replace(validated, version=True),
-            replace(validated, hard_constraints=("must:invalid field",)),
+            replace(validated, hard_constraints=(42,)),
         ):
             with self.subTest(forged=forged):
                 # A forged typed object must fail *before* the store is opened.
