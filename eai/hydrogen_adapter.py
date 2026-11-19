@@ -529,7 +529,6 @@ class _LiveSendLedger:
                 "tokens INTEGER NOT NULL, status TEXT NOT NULL)"),
         }
         exists = p.exists()
-        exists = p.exists()
         if not exists and not allow_create:
             raise PermissionError("live ledger cannot be created implicitly")
         if not exists:

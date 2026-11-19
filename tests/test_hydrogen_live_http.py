@@ -317,8 +317,6 @@ class HydrogenLiveHttpDiagnosticsTests(unittest.TestCase):
 
     @staticmethod
     def owner_root_bytes() -> bytes:
-    @staticmethod
-    def owner_root_bytes() -> bytes:
         return canonical_bytes({
             "schema": "eai.hydrogen.owner.root.v1",
             "project_id": "eai-test-project",
