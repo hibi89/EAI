@@ -39,7 +39,20 @@ try {
 } finally {
     $stream.Dispose()
 }
-$sha256 = (Get-FileHash -LiteralPath $binary -Algorithm SHA256).Hash.ToLowerInvariant()
+# Windows PowerShell 5.1 on a restricted host may not expose Get-FileHash.
+# Use the same .NET implementation as the frozen bundle hash verifier.
+function Get-ExecutableSHA256([string]$path) {
+    $hasher = [System.Security.Cryptography.SHA256]::Create()
+    $handle = [System.IO.File]::OpenRead($path)
+    try {
+        return [System.BitConverter]::ToString(
+            $hasher.ComputeHash($handle)).Replace('-', '').ToLowerInvariant()
+    } finally {
+        $handle.Dispose()
+        $hasher.Dispose()
+    }
+}
+$sha256 = Get-ExecutableSHA256 $binary
 $evidence = [ordered]@{
     schema = 'eai.windows.owner_measurement.v2'
     status = 'PREFLIGHT_ONLY'
@@ -68,7 +81,7 @@ $null = New-Item -ItemType Directory -Path $profileRoot -ErrorAction Stop
 $measurements = @()
 try {
     foreach ($launch in 1..2) {
-        if ((Get-FileHash -LiteralPath $binary -Algorithm SHA256).Hash.ToLowerInvariant() -cne $sha256) {
+        if ((Get-ExecutableSHA256 $binary) -cne $sha256) {
             throw 'EXE bytes changed before launch; measurement refused.'
         }
         $info = New-Object System.Diagnostics.ProcessStartInfo
@@ -166,7 +179,7 @@ try {
             }
         }
     }
-    if ((Get-FileHash -LiteralPath $binary -Algorithm SHA256).Hash.ToLowerInvariant() -cne $sha256) {
+    if ((Get-ExecutableSHA256 $binary) -cne $sha256) {
         throw 'EXE bytes changed during measurement.'
     }
     $evidence.status = 'MEASURED_REQUIRES_OWNER_REVIEW'
