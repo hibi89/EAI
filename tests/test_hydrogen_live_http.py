@@ -262,6 +262,62 @@ class HydrogenLiveHttpDiagnosticsTests(unittest.TestCase):
             finally:
                 ledger.close()
 
+    def test_429_pauses_second_send_even_with_stale_approval_and_credential(self):
+        body = canonical_bytes({"error": {
+            "code": 429, "status": "RESOURCE_EXHAUSTED",
+            "message": "never log owner private retry text",
+        }})
+        conn = FakeConnection(FakeErrorResponse(429, body))
+        with TemporaryDirectory() as directory:
+            packet, baseline, coordinator, nonce, first = self.run_mock_dispatch(
+                directory, conn)
+            self.assertEqual(first.status, "OFF_AFTER_PROVIDER_HTTP_ERROR")
+            path = Path(directory) / "live.sqlite"
+            with patch("eai.hydrogen_adapter.http.client.HTTPSConnection",
+                       side_effect=AssertionError("must not retry any network")):
+                second = dispatch_live_hydrogen(
+                    packet, baseline, coordinator=coordinator,
+                    api_key="A" * 32, owner_permit=None,
+                    owner_trust_root_path="untrusted",
+                    live_ledger_path=path, allow_ledger_create=True)
+            self.assertEqual(second.status, "OFF")
+            self.assertIs(second.baseline, baseline)
+            self.assertEqual(second.requests_attempted, 0)
+            self.assertEqual(len(conn.requests), 1)
+            ledger = _LiveSendLedger(path, project_id="eai-test-project",
+                                     owner_key_sha256="a" * 64)
+            try:
+                self.assertEqual(ledger.db.execute(
+                    "SELECT COUNT(*) FROM eai_live_reservations").fetchone()[0], 1)
+                status = ledger.db.execute(
+                    "SELECT status FROM eai_live_reservations WHERE nonce=?",
+                    (nonce,)).fetchone()[0]
+                self.assertIn("HTTP_429_RESOURCE_EXHAUSTED", status)
+                self.assertNotIn("private retry text", status)
+            finally:
+                ledger.close()
+
+    def test_default_off_with_permissive_flags_never_creates_live_ledger(self):
+        packet = self.packet()
+        baseline = {"trusted_cpu": "synthetic-only"}
+        coordinator = ResearchCoordinator(ResearchPolicy(
+            mode=ResearchMode.OFF, free_tier_verified=True,
+            external_sends_approved=True))
+        with TemporaryDirectory() as directory:
+            path = Path(directory) / "should_not_exist.sqlite"
+            with patch("eai.hydrogen_adapter.http.client.HTTPSConnection",
+                       side_effect=AssertionError("network on default OFF")):
+                result = dispatch_live_hydrogen(
+                    packet, baseline, coordinator=coordinator,
+                    api_key="A" * 32, owner_permit=None,
+                    owner_trust_root_path=None,
+                    live_ledger_path=path, allow_ledger_create=True)
+            self.assertEqual(result.status, "OFF")
+            self.assertEqual(result.requests_attempted, 0)
+            self.assertIs(result.baseline, baseline)
+            self.assertFalse(path.exists())
+            self.assertEqual(coordinator.policy.mode, ResearchMode.OFF)
+
     def test_mocked_transport_timeout_is_correlated_and_held_without_retry(self):
         connection = FakeConnection(error=TimeoutError("opaque transport detail"))
         with TemporaryDirectory() as directory:
