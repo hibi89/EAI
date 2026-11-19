@@ -667,21 +667,26 @@ def main(argv: list[str] | None = None) -> int:
                 print('EAI independent engine (help: 도움말 / exit: quit)')
             while True:
                 if questions is not None:
-                    if not questions: break
+                    if not questions:
+                        break
                     question = questions.pop()
                 else:
-                    try: question = input('You> ').strip()
+                    try:
+                        question = input('You> ').strip()
                     except (EOFError, KeyboardInterrupt):
                         print()
                         break
-                    if question.lower() in ('quit', 'exit'): break
-                    if not question: continue
+                    if question.lower() in ('quit', 'exit'):
+                        break
+                    if not question:
+                        continue
                 answer = runner.ask(question, allow_online=args.online)
                 print('EAI>', answer.text)
                 for note in answer.result.warnings:
                     if note not in answer.text:
                         print('NOTICE:', note)
-                if questions is not None: break
+                if questions is not None:
+                    break
         finally:
             store.close()
     except Exception as exc:

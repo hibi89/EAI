@@ -32,9 +32,12 @@ def _independent_profile(path,encoding):
                 raise ValueError('schema drift receipt malformed row')
             for col in headers:
                 cell=row[col].strip()
-                if cell=='':tally[col]['missing_count']+=1
-                elif _NUMBER.fullmatch(cell):tally[col]['numeric_count']+=1
-                else:tally[col]['text_count']+=1
+                if cell == '':
+                    tally[col]['missing_count'] += 1
+                elif _NUMBER.fullmatch(cell):
+                    tally[col]['numeric_count'] += 1
+                else:
+                    tally[col]['text_count'] += 1
         profiles=[]
         for col in headers:
             info=tally[col]

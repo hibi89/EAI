@@ -91,9 +91,12 @@ def _profile(path: Path, encoding: str) -> dict:
                 raise ValueError('schema drift row/field bound exceeded')
             for i,cell in enumerate(row):
                 item=cell.strip()
-                if not item:bins[i]['missing_count']+=1
-                elif _NUMBER.fullmatch(item):bins[i]['numeric_count']+=1
-                else:bins[i]['text_count']+=1
+                if not item:
+                    bins[i]['missing_count'] += 1
+                elif _NUMBER.fullmatch(item):
+                    bins[i]['numeric_count'] += 1
+                else:
+                    bins[i]['text_count'] += 1
     finally:
         csv.field_size_limit(previous)
     if source_snapshot(path)[1]!=digest:

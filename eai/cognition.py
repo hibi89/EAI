@@ -51,11 +51,15 @@ def exact_calculate(expression: str) -> str:
             return v if isinstance(node.op, ast.UAdd) else -v
         if isinstance(node, ast.BinOp) and type(node.op) in (ast.Add, ast.Sub, ast.Mult, ast.Div):
             a, b = evaluate(node.left, depth+1), evaluate(node.right, depth+1)
-            if isinstance(node.op, ast.Add): out = a+b
-            elif isinstance(node.op, ast.Sub): out = a-b
-            elif isinstance(node.op, ast.Mult): out = a*b
+            if isinstance(node.op, ast.Add):
+                out = a+b
+            elif isinstance(node.op, ast.Sub):
+                out = a-b
+            elif isinstance(node.op, ast.Mult):
+                out = a*b
             else:
-                if not b: raise ValueError('division by zero')
+                if not b:
+                    raise ValueError('division by zero')
                 out = a/b
             if max(out.numerator.bit_length(), out.denominator.bit_length()) > 512:
                 raise ValueError('result exceeds resource bounds')
