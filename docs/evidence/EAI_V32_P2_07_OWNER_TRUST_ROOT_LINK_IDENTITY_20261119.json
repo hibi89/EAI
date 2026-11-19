@@ -1,0 +1,80 @@
+{
+  "schema": "eai.p2.v32.source_ci_evidence.v1",
+  "date_kst": "2026-11-19",
+  "repo": "hibi89/EAI",
+  "branch": "feature/eai-v32-owner-rebuild-20261119",
+  "verified_functional_sha": "58357a99b321cc21d2066af4c22baee764bba682",
+  "source_paths": [
+    "eai/hydrogen_adapter.py",
+    "tests/test_hydrogen_live_http.py"
+  ],
+  "change": "external owner trust root all ancestor symlink/reparse + hardlink and opened identity pre/post read checks",
+  "adversarial_local_cases": [
+    "hardlinked or relative owner trust root denied",
+    "nested alias path denied before real network or SQLite creation",
+    "oversized noncanonical duplicate-key trust root denied"
+  ],
+  "ci": {
+    "linux": {
+      "run_id": 44544834209,
+      "status": "SUCCESS",
+      "total_tests": 1178,
+      "passed": 1161,
+      "skipped": 17,
+      "failed": 0,
+      "xvfb_native_tk_passed": 34,
+      "ruff": "PASS_all_eai_tests_scripts_E4_E7_E9_F63_F7_F82",
+      "mypy": "PASS_236_python_files",
+      "synthetic_offline_artifact": "PASS"
+    },
+    "windows": {
+      "run_id": 44544834105,
+      "status": "SUCCESS",
+      "total_tests": 1178,
+      "passed": 1177,
+      "skipped": 1,
+      "failed": 0,
+      "focused_native_tk_passed": 40,
+      "focused_native_tk_skipped": 1,
+      "unsigned_exe_bundle": "PASS_UNSIGNED_BUNDLE_IMPORTS",
+      "artifact_zip_id": 14539822029,
+      "artifact_zip_sha256": "be3ddfc02825da3a1a1e9aa611d0b91003e5027e6d8c14bc0a980c1e8beafb37",
+      "physical_owner_win11": "NOT_RUN"
+    }
+  },
+  "p1": {
+    "source_swu_done": 60,
+    "total_swu": 60,
+    "provisional": true,
+    "inherited_semantic_intake_pending": 48
+  },
+  "p2": {
+    "accepted": 8,
+    "total": 14,
+    "accepted_unweighted_percent": 57.14,
+    "accepted_ids": [
+      "EAI-P2-01",
+      "EAI-P2-02",
+      "EAI-P2-03",
+      "EAI-P2-04",
+      "EAI-P2-06",
+      "EAI-P2-09",
+      "EAI-V32-P2-UX01",
+      "EAI-V32-P2-UX02"
+    ],
+    "p2_07": "PARTIAL_NO_OWNER_GO_OR_LIVE_PROOF"
+  },
+  "weighted_implementation": "UNASSESSED",
+  "weighted_verification": "UNASSESSED",
+  "independent_security_and_UX_audits": "NOT_RUN",
+  "physical_owner_windows11": "NOT_RUN",
+  "actual_live_external_send": "NOT_RUN",
+  "real_ood": "NOT_RUN",
+  "release": "HOLD",
+  "known_limitations": [
+    "owner Windows ACL not independently inspected",
+    "TOCTOU filesystem race-freedom not proven",
+    "CI Windows Server not physical Windows 11",
+    "artifact sha256 is ZIP not bare EXE"
+  ]
+}
