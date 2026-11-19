@@ -13,7 +13,7 @@
     "historic_evidence": "docs/EAI_P1_SWU_QUEUE.json;docs/EAI_DESKTOP_P1_SWU_QUEUE.json"
   },
   "new_swu_count": 12,
-  "new_source_candidates": 2,
+  "new_source_candidates": 3,
   "tracked_swu_total": 60,
   "official_implementation_rate": "UNASSESSED",
   "official_verification_rate": "UNASSESSED",
@@ -83,14 +83,18 @@
       "allowed_paths": [
         "eai/desktop_bridge.py",
         "eai/goal_dispatch.py",
-        "eai/axnode_retrieval.py"
+        "eai/axnode_retrieval.py",
+        "eai/desktop_app.py",
+        "eai/desktop_views.py",
+        "eai/desktop_presentation.py",
+        "tests/test_desktop_workstation.py"
       ],
-      "acceptance": "List only actual available typed CPU skills/AXNODE references, source and nonmatches; unsupported goal returns gap/UNKNOWN, no invented plan.",
-      "status": "DEPENDENCY_BLOCKED",
-      "p1_source_candidate": false,
+      "acceptance": "List only actual available typed CPU skills/AXNODE references, source and nonmatches; unsupported goal returns gap/UNKNOWN, no invented plan. Implemented on UI: exact registered 13 CPU domain kinds, owner-selected library AXNodeRetriever with local.read gate, bounded hash-pinned node candidates, unsupported goal reports no match without an invented executable plan.",
+      "status": "IMPLEMENTED_UNVERIFIED",
+      "p1_source_candidate": true,
       "risk": "NORMAL",
-      "local_check": "NOT_RUN",
-      "evidence_sha": null,
+      "local_check": "Local staged authored source: Python compileall PASS, 9/9 contract tests PASS, four isolated Linux Xvfb GUI tests 4/4 PASS (W01–W03); full cross-platform P2 and real Windows11/EXE NOT_RUN.",
+      "evidence_sha": "2d7ab2372059272191517c5c2eb80830fc1e7b2a",
       "safety_gate": "P26/ADR-0002/NO_LIVE_IO",
       "p2_status": "NOT_RUN",
       "failure_count_verified": 0,
@@ -111,7 +115,7 @@
         "eai/desktop_state.py"
       ],
       "acceptance": "Explicitly choose a fresh private root; no mutation of existing libraries; empty library handled honestly; no ACTIVE promotion.",
-      "status": "DEPENDENCY_BLOCKED",
+      "status": "READY",
       "p1_source_candidate": false,
       "risk": "HIGH",
       "local_check": "NOT_RUN",
@@ -334,12 +338,12 @@
   "metrics": {
     "type": "SWU_SOURCE_CANDIDATE_COVERAGE_NOT_OFFICIAL_ACCEPTANCE",
     "inherited_source_candidates_historical": 48,
-    "new_source_candidates": 2,
+    "new_source_candidates": 3,
     "tracked_total": 60,
-    "combined_candidate_coverage_count": 50,
-    "combined_candidate_coverage_percent_provisional": 83.33,
+    "combined_candidate_coverage_count": 51,
+    "combined_candidate_coverage_percent_provisional": 85,
     "inherited_compatibility_reinspection": "PENDING",
-    "new_swu_coverage_percent": 16.67,
+    "new_swu_coverage_percent": 25,
     "p2_original_gate_groups": 10,
     "p2_v32_additive_gate_groups": 4,
     "p2_gate_groups_pass_on_current_sha": 0,
@@ -347,6 +351,12 @@
     "official_implementation_completion": "UNASSESSED",
     "official_verification_completion": "UNASSESSED",
     "release": "HOLD",
-    "disclaimer": "SWU source candidate coverage is NOT an official weighted implementation completion rate. Prior Astra tests are historic on different source SHA; no P2 acceptance passed against this branch. Any unproven baseline SWUs must be downgraded if compatibility review finds gaps."
+    "disclaimer": "SWU source candidate coverage is NOT an official weighted implementation completion rate. Prior Astra tests are historic on different source SHA; no P2 acceptance passed against this branch. Any unproven baseline SWUs must be downgraded if compatibility review finds gaps.",
+    "verification_swu_pass_on_current_sha": 0,
+    "verification_swu_pass_rate_provisional_percent": 0,
+    "provisional_implementation_swu_completion_percent": 85,
+    "provisional_verification_swu_completion_percent": 0,
+    "provisional_rate_basis": "51 of 60 unique source SWU candidates preserved/implemented; 0 of 60 verified against the new frozen integrated V3.2 source; equal-unit counts are NOT accepted feature-weighted formal rates.",
+    "independent_security_ui_audit": "NOT_RUN"
   }
 }
