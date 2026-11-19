@@ -1,6 +1,8 @@
 name: EAI Windows Desktop Development EXE
 on:
   workflow_dispatch:
+  push:
+    branches: [feature/eai-v32-owner-rebuild-20261119]
 permissions:
   contents: read
 jobs:
