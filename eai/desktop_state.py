@@ -71,12 +71,38 @@ class DesktopState:
     @contextmanager
     def _connection(self):
         path = private_db(self.root, "workspace.sqlite3")
-        with closing(sqlite3.connect(path, timeout=2)) as db:
+        # An existing journal is owner data, not a blank migration target.
+        # Never silently recreate missing tables in a damaged or substituted
+        # database. New-file initialization is atomic across worker threads.
+        missing_before_open = not path.exists()
+        with closing(sqlite3.connect(path, timeout=5)) as db:
             db.execute("PRAGMA trusted_schema=OFF")
-            db.execute("CREATE TABLE IF NOT EXISTS events "
-                       "(id INTEGER PRIMARY KEY, stamp INTEGER, page TEXT, op TEXT, status TEXT)")
-            db.execute("CREATE TABLE IF NOT EXISTS limits "
-                       "(id INTEGER PRIMARY KEY CHECK(id=1), steps INTEGER, seconds INTEGER, expansions INTEGER)")
+            with db:
+                db.execute("BEGIN IMMEDIATE")
+                objects = db.execute(
+                    "SELECT type,name FROM sqlite_master "
+                    "WHERE type IN ('table','view','trigger')").fetchall()
+                if missing_before_open and not objects:
+                    db.execute("CREATE TABLE events "
+                               "(id INTEGER PRIMARY KEY, stamp INTEGER, page TEXT, op TEXT, status TEXT)")
+                    db.execute("CREATE TABLE limits "
+                               "(id INTEGER PRIMARY KEY CHECK(id=1), steps INTEGER, seconds INTEGER, expansions INTEGER)")
+                    objects = db.execute(
+                        "SELECT type,name FROM sqlite_master "
+                        "WHERE type IN ('table','view','trigger')").fetchall()
+                if set(objects) != {("table", "events"), ("table", "limits")}:
+                    raise ValueError("unexpected workspace schema; preserve source")
+                expected = {
+                    "events": ("id", "stamp", "page", "op", "status"),
+                    "limits": ("id", "steps", "seconds", "expansions"),
+                }
+                for table, columns in expected.items():
+                    observed = tuple(row[1] for row in db.execute(
+                        "PRAGMA table_info(" + table + ")"))
+                    if observed != columns:
+                        raise ValueError("unexpected workspace columns; preserve source")
+                if db.execute("PRAGMA quick_check").fetchone() != ("ok",):
+                    raise ValueError("workspace SQLite integrity failed; preserve source")
             yield db
 
     def _exists(self) -> bool:
