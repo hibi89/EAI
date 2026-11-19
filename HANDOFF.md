@@ -1,3 +1,13 @@
+## CURRENT HANDOFF — 2026-11-19 KST — only owner + web High implement and test
+
+Branch hibi89/EAI@feature/eai-v32-owner-rebuild-20261119. Before every ㄱ: re-fetch current remote HEAD and AGENTS, docs/EAI_V32_OWNER_REBUILD_CANONICAL_20261119.md, docs/EAI_V32_OWNER_SWU_QUEUE.json, docs/EAI_V32_OWNER_P2.md and the exact actual code. Other Astra/Codex AI implementers or P2 validators are not assigned. Do not remove old sources/requirements, bypass P26 or merge to main.
+
+Real code W02: edit ProblemSpec goal/domain/risk/budget/objectives/oracle/evidence IDs/assumptions/constraints and pure/read scope; no JSON needed. Real code W03: actual 13-goal CPU registry and selected AXNODE read-gated advisory search, never fake AI plan. Real code W04: explicit owner consent creates only new EAI-private AXNODE store and copies one bounded local candidate, no original/ACTIVE writes. W01 prior safe draft stays. Code/test SHA 9ef8f15cf8059d3de0e0ff8d2d6bd0d033053a59. Local Python compileall PASS, focused 10/10 contracts and 5/5 isolated Xvfb GUI cases PASS. Six modified GitHub/local files content parity checked. Full Tk suite regression/Win11/EXE/CI/P2 and independent auditor NOT_RUN.
+
+Provisional unweighted P1 source SWU rate 52/60=86.67% (inherited 48 candidates historic, not current compatibility accepted); V3.2 new work 4/12. Provisional P2 SWU acceptance 0/60=0%, P2 group 0/14 PASS. OFFICIAL weighted implementation and validation both UNASSESSED; release HOLD.
+
+NEXT READY W05: connect an owner-reviewed real ProblemSpec and explicit local AXNODE library to Architect real typed strategy alternatives or explicit blockers and provenance. W06 comparison, W07 selected-plan policy, W08 pure Player, W09 verification/AXNODE, W10 GUI, W11 session recovery, W12 reproducible Windows package follow dependencies. Need no owner PC commands unless genuine Windows physical evidence/explicit consent is essential. No real Hydrogen/Player, permission changes, customer original data, paid network, Production or main branch edits without distinct owner GO. Same-worker tests are NOT independent audit.
+
 ## CURRENT HANDOFF — EAI V3.2 owner recovery, 2026-11-19 KST
 
 **Do not resume the old Astra GUI as finished.** Current task is EAI V3.2, repo `hibi89/EAI`, branch `feature/eai-v32-owner-rebuild-20261119`; base `e44977fc4f615fa6a368ff64ec4361ceee99e7b4`; before each `ㄱ` re-fetch remote HEAD, read `AGENTS.md`, `STATUS.md`, `docs/EAI_V32_OWNER_REBUILD_CANONICAL_20261119.md`, `docs/EAI_V32_OWNER_SWU_QUEUE.json`, `docs/EAI_V32_OWNER_P2.md`, original `docs/EAI_FINAL_BLUEPRINT.md` and actual source.
