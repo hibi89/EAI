@@ -1,0 +1,52 @@
+{
+  "schema": "eai.p2.synthetic_evidence.v1",
+  "date_kst": "2026-11-19",
+  "repo": "hibi89/EAI",
+  "branch": "feature/eai-v32-owner-rebuild-20261119",
+  "exact_source_sha": "d0407f2f8ee543fc31350287a01e8024eac7b039",
+  "gate_id": "EAI-P2-04",
+  "disposition": "PASS_SYNTHETIC_BOUNDED",
+  "test_modules": {
+    "test_logic_counterexamples": 4,
+    "test_logic_oracle": 7,
+    "test_candidate_evidence_review": 10,
+    "test_candidate_review_journal": 16,
+    "test_verified_learning_boundary": 18
+  },
+  "checks": {
+    "linux": {
+      "run_id": 44493551654,
+      "module_pass": 55,
+      "module_skip": 0,
+      "module_fail": 0,
+      "whole_suite": "SUCCESS"
+    },
+    "windows": {
+      "run_id": 44493551640,
+      "module_pass": 55,
+      "module_skip": 0,
+      "module_fail": 0,
+      "whole_suite": "SUCCESS"
+    }
+  },
+  "provenance": "SOURCE_CODE_AND_CI_LOG_INSPECTION_BY_AUTHOR_NOT_INDEPENDENT_SECURITY_AUDIT",
+  "counterexample_scope": "FINITE_SYNTHETIC_PUBLIC_FIXTURES_ONLY",
+  "rights": {
+    "real_player": "HOLD",
+    "active_promotion": "HOLD",
+    "external_send": "HOLD",
+    "verified_real_world": false
+  },
+  "acceptance_summary": {
+    "accepted_ids": [
+      "EAI-P2-02",
+      "EAI-P2-04"
+    ],
+    "accepted_groups": 2,
+    "total_groups": 14,
+    "unweighted_percentage": 14.29,
+    "official_verification_rate": "UNASSESSED",
+    "independent_audit": "NOT_RUN",
+    "release": "HOLD"
+  }
+}
