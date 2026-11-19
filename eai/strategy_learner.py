@@ -93,6 +93,9 @@ class BoundedResearchUpdate:
     reason_codes: tuple[str, ...]
     real_world_uplift_verified: bool = False
     model_can_execute: bool = False
+    synthetic_scenario_families_checked: int = 0
+    synthetic_scenario_candidate_matches: int = 0
+    synthetic_scenario_regression_rejected: bool = False
 
 
 def advance_bounded_research_prior(
@@ -183,6 +186,35 @@ def advance_bounded_research_prior(
         return BoundedResearchUpdate(
             "HOLD_UNTRUSTED_SYNTHETIC_RESEARCH_RESULT",
             prior, ordered(prior), False, ("RECHECKED_COST_ORDER_NOT_ESTABLISHED",))
+    # A seeded re-run of the same four fixture TYPES is not a transfer test.
+    # Require different synthetic scenario classes and independently replay
+    # their actual CPU B0 vs AXNODE interpreter B1 outputs before changing
+    # cumulative research state. No promise of genuine general OOD accuracy.
+    from .synthetic_scenario_transfer import evaluate_synthetic_scenario_transfer
+    challenged = []
+    try:
+        for candidate in candidates:
+            probe = evaluate_synthetic_scenario_transfer(
+                store, problem, candidate, curriculum)
+            challenged.append(probe)
+    except (ValueError, KeyError, TypeError):
+        return BoundedResearchUpdate(
+            "HOLD_SYNTHETIC_SCENARIO_RECHECK_RETAIN_PREVIOUS",
+            prior, ordered(prior), False,
+            ("SYNTHETIC_SCENARIO_RECHECK_FAILED",),
+            synthetic_scenario_regression_rejected=True)
+    if any(p.status != "SYNTHETIC_SCENARIO_TRANSFER_MATCH_UNVERIFIED"
+           or p.permits_learning or p.permits_promotion
+           or p.independently_verified_real_world or
+           p.b1_checked != p.challenge_families or
+           p.b0_checked != p.challenge_families for p in challenged):
+        return BoundedResearchUpdate(
+            "HOLD_SYNTHETIC_SCENARIO_REGRESSION_RETAIN_PREVIOUS",
+            prior, ordered(prior), False,
+            ("SYNTHETIC_SCENARIO_TRANSFER_COUNTEREXAMPLE",),
+            synthetic_scenario_families_checked=sum(p.challenge_families for p in challenged),
+            synthetic_scenario_candidate_matches=sum(p.b1_checked for p in challenged),
+            synthetic_scenario_regression_rejected=True)
     next_rows = tuple((
         x, rows[x][0] + 1,
         rows[x][1] + seen[x].declared_seconds,
@@ -195,7 +227,9 @@ def advance_bounded_research_prior(
         next_rows)
     return BoundedResearchUpdate(
         "UPDATED_SYNTHETIC_CPU_PRIOR_UNVERIFIED",
-        updated, ordered(updated), True, ())
+        updated, ordered(updated), True, (),
+        synthetic_scenario_families_checked=sum(p.challenge_families for p in challenged),
+        synthetic_scenario_candidate_matches=sum(p.b1_checked for p in challenged))
 
 
 @dataclass(frozen=True)

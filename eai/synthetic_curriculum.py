@@ -62,6 +62,31 @@ def generate_synthetic_curriculum(seed: int = 0) -> SyntheticCurriculum:
 
 
 
+
+def generate_synthetic_transfer_families(seed: int = 0) -> tuple[SyntheticComparison, ...]:
+    """Two unseen *synthetic scenario types*, NOT real-world OOD evidence.
+
+    Original curriculum: numeric agreement, changed numeric, simple missing key.
+    Challenge: negative signed decimals and several simultaneous value/key
+    differences. This deterministic corpus is disjoint by normalized content.
+    """
+    if type(seed) is not int or not 0 <= seed <= 10000:
+        raise ValueError("bounded synthetic transfer seed required")
+    n = 100 + seed * 13
+    return (
+        SyntheticComparison(
+            f"transfer.negative.{seed}",
+            (("x", f"-{n}.00"), ("y", "0")),
+            (("x", f"-{n}"), ("y", "-1.25")),
+            ("y",)),
+        SyntheticComparison(
+            f"transfer.multi.{seed}",
+            (("m", str(n + 2)), ("o", str(n + 3))),
+            (("m", str(n + 4)), ("p", str(n + 3))),
+            ("m", "o", "p")),
+    )
+
+
 def schedule_next_synthetic_cases(coverage_counts: dict[str, int], *,
                                   seed: int = 0, limit: int = 2):
     """Public offline caller that builds a bounded curriculum then ranks gaps."""

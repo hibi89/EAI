@@ -11,7 +11,10 @@ from eai.axnode_store import AXNodeStore
 from eai.contracts import ProblemSpec
 from eai.logic_synthesis import LogicSynthesizer
 from eai.strategy_research_ranker import rank_synthetic_strategy_previews
-from eai.synthetic_curriculum import generate_synthetic_curriculum
+from eai.synthetic_curriculum import (generate_synthetic_curriculum,
+                                      generate_synthetic_transfer_families)
+from eai.synthetic_scenario_transfer import evaluate_synthetic_scenario_transfer
+from eai.strategy_learner import advance_bounded_research_prior
 
 
 class StrategyResearchRankerTests(unittest.TestCase):
@@ -84,6 +87,74 @@ class StrategyResearchRankerTests(unittest.TestCase):
             first, second = self.rank(), self.rank()
         self.assertEqual(first, second)
         self.assertEqual(first.ranked[0].measured_synthetic_cpu_ms, 37)
+
+
+    def test_p2_new_scenario_classes_are_disjoint_and_quantitatively_compared(self):
+        from eai.synthetic_holdout import _fixture_hash
+        probes = generate_synthetic_transfer_families(0)
+        self.assertEqual(len(probes), 2)
+        self.assertEqual(len({_fixture_hash(v) for v in
+                              self.curriculum.train + self.curriculum.heldout + probes}), 6)
+        with patch.object(socket, "socket", side_effect=AssertionError("network")):
+            proof = evaluate_synthetic_scenario_transfer(
+                self.store, self.problem, self.candidate, self.curriculum)
+        self.assertEqual(proof.status, "SYNTHETIC_SCENARIO_TRANSFER_MATCH_UNVERIFIED")
+        self.assertEqual((proof.challenge_families, proof.b0_checked,
+                          proof.b1_checked, proof.b1_unmatched), (2, 2, 2, 0))
+        self.assertFalse(proof.independently_verified_real_world)
+        self.assertFalse(proof.permits_promotion)
+        self.assertFalse(proof.permits_learning)
+
+    def test_p2_research_prior_updates_only_after_scenario_transfer(self):
+        with patch.object(socket, "socket", side_effect=AssertionError("network")):
+            first = advance_bounded_research_prior(
+                self.store, self.problem, (self.candidate,), self.curriculum)
+        self.assertTrue(first.accepted)
+        self.assertEqual(first.synthetic_scenario_families_checked, 2)
+        self.assertEqual(first.synthetic_scenario_candidate_matches, 2)
+        self.assertEqual(first.prior.observed_synthetic_families, 4)
+        self.assertFalse(first.prior.trusted_training_permitted)
+        self.assertFalse(first.prior.active_promotion_permitted)
+        self.assertFalse(first.prior.independent_real_world_truth)
+        again = advance_bounded_research_prior(
+            self.store, self.problem, (self.candidate,), self.curriculum, first.prior)
+        self.assertFalse(again.accepted)
+        self.assertIs(again.prior, first.prior)
+        self.assertEqual(again.status, "HOLD_REPLAYED_OR_EXHAUSTED_SYNTHETIC_FAMILY")
+
+    def test_p2_scenario_counterexample_preserves_prior_and_denies_learning(self):
+        from eai.synthetic_scenario_transfer import SyntheticScenarioTransfer
+        from dataclasses import replace as dataclass_replace
+        ok = advance_bounded_research_prior(
+            self.store, self.problem, (self.candidate,), self.curriculum)
+        self.assertTrue(ok.accepted)
+        next_curriculum = generate_synthetic_curriculum(1)
+        rejected = SyntheticScenarioTransfer(
+            self.candidate.candidate_sha256,
+            "HOLD_SYNTHETIC_SCENARIO_COUNTEREXAMPLE", 2, 2, 1, 1,
+            ("negative_signed_decimals", "multiple_key_and_value_changes"))
+        with patch("eai.synthetic_scenario_transfer.evaluate_synthetic_scenario_transfer",
+                   return_value=rejected):
+            denied = advance_bounded_research_prior(
+                self.store, self.problem, (self.candidate,),
+                next_curriculum, ok.prior)
+        self.assertFalse(denied.accepted)
+        self.assertIs(denied.prior, ok.prior)
+        self.assertTrue(denied.synthetic_scenario_regression_rejected)
+        self.assertEqual(denied.synthetic_scenario_candidate_matches, 1)
+        self.assertEqual(denied.reason_codes,
+                         ("SYNTHETIC_SCENARIO_TRANSFER_COUNTEREXAMPLE",))
+        self.assertFalse(denied.model_can_execute)
+        self.assertFalse(denied.real_world_uplift_verified)
+
+    def test_p2_forged_synthetic_transfer_fixture_never_enters_baseline(self):
+        for seed in (True, -1, 10001, "0"):
+            with self.subTest(seed=seed), self.assertRaises(ValueError):
+                generate_synthetic_transfer_families(seed)
+        forged = replace(self.curriculum, heldout=self.curriculum.train)
+        with self.assertRaisesRegex(ValueError, "verified local synthetic curriculum"):
+            evaluate_synthetic_scenario_transfer(
+                self.store, self.problem, self.candidate, forged)
 
     def test_forged_candidate_digest_cannot_be_ranked(self):
         bad = replace(self.candidate, candidate_sha256="f" * 64)
