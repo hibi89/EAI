@@ -199,8 +199,30 @@ def advance_bounded_research_prior(
 
 
 @dataclass(frozen=True)
+class VerifiedHeldoutMeasure:
+    """Bounded, signed-local-case comparison, NOT general OOD or production accuracy."""
+
+    baseline_evaluated: int
+    preferred_evaluated: int
+    selected_evaluated: int | None
+    baseline_errors: int
+    preferred_errors: int
+    selected_errors: int | None
+    preferred_extra_errors: int
+    selected_extra_errors: int | None
+    selected_step_delta: int | None
+    selected_declared_seconds_delta: int | None
+    regression_rejected: bool
+    selected_no_regression_on_pinned_cases: bool
+    scope: str = "OWNER_SIGNED_LOCAL_HELDOUT_RECONCILIATION_ONLY"
+    independent_general_ood: bool = False
+    permits_active_promotion: bool = False
+    production_accuracy_established: bool = False
+
+
+@dataclass(frozen=True)
 class VerifiedStrategyUpdate:
-    """One local advisory selection and its independent held-out result."""
+    """One local advisory selection and its owner-pinned held-out result."""
 
     status: str
     baseline_sha256: str
@@ -213,6 +235,7 @@ class VerifiedStrategyUpdate:
     valid_until: int
     fallback_candidate_sha256: str | None
     selection_sha256: str | None = None
+    heldout_measure: VerifiedHeldoutMeasure | None = None
 
 
 def _fit_verified_strategy(
@@ -222,9 +245,20 @@ def _fit_verified_strategy(
     inventory = {candidate.candidate_sha256: candidate for candidate in candidates}
     baseline = batch.baseline_sha256
     training_errors = dict.fromkeys(inventory, 0)
+    # Quantify exact owner-signed train/held-out case coverage per candidate.
+    # Reject missing or reclassified cases before any strategy selection.
+    evaluated = {digest: {"TRAIN": 0, "HELD_OUT": 0} for digest in inventory}
     for episode in batch.episodes:
+        if (episode.candidate_sha256 not in inventory or
+                episode.partition not in ("TRAIN", "HELD_OUT")):
+            raise ValueError("unknown verified episode candidate or split")
+        evaluated[episode.candidate_sha256][episode.partition] += 1
         if episode.partition == "TRAIN" and not episode.correct:
             training_errors[episode.candidate_sha256] += 1
+    if (any(min(counts.values()) < 2 for counts in evaluated.values())
+            or len({(counts["TRAIN"], counts["HELD_OUT"])
+                    for counts in evaluated.values()}) != 1):
+        raise ValueError("missing signed training or held-out candidate coverage")
     champion = min(inventory, key=lambda digest: (
         training_errors[digest], inventory[digest].step_count,
         inventory[digest].predicted_seconds, digest != baseline, digest,
@@ -251,8 +285,31 @@ def _fit_verified_strategy(
     else:
         status, selected = "RETAIN_BASELINE_NO_HELD_OUT_UPLIFT", baseline
 
+    baseline_count = evaluated[baseline]["HELD_OUT"]
+    preferred_count = evaluated[champion]["HELD_OUT"]
+    selected_count = evaluated[selected]["HELD_OUT"] if selected else None
+    selected_errors = held_out_errors[selected] if selected else None
+    baseline_errors = held_out_errors[baseline]
+    preferred_errors = held_out_errors[champion]
+    selected_delta = (
+        selected_errors - baseline_errors if selected_errors is not None else None)
+    # Counts compare only cases the owner signed, not distribution-wide OOD
+    # performance. Cost deltas are declared limits, not timed measurements.
+    measured = VerifiedHeldoutMeasure(
+        baseline_count, preferred_count, selected_count,
+        baseline_errors, preferred_errors, selected_errors,
+        preferred_errors - baseline_errors, selected_delta,
+        inventory[selected].step_count - inventory[baseline].step_count
+        if selected else None,
+        inventory[selected].predicted_seconds - inventory[baseline].predicted_seconds
+        if selected else None,
+        champion != baseline and preferred_errors > baseline_errors,
+        selected_delta is not None and selected_delta <= 0)
+    if selected_delta is not None and selected_delta > 0:
+        raise PermissionError("held-out regression must never become selected")
     return VerifiedStrategyUpdate(
         status, baseline, champion, selected, tuple(sorted(training_errors.items())),
         tuple(sorted(held_out_errors.items())), batch.policy_sha256,
         batch.journal_entry_sha256, batch.valid_until,
-        baseline if safe_baseline else None)
+        baseline if safe_baseline else None,
+        heldout_measure=measured)

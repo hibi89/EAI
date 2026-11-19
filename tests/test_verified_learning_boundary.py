@@ -181,6 +181,57 @@ class VerifiedLearningBoundaryTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "nonce already journalled"):
                 self.rank(reviews=batch, journal=journal)
 
+    def test_p2_signed_local_heldout_has_quantified_no_regression_and_cost_delta(self):
+        self.policy_sha = self.install()
+        result = self.rank()
+        m = result.heldout_measure
+        self.assertIsNotNone(m)
+        self.assertEqual((m.baseline_evaluated, m.preferred_evaluated,
+                          m.selected_evaluated), (2, 2, 2))
+        self.assertEqual((m.baseline_errors, m.preferred_errors,
+                          m.selected_errors), (0, 0, 0))
+        self.assertEqual((m.preferred_extra_errors, m.selected_extra_errors), (0, 0))
+        self.assertEqual(m.selected_step_delta, -1)
+        self.assertEqual(m.selected_declared_seconds_delta, -1)
+        self.assertTrue(m.selected_no_regression_on_pinned_cases)
+        self.assertFalse(m.regression_rejected)
+        self.assertFalse(m.independent_general_ood)
+        self.assertFalse(m.production_accuracy_established)
+        self.assertFalse(m.permits_active_promotion)
+        self.assertNotIn("Disposable reconciliation", str(m))
+        self.assertEqual(self.journal.current_verified_selection().candidate_sha256,
+                         result.advisory_candidate_sha256)
+
+    def test_p2_signed_heldout_regression_is_counted_but_not_selected(self):
+        self.policy_sha = self.install()
+        wrong = dict(self.outputs, **{"eval.left": output()})
+        result = self.rank(reviews=self.review_pair(outputs=wrong))
+        m = result.heldout_measure
+        self.assertEqual(result.status, "ROLLBACK_HELD_OUT_REGRESSION")
+        self.assertEqual((m.baseline_evaluated, m.preferred_evaluated,
+                          m.selected_evaluated), (2, 2, 2))
+        self.assertEqual((m.baseline_errors, m.preferred_errors,
+                          m.selected_errors), (0, 1, 0))
+        self.assertEqual((m.preferred_extra_errors, m.selected_extra_errors), (1, 0))
+        self.assertTrue(m.regression_rejected)
+        self.assertTrue(m.selected_no_regression_on_pinned_cases)
+        self.assertEqual(m.selected_step_delta, 0)
+        self.assertFalse(m.independent_general_ood)
+
+    def test_p2_signed_baseline_errors_do_not_hide_recovery_or_fake_ood(self):
+        self.policy_sha = self.install()
+        wrong = dict(self.outputs, **{"eval.left": output()})
+        reviews = (self.review(self.baseline, "temp_case_nonce_001", outputs=wrong),
+                   self.review(self.challenger, "temp_case_nonce_002"))
+        result = self.rank(reviews=reviews)
+        m = result.heldout_measure
+        self.assertEqual((m.baseline_errors, m.preferred_errors,
+                          m.selected_errors), (1, 0, 0))
+        self.assertEqual(m.selected_extra_errors, -1)
+        self.assertFalse(m.regression_rejected)
+        self.assertTrue(m.selected_no_regression_on_pinned_cases)
+        self.assertFalse(m.independent_general_ood)
+
     def test_semantic_counterexample_does_not_replace_held_out_baseline(self):
         self.policy_sha = self.install()
         wrong = dict(self.outputs, **{"eval.left": output()})
