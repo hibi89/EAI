@@ -428,6 +428,83 @@ class DesktopBridge:
                     synthetic_only=True)
 
     @staticmethod
+    def verify_reviewed_pure_trace(problem_raw: dict, design: dict, selection: dict,
+                                   flow: dict, axnode_root: str | Path | None) -> dict:
+        """Recompute a pure receipt against current source. Integrity != reality.
+
+        Never trust a caller's status, claimed approval, source hash or verified flag.
+        The comparison is local re-execution of deterministic *no-op* steps only.
+        """
+        base = {"kind": "PURE_TRACE_REVIEW", "status": "HOLD_TRACE_UNVERIFIED",
+                "replay_integrity": False, "semantic_truth": "UNKNOWN",
+                "independent_verification": "NOT_ESTABLISHED", "can_promote": False,
+                "external_actions": 0, "original_writes": 0}
+        if type(flow) is not dict or flow.get("status") != "PURE_SYNTHETIC_INTERPRETED_UNVERIFIED":
+            return dict(base, reasons=["MISSING_OR_INCOMPLETE_PURE_TRACE"])
+        if (flow.get("execution") != "PURE_SYNTHETIC_NOOP_ONLY" or
+                flow.get("replay") != "PURE_TRACE_REPLAY_MATCH_UNVERIFIED" or
+                flow.get("external_actions") != 0 or flow.get("original_writes") != 0 or
+                flow.get("verified_real_world") is not False or flow.get("can_promote") is not False or
+                flow.get("independent_verification") != "NOT_ESTABLISHED"):
+            return dict(base, reasons=["INCONSISTENT_UNTRUSTED_TRACE_CLAIMS"])
+        recomputed = DesktopBridge.play_reviewed_pure_plan(
+            problem_raw, design, selection, axnode_root, acknowledged_pure_only=True)
+        if type(flow) is not dict or flow != recomputed:
+            return dict(base, reasons=["TRACE_OR_CURRENT_SOURCE_CHANGED"])
+        if not flow.get("step_observations") or flow.get("interpreted_steps") != len(flow["step_observations"]):
+            return dict(base, reasons=["NO_COMPLETED_NOOP_STEPS"])
+        return dict(base, status="PURE_REPLAY_INTEGRITY_UNVERIFIED_REALITY",
+                    replay_integrity=True, trace_sha256=flow["trace_sha256"],
+                    problem_sha256=flow["problem_sha256"], plan_sha256=flow["plan_sha256"],
+                    observed_steps=flow["interpreted_steps"],
+                    admission="LOCAL_UNVERIFIED_EPISODIC_CANDIDATE_WITH_OWNER_CONSENT_ONLY")
+
+    def record_private_trace_candidate(self, problem_raw: dict, design: dict,
+                                       selection: dict, flow: dict,
+                                       axnode_root: str | Path | None, *,
+                                       owner_approved: bool = False) -> dict:
+        """Opt-in *unverified* trace pointer, never verified experience or ACTIVE node.
+
+        Only new private EAI libraries are writable. No prompt, plan, private raw
+        data or receipt body goes into the small memory record.
+        """
+        if owner_approved is not True:
+            return {"status": "HOLD_MEMORY_CONSENT", "written": False}
+        private_folder = local_path(self.state_root / "libraries", private=True)
+        if axnode_root is None:
+            raise ValueError("explicit private library required")
+        selected = local_path(axnode_root, private=True)
+        if (selected.parent != private_folder or
+                not selected.name.startswith("library_") or selected.is_symlink() or
+                not selected.is_dir()):
+            raise ValueError("memory metadata only allowed in fresh EAI-private library")
+        review = self.verify_reviewed_pure_trace(
+            problem_raw, design, selection, flow, selected)
+        if review["status"] != "PURE_REPLAY_INTEGRITY_UNVERIFIED_REALITY":
+            return {"status": "HOLD_TRACE_UNVERIFIED", "written": False,
+                    "reasons": review.get("reasons", [])}
+        from .axnode_memory import AXNodeMemory
+        from .axnode_schema import HASH
+        pinned = selection.get("source_sha256")
+        if (type(pinned) is not list or not pinned or len(pinned) > 8 or
+                any(type(x) is not str or not HASH.fullmatch(x) for x in pinned)):
+            raise ValueError("invalid pinned AXNODE source")
+        with AXNodeStore(selected) as store:
+            source = store.get(pinned[0])
+            if source.as_dict()["status"] not in ("DRAFT", "CANDIDATE"):
+                raise ValueError("only candidate nodes can anchor an observation")
+            with AXNodeMemory(store) as index:
+                digest = index.remember(tier="EPISODIC", anchor_sha=pinned[0],
+                                        label="eai.trace." + review["trace_sha256"][:20],
+                                        outcome="UNKNOWN")
+        return {"status": "PRIVATE_TRACE_CANDIDATE_UNVERIFIED", "written": True,
+                "memory_sha256": digest, "anchor_sha256": pinned[0],
+                "trace_sha256": review["trace_sha256"],
+                "verified_real_world": False, "semantic_truth": "UNKNOWN",
+                "independent_verification": "NOT_ESTABLISHED", "can_promote": False,
+                "original_writes": 0, "external_actions": 0}
+
+    @staticmethod
     def journey_receipt(problem_file, axnode_root, *, max_expansions, expected_problem):
         from .offline_journey import audit_offline_journey_report, preview_offline_journey
         report = preview_offline_journey(problem_file, axnode_root, max_expansions=max_expansions)

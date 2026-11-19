@@ -97,11 +97,12 @@ def home(app, parent):
     for title, note, action, primary in (
             ("내 목표 설계 시작", "하단 목표를 검토 가능한 설계 초안으로 변환", app.new_draft, True),
             ("로컬 예제 열기", "합성 목표 · 노드 3개 · 계획 · 영수증", app.practice, False),
-            ("저장한 초안 열기", "지난 목표와 조건을 이어서 편집", lambda: app.open_problem("architect"), False)):
+            ("저장한 초안 열기", "지난 목표와 조건을 이어서 편집", lambda: app.open_problem("architect"), False),
+            ("내 개인 세션 복구", "저장된 마지막 목표 초안만 다시 불러오기 · 실행 권한 없음", app.resume_review_session, False)):
         button(quick, title, action, primary=primary, anchor="w").pack(fill="x", pady=(3, 0))
         label(quick, note, size=9, fg=MUTED, wrap=220).pack(fill="x", pady=(2, 5))
 
-    flow = card(parent, "작업 흐름")
+    flow = card(parent, "실제 작업 흐름 · 자동 실행 아님")
     flow.pack(fill="x", pady=(9, 0))
     lane = frame(flow)
     lane.pack(fill="x")
@@ -111,6 +112,8 @@ def home(app, parent):
         button(lane, title, lambda k=key: app.select(k)).grid(row=0, column=i*2, sticky="ew")
         if i < 3:
             label(lane, "›", fg=VIOLET, size=14).grid(row=0, column=i*2+1, padx=3)
+    label(flow, "목표와 근거를 직접 확인 → 대안을 선택 → 순수 no-op만 별도 승인 → 해시 재현 검증 → 개인 후보 기록."
+          " 각 단계의 진실성은 독립적으로 검증되지 않았습니다.", fg=MUTED, wrap=690).pack(fill="x", pady=(8, 0))
     recent = card(parent, "최근 작업")
     recent.pack(fill="x", pady=(9, 0))
     if app.rows:
@@ -147,7 +150,8 @@ def architect(app, parent):
     if not app.draft:
         for child in scope.winfo_children():
             child.configure(state="disabled")
-    for name, fn in (("초안 편집", app.edit), ("새 사본 저장", app.save)):
+    for name, fn in (("초안 편집", app.edit), ("새 사본 저장", app.save),
+                     ("개인 세션 보존", app.save_review_session)):
         b = button(row, name, fn)
         b.pack(side="left", padx=(0, 6))
         if not app.draft:
@@ -313,6 +317,15 @@ def verifier(app, parent):
     label(box, "파일의 SHA-256을 재계산하고, 단계·근거·결과가 영수증 계약과 일치하는지 확인합니다.",
           fg=MUTED, wrap=570).pack(fill="x", pady=4)
     action_row(box, ("무결성 검사", app.verify, True))
+    own = card(parent, "사용자 목표 · 순수 실행 기록 검증")
+    own.pack(fill="x", pady=(9, 0))
+    label(own, "실제 Player 결과가 아닌 순수 no-op 기록만 독립 재계산합니다. 일치해도 현실 정답/독립 감사는 미확인입니다.",
+          fg=AMBER, wrap=570).pack(fill="x")
+    row = action_row(own, ("현재 모의 추적 재검증", app.verify_pure_trace, True))
+    b = button(row, "개인 AXNODE 미검증 후보 기록", app.remember_pure_trace)
+    b.pack(side="left", padx=6)
+    if not app.trace_review or not app.trace_review.get("replay_integrity"):
+        b.configure(state="disabled")
     result(app, parent, "verifier", 8)
 
 

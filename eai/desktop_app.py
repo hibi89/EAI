@@ -47,6 +47,7 @@ class EAIDesktopApp:
         self.artifacts = None
         self.problem = self.library = self.plan = self.receipt = None
         self.draft = self.draft_review = self.review = self.catalog_data = self.node_data = None
+        self.trace_review = None
         self.query = tk.StringVar(root)
         self.filter = tk.StringVar(root, "전체")
         self.stop_step = tk.StringVar(root, "끝까지")
@@ -56,7 +57,7 @@ class EAIDesktopApp:
         self.events: Queue[tuple] = Queue()
         self.nav = {}
         self.poll_id = None
-        root.title("EAI · 로컬 워크스페이스")
+        root.title("EAI V3.2 · 로컬 목표 → 설계 → 검증")
         root.configure(bg=BG)
         root.geometry(f"{min(1240, root.winfo_screenwidth()-32)}x{min(820, root.winfo_screenheight()-84)}")
         root.minsize(760, 475)
@@ -86,7 +87,7 @@ class EAIDesktopApp:
                               ((3, 19, 18, 27, 33, 19), "#9581e4"), ((3, 26, 18, 34, 33, 26), TEAL)):
             logo.create_line(*points, fill=color, width=3, joinstyle="round")
         label(brand, "EAI", size=21, bold=True).pack(side="left")
-        label(brand, "v3.1", fg=MUTED, size=9).pack(side="left", padx=7, anchor="s", pady=7)
+        label(brand, "v3.2", fg=MUTED, size=9).pack(side="left", padx=7, anchor="s", pady=7)
         label(rail, "작업 공간", size=9, fg=MUTED).pack(fill="x", padx=6, pady=(2, 6))
         for i, (key, (title, _, icon)) in enumerate(PAGES.items()):
             if i == 5:
@@ -107,10 +108,22 @@ class EAIDesktopApp:
         main.rowconfigure(1, weight=1)
         head = frame(main)
         head.grid(row=0, column=0, sticky="ew", pady=(0, 8))
-        self.heading = label(head, "", size=19, bold=True)
+        titleline = frame(head)
+        titleline.pack(fill="x", pady=(0, 6))
+        self.heading = label(titleline, "", size=19, bold=True)
         self.heading.pack(side="left")
-        self.english = label(head, "", fg=MUTED, size=10)
+        self.english = label(titleline, "", fg=MUTED, size=10)
         self.english.pack(side="left", padx=12, anchor="s", pady=5)
+        stages = frame(head)
+        stages.pack(fill="x")
+        self.stage_labels = {}
+        for key, name in (("architect", "1 목표·설계"), ("player", "2 정책·Player"),
+                          ("verifier", "3 검증"), ("atlas", "4 AXNODE")):
+            item = button(stages, name, lambda target=key: self.select(target), quiet=True)
+            item.pack(side="left", padx=(0, 7))
+            self.stage_labels[key] = item
+        self.source_state = label(stages, "로컬 CPU · 외부 OFF", fg=MUTED, size=9)
+        self.source_state.pack(side="right")
         viewport = frame(main)
         viewport.grid(row=1, column=0, sticky="nsew")
         self.canvas = tk.Canvas(viewport, bg=BG, highlightthickness=0, bd=0)
@@ -133,7 +146,7 @@ class EAIDesktopApp:
         dock.grid(row=2, column=0, sticky="ew", pady=(9, 0))
         top = frame(dock)
         top.pack(fill="x")
-        label(top, "자연어 명령", bold=True).pack(side="left")
+        label(top, "목표 입력 · 로컬 CPU / 설계 초안", bold=True).pack(side="left")
         self.status = label(top, "준비", size=9, fg=TEAL)
         self.status.pack(side="right")
         row = frame(dock)
@@ -142,11 +155,11 @@ class EAIDesktopApp:
         self.command.pack(side="left", fill="both", expand=True)
         actions = frame(row)
         actions.pack(side="left", padx=(6, 0))
-        self.send = button(actions, "CPU 전송  ↵", self.ask, primary=True)
+        self.send = button(actions, "목표 분석  ↵", self.ask, primary=True)
         self.send.pack(fill="x")
         self.newdraft = button(actions, "설계 초안", self.new_draft, quiet=True)
         self.newdraft.pack(fill="x")
-        label(dock, "계산 · 비교 · 메모 · 도움말     |     Enter 전송    Shift+Enter 줄바꿈    Ctrl+L 입력", fg=MUTED, size=9).pack(fill="x")
+        label(dock, "규칙 명령은 CPU 실행 · 자유형 목표는 실행 없는 설계 초안     |     Enter 확인  Shift+Enter 줄바꿈  Ctrl+L 입력", fg=MUTED, size=9).pack(fill="x")
         self.command.bind("<Return>", lambda e: (self.ask(), "break")[1])
         self.command.bind("<Shift-Return>", lambda e: (self.command.insert("insert", "\n"), "break")[1])
         self.command.bind("<Control-Return>", lambda e: (self.ask(), "break")[1])
@@ -187,7 +200,27 @@ class EAIDesktopApp:
         self.render()
         self.canvas.yview_moveto(0)
 
+    def stage_states(self):
+        """Only visible real transitions; a hash match never means verified truth."""
+        design = self.results.get("architect", ("", {}))[1]
+        trace = self.results.get("player", ("", {}))[1]
+        return {
+            "architect": "대안 있음·미검증" if design.get("status") in (
+                "TWO_PLANS_ADVISORY_UNVERIFIED", "CANDIDATES_UNVERIFIED") else
+                "목표 검토 중" if self.draft else "목표 없음",
+            "player": "순수 모의·미검증" if trace.get("execution") == "PURE_SYNTHETIC_NOOP_ONLY" else
+                "계획 검토 중" if self.review else "실행 전",
+            "verifier": "해시만 일치" if self.trace_review and
+                self.trace_review.get("replay_integrity") else "독립 진실성 미확인",
+            "atlas": "로컬 저장소 선택" if self.library else "저장소 미선택",
+        }
+
     def render(self):
+        for key, status in self.stage_states().items():
+            self.stage_labels[key].configure(text={
+                "architect": "1 목표·설계", "player": "2 정책·Player",
+                "verifier": "3 검증", "atlas": "4 AXNODE"}[key] + " · " + status,
+                fg=VIOLET if key == self.page else TEXT)
         for child in self.body.winfo_children():
             child.destroy()
         VIEWS[self.page](self, self.body)
@@ -268,10 +301,29 @@ class EAIDesktopApp:
         code = data["status"]
         if op == "design":
             self.chosen_plan.set(next(iter(data.get("plan_specs", {})), ""))
+            self.trace_review = None
+        if op == "simulate":
+            self.trace_review = None
+        if op == "trace_review":
+            self.trace_review = data
         if op == "journey" and "path" in data:
             self.receipt = data.pop("path")
         if op == "plan" and "path" in data:
             self.plan = data.pop("path")
+        if op == "session_load" and data.get("restored"):
+            self.draft = data.pop("draft")
+            self.draft_review = self.bridge.draft_review(self.draft)
+            self.problem = self.plan = self.receipt = None
+            self.library = data.pop("library")
+            self.trace_review = None
+            self.clear_plan()
+            self.clear_library()
+            self.results.pop("verifier", None)
+            self.results.pop("home", None)
+            self.results["architect"] = (op, data)
+            self.select("architect")
+            self.notice("근거 누락 · 다시 선택 필요" if code == "HOLD_SESSION_SOURCE_MISSING"
+                        else "로컬 세션 초안 복구됨 · 목표와 근거 권한을 다시 확인하세요.", AMBER)
         if code == "EXAMPLE_READY":
             self.example = data.pop("workspace")
             self.problem, self.library = self.example.problem, self.example.library
@@ -376,6 +428,22 @@ class EAIDesktopApp:
             path = self.bridge.save_new_draft(raw)
             return {"status": "DRAFT_SAVED", "path": path, "draft": raw, "text": "개인 초안 폴더에 저장했습니다. 이 사본으로 설계 대안을 비교할 수 있습니다."}
         self.run("architect", "draft_save", save_copy)
+
+    def save_review_session(self):
+        if not self.ready() or self.draft is None:
+            self.notice("먼저 목표 초안을 검토하세요.", AMBER)
+            return
+        if not messagebox.askyesno("개인 목표 세션 보존", "현재 목표 텍스트와 검토 상태를 EAI 개인 SQLite에 보존할까요?\n자동 실행 권한은 저장되지 않으며 다시 검토해야 합니다.", parent=self.root):
+            return
+        draft, library = dict(self.draft), self.library
+        review_sha = self.review.get("plan_sha256") if self.review else None
+        self.run("architect", "session_save", lambda: self.bridge.state.save_session(
+            draft, library, owner_approved=True, plan_sha256=review_sha))
+
+    def resume_review_session(self):
+        if not self.ready():
+            return
+        self.run("architect", "session_load", self.bridge.state.load_session)
 
     def open_problem(self, page):
         if not self.ready():
@@ -598,6 +666,32 @@ class EAIDesktopApp:
         stop = None if self.stop_step.get() == "끝까지" else self.stop_step.get()
         self.run("player", "simulate", lambda: self.bridge.player(p, plan, acknowledged_pure_only=True,
                  reviewed_digests=digests, cancel_before_step=stop))
+
+    def verify_pure_trace(self):
+        if not self.ready() or self.draft is None or self.review is None:
+            self.notice("실제 사용자 목표의 모의실행 영수증이 필요합니다.", AMBER)
+            return
+        report = self.results.get("architect", ("", {}))[1]
+        observed = self.results.get("player", ("", {}))[1]
+        if observed.get("kind") != "REVIEWED_PURE_PLAYER":
+            self.notice("순수 no-op 추적 기록이 없습니다.", AMBER)
+            return
+        goal, policy, library = dict(self.draft), dict(self.review), self.library
+        self.select("verifier")
+        self.run("verifier", "trace_review", lambda: self.bridge.verify_reviewed_pure_trace(
+            goal, report, policy, observed, library))
+
+    def remember_pure_trace(self):
+        if not self.ready() or self.trace_review is None or not self.trace_review.get("replay_integrity"):
+            self.notice("먼저 순수 추적 영수증을 재검사하세요.", AMBER)
+            return
+        if not messagebox.askyesno("개인 미검증 경험 기록", "현재 추적 SHA를 개인 AXNODE 메타데이터 후보로만 기록할까요?\n현실 검증·학습 승인·ACTIVE 승격을 뜻하지 않습니다.", parent=self.root):
+            return
+        report = self.results.get("architect", ("", {}))[1]
+        observed = self.results.get("player", ("", {}))[1]
+        goal, policy, library = dict(self.draft), dict(self.review), self.library
+        self.run("verifier", "remember_trace", lambda: self.bridge.record_private_trace_candidate(
+            goal, report, policy, observed, library, owner_approved=True))
 
     def verify(self):
         if not self.receipt:

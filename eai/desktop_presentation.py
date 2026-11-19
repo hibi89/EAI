@@ -14,6 +14,8 @@ OPS = {"command": "CPU 명령", "example": "로컬 예제 열기", "draft_open":
        "draft_save": "설계 초안 저장", "discover": "로컬 능력 확인", "design": "설계 대안 비교", "catalog": "AXNODE 검색",
        "node": "노드 상세", "create_library": "개인 AXNODE 생성", "import_candidate": "개인 후보 복사",
        "plan": "계획 검토", "simulate": "순수 시뮬레이션",
+       "trace_review": "순수 추적 재계산", "remember_trace": "개인 경험 후보 기록",
+       "session_save": "개인 검토 세션 보존", "session_load": "개인 검토 세션 복구",
        "verify": "영수증 검사", "settings": "예산 저장", "journey": "설계 영수증 재계산"}
 STATUSES = {
     "OK": "완료", "ERROR": "입력 계산 실패", "DENIED": "권한 거부", "UNAVAILABLE": "자료 없음",
@@ -38,6 +40,14 @@ STATUSES = {
     "PRIVATE_CANDIDATE_IMPORTED_UNVERIFIED": "로컬 후보 가져옴 · 미검증",
     "HOLD_PRIVATE_LIBRARY_CONSENT": "라이브러리 생성 승인 필요",
     "HOLD_PRIVATE_IMPORT_CONSENT": "후보 가져오기 승인 필요",
+    "SESSION_SAVED_REVIEW_ONLY": "세션 보존 · 다시 승인 필요",
+    "SESSION_RESTORED_REVIEW_REQUIRED": "세션 초안 복구 · 다시 검토 필요",
+    "HOLD_SESSION_SOURCE_MISSING": "이전 로컬 근거 없음 · 실행 보류",
+    "HOLD_NO_SAVED_SESSION": "저장한 세션 없음",
+    "HOLD_TRACE_UNVERIFIED": "영수증/현재 원본 불일치 · 보류",
+    "HOLD_MEMORY_CONSENT": "기록 동의 없음 · 보류",
+    "PURE_REPLAY_INTEGRITY_UNVERIFIED_REALITY": "순수 모의 추적 일치 · 현실 진실성 미확인",
+    "PRIVATE_TRACE_CANDIDATE_UNVERIFIED": "개인 기록 후보 저장 · 미검증",
     "PURE_SYNTHETIC_PREVIEW_ONLY": "순수 모의 실행 가능",
     "PURE_SYNTHETIC_INTERPRETED_UNVERIFIED": "모의 실행 완료", "PURE_SYNTHETIC_CANCELLED_NOT_EXECUTED": "지정 단계에서 중단",
     "LOCAL_JOURNEY_DIGEST_INTEGRITY_UNVERIFIED": "영수증 무결성 일치", "RECEIPT_DIGEST_MISMATCH": "영수증 SHA 불일치",
@@ -103,6 +113,16 @@ def explain(op, result):
                       *["근거 SHA-256   " + s for s in item["source_sha256"]]]
         lines.extend(["", "목표 SHA-256   " + result["problem_sha256"]])
         return "\n".join(lines)
+    if op == "trace_review":
+        return "\n".join([caption(code),
+            "모의 기록 해시 재계산: " + str(result.get("replay_integrity", False)),
+            "현실 정답 및 독립 감사: 미확인 · ACTIVE 승격 불가",
+            "추적 SHA-256: " + result.get("trace_sha256", "없음"),
+            *result.get("reasons", [])])
+    if op == "remember_trace":
+        return "\n".join([caption(code), "개인 메타데이터 후보만 생성됨 · 결과 진실성 미확인",
+            "AXNODE ACTIVE 자동 승격 없음 · 외부 작업 없음",
+            "기록 SHA-256: " + result.get("memory_sha256", "없음")])
     if op == "plan":
         lines = [f"위험도 {result['risk']}   ·   요청 권한 {', '.join(result['permissions'])}",
                  f"계획 예산 {result['budget'][0]}단계 / {result['budget'][1]}초"]

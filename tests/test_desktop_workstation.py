@@ -276,6 +276,102 @@ class WorkstationContractTests(unittest.TestCase):
         self.assertIn("검증 의무", view)
         self.assertNotIn(source["goal"], view)
 
+    def test_v32_pure_trace_review_rejects_tamper_and_records_only_unverified_private_candidate(self):
+        from eai.axnode_memory import AXNodeMemory
+        from eai.axnode_store import AXNodeStore
+        w = self.fixture()
+        source = json.loads(w.problem.read_text(encoding="utf-8"))
+        source.update(goal="검증 경계 시험", risk="LOW", oracle="owner.local.oracle",
+                      state_refs=["synthetic.local.1"], objectives=["확인"],
+                      hard_constraints=["forbid:unsafe.operation"], permissions=["pure", "local.read"])
+        design = self.bridge.architect_reviewed_goal(source, w.library, owner_reviewed=True)
+        selected = next(iter(design["plan_specs"]))
+        policy = self.bridge.inspect_reviewed_selection(source, design, selected, w.library)
+        flow = self.bridge.play_reviewed_pure_plan(source, design, policy, w.library,
+                                                  acknowledged_pure_only=True)
+        result = self.bridge.verify_reviewed_pure_trace(source, design, policy, flow, w.library)
+        self.assertEqual(result["status"], "PURE_REPLAY_INTEGRITY_UNVERIFIED_REALITY")
+        self.assertTrue(result["replay_integrity"])
+        self.assertEqual(result["semantic_truth"], "UNKNOWN")
+        self.assertFalse(result["can_promote"])
+        for tampered in (dict(flow, trace_sha256="0"*64),
+                         dict(flow, verified_real_world=True),
+                         dict(flow, step_observations=[]),
+                         dict(flow, external_actions=1)):
+            self.assertEqual(self.bridge.verify_reviewed_pure_trace(
+                source, design, policy, tampered, w.library)["status"], "HOLD_TRACE_UNVERIFIED")
+        self.assertEqual(self.bridge.record_private_trace_candidate(
+            source, design, policy, flow, w.library)["status"], "HOLD_MEMORY_CONSENT")
+        with self.assertRaises(ValueError):
+            self.bridge.record_private_trace_candidate(source, design, policy, flow,
+                                                       w.library, owner_approved=True)
+        fresh = self.bridge.create_fresh_private_library(owner_approved=True)["path"]
+        # Explicitly copy the selected AXNODE in dependency order from a disposable fixture.
+        from eai.axnode_store import AXNodeStore
+        with AXNodeStore(w.library, read_only=True) as old, AXNodeStore(fresh) as dest:
+            pending = set(old.hashes())
+            while pending:
+                before = len(pending)
+                for sha in sorted(pending):
+                    if all(parent not in pending for parent in old.parents_of(sha)):
+                        dest.import_node(old.get(sha).canonical)
+                        pending.remove(sha)
+                self.assertLess(len(pending), before)
+        home_design = self.bridge.architect_reviewed_goal(source, fresh, owner_reviewed=True)
+        home_choice = next(iter(home_design["plan_specs"]))
+        home_policy = self.bridge.inspect_reviewed_selection(source, home_design, home_choice, fresh)
+        home_flow = self.bridge.play_reviewed_pure_plan(source, home_design, home_policy, fresh,
+                                                        acknowledged_pure_only=True)
+        stored = self.bridge.record_private_trace_candidate(
+            source, home_design, home_policy, home_flow, fresh, owner_approved=True)
+        self.assertEqual(stored["status"], "PRIVATE_TRACE_CANDIDATE_UNVERIFIED")
+        self.assertFalse(stored["can_promote"])
+        self.assertEqual(stored["semantic_truth"], "UNKNOWN")
+        with AXNodeStore(fresh) as store, AXNodeMemory(store) as memory:
+            raw = memory.get(stored["memory_sha256"])
+            self.assertEqual(raw["outcome"], "UNKNOWN")
+            self.assertEqual(raw["tier"], "EPISODIC")
+            self.assertEqual(raw["anchor_sha"], stored["anchor_sha256"])
+            self.assertNotIn(source["goal"], json.dumps(raw, ensure_ascii=False))
+            self.assertTrue(all(store.get(h).as_dict()["status"] == "CANDIDATE"
+                                for h in store.hashes()))
+
+    def test_v32_owner_session_resume_hash_reject_and_missing_source_hold(self):
+        from eai.desktop_state import DesktopState
+        draft = self.bridge.make_problem_draft("개인 세션 복구 시험")
+        self.assertEqual(self.bridge.state.save_session(draft)["status"], "HOLD_MEMORY_CONSENT")
+        self.assertFalse((self.root / "review_sessions.sqlite3").exists())
+        self.assertEqual(self.bridge.state.load_session()["status"], "HOLD_NO_SAVED_SESSION")
+        fresh = self.bridge.create_fresh_private_library(owner_approved=True)["path"]
+        result = self.bridge.state.save_session(draft, fresh, owner_approved=True)
+        self.assertTrue(result["saved"])
+        saved = DesktopState(self.root).load_session()
+        self.assertEqual(saved["status"], "SESSION_RESTORED_REVIEW_REQUIRED")
+        self.assertEqual(saved["problem_sha256"], result["problem_sha256"])
+        self.assertEqual(saved["draft"], draft)
+        self.assertEqual(saved["library"], fresh)
+        self.assertTrue(saved["review_required"])
+        self.assertFalse(saved["can_execute"])
+        self.assertEqual(saved["external_actions"], 0)
+        self.assertEqual(saved["original_writes"], 0)
+        old = self.fixture()
+        not_pinned = self.bridge.state.save_session(draft, old.library, owner_approved=True)
+        self.assertEqual(DesktopState(self.root).load_session()["library"], None)
+        self.assertTrue(not_pinned["saved"])
+        older = DesktopState(self.root).load_session(session_id=result["session_id"])
+        self.assertEqual(older["library"], fresh)
+        # Missing selected library must HOLD and never auto-create it.
+        (fresh / "axnodes.sqlite").unlink()
+        missing = DesktopState(self.root).load_session(session_id=result["session_id"])
+        self.assertEqual(missing["status"], "HOLD_SESSION_SOURCE_MISSING")
+        self.assertEqual(missing["library"], None)
+        self.assertFalse((fresh / "axnodes.sqlite").exists())
+        with closing(sqlite3.connect(self.root / "review_sessions.sqlite3")) as db, db:
+            db.execute("UPDATE sessions SET payload=? WHERE id=?",
+                       (b'{"version":1,"unsafe":true}', result["session_id"]))
+        with self.assertRaises(ValueError):
+            DesktopState(self.root).load_session(session_id=result["session_id"])
+
     def test_v32_private_library_creation_and_node_import_do_not_mutate_original(self):
         self.assertEqual(self.bridge.create_fresh_private_library()["status"], "HOLD_PRIVATE_LIBRARY_CONSENT")
         self.assertFalse((self.root / "libraries").exists())
@@ -515,6 +611,89 @@ class NativeWorkstationTests(unittest.TestCase):
                 crawl(child)
         crawl(self.app.body)
         self.assertEqual(len(cards), 2)
+
+    def test_v32_gui_replay_integrity_not_semantic_verification(self):
+        w = PracticeWorkspace()
+        self.addCleanup(w.close)
+        self.app.fill_command("미검증 경험의 추적 해시")
+        self.app.new_draft()
+        self.app.library = w.library
+        self.app.draft.update(domain="practice", risk="LOW", oracle="owner.local.oracle",
+                              state_refs=["synthetic.local.1"],
+                              hard_constraints=["forbid:unsafe.operation"],
+                              objectives=["추적 검증"], permissions=["pure", "local.read"])
+        with patch("eai.desktop_app.messagebox.askyesno", return_value=True):
+            self.app.design()
+        self.wait()
+        with patch("eai.desktop_app.messagebox.askyesno", return_value=True):
+            self.app.review_alternative()
+        self.wait()
+        with patch("eai.desktop_app.messagebox.askyesno", return_value=True):
+            self.app.simulate()
+        self.wait()
+        self.app.verify_pure_trace()
+        self.wait()
+        self.assertEqual(self.app.page, "verifier")
+        self.assertTrue(self.app.trace_review["replay_integrity"])
+        self.assertEqual(self.app.trace_review["semantic_truth"], "UNKNOWN")
+        self.assertFalse((self.bridge.state_root / "libraries").exists())
+
+    def test_v32_real_stage_navigation_reports_only_actual_status(self):
+        self.assertIn("목표 없음", self.app.stage_labels["architect"].cget("text"))
+        self.assertIn("독립 진실성 미확인", self.app.stage_labels["verifier"].cget("text"))
+        self.app.fill_command("사용자 설계 목표를 비교하라")
+        self.app.new_draft()
+        self.assertIn("목표 검토 중", self.app.stage_labels["architect"].cget("text"))
+        w = PracticeWorkspace()
+        self.addCleanup(w.close)
+        self.app.library = w.library
+        self.app.draft.update(domain="practice", risk="LOW", oracle="owner.local.oracle",
+                              state_refs=["synthetic.local.1"],
+                              hard_constraints=["forbid:unsafe.operation"],
+                              objectives=["대안 검토"], permissions=["pure", "local.read"])
+        with patch("eai.desktop_app.messagebox.askyesno", return_value=True):
+            self.app.design()
+        self.wait()
+        self.assertIn("대안 있음·미검증", self.app.stage_labels["architect"].cget("text"))
+        with patch("eai.desktop_app.messagebox.askyesno", return_value=True):
+            self.app.review_alternative()
+        self.wait()
+        self.assertIn("계획 검토 중", self.app.stage_labels["player"].cget("text"))
+        with patch("eai.desktop_app.messagebox.askyesno", return_value=True):
+            self.app.simulate()
+        self.wait()
+        self.assertIn("순수 모의·미검증", self.app.stage_labels["player"].cget("text"))
+        self.assertIn("독립 진실성 미확인", self.app.stage_labels["verifier"].cget("text"))
+        self.app.verify_pure_trace()
+        self.wait()
+        self.assertIn("해시만 일치", self.app.stage_labels["verifier"].cget("text"))
+        self.app.stage_labels["atlas"].invoke()
+        self.assertEqual(self.app.page, "atlas")
+        self.assertIsNotNone(self.app.command)
+        self.app.focus_command()
+        self.assertEqual(str(self.root.focus_get()), str(self.app.command))
+
+    def test_v32_native_saved_goal_restores_without_authority_or_plan(self):
+        self.app.fill_command("제약조건을 저장하고 다음에 이어서 분석하라")
+        self.app.new_draft()
+        saved_draft = dict(self.app.draft)
+        with patch("eai.desktop_app.messagebox.askyesno", return_value=True):
+            self.app.save_review_session()
+        self.wait()
+        self.assertEqual(self.app.results["architect"][1]["status"], "SESSION_SAVED_REVIEW_ONLY")
+        self.app.fill_command("완전히 다른 목표")
+        self.app.new_draft()
+        self.app.resume_review_session()
+        self.wait()
+        self.assertEqual(self.app.draft, saved_draft)
+        self.assertEqual(self.app.page, "architect")
+        self.assertIsNone(self.app.plan)
+        self.assertIsNone(self.app.problem)
+        self.assertIsNone(self.app.review)
+        self.assertIsNone(self.app.trace_review)
+        self.assertIn("목표 검토 중", self.app.stage_labels["architect"].cget("text"))
+        self.assertEqual(self.app.results.get("architect", ("",{}))[1].get("status"),
+                         "SESSION_RESTORED_REVIEW_REQUIRED")
 
     def test_v32_gui_consent_creates_only_fresh_private_library(self):
         with patch("eai.desktop_app.messagebox.askyesno", return_value=True):
