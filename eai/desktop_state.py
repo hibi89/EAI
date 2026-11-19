@@ -148,25 +148,68 @@ class DesktopState:
 
     @contextmanager
     def _session_connection(self):
-        """Separate versioned owner-private ledger; no automatic old DB migration."""
+        """No implicit repairs: preexisting private session files are owner data.
+
+        SQLite's ordinary connect() creates an absent file. That must not
+        silently claim an existing zero-byte owner file or damaged schema.
+        The exclusive-create path is reserved for a genuinely new session DB.
+        """
+        import os
+
         path = private_db(self.root, "review_sessions.sqlite3")
-        existed = path.is_file() and path.stat().st_size > 0
-        with closing(sqlite3.connect(path, timeout=2)) as db:
-            db.execute("PRAGMA trusted_schema=OFF")
-            db.execute("PRAGMA busy_timeout=2000")
-            version = db.execute("PRAGMA user_version").fetchone()[0]
-            if existed and version != 1:
-                raise ValueError("unknown session schema version; preserve source")
-            if not existed:
-                with db:
-                    db.execute("CREATE TABLE sessions(id INTEGER PRIMARY KEY, "
-                               "stamp INTEGER NOT NULL, sha256 TEXT NOT NULL, "
-                               "payload BLOB NOT NULL)")
-                    db.execute("PRAGMA user_version=1")
-            elif {r[1] for r in db.execute("PRAGMA table_info(sessions)")} != {
-                    "id", "stamp", "sha256", "payload"}:
-                raise ValueError("unexpected session schema; preserve source")
+        with _WORKSPACE_SCHEMA_INIT_LOCK:
+            existed = path.exists()
+            if existed:
+                if not path.is_file() or path.stat().st_size == 0:
+                    raise ValueError("unexpected session schema; preserve source")
+            else:
+                fd = os.open(
+                    path, os.O_CREAT | os.O_EXCL | os.O_WRONLY |
+                    getattr(os, "O_NOFOLLOW", 0), 0o600)
+                os.close(fd)
+            db = sqlite3.connect(
+                path.resolve(strict=True).as_uri() + "?mode=rw",
+                uri=True, timeout=2)
+            try:
+                db.execute("PRAGMA trusted_schema=OFF")
+                db.execute("PRAGMA busy_timeout=2000")
+                version = db.execute("PRAGMA user_version").fetchone()[0]
+                objects = {
+                    (row[0], row[1]) for row in db.execute(
+                        "SELECT type,name FROM sqlite_master "
+                        "WHERE type IN ('table','view','trigger','index') "
+                        "AND name NOT LIKE 'sqlite_%'")
+                }
+                if existed:
+                    if version != 1 or objects != {("table", "sessions")}:
+                        raise ValueError("unexpected session schema; preserve source")
+                    columns = tuple(
+                        (row[1], row[2].upper(), row[3], row[5])
+                        for row in db.execute("PRAGMA table_info(sessions)"))
+                    if columns != (
+                        ("id", "INTEGER", 0, 1),
+                        ("stamp", "INTEGER", 1, 0),
+                        ("sha256", "TEXT", 1, 0),
+                        ("payload", "BLOB", 1, 0),
+                    ):
+                        raise ValueError("unexpected session columns; preserve source")
+                else:
+                    if version != 0 or objects:
+                        raise ValueError("unexpected new session schema; preserve source")
+                    with db:
+                        db.execute("CREATE TABLE sessions(id INTEGER PRIMARY KEY, "
+                                   "stamp INTEGER NOT NULL, sha256 TEXT NOT NULL, "
+                                   "payload BLOB NOT NULL)")
+                        db.execute("PRAGMA user_version=1")
+                if db.execute("PRAGMA quick_check").fetchone() != ("ok",):
+                    raise ValueError("damaged session database; preserve source")
+            except BaseException:
+                db.close()
+                raise
+        try:
             yield db
+        finally:
+            db.close()
 
     def _private_library(self, library):
         if library is None:
