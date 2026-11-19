@@ -33,9 +33,12 @@ from .tools import SearxNGSearch
 
 def main(argv: list[str] | None = None) -> int:
     if argv is None:
-        # Pipes can inherit a legacy code page even when the CSV input is UTF-8.
+        # Windows redirected streams may use cp1252/cp949 and either
+        # strict *or* surrogateescape error handlers. Preserve the selected
+        # code page but escape characters it cannot encode, so JSON receipts,
+        # exit codes, and Korean report summaries never crash on print().
         for stream in (sys.stdout, sys.stderr):
-            if isinstance(stream, io.TextIOWrapper) and stream.errors == 'strict':
+            if isinstance(stream, io.TextIOWrapper) and stream.errors != 'backslashreplace':
                 stream.reconfigure(errors='backslashreplace')
     p = argparse.ArgumentParser(prog='eai', description='Independent, CPU-first EAI MVP')
     p.add_argument('--version', action='version', version=__version__)

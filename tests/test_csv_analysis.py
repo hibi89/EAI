@@ -93,5 +93,22 @@ class CSVTests(unittest.TestCase):
         self.assertIn('합계 12', done.stdout)
 
 
+    def test_redirected_western_codepage_surrogateescape_does_not_crash(self):
+        # Reproduces Windows CI stdout cp1252:surrogateescape. The caller can
+        # still parse the numeric output without pretending the terminal
+        # can display non-ASCII characters. No model, network or user DB.
+        self.file.write_text('매출📊\\n12\\n'.replace('\\n', '\n'), encoding='utf-8')
+        done = subprocess.run(
+            [sys.executable, '-m', 'eai', 'analyze-csv', str(self.file)],
+            cwd=Path(__file__).resolve().parents[1],
+            env={**os.environ, 'PYTHONIOENCODING': 'cp1252:surrogateescape'},
+            capture_output=True, encoding='cp1252', timeout=10)
+        self.assertEqual(done.returncode, 0, done.stderr)
+        self.assertIn(r'\\ub9e4', done.stdout)
+        self.assertIn(r'\\U0001f4ca', done.stdout)
+        self.assertIn('12', done.stdout)
+        self.assertNotIn('UnicodeEncodeError', done.stderr)
+
+
 if __name__ == '__main__':
     unittest.main()
