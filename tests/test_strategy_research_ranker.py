@@ -158,6 +158,30 @@ class StrategyResearchRankerTests(unittest.TestCase):
         self.assertIs(again.prior, first.prior)
         self.assertEqual(again.status, "HOLD_REPLAYED_OR_EXHAUSTED_SYNTHETIC_FAMILY")
 
+    def test_p2_research_prior_rejects_falsey_nonboolean_authority_flags(self):
+        # Dataclass annotations are not runtime validation. A forged prior
+        # whose flags are 0/None/""/[] must be refused even during replay:
+        # such values are not the exact non-authorizing False contract.
+        first = advance_bounded_research_prior(
+            self.store, self.problem, (self.candidate,), self.curriculum)
+        self.assertTrue(first.accepted)
+        forbidden: tuple[object, ...] = (None, 0, "", [])
+        for field in (
+            "independent_real_world_truth",
+            "trusted_training_permitted",
+            "active_promotion_permitted",
+        ):
+            for value in forbidden:
+                with self.subTest(field=field, value=repr(value)):
+                    forged = replace(first.prior, **cast(Any, {field: value}))
+                    with self.assertRaisesRegex(ValueError, "untrusted research-only prior"):
+                        advance_bounded_research_prior(
+                            self.store, self.problem, (self.candidate,),
+                            self.curriculum, forged)
+        self.assertIs(first.prior.independent_real_world_truth, False)
+        self.assertIs(first.prior.trusted_training_permitted, False)
+        self.assertIs(first.prior.active_promotion_permitted, False)
+
     def test_p2_scenario_counterexample_preserves_prior_and_denies_learning(self):
         from eai.synthetic_scenario_transfer import SyntheticScenarioTransfer
         from dataclasses import replace as dataclass_replace

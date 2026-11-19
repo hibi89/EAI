@@ -131,9 +131,9 @@ def advance_bounded_research_prior(
             digest, ids, (), 0, tuple((x, 0, 0, 0) for x in ids))
     if (prior.problem_sha256 != digest or prior.candidate_sha256 != ids
             or prior.status != "SYNTHETIC_CPU_RESEARCH_PRIOR_ONLY"
-            or prior.independent_real_world_truth
-            or prior.trusted_training_permitted
-            or prior.active_promotion_permitted
+            or prior.independent_real_world_truth is not False
+            or prior.trusted_training_permitted is not False
+            or prior.active_promotion_permitted is not False
             or type(prior.curriculum_sha256) is not tuple
             or len(prior.curriculum_sha256) > 8
             or len(set(prior.curriculum_sha256)) != len(prior.curriculum_sha256)
