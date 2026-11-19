@@ -2,8 +2,18 @@
 from pathlib import Path
 import tempfile
 import unittest
+from typing import Any, TypedDict, cast
 
 from eai.evidence_ledger import EvidenceLedger
+
+
+class AppendKw(TypedDict):
+    claim_id: str
+    source_sha256: str
+    polarity: str
+    observed_at: int
+    expires_at: int
+    now: int
 
 
 class SyntheticStore:
@@ -69,7 +79,7 @@ class EvidenceLedgerTests(unittest.TestCase):
 
     def test_repeat_is_idempotent_and_no_overwrite(self):
         with EvidenceLedger(self.store, create=True) as ledger:
-            kw=dict(claim_id="data.first",source_sha256="a"*64,
+            kw: AppendKw = dict(claim_id="data.first",source_sha256="a"*64,
                     polarity="SUPPORT",observed_at=50,expires_at=90,now=60)
             self.assertEqual(ledger.append(**kw),ledger.append(**kw))
             self.assertEqual(ledger.db.execute("SELECT count(*) FROM observations").fetchone()[0],1)
@@ -80,7 +90,7 @@ class EvidenceLedgerTests(unittest.TestCase):
 
     def test_reject_private_prompts_weak_timestamps_and_unpinned_anchors(self):
         with EvidenceLedger(self.store, create=True) as ledger:
-            base=dict(claim_id="data.first",source_sha256="a"*64,
+            base: AppendKw = dict(claim_id="data.first",source_sha256="a"*64,
                       polarity="SUPPORT",observed_at=100,expires_at=150,now=100)
             for key,value in [("claim_id","private raw prompt"),
                               ("source_sha256","x"*64),
@@ -88,7 +98,7 @@ class EvidenceLedgerTests(unittest.TestCase):
                               ("observed_at",101),
                               ("expires_at",100)]:
                 with self.subTest(key=key), self.assertRaises((ValueError,KeyError)):
-                    ledger.append(**dict(base,**{key:value}))
+                    ledger.append(**cast(Any, dict(base,**{key:value})))
 
     def test_detects_db_metadata_forgery_without_trusting_payload(self):
         with EvidenceLedger(self.store, create=True) as ledger:

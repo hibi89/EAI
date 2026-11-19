@@ -12,6 +12,7 @@ import sys
 import tempfile
 import threading
 import unittest
+from typing import Any
 
 from scripts.build_portable import build_portable
 
@@ -20,6 +21,9 @@ ROOT=Path(__file__).resolve().parents[1]
 
 
 class PortableJourneyP30Tests(unittest.TestCase):
+    out: tempfile.TemporaryDirectory
+    bundle: Path
+    built: dict[str, Any]
     @classmethod
     def setUpClass(cls):
         cls.out=tempfile.TemporaryDirectory()

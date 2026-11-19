@@ -2,6 +2,7 @@
 from copy import deepcopy
 from decimal import Decimal
 import unittest
+from typing import Any
 from unittest.mock import patch
 
 from eai.decision_engine import (DECISION_VERSION, validate_choice_goal,
@@ -10,7 +11,7 @@ from eai.decision_engine import (DECISION_VERSION, validate_choice_goal,
 
 class DecisionEngineTests(unittest.TestCase):
     def setUp(self):
-        self.raw = {
+        self.raw: dict[str, Any] = {
             'version': 1, 'kind': 'choose_options', 'goal': 'Select safe workstation',
             'criteria': [
                 {'id': 'price', 'unit': 'USD', 'direction': 'min', 'weight': '6',

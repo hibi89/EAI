@@ -5,6 +5,7 @@ from pathlib import Path
 import socket
 import tempfile
 import unittest
+from typing import Any, cast
 from unittest.mock import patch
 
 from eai.axnode_store import AXNodeStore
@@ -111,6 +112,7 @@ class StrategyResearchRankerTests(unittest.TestCase):
         genuine_shape = SyntheticB1Benchmark(
             "B1_SYNTHETIC_PARITY_WITH_B0_UNVERIFIED", 2, 2, 2, 2,
             2, 2, self.candidate.candidate_sha256)
+        forged_values: tuple[object, ...] = (None, 0, "", [])
         forged = (
             replace(genuine_shape, baseline_sha256="FORGED_BASELINE"),
             replace(genuine_shape, external_truth_verified=True),
@@ -118,14 +120,14 @@ class StrategyResearchRankerTests(unittest.TestCase):
             replace(genuine_shape, permission_to_promote=True),
             replace(genuine_shape, measured_runtime_uplift="CLAIMED"),
             SimpleNamespace(**vars(genuine_shape)),
-            *(replace(genuine_shape, **{field: 2.0})
+            *(replace(genuine_shape, **cast(Any, {field: 2.0}))
               for field in ("train_count", "heldout_count",
                             "b0_train_matches", "b0_heldout_matches",
                             "b1_train_compared", "b1_heldout_compared")),
-            *(replace(genuine_shape, **{field: forged_false})
+            *(replace(genuine_shape, **cast(Any, {field: forged_false}))
               for field in ("external_truth_verified", "permission_to_learn",
                             "permission_to_promote")
-              for forged_false in (None, 0, "", [])),
+              for forged_false in forged_values),
         )
         for false_result in forged:
             with self.subTest(false_result=repr(false_result)), patch(
@@ -190,6 +192,7 @@ class StrategyResearchRankerTests(unittest.TestCase):
         real = evaluate_synthetic_scenario_transfer(
             self.store, self.problem, self.candidate, new_curriculum)
         self.assertEqual(real.status, "SYNTHETIC_SCENARIO_TRANSFER_MATCH_UNVERIFIED")
+        forged_values: tuple[object, ...] = (None, 0, "", [])
         forged_reports = (
             replace(real, candidate_sha256="f" * 64),
             replace(real, challenge_families=1, b0_checked=1, b1_checked=1),
@@ -197,10 +200,10 @@ class StrategyResearchRankerTests(unittest.TestCase):
             replace(real, scenario_types=("renamed_seed", "renamed_seed")),
             replace(real, semantic_scope="REAL_WORLD_OOD"),
             replace(real, independently_verified_real_world=True),
-            *(replace(real, **{field: forged_false})
+            *(replace(real, **cast(Any, {field: forged_false}))
               for field in ("independently_verified_real_world",
                             "permits_learning", "permits_promotion")
-              for forged_false in (None, 0, "", [])),
+              for forged_false in forged_values),
             "not-a-report",
         )
         for forged in forged_reports:
@@ -219,7 +222,7 @@ class StrategyResearchRankerTests(unittest.TestCase):
     def test_p2_forged_synthetic_transfer_fixture_never_enters_baseline(self):
         for seed in (True, -1, 10001, "0"):
             with self.subTest(seed=seed), self.assertRaises(ValueError):
-                generate_synthetic_transfer_families(seed)
+                generate_synthetic_transfer_families(cast(int, seed))
         forged = replace(self.curriculum, heldout=self.curriculum.train)
         with self.assertRaisesRegex(ValueError, "verified local synthetic curriculum"):
             evaluate_synthetic_scenario_transfer(
