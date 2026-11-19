@@ -1,0 +1,92 @@
+{
+  "schema": "eai.p2.source_ci_evidence.v1",
+  "date_kst": "2026-11-19",
+  "repository": "hibi89/EAI",
+  "branch": "feature/eai-v32-owner-rebuild-20261119",
+  "verified_functional_sha": "97f4ac89c993b6668254e6e3efe236e584676f58",
+  "linux": {
+    "run_id": 44519947716,
+    "conclusion": "SUCCESS",
+    "tests": 1169,
+    "passed": 1152,
+    "skipped": 17,
+    "failed": 0,
+    "native_tk_xvfb_passed": 34,
+    "compileall": "PASS",
+    "ruff_core": "PASS_E9_F63_F7_F82_E714_E731_E402",
+    "ruff_production": "PASS_E701_E702_eai_scripts",
+    "mypy": "PASS_136_FILES_FOLLOW_IMPORTS_NORMAL_EXPLICIT_PACKAGE_BASES",
+    "offline_zip_checksum": "PASS"
+  },
+  "windows": {
+    "run_id": 44519947712,
+    "conclusion": "SUCCESS",
+    "tests": 1169,
+    "passed": 1168,
+    "skipped": 1,
+    "failed": 0,
+    "native_tk_passed": 40,
+    "native_tk_skipped": 1,
+    "exe": "PASS_UNSIGNED_BUNDLE_IMPORTS",
+    "artifact_id": 14527418388,
+    "uploaded_artifact_zip_sha256": "0691ce7f08266f33c80e07ed7cdc02c2f3f0dd9cf653e63cb447c07d6f70b106",
+    "physical_user_windows_11": "NOT_RUN"
+  },
+  "code_commits": [
+    "f34b9a1dd0692fecb394bed540f09c241df47080",
+    "25d282e045e362b3bdb81223206e39bb56a2882f",
+    "97f4ac89c993b6668254e6e3efe236e584676f58"
+  ],
+  "initial_failure": {
+    "sha": "f34b9a1dd0692fecb394bed540f09c241df47080",
+    "linux_run_id": 44519527477,
+    "error": "mypy duplicate module build_customer_candidate versus scripts.build_customer_candidate",
+    "corrected_by": "--explicit-package-bases"
+  },
+  "p2_01": {
+    "state": "PARTIAL",
+    "accepted": false,
+    "source_mypy_modules": 128,
+    "source_mypy_scripts": 8,
+    "normal_follow_imports": "PASS",
+    "full_ruff_E402": "PASS_eai_tests_scripts",
+    "source_ruff_E701_E702": "PASS_eai_scripts",
+    "test_only_historic_E701_E702": 86,
+    "test_only_current_count": "NOT_MEASURED",
+    "tests_mypy": "NOT_RUN",
+    "strict_mypy": "NOT_RUN",
+    "independent_audit": "NOT_RUN"
+  },
+  "p2_05": {
+    "state": "PARTIAL",
+    "accepted": false,
+    "strict_benchmark_integer_fields": 6,
+    "forged_float_count_subcases_added": 6,
+    "synthetic_cpu_regression": "PASS_LINUX_WINDOWS",
+    "real_world_ood": "NOT_RUN",
+    "training_or_active_permission": "NOT_GRANTED"
+  },
+  "p1_source_candidates": {
+    "done": 60,
+    "total": 60,
+    "provisional": true
+  },
+  "p2_accepted_groups": {
+    "done": 7,
+    "total": 14,
+    "ids": [
+      "EAI-P2-02",
+      "EAI-P2-03",
+      "EAI-P2-04",
+      "EAI-P2-06",
+      "EAI-P2-09",
+      "EAI-V32-P2-UX01",
+      "EAI-V32-P2-UX02"
+    ]
+  },
+  "official_weighted_p1": "UNASSESSED",
+  "official_weighted_p2": "UNASSESSED",
+  "user_physical_win11": "NOT_RUN",
+  "independent_technical_security_ux_audits": "NOT_RUN",
+  "release": "HOLD"
+}
