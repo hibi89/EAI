@@ -46,7 +46,7 @@ class EAIDesktopApp:
         self.example = None
         self.artifacts = None
         self.problem = self.library = self.plan = self.receipt = None
-        self.draft = self.review = self.catalog_data = self.node_data = None
+        self.draft = self.draft_review = self.review = self.catalog_data = self.node_data = None
         self.query = tk.StringVar(root)
         self.filter = tk.StringVar(root, "전체")
         self.stop_step = tk.StringVar(root, "끝까지")
@@ -282,6 +282,7 @@ class EAIDesktopApp:
             self.results.pop("verifier", None)
         elif code in ("DRAFT_OPENED", "DRAFT_SAVED"):
             self.problem, self.draft = data.pop("path"), data.pop("draft")
+            self.draft_review = self.bridge.draft_review(self.draft)
             self.clear_plan()
             if op == "draft_open" and self.page == "home":
                 self.select("architect")
@@ -334,6 +335,7 @@ class EAIDesktopApp:
             self.notice("설계 목표를 1~2,000자로 입력하세요.", RED)
             return
         self.draft, self.problem = proposal, None
+        self.draft_review = self.bridge.draft_review(proposal)
         self.clear_plan()
         self.results.pop("architect", None)
         self.select("architect")
@@ -344,6 +346,7 @@ class EAIDesktopApp:
             return
         def apply(data):
             self.draft, self.problem = data, None
+            self.draft_review = self.bridge.draft_review(data)
             self.clear_plan()
             self.results.pop("architect", None)
             self.render()
