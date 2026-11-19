@@ -253,6 +253,29 @@ class WorkstationContractTests(unittest.TestCase):
             acknowledged_pure_only=True)["status"], "HOLD_PLAN_CHANGED")
         self.assertFalse((self.root / "drafts").exists())
 
+    def test_v32_alternative_tradeoffs_are_from_actual_architect_report(self):
+        from eai.desktop_presentation import explain
+        w = self.fixture()
+        source = json.loads(w.problem.read_text(encoding="utf-8"))
+        source.update(oracle="owner.local.oracle", state_refs=["synthetic.local.1"],
+                      hard_constraints=["forbid:unsafe.operation"],
+                      permissions=["pure", "local.read"])
+        outcome = self.bridge.architect_reviewed_goal(source, w.library, owner_reviewed=True)
+        self.assertEqual(outcome["status"], "TWO_PLANS_ADVISORY_UNVERIFIED")
+        self.assertEqual(len(outcome["comparison"]), 2)
+        self.assertEqual({p["id"] for p in outcome["comparison"]}, set(outcome["plan_specs"]))
+        for item in outcome["comparison"]:
+            self.assertEqual(item["source_status"], "LOCAL_CANDIDATE_UNVERIFIED")
+            self.assertEqual(item["independent_accuracy"], "UNKNOWN")
+            self.assertGreater(item["declared_steps"], 0)
+            self.assertGreater(item["declared_seconds_upper_bound"], 0)
+            self.assertTrue(item["evidence_hashes"])
+            self.assertEqual(item["reversibility"], "PURE_NOOP_NO_CHANGES")
+        view = explain("design", outcome)
+        self.assertIn("자원 상한", view)
+        self.assertIn("검증 의무", view)
+        self.assertNotIn(source["goal"], view)
+
     def test_v32_private_library_creation_and_node_import_do_not_mutate_original(self):
         self.assertEqual(self.bridge.create_fresh_private_library()["status"], "HOLD_PRIVATE_LIBRARY_CONSENT")
         self.assertFalse((self.root / "libraries").exists())
@@ -469,6 +492,29 @@ class NativeWorkstationTests(unittest.TestCase):
         self.assertEqual(out["original_writes"], 0)
         self.assertEqual(out["external_actions"], 0)
         self.assertFalse((self.bridge.state_root / "drafts").exists())
+
+    def test_v32_gui_shows_two_real_tradeoff_cards_not_static_mock(self):
+        w = PracticeWorkspace()
+        self.addCleanup(w.close)
+        self.app.fill_command("연습 노드 두 가지 접근을 비교해줘")
+        self.app.new_draft()
+        self.app.library = w.library
+        self.app.draft.update(domain="practice", risk="LOW", oracle="owner.local.oracle",
+                              state_refs=["synthetic.local.1"],
+                              hard_constraints=["forbid:unsafe.operation"],
+                              objectives=["대안 비교"], permissions=["pure", "local.read"])
+        with patch("eai.desktop_app.messagebox.askyesno", return_value=True):
+            self.app.design()
+        self.wait()
+        self.assertEqual(len(self.app.results["architect"][1]["comparison"]), 2)
+        cards = []
+        def crawl(w):
+            for child in w.winfo_children():
+                if isinstance(child, tk.Label) and "후보 검토 ·" in child.cget("text"):
+                    cards.append(child.cget("text"))
+                crawl(child)
+        crawl(self.app.body)
+        self.assertEqual(len(cards), 2)
 
     def test_v32_gui_consent_creates_only_fresh_private_library(self):
         with patch("eai.desktop_app.messagebox.askyesno", return_value=True):

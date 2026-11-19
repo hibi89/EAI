@@ -163,6 +163,22 @@ def architect(app, parent):
         button(row, "탐색 중단 요청", app.request_cancel).pack(side="left")
     result(app, parent, "architect", 7)
     design = app.results.get("architect", ("", {}))[1]
+    if design.get("kind") == "REVIEWED_GOAL_ARCHITECT" and design.get("comparison"):
+        for candidate in design["comparison"]:
+            summary = card(parent, "후보 검토 · " + candidate["id"])
+            summary.pack(fill="x", pady=(7, 0))
+            label(summary, "실제 로컬 자료 기반 · 단계 " + str(candidate["declared_steps"]) +
+                  "개 · 시간 상한 " + str(candidate["declared_seconds_upper_bound"]) + "초",
+                  fg=TEAL).pack(fill="x")
+            label(summary, "전략: " + ", ".join(candidate["strategy_refs"]) +
+                  " · 연산자: " + ", ".join(candidate["operators"]),
+                  wrap=580, fg=MUTED).pack(fill="x")
+            for tradeoff in candidate["tradeoffs"]:
+                label(summary, "주의 · " + tradeoff, fg=AMBER, wrap=560).pack(fill="x")
+            label(summary, "근거 SHA-256: " + ", ".join(candidate["evidence_hashes"]),
+                  fg=MUTED, wrap=570, size=9).pack(fill="x")
+            label(summary, "실제 정답/복구 가능성: " + candidate["independent_accuracy"] +
+                  " / " + candidate["reversibility"], fg=AMBER, wrap=560).pack(fill="x")
     if "problem_sha256" in design:
         row = frame(parent)
         row.pack(fill="x", pady=6)

@@ -84,6 +84,13 @@ def explain(op, result):
                           *["근거 SHA-256: " + h for h in item["source_sha256"]]]
         else:
             lines += ["", "해결해야 할 차단 조건:", *result.get("blockers", [])]
+        for candidate in result.get("comparison", []):
+            lines += ["", "대안 비교: " + candidate["id"],
+                      "자원 상한: " + str(candidate["declared_steps"]) + "단계 / " +
+                      str(candidate["declared_seconds_upper_bound"]) + "초",
+                      "원본 변경/복원 가능성: " + candidate["reversibility"],
+                      "검증 의무: " + candidate["verification_required"],
+                      *["유의사항: " + tradeoff for tradeoff in candidate["tradeoffs"]]]
         return "\n".join(lines)
     if op == "design":
         if "uncertainty" not in result:

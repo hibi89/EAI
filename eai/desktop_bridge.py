@@ -267,7 +267,29 @@ class DesktopBridge:
                                  (["TWO_DISTINCT_BOUNDED_PLANS_REQUIRED"] if len(plans) != 2 else []),
                         unknown_count=len(report["analysis"]["unknowns"]),
                         expansions=report["plan_search_expansions"])
+        compare = []
+        obligations = {item["alternative_id"]: item
+                       for item in report["option_obligations"]}
+        for item in report["advisory_plans"]:
+            obligation = obligations[item["alternative_id"]]
+            operators = [step["operator"] for step in item["plan_steps"]]
+            compare.append({
+                "id": item["alternative_id"],
+                "strategy_refs": list(obligation["strategy_refs"]),
+                "evidence_hashes": list(item["node_hashes"]),
+                "tradeoffs": list(obligation["tradeoffs"]),
+                "verification_required": obligation["verification_required"],
+                "declared_steps": item["declared_step_count"],
+                "declared_seconds_upper_bound": item["declared_seconds_upper_bound"],
+                "operators": operators,
+                "reversibility": ("PURE_NOOP_NO_CHANGES" if
+                                  set(operators) == {"synthetic.noop.v1"} else
+                                  "NOT_ESTABLISHED_NON_PURE_BLOCKED"),
+                "source_status": "LOCAL_CANDIDATE_UNVERIFIED",
+                "independent_accuracy": "UNKNOWN",
+            })
         return dict(base, status="TWO_PLANS_ADVISORY_UNVERIFIED",
+                    comparison=compare,
                     engine_status=report["status"],
                     truth_status=report["truth_status"],
                     plan_specs=plans, alternatives=result["alternatives"],

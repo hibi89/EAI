@@ -88,6 +88,11 @@ def preview_architecture_problem(problem: ProblemSpec, axnode_root: str | Path, 
             "candidate_provenance": "LOCAL_CANDIDATE_UNVERIFIED",
         },
         "design_blocked_reason": design.design.blocked_reason,
+        "option_obligations": [
+            {"alternative_id": aid, "strategy_refs": list(refs),
+             "tradeoffs": list(tradeoffs), "verification_required": verify}
+            for aid, refs, tradeoffs, verify in design.design.alternatives
+        ],
         "evidence_claims": claim_states,
         "evidence_review_required": evidence_disputed,
         "plan_search_expansions": plans.expansions,
