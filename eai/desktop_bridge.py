@@ -269,6 +269,7 @@ class DesktopBridge:
                         expansions=report["plan_search_expansions"])
         return dict(base, status="TWO_PLANS_ADVISORY_UNVERIFIED",
                     engine_status=report["status"],
+                    truth_status=report["truth_status"],
                     plan_specs=plans, alternatives=result["alternatives"],
                     uncertainty=result["uncertainty"],
                     evidence_review_required=report["evidence_review_required"],
@@ -295,6 +296,56 @@ class DesktopBridge:
             plans[choice["alternative_id"]] = raw
         result["plan_specs"] = plans
         return result
+
+    @staticmethod
+    def inspect_reviewed_selection(problem_raw: dict, design: dict, selected_id: str,
+                                   axnode_root: str | Path | None) -> dict:
+        """Fail-closed selection: recompute the actual library/plan before policy review.
+
+        Any UI/tool mutation between Architect and Player invalidates the
+        selection. Pure simulation still requires a separate later confirmation.
+        """
+        problem = ProblemSpec.validate(problem_raw)
+        digest = problem.digest()
+        base = {"kind": "REVIEWED_PLAN_POLICY", "problem_sha256": digest,
+                "status": "HOLD_PLAN_CHANGED", "execution": "NOT_EXECUTED",
+                "original_writes": 0, "external_actions": 0,
+                "independent_verification": "NOT_ESTABLISHED",
+                "can_execute_real_actions": False}
+        if (type(design) is not dict or
+                design.get("kind") != "REVIEWED_GOAL_ARCHITECT" or
+                design.get("status") != "TWO_PLANS_ADVISORY_UNVERIFIED" or
+                design.get("problem_sha256") != digest or
+                type(selected_id) is not str or
+                type(design.get("plan_specs")) is not dict or
+                selected_id not in design["plan_specs"]):
+            return dict(base, reasons=["STALE_OR_UNREVIEWED_DESIGN"])
+        if axnode_root is None or "local.read" not in problem.permissions:
+            return dict(base, reasons=["LOCAL_SOURCE_READ_NOT_AUTHORIZED"])
+        # Re-read every candidate hash/contract from the *selected* library.
+        fresh = DesktopBridge.architect_reviewed_goal(
+            problem_raw, axnode_root, owner_reviewed=True)
+        if (fresh.get("status") != "TWO_PLANS_ADVISORY_UNVERIFIED" or
+                fresh.get("plan_specs") != design.get("plan_specs") or
+                fresh.get("source_sets") != design.get("source_sets") or
+                fresh.get("alternatives") != design.get("alternatives")):
+            return dict(base, reasons=["ARCHITECT_OR_SOURCE_CHANGED"])
+        from .policy_gate import evaluate_problem_review_policy, plan_digest
+        selected = PlanSpec.validate(fresh["plan_specs"][selected_id])
+        decision = evaluate_problem_review_policy(
+            problem, selected, architect_truth=fresh["truth_status"],
+            evidence_review_required=fresh["evidence_review_required"])
+        return dict(base, status=decision.disposition,
+                    plan_sha256=plan_digest(selected),
+                    plan_id=selected_id, steps=selected.steps,
+                    budget=selected.budget, risk=problem.risk,
+                    permissions=problem.permissions,
+                    reasons=decision.reason_codes,
+                    source_sha256=next(s for a, s in zip(
+                        fresh["alternatives"], fresh["source_sets"])
+                        if a["alternative_id"] == selected_id),
+                    preview_only=decision.disposition == "PURE_SYNTHETIC_PREVIEW_ONLY",
+                    can_execute_real_actions=False)
 
     @staticmethod
     def journey_receipt(problem_file, axnode_root, *, max_expansions, expected_problem):

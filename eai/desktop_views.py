@@ -282,7 +282,10 @@ def player(app, parent):
         combo(row, app.stop_step, ["끝까지"] + [s[0] for s in app.review["steps"]], 13).pack(side="left", padx=7)
         b = button(row, "모의 실행", app.simulate, primary=True)
         b.pack(side="left")
-        if app.review["status"] != "PURE_SYNTHETIC_PREVIEW_ONLY":
+        if (app.review["status"] != "PURE_SYNTHETIC_PREVIEW_ONLY" or
+                not app.problem or not app.plan):
+            # The in-memory V3.2 plan review becomes runnable only after W08's
+            # separately confirmed exact-hash pure Player bridge is completed.
             b.configure(state="disabled")
     if app.results.get("player", ("",))[0] != "plan" or not app.review:
         result(app, parent, "player", 5)

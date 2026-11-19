@@ -513,8 +513,23 @@ class EAIDesktopApp:
         if not self.ready():
             return
         design = self.results.get("architect", ("", {}))[1]
-        raw = design.get("plan_specs", {}).get(self.chosen_plan.get())
-        if raw is None or not self.problem:
+        selected = self.chosen_plan.get()
+        raw = design.get("plan_specs", {}).get(selected)
+        if raw is None:
+            self.notice("검토할 설계 대안을 다시 선택하세요.", AMBER)
+            return
+        if (design.get("kind") == "REVIEWED_GOAL_ARCHITECT" and self.draft is not None):
+            if not messagebox.askyesno("선택 대안 정책 검토",
+                    "선택한 대안의 단계·목표 SHA·근거를 다시 검사할까요?\n이 작업은 로컬 읽기만 하며 Player를 실행하지 않습니다.",
+                    parent=self.root):
+                return
+            problem, library, report = dict(self.draft), self.library, design
+            self.clear_plan()
+            self.select("player")
+            self.run("player", "plan", lambda: self.bridge.inspect_reviewed_selection(
+                problem, report, selected, library))
+            return
+        if not self.problem:
             return
         source = self.problem
         self.clear_plan()
@@ -559,6 +574,9 @@ class EAIDesktopApp:
 
     def simulate(self):
         if not self.ready() or not self.review or self.review["status"] != "PURE_SYNTHETIC_PREVIEW_ONLY":
+            return
+        if not self.problem or not self.plan:
+            self.notice("현재는 계획 정책 검토만 완료되었습니다. 모의실행은 별도 연결 후 가능합니다.", AMBER)
             return
         if not messagebox.askyesno("순수 시뮬레이션", "검토한 계획을 메모리 안에서 모의 실행할까요?", parent=self.root):
             self.notice("모의 실행을 시작하지 않았습니다.")

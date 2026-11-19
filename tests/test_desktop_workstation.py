@@ -175,6 +175,42 @@ class WorkstationContractTests(unittest.TestCase):
                                                 owner_reviewed=True)
         self.assertFalse((self.root / "not_created").exists())
 
+    def test_v32_selected_plan_policy_revalidates_goal_and_pinned_sources(self):
+        w = self.fixture()
+        source = json.loads(w.problem.read_text(encoding="utf-8"))
+        source.update(goal="검토 가능한 순수 노드 대안", risk="LOW",
+                      oracle="owner.local.oracle", state_refs=["synthetic.local.1"],
+                      hard_constraints=["forbid:unsafe.operation"],
+                      objectives=["선택 경로 정책 검사"], permissions=["pure", "local.read"])
+        report = self.bridge.architect_reviewed_goal(source, w.library, owner_reviewed=True)
+        self.assertEqual(report["status"], "TWO_PLANS_ADVISORY_UNVERIFIED")
+        selected = next(iter(report["plan_specs"]))
+        outcome = self.bridge.inspect_reviewed_selection(source, report, selected, w.library)
+        self.assertEqual(outcome["status"], "PURE_SYNTHETIC_PREVIEW_ONLY")
+        self.assertTrue(outcome["preview_only"])
+        self.assertFalse(outcome["can_execute_real_actions"])
+        self.assertEqual(outcome["original_writes"], 0)
+        self.assertEqual(outcome["execution"], "NOT_EXECUTED")
+        self.assertEqual(outcome["steps"][0][1], "synthetic.noop.v1")
+        self.assertEqual(outcome["source_sha256"], report["source_sets"][0])
+        changed = self.bridge.inspect_reviewed_selection(dict(source, goal="다른 목표"), report,
+                                                          selected, w.library)
+        self.assertEqual(changed["status"], "HOLD_PLAN_CHANGED")
+        self.assertEqual(changed["reasons"], ["STALE_OR_UNREVIEWED_DESIGN"])
+        copy = dict(report, source_sets=[list(x) for x in report["source_sets"]])
+        copy["source_sets"][0][0] = "0" * 64
+        self.assertEqual(self.bridge.inspect_reviewed_selection(
+            source, copy, selected, w.library)["status"], "HOLD_PLAN_CHANGED")
+        self.assertEqual(self.bridge.inspect_reviewed_selection(
+            source, report, "option.not_here", w.library)["status"], "HOLD_PLAN_CHANGED")
+        high = dict(source, risk="MEDIUM")
+        revised = self.bridge.architect_reviewed_goal(high, w.library, owner_reviewed=True)
+        held = self.bridge.inspect_reviewed_selection(high, revised, selected, w.library)
+        self.assertEqual(held["status"], "HOLD_POLICY_DENIED")
+        self.assertIn("NON_LOW_RISK", held["reasons"])
+        self.assertFalse(held["preview_only"])
+        self.assertFalse((self.root / "drafts").exists())
+
     def test_v32_private_library_creation_and_node_import_do_not_mutate_original(self):
         self.assertEqual(self.bridge.create_fresh_private_library()["status"], "HOLD_PRIVATE_LIBRARY_CONSENT")
         self.assertFalse((self.root / "libraries").exists())
@@ -334,6 +370,33 @@ class NativeWorkstationTests(unittest.TestCase):
         self.assertIsNone(self.app.problem)
         self.assertFalse(data["can_execute"])
         self.assertEqual(self.app.rows[0][3], "TWO_PLANS_ADVISORY_UNVERIFIED")
+
+    def test_v32_gui_reviewed_plan_to_policy_no_auto_simulation(self):
+        w = PracticeWorkspace()
+        self.addCleanup(w.close)
+        self.app.fill_command("선택한 순수 전략 검토")
+        self.app.new_draft()
+        self.app.library = w.library
+        self.app.draft.update(domain="practice", risk="LOW", oracle="owner.local.oracle",
+                              state_refs=["synthetic.local.1"],
+                              hard_constraints=["forbid:unsafe.operation"],
+                              objectives=["후보 검토"], permissions=["pure", "local.read"])
+        with patch("eai.desktop_app.messagebox.askyesno", return_value=True):
+            self.app.design()
+        self.wait()
+        report = self.app.results["architect"][1]
+        self.assertEqual(report["status"], "TWO_PLANS_ADVISORY_UNVERIFIED")
+        with patch("eai.desktop_app.messagebox.askyesno", return_value=True):
+            self.app.review_alternative()
+        self.wait()
+        self.assertEqual(self.app.page, "player")
+        self.assertEqual(self.app.review["status"], "PURE_SYNTHETIC_PREVIEW_ONLY")
+        self.assertFalse(self.app.review["can_execute_real_actions"])
+        self.assertIsNone(self.app.plan)
+        self.assertIsNone(self.app.problem)
+        self.app.simulate()
+        self.assertNotIn("simulate", [op for _,_,op,_ in self.app.rows])
+        self.assertFalse((self.bridge.state_root / "drafts").exists())
 
     def test_v32_gui_consent_creates_only_fresh_private_library(self):
         with patch("eai.desktop_app.messagebox.askyesno", return_value=True):

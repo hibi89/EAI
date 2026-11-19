@@ -13,7 +13,7 @@
     "historic_evidence": "docs/EAI_P1_SWU_QUEUE.json;docs/EAI_DESKTOP_P1_SWU_QUEUE.json"
   },
   "new_swu_count": 12,
-  "new_source_candidates": 5,
+  "new_source_candidates": 6,
   "tracked_swu_total": 60,
   "official_implementation_rate": "UNASSESSED",
   "official_verification_rate": "UNASSESSED",
@@ -197,14 +197,16 @@
       "allowed_paths": [
         "eai/desktop_bridge.py",
         "eai/desktop_app.py",
-        "eai/policy_gate.py"
+        "eai/policy_gate.py",
+        "eai/desktop_views.py",
+        "tests/test_desktop_workstation.py"
       ],
-      "acceptance": "P26 exact plan/scope review, rejects changed plan and unsafe permissions, default PURE/READ_LOCAL only.",
-      "status": "READY",
-      "p1_source_candidate": false,
+      "acceptance": "P26 exact plan/scope review, rejects changed plan and unsafe permissions, default PURE/READ_LOCAL only. Selection of real owner-reviewed unsaved goal is recomputed against the same selected local AXNODE and exact two plan/source sets, then passed through existing P26 evaluate_problem_review_policy. Changed problem/plan/source, unsupported op and non-LOW risk are HOLD. No Player run in W07.",
+      "status": "IMPLEMENTED_UNVERIFIED",
+      "p1_source_candidate": true,
       "risk": "HIGH",
-      "local_check": "NOT_RUN",
-      "evidence_sha": null,
+      "local_check": "Python 3.13 compileall PASS; ArchitectRuntime+WorkstationContractTests 21/21 PASS; isolated native Linux Xvfb W05/W07 2/2 PASS; full integrated CI/Windows11 P2 NOT_RUN",
+      "evidence_sha": "PENDING_ATOMIC_COMMIT_SHA",
       "safety_gate": "P26/ADR-0002/NO_LIVE_IO",
       "p2_status": "NOT_RUN",
       "failure_count_verified": 0,
@@ -225,7 +227,7 @@
         "eai/desktop_app.py"
       ],
       "acceptance": "Operator sees steps, cancellation, factual no-op label, generated trace/digest, no external side effect or original write.",
-      "status": "DEPENDENCY_BLOCKED",
+      "status": "READY",
       "p1_source_candidate": false,
       "risk": "HIGH",
       "local_check": "NOT_RUN",
@@ -347,12 +349,12 @@
   "metrics": {
     "type": "SWU_SOURCE_CANDIDATE_COVERAGE_NOT_OFFICIAL_ACCEPTANCE",
     "inherited_source_candidates_historical": 48,
-    "new_source_candidates": 5,
+    "new_source_candidates": 6,
     "tracked_total": 60,
-    "combined_candidate_coverage_count": 53,
-    "combined_candidate_coverage_percent_provisional": 88.33,
+    "combined_candidate_coverage_count": 54,
+    "combined_candidate_coverage_percent_provisional": 90,
     "inherited_compatibility_reinspection": "PENDING",
-    "new_swu_coverage_percent": 41.67,
+    "new_swu_coverage_percent": 50,
     "p2_original_gate_groups": 10,
     "p2_v32_additive_gate_groups": 4,
     "p2_gate_groups_pass_on_current_sha": 0,
@@ -363,10 +365,10 @@
     "disclaimer": "SWU source candidate coverage is NOT an official weighted implementation completion rate. Prior Astra tests are historic on different source SHA; no P2 acceptance passed against this branch. Any unproven baseline SWUs must be downgraded if compatibility review finds gaps.",
     "verification_swu_pass_on_current_sha": 0,
     "verification_swu_pass_rate_provisional_percent": 0,
-    "provisional_implementation_swu_completion_percent": 88.33,
+    "provisional_implementation_swu_completion_percent": 90,
     "provisional_verification_swu_completion_percent": 0,
-    "provisional_rate_basis": "Historically inherited 48/48 Astra source candidates pending same-branch compatibility review + EAI V3.2 5/12 functional source code candidates = 53/60 (88.33%) unweighted provisional SWU source coverage only; P2 accepted 0/60 SWUs and 0/14 gate groups; official weighted rates UNASSESSED.",
+    "provisional_rate_basis": "Historic 48 source candidates (compatibility unverified) + 6 V3.2 code candidates = 54/60 provisional unweighted source coverage 90.0%; P2 0/60 source SWUs and 0/14 groups; official P1/P2 UNASSESSED.",
     "independent_security_ui_audit": "NOT_RUN",
-    "evidence_check": "6-file source/test atomic W05 commit 602f04a1 with exact local blob parity; follow-up journal metadata and GUI regression tested on local staging."
+    "evidence_check": "W07 four actual changed source/test files matched locally tested content via Git blob SHA, source commit SHA set by atomic commit and queryable via GitHub"
   }
 }
