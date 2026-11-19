@@ -1,4 +1,5 @@
 """Synthetic packet privacy, local preview and mock-only rate-limit tests."""
+from dataclasses import replace
 import json
 import socket
 import unittest
@@ -52,6 +53,40 @@ class HydrogenResearchPolicyTests(unittest.TestCase):
                 ResearchPacket.validate(raw)
         with self.assertRaises(ValueError):
             ResearchPacket.from_json('{"version":1,"version":1}')
+
+    def test_forged_typed_packet_cannot_be_serialized_or_queued_for_live_send(self):
+        from eai.hydrogen_adapter import (
+            build_hydrogen_request_preview, dispatch_live_hydrogen)
+        baseline = object()
+        coordinator = ResearchCoordinator()
+        approved = ResearchPacket.validate(self.sample())
+        bad_packets = (
+            replace(approved, version=True),
+            replace(approved, version=2),
+            replace(approved, visibility="CUSTOMER_DATA"),
+            replace(approved, abstract="password=private_example"),
+            replace(approved, strategy_ids=("valid.id", "valid.id")),
+            replace(approved, nonce="bad"),
+        )
+        with patch("eai.hydrogen_adapter.http.client.HTTPSConnection",
+                   side_effect=AssertionError("network forbidden")):
+            for candidate in bad_packets:
+                with self.subTest(candidate=candidate):
+                    with self.assertRaises(ValueError):
+                        candidate.to_json_bytes()
+                    with self.assertRaises(ValueError):
+                        candidate.request_sha256()
+                    with self.assertRaises(ValueError):
+                        build_hydrogen_request_preview(candidate)
+                    with self.assertRaises(ValueError):
+                        dispatch_live_hydrogen(
+                            candidate, baseline, coordinator=coordinator,
+                            api_key="A" * 32, owner_permit=None,
+                            live_ledger_path=None)
+        self.assertIs(coordinator.evaluate(baseline).baseline, baseline)
+        self.assertEqual(coordinator.policy.mode, ResearchMode.OFF)
+        self.assertEqual(ResearchPacket.from_json(
+            approved.to_json_bytes()), approved)
 
     def test_quota_and_token_budget(self):
         ledger = ResearchQuota(ResearchLimits(rpm_local=2,rpd_local=3,

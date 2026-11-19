@@ -75,11 +75,19 @@ class ResearchPacket:
         return cls.validate(strict_json(data, max_bytes=_MAX_PACKET_BYTES))
 
     def to_json_bytes(self) -> bytes:
+        # Dataclasses.replace/manual construction may supply forged fields:
+        # do not silently rewrite a forged version to v1 or serialize private
+        # text merely because a frozen Python instance has the right class.
+        if type(self) is not ResearchPacket:
+            raise ValueError("exact ResearchPacket contract required")
         raw = {
-            "version": 1, "nonce": self.nonce, "task_family": self.task_family,
-            "visibility": self.visibility, "abstract": self.abstract,
-            "strategy_ids": list(self.strategy_ids), "objectives": list(self.objectives)
+            "version": self.version, "nonce": self.nonce,
+            "task_family": self.task_family, "visibility": self.visibility,
+            "abstract": self.abstract, "strategy_ids": list(self.strategy_ids),
+            "objectives": list(self.objectives),
         }
+        if ResearchPacket.validate(raw) != self:
+            raise ValueError("untrusted or modified research packet")
         return canonical_bytes(raw)
 
     def request_sha256(self) -> str:
