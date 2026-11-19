@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
+from typing import cast
 from unittest.mock import patch
 
 from eai.contracts import canonical_bytes
@@ -13,7 +14,7 @@ from eai.hydrogen_packet import ResearchPacket
 from eai.hydrogen_adapter import (
     _LiveSendLedger, _ledger_failure_status, _live_request_id,
     _provider_http_failure_reason, build_hydrogen_request_preview,
-    dispatch_live_hydrogen,
+    dispatch_live_hydrogen, SignedLiveSendPermit,
 )
 from eai.research_policy import ResearchMode, ResearchPolicy
 from eai.research_providers import ResearchCoordinator
@@ -169,7 +170,7 @@ class HydrogenLiveHttpDiagnosticsTests(unittest.TestCase):
                     return_value=connection)):
             result = dispatch_live_hydrogen(
                 packet, baseline, coordinator=coordinator,
-                api_key="A" * 32, owner_permit=object(),
+                api_key="A" * 32, owner_permit=cast(SignedLiveSendPermit, object()),
                 owner_trust_root_path="mocked-only",
                 live_ledger_path=Path(directory) / "live.sqlite",
                 allow_ledger_create=True)

@@ -6,6 +6,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from typing import cast
 from unittest.mock import patch
 
 from eai.approved_run import run_approved
@@ -68,7 +69,7 @@ class ApprovedRunP26Tests(unittest.TestCase):
         m, g = self.select()
         for bad in ("not a sha", "A" * 64, "", None):
             with self.subTest(bad=bad), self.assertRaises(ValueError):
-                run_approved(self.manifest, "release", bad, g)
+                run_approved(self.manifest, "release", cast(str, bad), g)
 
     def test_goal_bytes_changed_since_selection(self):
         m, g = self.select()
