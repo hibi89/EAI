@@ -1,0 +1,62 @@
+{
+  "schema": "eai.p2.synthetic_evidence.v1",
+  "date_kst": "2026-11-19",
+  "repo": "hibi89/EAI",
+  "branch": "feature/eai-v32-owner-rebuild-20261119",
+  "exact_source_sha": "d0407f2f8ee543fc31350287a01e8024eac7b039",
+  "gate_id": "EAI-P2-02",
+  "disposition": "PASS_SYNTHETIC_ISOLATED",
+  "gates_accepted": 1,
+  "gates_total": 14,
+  "unweighted_gates_percent": 7.14,
+  "official_implementation_rate": "UNASSESSED",
+  "official_verification_rate": "UNASSESSED",
+  "source_swu_provisional": {
+    "count": 60,
+    "total": 60,
+    "percent": 100,
+    "existing_48_semantic_intake": "PENDING"
+  },
+  "checks": {
+    "linux": {
+      "run_id": 44493551654,
+      "status": "SUCCESS",
+      "tested": 1138,
+      "passed": 1121,
+      "skipped": 17,
+      "failed": 0
+    },
+    "windows": {
+      "run_id": 44493551640,
+      "status": "SUCCESS",
+      "tested": 1138,
+      "passed": 1137,
+      "skipped": 1,
+      "failed": 0,
+      "native_owner_win11": "NOT_RUN",
+      "unsigned_exe_selfcheck": "PASS_UNSIGNED_BUNDLE_IMPORTS",
+      "artifact_id": 14513658752,
+      "artifact_zip_sha256": "c2b770c8516cf4cb0cce04180a016e97aaf17da39af257e3451a6e33fa8ace0a"
+    }
+  },
+  "paths_verified": [
+    "eai/desktop_state.py",
+    "tests/test_p2_desktop_workspace_recovery.py",
+    "tests/test_axnode_sidecar_backup.py",
+    "tests/test_sidecar_recovery_audit.py",
+    "tests/test_sidecar_coherence_review.py",
+    "tests/test_axnode_recovery.py"
+  ],
+  "scope": "SYNTHETIC_TEMPORARY_ISOLATED_ONLY",
+  "nonclaims": [
+    "OWNER_PHYSICAL_WINDOWS11_NOT_RUN",
+    "CUSTOMER_ORIGINAL_RESTORE_NOT_RUN",
+    "INDEPENDENT_AUDIT_NOT_RUN",
+    "ACTIVE_AND_REAL_PLAYER_HOLD",
+    "RELEASE_HOLD"
+  ],
+  "change_history": [
+    "88ad0993b5e241acb64e981dca52e07f537963cd",
+    "d0407f2f8ee543fc31350287a01e8024eac7b039"
+  ]
+}
