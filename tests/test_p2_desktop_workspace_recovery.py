@@ -2,6 +2,7 @@
 
 Never opens an owner or customer database: each case owns a disposable tempfile.
 """
+from concurrent.futures import ThreadPoolExecutor
 from contextlib import closing
 from pathlib import Path
 import sqlite3
@@ -18,6 +19,15 @@ class P2DesktopWorkspaceRecoveryTests(unittest.TestCase):
         self.root = Path(temp.name)
         self.path = self.root / "workspace.sqlite3"
         self.state = DesktopState(self.root)
+
+    def test_concurrent_first_open_serializes_new_schema_and_records(self):
+        # Three first-start workers must not mistake another pending creator
+        # for a damaged existing store. No user DB paths are touched.
+        with ThreadPoolExecutor(max_workers=3) as pool:
+            list(pool.map(lambda _: self.state.record("home", "command", "OK"), range(30)))
+        self.assertEqual(len(DesktopState(self.root).history()), 30)
+        with closing(sqlite3.connect(self.path)) as db:
+            self.assertEqual(db.execute("PRAGMA integrity_check").fetchone(), ("ok",))
 
     def test_valid_restart_preserves_journal_and_limits(self):
         self.assertEqual(self.state.history(), [])
