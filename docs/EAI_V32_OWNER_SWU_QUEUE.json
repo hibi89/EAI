@@ -13,7 +13,7 @@
     "historic_evidence": "docs/EAI_P1_SWU_QUEUE.json;docs/EAI_DESKTOP_P1_SWU_QUEUE.json"
   },
   "new_swu_count": 12,
-  "new_source_candidates": 6,
+  "new_source_candidates": 7,
   "tracked_swu_total": 60,
   "official_implementation_rate": "UNASSESSED",
   "official_verification_rate": "UNASSESSED",
@@ -224,14 +224,17 @@
       "allowed_paths": [
         "eai/desktop_bridge.py",
         "eai/player_runtime.py",
-        "eai/desktop_app.py"
+        "eai/desktop_app.py",
+        "eai/desktop_presentation.py",
+        "eai/desktop_views.py",
+        "tests/test_desktop_workstation.py"
       ],
-      "acceptance": "Operator sees steps, cancellation, factual no-op label, generated trace/digest, no external side effect or original write.",
-      "status": "READY",
-      "p1_source_candidate": false,
+      "acceptance": "Operator sees steps, cancellation, factual no-op label, generated trace/digest, no external side effect or original write. Separate owner confirmation, full revalidation of current W07 selection and exact source hashes, policy-gated deterministic pure noop interpreter, replay proof, step hashes, bounded cancellation; never real OS/network/original write/promotion.",
+      "status": "IMPLEMENTED_UNVERIFIED",
+      "p1_source_candidate": true,
       "risk": "HIGH",
-      "local_check": "NOT_RUN",
-      "evidence_sha": null,
+      "local_check": "Local Python 3.13 compileall PASS; ArchitectRuntimeTests + WorkstationContractTests 22/22 PASS; 2 isolated Linux Xvfb native GUI W07/W08 PASS. Actual Windows EXE, full CI, P2 security/recovery and independent audits NOT_RUN.",
+      "evidence_sha": "PENDING_W08_ATOMIC_COMMIT",
       "safety_gate": "P26/ADR-0002/NO_LIVE_IO",
       "p2_status": "NOT_RUN",
       "failure_count_verified": 0,
@@ -252,7 +255,7 @@
         "eai/desktop_views.py"
       ],
       "acceptance": "Integrity explicitly differs from semantic truth; wrong/forged/unknown rejected; nonverified candidates cannot become ACTIVE.",
-      "status": "DEPENDENCY_BLOCKED",
+      "status": "READY",
       "p1_source_candidate": false,
       "risk": "HIGH",
       "local_check": "NOT_RUN",
@@ -302,7 +305,7 @@
         "eai/desktop_bridge.py"
       ],
       "acceptance": "Restart restores only allowed private metadata/review state with hashes; stale or missing files HOLD; original DB and failed nonce unchanged.",
-      "status": "DEPENDENCY_BLOCKED",
+      "status": "READY",
       "p1_source_candidate": false,
       "risk": "HIGH",
       "local_check": "NOT_RUN",
@@ -349,12 +352,12 @@
   "metrics": {
     "type": "SWU_SOURCE_CANDIDATE_COVERAGE_NOT_OFFICIAL_ACCEPTANCE",
     "inherited_source_candidates_historical": 48,
-    "new_source_candidates": 6,
+    "new_source_candidates": 7,
     "tracked_total": 60,
-    "combined_candidate_coverage_count": 54,
-    "combined_candidate_coverage_percent_provisional": 90,
+    "combined_candidate_coverage_count": 55,
+    "combined_candidate_coverage_percent_provisional": 91.67,
     "inherited_compatibility_reinspection": "PENDING",
-    "new_swu_coverage_percent": 50,
+    "new_swu_coverage_percent": 58.33,
     "p2_original_gate_groups": 10,
     "p2_v32_additive_gate_groups": 4,
     "p2_gate_groups_pass_on_current_sha": 0,
@@ -365,10 +368,10 @@
     "disclaimer": "SWU source candidate coverage is NOT an official weighted implementation completion rate. Prior Astra tests are historic on different source SHA; no P2 acceptance passed against this branch. Any unproven baseline SWUs must be downgraded if compatibility review finds gaps.",
     "verification_swu_pass_on_current_sha": 0,
     "verification_swu_pass_rate_provisional_percent": 0,
-    "provisional_implementation_swu_completion_percent": 90,
+    "provisional_implementation_swu_completion_percent": 91.67,
     "provisional_verification_swu_completion_percent": 0,
-    "provisional_rate_basis": "Historic 48 source candidates (compatibility unverified) + 6 V3.2 code candidates = 54/60 provisional unweighted source coverage 90.0%; P2 0/60 source SWUs and 0/14 groups; official P1/P2 UNASSESSED.",
+    "provisional_rate_basis": "Historic inherited 48 code source candidates unverified for V3.2 compatibility + 7 V3.2 real source functional candidates = 55/60, 91.67% provisional unweighted SWU source coverage. New integrated P2 acceptance remains 0/60 SWUs / 0/14 groups; official implementation and verification UNASSESSED.",
     "independent_security_ui_audit": "NOT_RUN",
-    "evidence_check": "W07 four actual changed source/test files matched locally tested content via Git blob SHA, source commit SHA set by atomic commit and queryable via GitHub"
+    "evidence_check": "W08 five code/test Git blobs matched locally tested source; exact W08 commit to be created atomically."
   }
 }

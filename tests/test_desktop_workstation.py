@@ -211,6 +211,48 @@ class WorkstationContractTests(unittest.TestCase):
         self.assertFalse(held["preview_only"])
         self.assertFalse((self.root / "drafts").exists())
 
+    def test_v32_pure_player_replay_boundaries_cancel_and_no_consent(self):
+        w = self.fixture()
+        source = json.loads(w.problem.read_text(encoding="utf-8"))
+        source.update(goal="확인한 노드를 순수 모의 검토", risk="LOW", oracle="owner.local.oracle",
+                      state_refs=["synthetic.local.1"], objectives=["검토 결과 추적"],
+                      hard_constraints=["forbid:unsafe.operation"], permissions=["pure", "local.read"])
+        design = self.bridge.architect_reviewed_goal(source, w.library, owner_reviewed=True)
+        selected = next(iter(design["plan_specs"]))
+        review = self.bridge.inspect_reviewed_selection(source, design, selected, w.library)
+        denied = self.bridge.play_reviewed_pure_plan(source, design, review, w.library)
+        self.assertEqual(denied["status"], "HOLD_PURE_SIMULATION_CONFIRMATION")
+        self.assertEqual(denied["execution"], "NOT_EXECUTED")
+        before = {p.relative_to(w.library): hashlib.sha256(p.read_bytes()).digest()
+                  for p in w.library.rglob("*") if p.is_file()}
+        with patch.object(socket.socket, "connect", side_effect=AssertionError("network")):
+            flow = self.bridge.play_reviewed_pure_plan(
+                source, design, review, w.library, acknowledged_pure_only=True)
+        self.assertEqual(flow["status"], "PURE_SYNTHETIC_INTERPRETED_UNVERIFIED")
+        self.assertEqual(flow["replay"], "PURE_TRACE_REPLAY_MATCH_UNVERIFIED")
+        self.assertEqual(flow["execution"], "PURE_SYNTHETIC_NOOP_ONLY")
+        self.assertEqual(len(flow["step_observations"]), flow["interpreted_steps"])
+        self.assertTrue(all(r["status"] == "PURE_NOOP_INTERPRETED_NOT_VERIFIED"
+                            for r in flow["step_observations"]))
+        self.assertEqual(flow["external_actions"], 0)
+        self.assertEqual(flow["original_writes"], 0)
+        self.assertFalse(flow["can_promote"])
+        self.assertFalse(flow["verified_real_world"])
+        self.assertEqual(before, {p.relative_to(w.library): hashlib.sha256(p.read_bytes()).digest()
+                                  for p in w.library.rglob("*") if p.is_file()})
+        first = design["plan_specs"][selected]["steps"][0]["id"]
+        cancelled = self.bridge.play_reviewed_pure_plan(
+            source, design, review, w.library, acknowledged_pure_only=True,
+            cancel_before_step=first)
+        self.assertEqual(cancelled["status"], "PURE_SYNTHETIC_CANCELLED_NOT_EXECUTED")
+        self.assertEqual(cancelled["interpreted_steps"], 0)
+        self.assertEqual(cancelled["step_observations"], [])
+        tamper = dict(review, plan_sha256="0"*64)
+        self.assertEqual(self.bridge.play_reviewed_pure_plan(
+            source, design, tamper, w.library,
+            acknowledged_pure_only=True)["status"], "HOLD_PLAN_CHANGED")
+        self.assertFalse((self.root / "drafts").exists())
+
     def test_v32_private_library_creation_and_node_import_do_not_mutate_original(self):
         self.assertEqual(self.bridge.create_fresh_private_library()["status"], "HOLD_PRIVATE_LIBRARY_CONSENT")
         self.assertFalse((self.root / "libraries").exists())
@@ -394,8 +436,38 @@ class NativeWorkstationTests(unittest.TestCase):
         self.assertFalse(self.app.review["can_execute_real_actions"])
         self.assertIsNone(self.app.plan)
         self.assertIsNone(self.app.problem)
-        self.app.simulate()
         self.assertNotIn("simulate", [op for _,_,op,_ in self.app.rows])
+        with patch("eai.desktop_app.messagebox.askyesno", return_value=False):
+            self.app.simulate()
+        self.assertNotIn("simulate", [op for _,_,op,_ in self.app.rows])
+        self.assertFalse((self.bridge.state_root / "drafts").exists())
+
+    def test_v32_gui_pure_player_trace_after_separate_confirmation(self):
+        w = PracticeWorkspace()
+        self.addCleanup(w.close)
+        self.app.fill_command("순수 단계 관찰")
+        self.app.new_draft()
+        self.app.library = w.library
+        self.app.draft.update(domain="practice", risk="LOW", oracle="owner.local.oracle",
+                              state_refs=["synthetic.local.1"],
+                              hard_constraints=["forbid:unsafe.operation"],
+                              objectives=["영수증 생성"], permissions=["pure", "local.read"])
+        with patch("eai.desktop_app.messagebox.askyesno", return_value=True):
+            self.app.design()
+        self.wait()
+        with patch("eai.desktop_app.messagebox.askyesno", return_value=True):
+            self.app.review_alternative()
+        self.wait()
+        self.assertEqual(self.app.review["status"], "PURE_SYNTHETIC_PREVIEW_ONLY")
+        with patch("eai.desktop_app.messagebox.askyesno", return_value=True):
+            self.app.simulate()
+        self.wait()
+        out = self.app.results["player"][1]
+        self.assertEqual(out["status"], "PURE_SYNTHETIC_INTERPRETED_UNVERIFIED")
+        self.assertEqual(out["replay"], "PURE_TRACE_REPLAY_MATCH_UNVERIFIED")
+        self.assertEqual(len(out["step_observations"]), out["interpreted_steps"])
+        self.assertEqual(out["original_writes"], 0)
+        self.assertEqual(out["external_actions"], 0)
         self.assertFalse((self.bridge.state_root / "drafts").exists())
 
     def test_v32_gui_consent_creates_only_fresh_private_library(self):

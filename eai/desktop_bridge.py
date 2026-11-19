@@ -348,6 +348,64 @@ class DesktopBridge:
                     can_execute_real_actions=False)
 
     @staticmethod
+    def play_reviewed_pure_plan(problem_raw: dict, design: dict, selection: dict,
+                                axnode_root: str | Path | None, *,
+                                acknowledged_pure_only: bool = False,
+                                cancel_before_step: str | None = None) -> dict:
+        """Exact revalidation -> policy -> bounded PURE no-op -> replay receipt.
+
+        This is not tool execution: no original writes, arbitrary shell, network,
+        memory promotion, new approval or non-pure operator interpretation.
+        """
+        base = {"kind": "REVIEWED_PURE_PLAYER", "execution": "NOT_EXECUTED",
+                "external_actions": 0, "original_writes": 0,
+                "verified_real_world": False, "can_promote": False,
+                "independent_verification": "NOT_ESTABLISHED"}
+        if acknowledged_pure_only is not True:
+            return dict(base, status="HOLD_PURE_SIMULATION_CONFIRMATION")
+        if type(selection) is not dict or type(selection.get("plan_id")) is not str:
+            return dict(base, status="HOLD_PLAN_CHANGED", reasons=["UNREVIEWED_SELECTION"])
+        problem = ProblemSpec.validate(problem_raw)
+        current = DesktopBridge.inspect_reviewed_selection(
+            problem_raw, design, selection["plan_id"], axnode_root)
+        if (current.get("status") != "PURE_SYNTHETIC_PREVIEW_ONLY" or
+                selection.get("status") != current.get("status") or
+                selection.get("problem_sha256") != current.get("problem_sha256") or
+                selection.get("plan_sha256") != current.get("plan_sha256") or
+                selection.get("source_sha256") != current.get("source_sha256") or
+                selection.get("steps") != current.get("steps")):
+            return dict(base, status="HOLD_PLAN_CHANGED", reasons=["POLICY_OR_SOURCE_CHANGED"])
+        plan = PlanSpec.validate(design["plan_specs"][selection["plan_id"]])
+        from .policy_gate import evaluate_problem_review_policy
+        from .player_runtime import run_bounded_pure_player, execute_pure_synthetic_preview
+        policy = evaluate_problem_review_policy(
+            problem, plan, architect_truth="UNVERIFIED", evidence_review_required=False)
+        if policy.disposition != "PURE_SYNTHETIC_PREVIEW_ONLY":
+            return dict(base, status="HOLD_POLICY_DENIED", reasons=list(policy.reason_codes))
+        flow = run_bounded_pure_player(
+            problem, plan, interpret_pure_noop=True,
+            architect_truth="UNVERIFIED", evidence_review_required=False,
+            cancel_before_step=cancel_before_step)
+        trace = execute_pure_synthetic_preview(
+            problem, plan, policy, cancel_before_step=cancel_before_step)
+        if (flow.trace_sha256 != trace.trace_sha256 or
+                flow.interpreted_steps != len(trace.step_receipts) or
+                flow.replay_status != "PURE_TRACE_REPLAY_MATCH_UNVERIFIED" or
+                flow.original_writes or flow.external_actions or trace.promotion_authorized):
+            raise ValueError("pure replay/source integrity failed")
+        return dict(base, status=flow.status,
+                    execution="PURE_SYNTHETIC_NOOP_ONLY", plan_sha256=flow.plan_sha256,
+                    problem_sha256=flow.problem_sha256, trace_sha256=flow.trace_sha256,
+                    interpreted_steps=flow.interpreted_steps,
+                    reasons=list(flow.reason_codes), replay=flow.replay_status,
+                    step_observations=[
+                        {"id": receipt.step_id, "status": receipt.status,
+                         "sha256": receipt.step_sha256}
+                        for receipt in trace.step_receipts],
+                    cancel_before_step=cancel_before_step,
+                    synthetic_only=True)
+
+    @staticmethod
     def journey_receipt(problem_file, axnode_root, *, max_expansions, expected_problem):
         from .offline_journey import audit_offline_journey_report, preview_offline_journey
         report = preview_offline_journey(problem_file, axnode_root, max_expansions=max_expansions)

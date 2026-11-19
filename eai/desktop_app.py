@@ -575,8 +575,20 @@ class EAIDesktopApp:
     def simulate(self):
         if not self.ready() or not self.review or self.review["status"] != "PURE_SYNTHETIC_PREVIEW_ONLY":
             return
+        # Reuse the existing exact-hash reviewed plan for the owner-goal flow.
+        # This deliberately cannot call legacy Player or turn into live actions.
+        selected = self.review.get("plan_id")
+        if selected and self.draft is not None:
+            if not messagebox.askyesno("순수 모의 단계 실행", "현재 목표·근거·계획을 다시 검사한 후,\n실제 파일이나 네트워크를 건드리지 않는 no-op 단계만 해석할까요?", parent=self.root):
+                return
+            problem, report, review, library = dict(self.draft), self.results.get("architect", ("", {}))[1], dict(self.review), self.library
+            stop = None if self.stop_step.get() == "끝까지" else self.stop_step.get()
+            self.run("player", "simulate", lambda: self.bridge.play_reviewed_pure_plan(
+                problem, report, review, library, acknowledged_pure_only=True,
+                cancel_before_step=stop))
+            return
         if not self.problem or not self.plan:
-            self.notice("현재는 계획 정책 검토만 완료되었습니다. 모의실행은 별도 연결 후 가능합니다.", AMBER)
+            self.notice("원본 목표·계획 파일이 지정되지 않았습니다.", AMBER)
             return
         if not messagebox.askyesno("순수 시뮬레이션", "검토한 계획을 메모리 안에서 모의 실행할까요?", parent=self.root):
             self.notice("모의 실행을 시작하지 않았습니다.")

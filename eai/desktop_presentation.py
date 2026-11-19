@@ -104,9 +104,13 @@ def explain(op, result):
         lines += [*result["reasons"], "", "계획 SHA-256   " + result["plan_sha256"]]
         return "\n".join(lines)
     if op == "simulate" and "interpreted_steps" in result:
-        return "\n".join([f"관찰된 모의 단계 {result['interpreted_steps']}개   ·   외부 작업 {result['external_actions']}건   ·   원본 쓰기 {result['original_writes']}건",
-                          "재계산 결과   " + result["replay"], "보상 작업   해당 없음 · 원본 변경 없음",
-                          *result["reasons"], "추적 SHA-256   " + (result["trace_sha256"] or "생성되지 않음")])
+        lines = [f"관찰된 모의 단계 {result['interpreted_steps']}개   ·   외부 작업 {result['external_actions']}건   ·   원본 쓰기 {result['original_writes']}건",
+                 "재계산 결과   " + result["replay"], "보상 작업   해당 없음 · 원본 변경 없음",
+                 *result["reasons"], "추적 SHA-256   " + (result["trace_sha256"] or "생성되지 않음")]
+        for step in result.get("step_observations", []):
+            lines.append(step["id"] + " · 순수 no-op 해석 · SHA-256 " + step["sha256"])
+        lines.append("작업 결과의 진실성·외부 실행·추가 권한은 인정되지 않습니다.")
+        return "\n".join(lines)
     if op in ("verify", "journey"):
         lines = ["검사 대상   선택한 로컬 Journey JSON", "기록된 SHA-256   " + (result.get("receipt_sha256") or "형식 오류"),
                  "재계산 SHA-256   " + result["calculated_sha256"]]

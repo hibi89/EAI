@@ -283,9 +283,8 @@ def player(app, parent):
         b = button(row, "모의 실행", app.simulate, primary=True)
         b.pack(side="left")
         if (app.review["status"] != "PURE_SYNTHETIC_PREVIEW_ONLY" or
-                not app.problem or not app.plan):
-            # The in-memory V3.2 plan review becomes runnable only after W08's
-            # separately confirmed exact-hash pure Player bridge is completed.
+                (not (app.problem and app.plan) and
+                 not (app.draft and app.library and app.review.get("plan_id")))):
             b.configure(state="disabled")
     if app.results.get("player", ("",))[0] != "plan" or not app.review:
         result(app, parent, "player", 5)
