@@ -1,3 +1,12 @@
+## EAI V3.2 P2 — 동일 SHA 양 플랫폼 전체 검증 성공 (2026-11-19 KST)
+
+- **기준 소스 SHA:** `b1ed7ef97b5ee5170ae5ae38ad8bad80ce7c81d3`. Linux run [44491872786](https://github.com/hibi89/EAI/actions/runs/44491872786) `SUCCESS`: 1,133 테스트 중 1,116 PASS / 17 SKIP / 0 FAIL; Xvfb native GUI 33 PASS; CPU/CLI, source self-check, offline candidate checksum PASS.
+- Windows Server 2025 run [44491872937](https://github.com/hibi89/EAI/actions/runs/44491872937) `SUCCESS`: 전체 1,133 테스트 중 1,132 PASS / 1 SKIP / 0 FAIL; 별도 데스크톱 집중 40 중 39 PASS / 1 SKIP; PyInstaller unsigned `EAI.exe` 생성, `PASS_UNSIGNED_BUNDLE_IMPORTS`, EXE checksum, artifacts upload PASS. Artifact ID `14513202763`, bundle digest `sha256:54aac0f086a213fa37597a257a8a77d7a966fde082436c2cc0e1d74be76e5a19`. 이는 CI Windows Server 증거이지 소유자 PC Windows 11 GUI/IME/DPI/실기기 검증이 아니다.
+- **실제 수정:** Tcl 테스트 인터프리터 정리 오류, source entry import 실패, Windows 무인 포커스 assertion, GUI EXE 비동기 selfcheck, `cp1252` 등 비UTF 콘솔의 `UnicodeEncodeError`, 코드페이지 이스케이프 출력 테스트 판정. 최초 Windows 전체 회귀 40 FAIL+2 ERROR → 3 FAIL → 0 FAIL로 해소하고 같은 최신 SHA에서 재검증 완료.
+- **진행 표기:** P1 소스 구현 후보 60/60 SWU = 단순 후보수 기준 **100%** (원래 48개 기존 코드는 의미·수용조건을 최신 SHA에서 개별 재검토 전); P2 완료된 **전체 게이트** 0/14 = 단순 게이트수 기준 **0%**. 실제 CI·EXE 등은 부분 PASS이지만 14개 전체 수용조건을 모두 채운 게이트는 아직 확정하지 않았다. 공식 가중 `implementation_rate=UNASSESSED`, `verification_rate=UNASSESSED`. 독립 감사 `NOT_RUN`, release `HOLD`.
+- **잔여 작업량(추정, 실측 아님):** DB/보안/Player/학습 5~10 인시, Architect/AXNODE/Hydrogen OFF/13 CPU 목표 3~6 인시, 사용자 실제 Win11 GUI/IME/리소스 1~3 인시, 최종 통합·재검증 2~5 인시. **합계 약 11~24 인시**(독립 감사·출시 승인 미포함, 결함 추가 가능). 시간 절감·병렬 배수 `UNMEASURED`.
+- **다음 P2:** DB crash/restore 및 sidecar epoch, signed evidence/ACTIVE 거부, Player scope·no-op/rollback, Hydrogen OFF/mock 429, 사용자 Win11 실제 GUI/IME/125%·RSS 및 구버전 13-goal 입력 검증. 원본/실권한/외부 전송/유료/Production/`main` 변경 금지, GO 필요 항목은 HOLD.
+
 ## CURRENT — EAI V3.2 P2 author-run CI and defect repair evidence (2026-11-19 KST)
 
 - **Scope/author:** `hibi89/EAI@feature/eai-v32-owner-rebuild-20261119`; owner + web GPT-6 High only. Original P26/ADR-0002, no real Player/Hydrogen/ACTIVE/customer files/billing/Production/main, independent audit NOT_RUN and release HOLD are unchanged.
