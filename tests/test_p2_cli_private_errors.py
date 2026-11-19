@@ -62,6 +62,24 @@ class P2CLIPrivateErrorsTests(unittest.TestCase):
                            RuntimeError("internal " + self.TOKEN))
         self.assertIn("RuntimeError LOCAL_OPERATION_REJECTED", err)
 
+
+    def test_argparse_rejection_does_not_echo_positional_or_flag_value(self):
+        for args in (
+            ["quick-goal", "--kind", self.TOKEN],
+            ["solve-goal", "synthetic.json", "--not-a-real-option", self.TOKEN],
+            ["--profile", self.TOKEN, "health"],
+        ):
+            with self.subTest(args=args):
+                out, err = io.StringIO(), io.StringIO()
+                with redirect_stdout(out), redirect_stderr(err):
+                    with self.assertRaises(SystemExit) as raised:
+                        main(args)
+                self.assertEqual(raised.exception.code, 2)
+                self.assertEqual(out.getvalue(), "")
+                self.assertNotIn(self.TOKEN, err.getvalue())
+                self.assertIn("EAI_ARGUMENT_REJECTED", err.getvalue())
+                self.assertNotIn("Traceback", err.getvalue())
+
     def test_only_fixed_error_categories_are_public(self):
         self.assertEqual(_public_failure_code(ValueError(self.TOKEN)),
                          "INPUT_CONTRACT_REJECTED")

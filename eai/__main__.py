@@ -31,6 +31,17 @@ from .storage import Store
 from .tools import SearxNGSearch
 
 
+class _PrivateCLIArgumentParser(argparse.ArgumentParser):
+    """Argparse normally echoes invalid owner-provided argument values.
+
+    Preserve standard exit-code 2 without revealing the rejected input,
+    filesystem path, command text or pasted secret in stderr.
+    """
+    def error(self, message: str) -> None:
+        # The content of message is untrusted and MUST NOT be printed.
+        self.exit(2, f"{self.prog}: error: EAI_ARGUMENT_REJECTED\\n")
+
+
 def _public_failure_code(exc: BaseException) -> str:
     """Privacy-safe public CLI category; never echo owner exception contents."""
     if isinstance(exc, PermissionError):
@@ -59,7 +70,7 @@ def main(argv: list[str] | None = None) -> int:
         for stream in (sys.stdout, sys.stderr):
             if isinstance(stream, io.TextIOWrapper) and stream.errors != 'backslashreplace':
                 stream.reconfigure(errors='backslashreplace')
-    p = argparse.ArgumentParser(prog='eai', description='Independent, CPU-first EAI MVP')
+    p = _PrivateCLIArgumentParser(prog='eai', description='Independent, CPU-first EAI MVP')
     p.add_argument('--version', action='version', version=__version__)
     p.add_argument('--db', default=os.environ.get('EAI_DB', str(Path.home() / '.eai' / 'eai.sqlite3')))
     p.add_argument('--model', default=os.environ.get('EAI_MODEL', 'qwen2.5:3b'))
