@@ -119,6 +119,98 @@ class HydrogenLiveHttpDiagnosticsTests(unittest.TestCase):
         self.assertNotIn(nonce, first)
 
 
+    def test_live_settlement_requires_unmodified_pending_row(self):
+        """A forged success cannot finalize a never-reserved or erased nonce."""
+        with TemporaryDirectory() as directory:
+            path = Path(directory) / "live.sqlite"
+            ledger = _LiveSendLedger(
+                path, project_id="eai-test-project",
+                owner_key_sha256="a" * 64, allow_create=True)
+            try:
+                nonce = "N" * 24
+                with self.assertRaises(PermissionError):
+                    ledger.settle(nonce, success=True)
+                self.assertEqual(
+                    ledger.db.execute("SELECT state FROM eai_live_control "
+                                      "WHERE id=1").fetchone(), ("HOLD",))
+                self.assertEqual(ledger.db.execute(
+                    "SELECT COUNT(*) FROM eai_live_reservations").fetchone(),
+                    (0,))
+            finally:
+                ledger.close()
+
+    def test_live_settlement_deleted_row_or_replayed_result_stays_hold(self):
+        for mutate in ("DELETE", "SETTLED", "HOLD_CONTROL"):
+            with self.subTest(mutate=mutate), TemporaryDirectory() as directory:
+                ledger = _LiveSendLedger(
+                    Path(directory) / "live.sqlite",
+                    project_id="eai-test-project",
+                    owner_key_sha256="a" * 64, allow_create=True)
+                try:
+                    nonce = "N" * 24
+                    self.assertEqual(ledger.reserve(
+                        nonce=nonce, now=1700000000, tokens=120), "RESERVED")
+                    if mutate == "DELETE":
+                        ledger.db.execute(
+                            "DELETE FROM eai_live_reservations WHERE nonce=?",
+                            (nonce,))
+                    elif mutate == "SETTLED":
+                        ledger.settle(nonce, success=True)
+                    else:
+                        ledger.db.execute(
+                            "UPDATE eai_live_control SET state='HOLD' "
+                            "WHERE id=1")
+                    with self.assertRaises(PermissionError):
+                        ledger.settle(nonce, success=True)
+                    self.assertEqual(
+                        ledger.db.execute(
+                            "SELECT state FROM eai_live_control WHERE id=1")
+                        .fetchone(), ("HOLD",))
+                    if mutate == "SETTLED":
+                        self.assertEqual(
+                            ledger.db.execute(
+                                "SELECT status FROM eai_live_reservations "
+                                "WHERE nonce=?", (nonce,)).fetchone(),
+                            ("UNTRUSTED_REPLY",))
+                    elif mutate == "DELETE":
+                        self.assertEqual(ledger.db.execute(
+                            "SELECT COUNT(*) FROM eai_live_reservations")
+                            .fetchone(), (0,))
+                    else:
+                        self.assertEqual(ledger.db.execute(
+                            "SELECT status FROM eai_live_reservations "
+                            "WHERE nonce=?", (nonce,)).fetchone(),
+                            ("RESERVED_UNKNOWN_DELIVERY",))
+                finally:
+                    ledger.close()
+
+    def test_live_failure_settlement_requires_reservation_and_holds(self):
+        with TemporaryDirectory() as directory:
+            ledger = _LiveSendLedger(
+                Path(directory) / "live.sqlite",
+                project_id="eai-test-project",
+                owner_key_sha256="a" * 64, allow_create=True)
+            try:
+                nonce = "N" * 24
+                self.assertEqual(ledger.reserve(
+                    nonce=nonce, now=1700000000, tokens=100), "RESERVED")
+                ledger.settle(nonce, success=False,
+                              failure_reason="TIMEOUT_OUTCOME_UNKNOWN_NO_RETRY")
+                self.assertEqual(ledger.db.execute(
+                    "SELECT state FROM eai_live_control WHERE id=1").fetchone(),
+                    ("HOLD",))
+                self.assertEqual(ledger.db.execute(
+                    "SELECT status FROM eai_live_reservations WHERE nonce=?",
+                    (nonce,)).fetchone(),
+                    ("FAILED_HOLD_TIMEOUT_OUTCOME_UNKNOWN_NO_RETRY",))
+                with self.assertRaises(PermissionError):
+                    ledger.settle(nonce, success=True)
+                self.assertEqual(ledger.reserve(
+                    nonce="M" * 24, now=1700000001, tokens=100),
+                    "HOLD_PERSISTENT_LIVE_BREAKER")
+            finally:
+                ledger.close()
+
     def test_existing_live_ledger_hardlink_is_rejected_without_mutating_owner_file(self):
         with TemporaryDirectory() as directory:
             root = Path(directory)

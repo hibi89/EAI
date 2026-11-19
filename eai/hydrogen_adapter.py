@@ -624,28 +624,60 @@ class _LiveSendLedger:
 
     def settle(self, nonce: str, *, success: bool,
                failure_reason: str = "", request_id: str = "") -> None:
+        """Finalize only this exact, still-pending reservation.
+
+        An unrecognized, already settled or deleted nonce is not evidence of
+        a completed HTTP response. Keep the durable breaker HOLD if the
+        reservation row or control state was changed between reserve/settle.
+        """
+        rejected = False
         self.db.execute("BEGIN IMMEDIATE")
         try:
-            if success:
-                success_status = (
-                    "UNTRUSTED_REPLY_RID_" + request_id[5:]
-                    if type(request_id) is str
-                    and _LIVE_REQUEST_ID.fullmatch(request_id)
-                    else "UNTRUSTED_REPLY")
-                self.db.execute(
-                    "UPDATE eai_live_reservations SET status=? WHERE nonce=?",
-                    (success_status, nonce))
+            control = self.db.execute(
+                "SELECT state FROM eai_live_control WHERE id=1").fetchone()
+            pending = self.db.execute(
+                "SELECT status FROM eai_live_reservations WHERE nonce=?",
+                (nonce,)).fetchone()
+            if (type(nonce) is not str or not _NONCE_LIVE.fullmatch(nonce)
+                    or type(success) is not bool
+                    or control != ("READY",)
+                    or pending != ("RESERVED_UNKNOWN_DELIVERY",)):
+                rejected = True
+                stopped = self.db.execute(
+                    "UPDATE eai_live_control SET state='HOLD' WHERE id=1")
+                if stopped.rowcount != 1:
+                    raise PermissionError("missing durable live breaker")
             else:
-                safe_status = _ledger_failure_status(failure_reason, request_id)
-                self.db.execute("UPDATE eai_live_control SET state='HOLD' "
-                                "WHERE id=1")
-                self.db.execute(
-                    "UPDATE eai_live_reservations SET status=? WHERE nonce=?",
-                    (safe_status, nonce))
+                if success:
+                    final_status = (
+                        "UNTRUSTED_REPLY_RID_" + request_id[5:]
+                        if type(request_id) is str
+                        and _LIVE_REQUEST_ID.fullmatch(request_id)
+                        else "UNTRUSTED_REPLY")
+                else:
+                    final_status = _ledger_failure_status(
+                        failure_reason, request_id)
+                    stopped = self.db.execute(
+                        "UPDATE eai_live_control SET state='HOLD' WHERE id=1")
+                    if stopped.rowcount != 1:
+                        raise PermissionError("missing durable live breaker")
+                updated = self.db.execute(
+                    "UPDATE eai_live_reservations SET status=? "
+                    "WHERE nonce=? AND status='RESERVED_UNKNOWN_DELIVERY'",
+                    (final_status, nonce))
+                if updated.rowcount != 1:
+                    rejected = True
+                    stopped = self.db.execute(
+                        "UPDATE eai_live_control SET state='HOLD' WHERE id=1")
+                    if stopped.rowcount != 1:
+                        raise PermissionError("missing durable live breaker")
             self.db.execute("COMMIT")
         except BaseException:
-            self.db.execute("ROLLBACK")
+            if self.db.in_transaction:
+                self.db.execute("ROLLBACK")
             raise
+        if rejected:
+            raise PermissionError("untrusted live reservation settlement")
 
 
 def dispatch_live_hydrogen(
