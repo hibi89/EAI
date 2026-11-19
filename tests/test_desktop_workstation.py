@@ -115,7 +115,29 @@ class WorkstationContractTests(unittest.TestCase):
         w.receipt.write_text(json.dumps(data), encoding="utf-8")
         self.assertEqual(self.bridge.verify_journey(w.receipt)["status"], "RECEIPT_CONTRACT_REJECTED")
 
-    def test_v32_guided_draft_review_is_honest_and_never_grants_write(self):
+    def test_v32_discovery_only_reports_real_local_registry_and_evidence(self):
+        plain = self.bridge.make_problem_draft("아무 제한 없이 모든 것을 자동화해줘")
+        result = self.bridge.discover_goal_capabilities(plain)
+        self.assertEqual(result["status"], "NO_TYPED_CPU_MATCH")
+        self.assertEqual(len(result["available_typed_domains"]), 13)
+        self.assertEqual(result["node_candidates"], [])
+        self.assertEqual(result["execution"], "NOT_EXECUTED")
+        self.assertEqual(result["external_actions"], 0)
+        self.assertFalse(result["plan_verified"])
+        typed = dict(plain, domain="csv_quality")
+        result = self.bridge.discover_goal_capabilities(typed)
+        self.assertEqual(result["status"], "TYPED_DOMAIN_MATCH_UNVERIFIED")
+        self.assertEqual(result["matched_typed_domain"], "csv_quality")
+        w = self.fixture()
+        goal = dict(plain, goal="revision", permissions=["pure"])
+        locked = self.bridge.discover_goal_capabilities(goal, w.library)
+        self.assertEqual(locked["library_status"], "HOLD_LOCAL_READ_NOT_APPROVED")
+        allowed = self.bridge.discover_goal_capabilities(dict(goal, permissions=["pure", "local.read"]), w.library)
+        self.assertEqual(allowed["library_status"], "LOCAL_HINTS_UNVERIFIED")
+        self.assertTrue(any(n["node_id"] == "practice.revision" for n in allowed["node_candidates"]))
+        self.assertTrue(all(n["provenance"] == "LOCAL_CANDIDATE_UNVERIFIED" for n in allowed["node_candidates"]))
+        self.assertFalse((self.root / "drafts").exists())
+
         raw = self.bridge.make_problem_draft("인력 일정을 분석하고 대안을 비교해줘")
         review = self.bridge.draft_review(raw)
         self.assertEqual(review["status"], "REVIEW_REQUIRED")
@@ -207,7 +229,16 @@ class NativeWorkstationTests(unittest.TestCase):
         self.assertIn("NO_OBJECTIVES", self.app.draft_review["missing"])
         self.assertFalse((self.bridge.state_root / "drafts").exists())
 
-    def test_v32_guided_editor_applies_owner_oracle_and_safe_read_scope(self):
+    def test_v32_discovery_button_runs_local_preview_only(self):
+        self.app.fill_command("새로운 서비스 구현 방법을 알려줘")
+        self.app.new_draft()
+        self.app.discover()
+        self.wait()
+        self.assertEqual(self.app.results["architect"][0], "discover")
+        self.assertEqual(self.app.results["architect"][1]["status"], "NO_TYPED_CPU_MATCH")
+        self.assertEqual(self.app.results["architect"][1]["execution"], "NOT_EXECUTED")
+        self.assertFalse((self.bridge.state_root / "drafts").exists())
+
         from tkinter import ttk
         from eai.desktop_widgets import edit_problem
         proposal = self.bridge.make_problem_draft("합성 작업 최적화")
