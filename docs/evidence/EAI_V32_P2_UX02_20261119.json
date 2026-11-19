@@ -1,0 +1,64 @@
+{
+  "schema": "eai.p2.synthetic_evidence.v1",
+  "date_kst": "2026-11-19",
+  "repo": "hibi89/EAI",
+  "branch": "feature/eai-v32-owner-rebuild-20261119",
+  "exact_source_sha": "f394b7e3af9ae78fa857d811aaa010de613a325f",
+  "implementer": "owner_and_web_GPT6_High",
+  "owner_physical_win11": "NOT_RUN",
+  "independent_audit": "NOT_RUN",
+  "release": "HOLD",
+  "scope": "LOCAL_PURE_NOOP_SYNTHETIC_ONLY",
+  "checks": {
+    "linux": {
+      "run_id": 44497359862,
+      "conclusion": "SUCCESS",
+      "total": 1145,
+      "passed": 1128,
+      "skipped": 17,
+      "failed": 0,
+      "gui_xvfb": 33
+    },
+    "windows": {
+      "run_id": 44497359518,
+      "conclusion": "SUCCESS",
+      "total": 1145,
+      "passed": 1144,
+      "skipped": 1,
+      "failed": 0,
+      "focused_desktop_pass": 39,
+      "focused_desktop_skip": 1,
+      "unsigned_exe_selfcheck": "PASS_UNSIGNED_BUNDLE_IMPORTS",
+      "artifact_id": 14516220939,
+      "artifact_zip_sha256": "c6c3af5acc9d5ee5656a038659d31e81af770b2213d8bc3722ff12514483e9bb"
+    }
+  },
+  "gate_count": {
+    "accepted_ids": [
+      "EAI-P2-02",
+      "EAI-P2-04",
+      "EAI-P2-06",
+      "EAI-V32-P2-UX02"
+    ],
+    "passed": 4,
+    "total": 14,
+    "unweighted_percent": 28.57
+  },
+  "official_implementation_rate": "UNASSESSED",
+  "official_verification_rate": "UNASSESSED",
+  "gate_id": "EAI-V32-P2-UX02",
+  "disposition": "PASS_SYNTHETIC_PURE_ONLY",
+  "focused_modules": {
+    "test_p2_player_scope_replay": 6,
+    "test_policy_gate_player": 11,
+    "test_architect_runtime": 9
+  },
+  "source_paths": [
+    "eai/desktop_bridge.py",
+    "eai/player_runtime.py",
+    "eai/player_executor.py",
+    "tests/test_desktop_workstation.py"
+  ],
+  "owner_confirmation": "CI_SYNTHETIC_MOCK_ONLY",
+  "independent_trace_algorithm": "AUTHOR_RUN_NOT_EXTERNAL_AUDIT"
+}
