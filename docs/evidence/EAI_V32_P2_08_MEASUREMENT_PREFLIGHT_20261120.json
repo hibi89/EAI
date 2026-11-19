@@ -1,0 +1,80 @@
+{
+  "schema": "eai.v32.p2.owner_measurement_preflight.v1",
+  "date_kst": "2026-11-20",
+  "repo": "hibi89/EAI",
+  "branch": "feature/eai-v32-owner-rebuild-20261119",
+  "verified_functional_sha": "0b12ea4af3624bef752949522b9266b3d9e52edf",
+  "failed_first_attempt": {
+    "source_sha": "f07c801e528bf4aad7d602e94248063f5f8cd8bb",
+    "windows_run_id": 44555341422,
+    "conclusion": "FAIL",
+    "reason": "Windows PowerShell 5.1 Get-FileHash cmdlet unavailable, one new read-only preflight test failed"
+  },
+  "changes": [
+    "scripts/measure_desktop_windows.ps1",
+    "tests/test_windows_measure_preflight.py"
+  ],
+  "safety": [
+    "read-only preflight default, no exe execution",
+    "explicit owner opt-in switch required for actual measurement",
+    "PE EAI.exe hash/ancestor reparse checks",
+    "owner-profile isolated process launch with PID-only cleanup",
+    "pure .NET SHA256 PowerShell 5.1 compatible"
+  ],
+  "new_windows_preflight_tests": 3,
+  "verified_scope": "WIN_SERVER_PREFLIGHT_ONLY_NO_REAL_EAI_LAUNCH",
+  "linux": {
+    "run_id": 44556208095,
+    "conclusion": "SUCCESS",
+    "tests": 1188,
+    "pass": 1168,
+    "skip": 20,
+    "fail": 0,
+    "mypy": "237_PYTHON_FILES_PASS",
+    "ruff": "FULL_REQUIRED_RULES_PASS",
+    "windows_only_cases": "3_SKIPPED",
+    "offline_artifact_zip_id": 14544872711,
+    "offline_artifact_zip_sha256": "fad45957200fc49a082b3431787b3cf0fc543d3e4f30aa7cd4aec28766df0ac9"
+  },
+  "windows": {
+    "run_id": 44556208213,
+    "conclusion": "SUCCESS",
+    "tests": 1188,
+    "pass": 1187,
+    "skip": 1,
+    "fail": 0,
+    "preflight_three_cases": "PASS",
+    "native_tk_focus": "40_PASS_1_UNATTENDED_SKIP",
+    "unsigned_exe": "PASS_UNSIGNED_BUNDLE_IMPORTS",
+    "artifact_zip_id": 14544688686,
+    "artifact_zip_sha256": "79120395049fc730030ffb9da1d453c7c3a0288451e43a3e90c433c362f4ad96",
+    "owner_physical_gui_measurement": "NOT_RUN"
+  },
+  "progress": {
+    "p1_source_candidates": 60,
+    "p1_total": 60,
+    "p1_provisional": true,
+    "p2_accepted": 8,
+    "p2_total": 14,
+    "p2_unweighted_percent": 57.14,
+    "accepted_ids": [
+      "EAI-P2-01",
+      "EAI-P2-02",
+      "EAI-P2-03",
+      "EAI-P2-04",
+      "EAI-P2-06",
+      "EAI-P2-09",
+      "EAI-V32-P2-UX01",
+      "EAI-V32-P2-UX02"
+    ],
+    "P2_08": "PARTIAL_PENDING_OWNER_PHYSICAL",
+    "UX03": "NOT_RUN",
+    "UX04": "PARTIAL_PENDING_OWNER_PHYSICAL"
+  },
+  "weighted_implementation": "UNASSESSED",
+  "weighted_verification": "UNASSESSED",
+  "owner_win11_physical": "NOT_RUN",
+  "real_gui_measurement": "NOT_RUN",
+  "independent_technical_security_ux": "NOT_RUN",
+  "release": "HOLD"
+}
