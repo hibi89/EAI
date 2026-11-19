@@ -478,7 +478,15 @@ class _LiveSendLedger:
         from pathlib import Path
         import os
         import sqlite3
-        p = Path(path).expanduser()
+        from .local_files import local_path
+
+        # SQLite opens main, WAL, SHM and rollback-journal siblings. Validate
+        # every possible path before sqlite3.connect can create/write any.
+        # In particular, a hardlinked preexisting ledger/sidecar must never
+        # let this live sender alter some other owner file.
+        p = local_path(Path(path).expanduser(), private=True)
+        for suffix in ("-wal", "-shm", "-journal"):
+            local_path(Path(str(p) + suffix), private=True)
         if (type(allow_create) is not bool
                 or p.suffix != ".sqlite"
                 or p.is_symlink() or p.parent.is_symlink()
@@ -496,17 +504,29 @@ class _LiveSendLedger:
             p.resolve(strict=True).as_uri() + "?mode=rw",
             uri=True, isolation_level=None, timeout=3)
         try:
+            self.db.execute("PRAGMA trusted_schema=OFF")
             self.db.execute("PRAGMA synchronous=FULL")
             self.db.execute("PRAGMA busy_timeout=3000")
             ver = self.db.execute("PRAGMA user_version").fetchone()[0]
             if exists:
                 if ver != _LIVE_LEDGER_VERSION:
                     raise PermissionError("unexpected live ledger version")
-                names = {x[0] for x in self.db.execute(
-                    "SELECT name FROM sqlite_master WHERE type='table' "
+                objects = {(x[0], x[1]) for x in self.db.execute(
+                    "SELECT type,name FROM sqlite_master "
+                    "WHERE type IN ('table','view','trigger') "
                     "AND name NOT LIKE 'sqlite_%'")}
-                if names != {"eai_live_control", "eai_live_reservations"}:
-                    raise PermissionError("unexpected live ledger tables")
+                if objects != {
+                        ("table", "eai_live_control"),
+                        ("table", "eai_live_reservations")}:
+                    raise PermissionError("unexpected live ledger schema objects")
+                for table, columns in (
+                    ("eai_live_control", ("id", "project", "owner_key", "state")),
+                    ("eai_live_reservations", ("nonce", "utc", "tokens", "status")),
+                ):
+                    observed = tuple(x[1] for x in self.db.execute(
+                        "PRAGMA table_info(" + table + ")"))
+                    if observed != columns:
+                        raise PermissionError("unexpected live ledger columns")
             else:
                 self.db.execute("BEGIN IMMEDIATE")
                 try:

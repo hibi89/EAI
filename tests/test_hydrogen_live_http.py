@@ -3,7 +3,9 @@ from __future__ import annotations
 
 import http.client
 import json
+import os
 from pathlib import Path
+import sqlite3
 from tempfile import TemporaryDirectory
 import unittest
 from typing import cast
@@ -113,6 +115,67 @@ class HydrogenLiveHttpDiagnosticsTests(unittest.TestCase):
         self.assertNotEqual(first, _live_request_id(project, "M" * 24, packet_sha))
         self.assertNotEqual(first, _live_request_id(project, nonce, "c" * 64))
         self.assertNotIn(nonce, first)
+
+
+    def test_existing_live_ledger_hardlink_is_rejected_without_mutating_owner_file(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            original = root / "owner_original.bin"
+            original.write_bytes(b"OWNER_ORIGINAL_UNTOUCHED")
+            linked = root / "live.sqlite"
+            try:
+                os.link(original, linked)
+            except (OSError, NotImplementedError):
+                self.skipTest("hardlinks unavailable on this filesystem")
+            before = original.read_bytes()
+            with self.assertRaises((ValueError, PermissionError)):
+                _LiveSendLedger(linked, project_id="eai-test-project",
+                                owner_key_sha256="a" * 64, allow_create=True)
+            self.assertEqual(original.read_bytes(), before)
+            self.assertEqual(linked.read_bytes(), before)
+
+    def test_live_sqlite_sidecar_hardlinks_fail_before_ledger_creation(self):
+        for suffix in ("-wal", "-shm", "-journal"):
+            with self.subTest(suffix=suffix), TemporaryDirectory() as directory:
+                root = Path(directory)
+                original = root / "owner_original.bin"
+                original.write_bytes(b"OWNER_ORIGINAL_UNTOUCHED")
+                ledger_path = root / "live.sqlite"
+                try:
+                    os.link(original, Path(str(ledger_path) + suffix))
+                except (OSError, NotImplementedError):
+                    self.skipTest("hardlinks unavailable on this filesystem")
+                with self.assertRaises((ValueError, PermissionError)):
+                    _LiveSendLedger(ledger_path, project_id="eai-test-project",
+                                    owner_key_sha256="a" * 64, allow_create=True)
+                self.assertEqual(original.read_bytes(), b"OWNER_ORIGINAL_UNTOUCHED")
+                self.assertFalse(ledger_path.exists())
+
+    def test_live_ledger_rejects_forged_triggers_and_views_on_reopen(self):
+        for object_ddl in (
+            "CREATE VIEW forged_review AS SELECT state FROM eai_live_control",
+            "CREATE TRIGGER forged_mutation AFTER UPDATE ON eai_live_control "
+            "BEGIN UPDATE eai_live_reservations SET status='CLAIM_VERIFIED'; END",
+        ):
+            with self.subTest(ddl=object_ddl), TemporaryDirectory() as directory:
+                path = Path(directory) / "live.sqlite"
+                ledger = _LiveSendLedger(
+                    path, project_id="eai-test-project",
+                    owner_key_sha256="a" * 64, allow_create=True)
+                ledger.close()
+                with sqlite3.connect(path) as db:
+                    db.execute(object_ddl)
+                with self.assertRaisesRegex(PermissionError,
+                                             "unexpected live ledger schema objects"):
+                    _LiveSendLedger(
+                        path, project_id="eai-test-project",
+                        owner_key_sha256="a" * 64)
+                with sqlite3.connect(path) as db:
+                    self.assertEqual(
+                        db.execute("SELECT state FROM eai_live_control WHERE id=1")
+                        .fetchone(), ("READY",))
+                    self.assertEqual(db.execute(
+                        "SELECT COUNT(*) FROM eai_live_reservations").fetchone()[0], 0)
 
     def test_missing_per_send_consent_holds_before_network_or_ledger_create(self):
         packet = self.packet()
