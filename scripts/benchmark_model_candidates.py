@@ -100,7 +100,7 @@ def compare(manifest_file, cases_file, predictions_file):
         expected[case["id"]] = case["expected_id"]
         cpu_id, ambiguous = _choose_cpu(case["request"], catalog)
         cpu[case["id"]] = "" if ambiguous or cpu_id is None else cpu_id
-    models = {}
+    models: dict[str, dict[str, str | None]] = {}
     for pred in preds_doc["predictions"]:
         if (type(pred) is not dict or set(pred) != {"model", "case_id", "raw_output"}
                 or type(pred["model"]) is not str or not MODEL.fullmatch(pred["model"])
