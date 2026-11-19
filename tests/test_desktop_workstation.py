@@ -811,7 +811,7 @@ class NativeWorkstationTests(unittest.TestCase):
                    return_value=str(path)):
             a.open_problem("architect")
         self.wait()
-        self.assertEqual(a.draft["goal"], proposal["goal"])
+        self.assertEqual(present(a.draft, "draft")["goal"], proposal["goal"])
         self.assertIsNone(a.library)
 
         a.practice()
@@ -821,7 +821,7 @@ class NativeWorkstationTests(unittest.TestCase):
                    side_effect=lambda root, draft, callback: callback(
                        dict(draft, goal="편집된 별도 소유자 목표"))):
             a.edit()
-        self.assertEqual(a.draft["goal"], "편집된 별도 소유자 목표")
+        self.assertEqual(present(a.draft, "draft")["goal"], "편집된 별도 소유자 목표")
         self.assertIsNone(a.library)
         self.assertIsNotNone(a.example)  # Reopening the demo stays explicit.
 
