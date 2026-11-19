@@ -170,7 +170,11 @@ class NativeWorkstationTests(unittest.TestCase):
         self.root.update()
 
     def test_seven_pages_composer_resize_and_keyboard(self):
-        for geometry, scaling in (("1340x694", 96/72), ("1100x590", 120/72), ("760x475", 120/72)):
+        layouts = (
+            ("1920x1080", 96/72), ("1366x768", 96/72), ("1366x768", 120/72),
+            ("1340x694", 96/72), ("1100x590", 120/72), ("760x475", 120/72),
+        )
+        for geometry, scaling in layouts:
             self.root.tk.call("tk", "scaling", scaling)
             self.root.geometry(geometry)
             for page in PAGES:

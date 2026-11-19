@@ -16,6 +16,9 @@ import sys
 from tempfile import TemporaryDirectory
 from zipfile import ZipFile
 
+if __package__ in (None, ""):
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
 from scripts.build_customer_candidate import NAME, build
 from scripts.verify_customer_candidate import PREFIX, verify_archive, verify_directory
 from eai.customer_review import verify_review
