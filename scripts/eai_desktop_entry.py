@@ -13,6 +13,14 @@ from pathlib import Path
 import sys
 import tkinter
 
+# A source-tree invocation (python scripts/eai_desktop_entry.py) otherwise
+# puts scripts/, rather than its repository parent, on sys.path. Frozen
+# PyInstaller builds supply the package through their analysis pathex.
+if not getattr(sys, "frozen", False):
+    source_root = Path(__file__).resolve().parents[1]
+    if (source_root / "eai" / "__init__.py").is_file():
+        sys.path.insert(0, str(source_root))
+
 from eai.desktop_app import main
 
 _REQUIRED_MODULES = (
