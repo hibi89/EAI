@@ -161,6 +161,7 @@ class WorkstationContractTests(unittest.TestCase):
         self.assertTrue(all(n["provenance"] == "LOCAL_CANDIDATE_UNVERIFIED" for n in allowed["node_candidates"]))
         self.assertFalse((self.root / "drafts").exists())
 
+    def test_v32_guided_draft_review_is_honest_and_never_grants_write(self):
         raw = self.bridge.make_problem_draft("인력 일정을 분석하고 대안을 비교해줘")
         review = self.bridge.draft_review(raw)
         self.assertEqual(review["status"], "REVIEW_REQUIRED")
@@ -271,6 +272,7 @@ class NativeWorkstationTests(unittest.TestCase):
         self.assertEqual(self.app.results["architect"][1]["execution"], "NOT_EXECUTED")
         self.assertFalse((self.bridge.state_root / "drafts").exists())
 
+    def test_v32_guided_editor_applies_owner_oracle_and_safe_read_scope(self):
         from tkinter import ttk
         from eai.desktop_widgets import edit_problem
         proposal = self.bridge.make_problem_draft("합성 작업 최적화")
