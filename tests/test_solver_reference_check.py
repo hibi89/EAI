@@ -5,6 +5,7 @@ from pathlib import Path
 import socket
 import tempfile
 import unittest
+from typing import cast
 from unittest.mock import patch
 
 from eai.axnode_store import AXNodeStore
@@ -158,7 +159,7 @@ class RealCPUSyntheticReferenceTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             compare_real_cpu_on_synthetic((a,))
         with self.assertRaises(ValueError):
-            compare_real_cpu_on_synthetic([a, a])
+            compare_real_cpu_on_synthetic(cast(tuple[SyntheticComparison, ...], [a, a]))
         with self.assertRaises(ValueError):
             compare_real_cpu_on_synthetic((a, a))
 

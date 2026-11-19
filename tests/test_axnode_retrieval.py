@@ -71,9 +71,9 @@ class AXNodeRetrievalTests(unittest.TestCase):
         for invalid in ["\x00", "a"*301]:
             with self.assertRaises(ValueError):
                 retriever.find(invalid)
-        for invalid in [0, True, 26]:
+        for invalid_limit in [0, True, 26]:
             with self.assertRaises(ValueError):
-                retriever.find("csv",limit=invalid)
+                retriever.find("csv",limit=invalid_limit)
         with self.assertRaises(ValueError):
             retriever.find("csv",output_type="shell_code")
         self.assertEqual(retriever.find('csv" OR malicious*'),retriever.find('csv" OR malicious*'))

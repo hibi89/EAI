@@ -7,6 +7,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from typing import Any, cast
 
 from eai.resource_schedule import (
     validate_resource_goal, execute_resource_goal, render_resource_plan
@@ -137,21 +138,21 @@ class ResourceScheduleP21Tests(unittest.TestCase):
             self.run_goal(data)
 
     def test_extra_actions_and_boolean_ints_denied(self):
-        for change in ({"shell": "rm"}, {"horizon_hours": True},
+        for change in cast(tuple[dict[str, Any], ...], ({"shell": "rm"}, {"horizon_hours": True},
                        {"capacities": {"cpu": True}},
-                       {"tasks": []}, {"kind": "arbitrary"}, {"version": True}):
+                       {"tasks": []}, {"kind": "arbitrary"}, {"version": True})):
             data = scenario()
             data.update(change)
             with self.subTest(change=change), self.assertRaises(ValueError):
                 self.run_goal(data)
 
     def test_task_demand_and_duration_must_be_valid(self):
-        for task_change in (
+        for task_change in cast(tuple[dict[str, Any], ...], (
             {"hours": 0}, {"hours": True}, {"hours": 9},
             {"resources": {"cpu": 2}}, {"resources": {"ram": 1}},
             {"resources": {}}, {"requires": ["prepare", "prepare"]},
             {"id": "bad task id"}, {"run": "shell"}
-        ):
+        )):
             data = scenario()
             data["tasks"][0].update(task_change)
             with self.subTest(task_change=task_change), self.assertRaises(ValueError):

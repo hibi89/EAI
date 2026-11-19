@@ -2,6 +2,7 @@
 import copy
 import json
 import unittest
+from typing import Any, cast
 
 from eai.axnode_schema import parse_axnode
 
@@ -62,7 +63,7 @@ class AXNodeSchemaTests(unittest.TestCase):
             {"kind": "arbitrary_python"},
             {"version": True},
         ]:
-            raw = dict(self.node(), **patch)
+            raw = dict(self.node(), **cast(dict[str, Any], patch))
             with self.subTest(patch=patch), self.assertRaises(ValueError):
                 parse_axnode(json.dumps(raw))
 
@@ -85,7 +86,7 @@ class AXNodeSchemaTests(unittest.TestCase):
             {"signature": {"inputs": {"file": "shell_command"}, "output": "text"}},
             {"tests": {"unit": ["../escape"], "heldout": [], "negative": []}},
         ]:
-            bad = dict(self.node(), **patch)
+            bad = dict(self.node(), **cast(dict[str, Any], patch))
             with self.subTest(patch=patch), self.assertRaises(ValueError):
                 parse_axnode(json.dumps(bad))
 

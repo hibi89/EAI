@@ -6,6 +6,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from typing import Any
 from unittest.mock import patch
 
 from eai.verify_csv import (verify_csv_claims, load_claims, validate_claims,
@@ -85,7 +86,7 @@ class CsvClaimVerificationTests(unittest.TestCase):
         self.assertNotIn('외부', result['claims'][0])
 
     def test_invalid_structures_rejected_before_file_reads(self):
-        invalid = [None, [], [{}], [self.claim('sum', 1)],
+        invalid: list[Any] = [None, [], [{}], [self.claim('sum', 1)],
                    [self.claim('sum', '352', hack='python')],
                    [self.claim('sum', 'NaN')],
                    [self.claim('sum', '352', tolerance='-0.1')],

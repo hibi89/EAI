@@ -136,6 +136,8 @@ class SidecarCoherenceReviewTests(unittest.TestCase):
         before = [path.read_bytes() for path in source]
         first = inspect_isolated_epoch_boundary(self.store, self.archive, self.isolated)
         self.assertEqual(first.status, "SHARED_READ_CHECKPOINT_MATCH")
+        self.assertIsInstance(first.shared_read_checkpoint_sha256, str)
+        assert first.shared_read_checkpoint_sha256 is not None
         self.assertEqual(len(first.shared_read_checkpoint_sha256), 64)
         self.assertTrue(first.sidecars_agree)
         self.assertFalse(first.transaction_epoch_proven)

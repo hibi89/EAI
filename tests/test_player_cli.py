@@ -6,6 +6,7 @@ from pathlib import Path
 import socket
 import tempfile
 import unittest
+from typing import Any
 from unittest.mock import patch
 
 from eai.__main__ import main
@@ -20,7 +21,7 @@ class PlayerCLITests(unittest.TestCase):
         self.root = Path(temp.name)
         self.problem_file = self.root / "problem.json"
         self.plan_file = self.root / "plan.json"
-        self.problem = {
+        self.problem: dict[str, Any] = {
             "version": 1, "id": "synthetic.cli", "goal": "PRIVATE user question",
             "domain": "research", "state_refs": [], "assumptions": [],
             "hard_constraints": [], "objectives": ["safety"],
@@ -29,7 +30,7 @@ class PlayerCLITests(unittest.TestCase):
             "risk": "LOW",
         }
         digest = ProblemSpec.validate(self.problem).digest()
-        self.plan = {
+        self.plan: dict[str, Any] = {
             "version": 1, "problem_sha256": digest,
             "steps": [
                 {"id": "step01", "operator": "synthetic.noop.v1",

@@ -7,6 +7,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from typing import Any
 from unittest.mock import patch
 
 from eai.goal_dispatch import execute_goal_document, render_goal_document, _read_spec
@@ -17,7 +18,7 @@ class GoalRoutingTests(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.dir = Path(self.tmp.name)
         self.path = self.dir / 'goal.json'
-        self.options = {
+        self.options: dict[str, Any] = {
             'version':1,'kind':'choose_options','goal':'buy hardware',
             'criteria':[{'id':'cost','direction':'min','unit':'USD','weight':'1',
                          'score_min':'0','score_max':'1000', 'hard_max':'900'}],
@@ -70,7 +71,8 @@ class GoalRoutingTests(unittest.TestCase):
         self.assertEqual(execute_goal_document(self.path)['status'],'AGREE')
 
     def test_invalid_or_arbitrary_goal_kind_is_denied(self):
-        for kind in ['shell.execute', 'arbitrary', None, [], 1]:
+        invalid_kinds: tuple[object, ...] = ('shell.execute', 'arbitrary', None, [], 1)
+        for kind in invalid_kinds:
             raw=deepcopy(self.options);raw['kind']=kind
             self.write(raw)
             with self.subTest(kind=kind),self.assertRaises(ValueError):

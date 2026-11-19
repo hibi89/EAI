@@ -119,6 +119,8 @@ class IsolatedRestoreTests(unittest.TestCase):
         self.assertEqual(boundary.status, "SHARED_READ_CHECKPOINT_MATCH")
         self.assertEqual(preview.shared_read_checkpoint_sha256,
                          boundary.shared_read_checkpoint_sha256)
+        self.assertIsInstance(preview.shared_read_checkpoint_sha256, str)
+        assert preview.shared_read_checkpoint_sha256 is not None
         request = IsolatedRestoreRequest(
             self.ledger, "publish-" + name, revision, preview.shared_read_checkpoint_sha256,
             allow_isolated_write=True,
@@ -194,6 +196,8 @@ class IsolatedRestoreTests(unittest.TestCase):
         self.assertEqual(self.publish(*second).publication.epoch_revision, 2)
         current = recover_isolated_restore(self.ledger)
         self.assert_epoch(current, {self.anchor, child})
+        self.assertIsNotNone(current.payload)
+        assert current.payload is not None
         with current.payload.open_database("catalog.sqlite") as db:
             self.assertEqual(db.execute("SELECT child_sha, parent_sha FROM parents").fetchall(),
                              [(child, self.anchor)])
@@ -204,7 +208,7 @@ class IsolatedRestoreTests(unittest.TestCase):
         self.assertEqual(state.payload_sha256, previous.payload_sha256)
         self.assert_epoch(state, {self.anchor})
         with self.assertRaisesRegex(ValueError, "revision changed"):
-            self.publish(*second[:2], request=replace(second[2], operation_id="stale"))
+            self.publish(second[0], second[1], request=replace(second[2], operation_id="stale"))
         self.assertEqual(self.publish(*second).publication.epoch_revision, 2)
         self.assertEqual(self.rollback("undo-first", 3).epoch_revision, None)
         self.assertEqual(self.rollback("undo-second", 2), rolled)

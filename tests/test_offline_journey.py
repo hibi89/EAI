@@ -13,6 +13,7 @@ from pathlib import Path
 import socket
 import tempfile
 import unittest
+from typing import Any, Callable, cast
 from unittest.mock import patch
 
 from eai.__main__ import main
@@ -29,7 +30,7 @@ class OfflineJourneyTests(unittest.TestCase):
         self.root = Path(tmp.name)
         self.axnode_dir = self.root / "axnodes"
         self.problem_file = self.root / "problem.json"
-        self.problem = {
+        self.problem: dict[str, Any] = {
             "version": 1, "id": "synthetic.journey",
             "goal": "PRIVATE goal never printed", "domain": "data",
             "state_refs": [], "assumptions": [],
@@ -166,7 +167,7 @@ class OfflineJourneyTests(unittest.TestCase):
         for callback in ("stop", lambda: 1, lambda: "no"):
             with self.subTest(callback=repr(callback)), self.assertRaises(ValueError):
                 preview_offline_journey(
-                    self.problem_file, self.axnode_dir, cancel_check=callback)
+                    self.problem_file, self.axnode_dir, cancel_check=cast(Callable[[], bool], callback))
 
     def test_cancel_after_architect_preserves_existing_store(self):
         before = sorted(self.axnode_dir.rglob("*.axnode"))
@@ -334,7 +335,7 @@ class OfflineJourneyTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             preview_offline_journey(
                 self.problem_file, self.axnode_dir,
-                research_policy=object())
+                research_policy=cast(Any, object()))
 
     def test_report_digest_audit_never_grants_execution(self):
         from eai.offline_journey import audit_offline_journey_report
