@@ -1,3 +1,10 @@
+## 2026-11-19 KST — Owner V3.2 EAI rebuild started (CURRENT BRANCH)
+
+- Repo/branch: `hibi89/EAI@feature/eai-v32-owner-rebuild-20261119`, branched from Astra PR#3 head `e44977fc4f615fa6a368ff64ec4361ceee99e7b4` without merging. Previous Astra V3.1 `48/48` candidates and Windows 1,092 PASS/18 SKIP are historic **different-source** evidence only.
+- Current owner scope: real goal→Architect alternatives→policy-gated Player→Verifier→AXNODE, user-focused native GUI, High direct P1 + P2 tests/fixes; separate independent audit. Detailed addendum `docs/EAI_V32_OWNER_REBUILD_CANONICAL_20261119.md`, queue `docs/EAI_V32_OWNER_SWU_QUEUE.json`, P2 `docs/EAI_V32_OWNER_P2.md`.
+- Initial actual P1 W01: GUI unknown natural goal routes directly to a **pure review-only ProblemSpec draft**; literal rule CPU commands and note approval unchanged. Changed `eai/desktop_app.py`, `eai/desktop_views.py`, `tests/test_desktop_workstation.py`; code/test final SHA `dc464fac7d50493e237fadb3f72909753e6534a7`. Local Python compile PASS, focused Linux Xvfb 9 PASS; full Tk combined run aborted in Python/Tcl, unresolved. Windows11/UI/EXE, full CI, independent audit NOT_RUN for new SHA.
+- Inherited V3.1 source snapshot 48 SWUs; V3.2 additions **1/12 P1 source candidate** (11 remain; first W02). **Official implementation `UNASSESSED`, official verification `UNASSESSED`**; P2 user-journey gates NOT_RUN and release HOLD. No hardware/external/user originals/permissions/main change.
+
 ## 2026-11-19 KST · Astra Windows 자체 검증
 
 리뷰 브랜치의 제품·검증 기준은 `3f5efeb810aa0675476f551913d3b6a8d5f7b591`이다. 7개 네이티브 화면, 실제 CPU 실행, 읽기 전용 Atlas, 선택한 설계의 Player·Verifier 연결과 재시작 보존을 구현·검사했다. Windows에서 1,110건 중 1,092 PASS, 18 SKIP, 실패·오류 0건이다. Ubuntu CI에서는 1,085 PASS, 25 SKIP이다. 동일 EXE를 실제 노트북과 오프라인 Windows Sandbox에서 두 번씩 열고 정상 종료했다.
