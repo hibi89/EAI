@@ -122,8 +122,8 @@
       "status": "IMPLEMENTED_UNVERIFIED",
       "p1_source_candidate": true,
       "risk": "HIGH",
-      "local_check": "Local staged Python syntax PASS; isolated private-library unit test PASS; Windows-independent Xvfb native consent GUI test PASS after fixing result state. Full P2 CI/Win11 EXE NOT_RUN.",
-      "evidence_sha": "1bbff1a32b01bd70efc0f2a71dc03f10bf0e9acc",
+      "local_check": "Local exact authored source: compileall PASS; workstation contract 10/10 PASS; isolated Xvfb GUI W01-W04 5/5 PASS (including consent/new library); GitHub 6 changed source/test files match staged source content; full CI/Win11 EXE NOT_RUN.",
+      "evidence_sha": "9ef8f15cf8059d3de0e0ff8d2d6bd0d033053a59",
       "safety_gate": "P26/ADR-0002/NO_LIVE_IO",
       "p2_status": "NOT_RUN",
       "failure_count_verified": 0,
@@ -361,6 +361,7 @@
     "provisional_implementation_swu_completion_percent": 86.67,
     "provisional_verification_swu_completion_percent": 0,
     "provisional_rate_basis": "Inherited historic source-candidate 48 + new W01..W04 source candidates 4 = 52/60 provisional count; old 48 compatibility reinspection pending. V3.2 P2 acceptance 0/60 source SWUs, 0/14 original + additive groups. Not an official weighted rate.",
-    "independent_security_ui_audit": "NOT_RUN"
+    "independent_security_ui_audit": "NOT_RUN",
+    "evidence_check": "6 current GitHub changed source/test files match locally tested staging text, deterministic checksum+Unicode length; exact frozen P2 SHA not yet set."
   }
 }
