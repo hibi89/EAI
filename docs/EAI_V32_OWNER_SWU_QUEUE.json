@@ -13,7 +13,7 @@
     "historic_evidence": "docs/EAI_P1_SWU_QUEUE.json;docs/EAI_DESKTOP_P1_SWU_QUEUE.json"
   },
   "new_swu_count": 12,
-  "new_source_candidates": 3,
+  "new_source_candidates": 4,
   "tracked_swu_total": 60,
   "official_implementation_rate": "UNASSESSED",
   "official_verification_rate": "UNASSESSED",
@@ -112,14 +112,18 @@
       "allowed_paths": [
         "eai/desktop_bridge.py",
         "eai/axnode_store.py",
-        "eai/desktop_state.py"
+        "eai/desktop_state.py",
+        "eai/desktop_app.py",
+        "eai/desktop_views.py",
+        "eai/desktop_presentation.py",
+        "tests/test_desktop_workstation.py"
       ],
-      "acceptance": "Explicitly choose a fresh private root; no mutation of existing libraries; empty library handled honestly; no ACTIVE promotion.",
-      "status": "READY",
-      "p1_source_candidate": false,
+      "acceptance": "Explicitly choose a fresh private root; no mutation of existing libraries; empty library handled honestly; no ACTIVE promotion. Explicit UI consent creates only a unique new private AXNODE library with SQLite integrity; user-selected bounded local .axnode copies only to that private library; original remains read-only; never ACTIVE.",
+      "status": "IMPLEMENTED_UNVERIFIED",
+      "p1_source_candidate": true,
       "risk": "HIGH",
-      "local_check": "NOT_RUN",
-      "evidence_sha": null,
+      "local_check": "Local staged Python syntax PASS; isolated private-library unit test PASS; Windows-independent Xvfb native consent GUI test PASS after fixing result state. Full P2 CI/Win11 EXE NOT_RUN.",
+      "evidence_sha": "1bbff1a32b01bd70efc0f2a71dc03f10bf0e9acc",
       "safety_gate": "P26/ADR-0002/NO_LIVE_IO",
       "p2_status": "NOT_RUN",
       "failure_count_verified": 0,
@@ -141,7 +145,7 @@
         "eai/logic_synthesis.py"
       ],
       "acceptance": "At least 2 genuinely distinct bounded alternatives when viable, or exact blocker; no mere fixture presented as goal reasoning; stable evidence hashes.",
-      "status": "DEPENDENCY_BLOCKED",
+      "status": "READY",
       "p1_source_candidate": false,
       "risk": "NORMAL",
       "local_check": "NOT_RUN",
@@ -338,12 +342,12 @@
   "metrics": {
     "type": "SWU_SOURCE_CANDIDATE_COVERAGE_NOT_OFFICIAL_ACCEPTANCE",
     "inherited_source_candidates_historical": 48,
-    "new_source_candidates": 3,
+    "new_source_candidates": 4,
     "tracked_total": 60,
-    "combined_candidate_coverage_count": 51,
-    "combined_candidate_coverage_percent_provisional": 85,
+    "combined_candidate_coverage_count": 52,
+    "combined_candidate_coverage_percent_provisional": 86.67,
     "inherited_compatibility_reinspection": "PENDING",
-    "new_swu_coverage_percent": 25,
+    "new_swu_coverage_percent": 33.33,
     "p2_original_gate_groups": 10,
     "p2_v32_additive_gate_groups": 4,
     "p2_gate_groups_pass_on_current_sha": 0,
@@ -354,9 +358,9 @@
     "disclaimer": "SWU source candidate coverage is NOT an official weighted implementation completion rate. Prior Astra tests are historic on different source SHA; no P2 acceptance passed against this branch. Any unproven baseline SWUs must be downgraded if compatibility review finds gaps.",
     "verification_swu_pass_on_current_sha": 0,
     "verification_swu_pass_rate_provisional_percent": 0,
-    "provisional_implementation_swu_completion_percent": 85,
+    "provisional_implementation_swu_completion_percent": 86.67,
     "provisional_verification_swu_completion_percent": 0,
-    "provisional_rate_basis": "51 of 60 unique source SWU candidates preserved/implemented; 0 of 60 verified against the new frozen integrated V3.2 source; equal-unit counts are NOT accepted feature-weighted formal rates.",
+    "provisional_rate_basis": "Inherited historic source-candidate 48 + new W01..W04 source candidates 4 = 52/60 provisional count; old 48 compatibility reinspection pending. V3.2 P2 acceptance 0/60 source SWUs, 0/14 original + additive groups. Not an official weighted rate.",
     "independent_security_ui_audit": "NOT_RUN"
   }
 }
