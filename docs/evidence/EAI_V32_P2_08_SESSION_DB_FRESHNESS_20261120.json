@@ -1,0 +1,72 @@
+{
+  "schema": "eai.v32.p2.runtime_evidence.v1",
+  "date_kst": "2026-11-20",
+  "repo": "hibi89/EAI",
+  "branch": "feature/eai-v32-owner-rebuild-20261119",
+  "verified_functional_sha": "d04f876e5eff286d4d4a56fc48da76053695a383",
+  "source_paths": [
+    "eai/desktop_state.py",
+    "tests/test_p2_desktop_workspace_recovery.py"
+  ],
+  "bug": "preexisting zero-byte review_sessions.sqlite3 was treated as new; foreign same-columns table or additional triggers/views/index allowed",
+  "fix": "exclusive create of truly absent file; strict existing schema and ordered column constraint verification; trusted_schema=OFF, quick_check, mode=rw; preserve owner originals and close handles",
+  "new_test_methods": [
+    "test_existing_zero_byte_session_file_is_preserved_not_reused",
+    "test_existing_foreign_or_weak_session_schema_never_repaired",
+    "test_extra_session_schema_objects_block_save_without_mutating_history",
+    "test_concurrent_new_review_sessions_are_private_and_resume_review_only"
+  ],
+  "linux": {
+    "run_id": 44553051139,
+    "result": "SUCCESS",
+    "total": 1185,
+    "passed": 1168,
+    "skipped": 17,
+    "failed": 0,
+    "ruff": "PASS_all_eai_scripts_tests_E4_E7_E9_F63_F7_F82",
+    "mypy": "PASS_236_FILES",
+    "virtual_display_gui": "34_PASS",
+    "no_live_external_call": true
+  },
+  "windows": {
+    "run_id": 44553051325,
+    "result": "SUCCESS",
+    "total": 1185,
+    "passed": 1184,
+    "skipped": 1,
+    "failed": 0,
+    "native_gui_focused": "40_PASS_1_FOCUS_SKIP",
+    "development_exe_selfcheck": "PASS_UNSIGNED_BUNDLE_IMPORTS",
+    "artifact_zip_id": 14544610849,
+    "uploaded_artifact_zip_sha256": "abd2f2bae08e0239d54c0ca0482b2f9b66af4be88ac3571dc0ae8a7fb2a8d0f7",
+    "physical_owner_win11": "NOT_RUN"
+  },
+  "p1": {
+    "source_candidate_swu": 60,
+    "tracked_swu": 60,
+    "provisional": true
+  },
+  "p2": {
+    "accepted": 8,
+    "total": 14,
+    "unweighted_percent": 57.14,
+    "accepted_gate_ids": [
+      "EAI-P2-01",
+      "EAI-P2-02",
+      "EAI-P2-03",
+      "EAI-P2-04",
+      "EAI-P2-06",
+      "EAI-P2-09",
+      "EAI-V32-P2-UX01",
+      "EAI-V32-P2-UX02"
+    ],
+    "P2_08": "PARTIAL_LOCAL_DB_RECOVERY_PASS_OWNER_PHYSICAL_NOT_RUN",
+    "UX04": "NOT_ACCEPTED_PHYSICAL_RESOURCE_NOT_RUN"
+  },
+  "weighted_implementation": "UNASSESSED",
+  "weighted_verification": "UNASSESSED",
+  "real_owner_win11": "NOT_RUN",
+  "independent_audit": "NOT_RUN",
+  "real_customer_data": "NOT_USED",
+  "release": "HOLD"
+}

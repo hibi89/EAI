@@ -1,3 +1,10 @@
+## EAI V3.2 handoff — P2-08 owner-private session recovery, 2026-11-20 KST
+
+- Repo/branch `hibi89/EAI@feature/eai-v32-owner-rebuild-20261119`; **verified functional SHA `d04f876e5eff286d4d4a56fc48da76053695a383`**. Linux [44553051139](https://github.com/hibi89/EAI/actions/runs/44553051139) SUCCESS 1,168 PASS/17 SKIP, Windows Server [44553051325](https://github.com/hibi89/EAI/actions/runs/44553051325) SUCCESS 1,184 PASS/1 SKIP, unsigned dev EXE selfcheck PASS, ZIP artifact ID `14544610849`.
+- `eai/desktop_state.py::_session_connection` now fails closed on preexisting empty/foreign/weakened/triggered session SQLite; new-only exclusive create and exact schema validation, no automatic owner original migration or writes. `tests/test_p2_desktop_workspace_recovery.py` has four actual SQLite tests: empty owner preservation, forged schema preservation, trigger/view/index rejection, concurrent 12-session save/restart. PASS both OS. JSON evidence `docs/evidence/EAI_V32_P2_08_SESSION_DB_FRESHNESS_20261120.json`.
+- **P1 source 60/60 provisional** (48 inherited semantic verification pending); P2 **8/14 =57.14% unweighted**, official weighted UNASSESSED. P2-08 physical Win11 cold/warm/RSS NOT_RUN, UX03/04 owner IME/DPI/privacy/perf NOT_RUN, P2-05 real rights-clean OOD + independent truth, P2-07 live signed GO/free, P2-10 independent audits NOT_RUN/HOLD. Real external/API/customer originals/paid/real Player/ACTIVE/main/Production/release HOLD.
+- Next `ㄱ`: fresh HEAD then find different meaningful bug or prepare approved owner local physical evidence, without certifying physical/independent gates from Windows Server synthetic CI.
+
 ## EAI V3.2 P2 handoff — source-verified settlement guard
 
 - Latest verified source `333db6fd4ee43bda9604d2a9839e4abd42f68ef9`, branch `feature/eai-v32-owner-rebuild-20261119`. Linux [44549410361](https://github.com/hibi89/EAI/actions/runs/44549410361) SUCCESS 1,164 PASS/17 SKIP; Windows Server [44549410413](https://github.com/hibi89/EAI/actions/runs/44549410413) SUCCESS 1,180 PASS/1 SKIP; unsigned development EXE bundle check PASS, artifact ZIP ID `14542510710`.
