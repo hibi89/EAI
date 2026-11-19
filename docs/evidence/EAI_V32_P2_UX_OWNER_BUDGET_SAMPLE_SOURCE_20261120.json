@@ -1,0 +1,88 @@
+{
+  "schema": "eai.v32.p2.evidence.v1",
+  "date_kst": "2026-11-20",
+  "repository": "hibi89/EAI",
+  "branch": "feature/eai-v32-owner-rebuild-20261119",
+  "prior_docs_head": "295763fced9111e1e3036dea280e440b7706ba5b",
+  "functional_sha": "b657fa1de5d9c58e69e72d8d74391609b3452fcb",
+  "scope": [
+    "EAI-V32-P2-UX01",
+    "EAI-V32-P2-UX02"
+  ],
+  "acceptance": "PREVIOUSLY_ACCEPTED_GROUPS_RETAINED_NO_NEW_WHOLE_GATE",
+  "commits": [
+    "52ee757655d4203c990f0f1378dd2d6ea14a7c5d",
+    "af5c09036c6fef4adf0bf5c272bf53b7e77cd721",
+    "9ef944afc23fe98de7dd31904f9b87dbb3ef92a7",
+    "b657fa1de5d9c58e69e72d8d74391609b3452fcb"
+  ],
+  "defects": [
+    {
+      "kind": "OWNER_ARCHITECT_BUDGET_REPLAY",
+      "path": "eai/desktop_bridge.py",
+      "fix": "carry exact bounded max_expansions into reviewed Architect report, recheck using same budget, reject mutated displayed comparison/truth/evidence data"
+    },
+    {
+      "kind": "PRACTICE_EVIDENCE_INHERITANCE",
+      "path": "eai/desktop_app.py",
+      "fix": "detach bundled example AXNODE source on owner new/edit/open draft, retain deliberate practice reopen"
+    }
+  ],
+  "new_tests": [
+    "test_v32_owner_search_budget_and_displayed_tradeoffs_are_revalidated",
+    "test_v32_new_owner_goal_never_inherits_practice_axnode_library"
+  ],
+  "checks": {
+    "linux": {
+      "run_id": 44571052800,
+      "sha": "b657fa1de5d9c58e69e72d8d74391609b3452fcb",
+      "conclusion": "SUCCESS",
+      "total": 1198,
+      "pass": 1177,
+      "skip": 21,
+      "fail": 0,
+      "focused_tk_xvfb_pass": 36,
+      "ruff": "PASS",
+      "mypy_source_files": 237
+    },
+    "windows_server": {
+      "run_id": 44571052880,
+      "sha": "b657fa1de5d9c58e69e72d8d74391609b3452fcb",
+      "conclusion": "SUCCESS",
+      "total": 1198,
+      "pass": 1197,
+      "skip": 1,
+      "fail": 0,
+      "focused_native_tk_pass": 42,
+      "focused_native_focus_skip": 1,
+      "unsigned_exe_build": "PASS",
+      "unsigned_bundle_imports": "PASS",
+      "artifact_zip_id": 14553688082,
+      "artifact_zip_sha256": "d92ba7b2b6069a99c8d15125f4a387947bcf31ab976b09afd2d339bc7ba5cd13",
+      "bare_exe_sha256": "NOT_RETRIEVED",
+      "owner_windows_11": "NOT_RUN"
+    },
+    "prior_mypy_failure": {
+      "run_id": 44570884948,
+      "source_sha": "9ef944afc23fe98de7dd31904f9b87dbb3ef92a7",
+      "result": "FAIL",
+      "reason": "2 test-only Optional mypy errors",
+      "fixed_in": "b657fa1de5d9c58e69e72d8d74391609b3452fcb"
+    }
+  },
+  "p1": "60/60_PROVISIONAL",
+  "p2": "8/14_ACCEPTED_UNWEIGHTED",
+  "weighted_implementation": "UNASSESSED",
+  "weighted_verification": "UNASSESSED",
+  "hold": [
+    "REAL_OOD_OWNER_RIGHTS_CLEAN",
+    "INDEPENDENT_ORACLE",
+    "REAL_HYDROGEN_OWNER_SIGNED_FREE_GO",
+    "OWNER_WIN11_GUI_IME_DPI_RSS",
+    "INDEPENDENT_TECH_SECURITY_UX",
+    "COMMERCIAL_RELEASE"
+  ],
+  "customer_original_writes": 0,
+  "actual_external_provider_requests": 0,
+  "real_player_executions": 0
+}
