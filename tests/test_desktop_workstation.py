@@ -115,6 +115,29 @@ class WorkstationContractTests(unittest.TestCase):
         w.receipt.write_text(json.dumps(data), encoding="utf-8")
         self.assertEqual(self.bridge.verify_journey(w.receipt)["status"], "RECEIPT_CONTRACT_REJECTED")
 
+    def test_v32_private_library_creation_and_node_import_do_not_mutate_original(self):
+        self.assertEqual(self.bridge.create_fresh_private_library()["status"], "HOLD_PRIVATE_LIBRARY_CONSENT")
+        self.assertFalse((self.root / "libraries").exists())
+        w = self.fixture()
+        src = next(path for path in (w.library / "nodes").glob("*.axnode")
+                   if not json.loads(path.read_text(encoding="utf-8"))["parent_hashes"])
+        before = hashlib.sha256(src.read_bytes()).hexdigest()
+        res = self.bridge.create_fresh_private_library(owner_approved=True)
+        self.assertTrue(res["created"])
+        self.assertEqual(res["node_count"], 0)
+        self.assertEqual(res["external_actions"], 0)
+        with closing(sqlite3.connect(res["path"] / "axnodes.sqlite")) as db:
+            self.assertEqual(db.execute("PRAGMA integrity_check").fetchone(), ("ok",))
+        self.assertEqual(self.bridge.import_private_candidate(res["path"], src)["status"],
+                         "HOLD_PRIVATE_IMPORT_CONSENT")
+        imported = self.bridge.import_private_candidate(res["path"], src, owner_approved=True)
+        self.assertEqual(imported["node_count"], 1)
+        self.assertEqual(imported["authority"], "DRAFT_OR_CANDIDATE_ONLY_NO_ACTIVE")
+        self.assertEqual(hashlib.sha256(src.read_bytes()).hexdigest(), before)
+        with self.assertRaises(ValueError):
+            self.bridge.import_private_candidate(w.library, src, owner_approved=True)
+        self.assertEqual(self.bridge.axnode_catalog(res["path"])["shown"], 1)
+
     def test_v32_discovery_only_reports_real_local_registry_and_evidence(self):
         plain = self.bridge.make_problem_draft("아무 제한 없이 모든 것을 자동화해줘")
         result = self.bridge.discover_goal_capabilities(plain)
@@ -228,6 +251,15 @@ class NativeWorkstationTests(unittest.TestCase):
         self.assertEqual(self.app.draft_review["status"], "REVIEW_REQUIRED")
         self.assertIn("NO_OBJECTIVES", self.app.draft_review["missing"])
         self.assertFalse((self.bridge.state_root / "drafts").exists())
+
+    def test_v32_gui_consent_creates_only_fresh_private_library(self):
+        with patch("eai.desktop_app.messagebox.askyesno", return_value=True):
+            self.app.create_library()
+        self.wait()
+        self.assertEqual(self.app.page, "atlas")
+        self.assertTrue(self.app.library.is_dir())
+        self.assertEqual(self.app.results["atlas"][1]["status"], "PRIVATE_EMPTY_LIBRARY_CREATED")
+        self.assertEqual(self.bridge.axnode_catalog(self.app.library)["shown"], 0)
 
     def test_v32_discovery_button_runs_local_preview_only(self):
         self.app.fill_command("새로운 서비스 구현 방법을 알려줘")
