@@ -115,6 +115,25 @@ class WorkstationContractTests(unittest.TestCase):
         w.receipt.write_text(json.dumps(data), encoding="utf-8")
         self.assertEqual(self.bridge.verify_journey(w.receipt)["status"], "RECEIPT_CONTRACT_REJECTED")
 
+    def test_v32_guided_draft_review_is_honest_and_never_grants_write(self):
+        raw = self.bridge.make_problem_draft("인력 일정을 분석하고 대안을 비교해줘")
+        review = self.bridge.draft_review(raw)
+        self.assertEqual(review["status"], "REVIEW_REQUIRED")
+        self.assertEqual(review["permission_scope"], ["pure"])
+        self.assertEqual(set(review["missing"]), {
+            "NO_EVIDENCE_REFS", "NO_OBJECTIVES", "ORACLE_NOT_DEFINED", "NO_EXPLICIT_CONSTRAINTS"})
+        self.assertFalse(review["truth_verified"])
+        self.assertEqual(review["external_actions"], 0)
+        self.assertFalse((self.root / "drafts").exists())
+        ready = dict(raw, oracle="owner_defined_oracle", state_refs=["local.evidence.1"],
+                     objectives=["누락 일정이 없는지 검사"], hard_constraints=["기간 내 변경 불가"])
+        self.assertEqual(self.bridge.draft_review(ready)["status"], "FORM_COMPLETE_UNVERIFIED")
+        self.assertFalse(self.bridge.draft_review(ready)["truth_verified"])
+        with self.assertRaises(ValueError):
+            self.bridge.draft_review(dict(raw, permissions=["pure", "write.original"]))
+        with self.assertRaises(ValueError):
+            self.bridge.draft_review(dict(raw, state_refs=["/tmp/secret.txt"]))
+
     def test_journal_retention_settings_concurrency_and_exclusive_draft(self):
         state = self.bridge.state
         with ThreadPoolExecutor(3) as pool:
@@ -179,6 +198,42 @@ class NativeWorkstationTests(unittest.TestCase):
         self.assertIsNone(self.app.problem)
         self.assertFalse((self.bridge.state_root / "drafts").exists())
         self.assertIsNone(self.app.review)
+
+    def test_v32_edited_problem_preview_keeps_missing_evidence_explicit(self):
+        self.app.fill_command("제약조건과 근거를 비교해줘")
+        self.app.new_draft()
+        self.assertEqual(self.app.page, "architect")
+        self.assertEqual(self.app.draft_review["status"], "REVIEW_REQUIRED")
+        self.assertIn("NO_OBJECTIVES", self.app.draft_review["missing"])
+        self.assertFalse((self.bridge.state_root / "drafts").exists())
+
+    def test_v32_guided_editor_applies_owner_oracle_and_safe_read_scope(self):
+        from tkinter import ttk
+        from eai.desktop_widgets import edit_problem
+        proposal = self.bridge.make_problem_draft("합성 작업 최적화")
+        captured = []
+        dialog = edit_problem(self.root, proposal, captured.append)
+        body = dialog.winfo_children()[0]
+        notebook = next(child for child in body.winfo_children() if isinstance(child, ttk.Notebook))
+        evidence = dialog.nametowidget(notebook.tabs()[1])
+        objectives = evidence.grid_slaves(row=0, column=1)[0]
+        oracle = evidence.grid_slaves(row=1, column=1)[0]
+        refs = evidence.grid_slaves(row=2, column=1)[0]
+        objectives.insert("1.0", "지표를 검증한다")
+        oracle.delete(0, "end")
+        oracle.insert(0, "owner_defined_oracle")
+        refs.insert("1.0", "synthetic.local.1")
+        local_read = evidence.grid_slaves(row=5, column=1)[0]
+        local_read.invoke()
+        apply_button = next(child for child in body.winfo_children()[-1].winfo_children()
+                            if isinstance(child, tk.Button) and "적용" in child.cget("text"))
+        apply_button.invoke()
+        self.assertEqual(len(captured), 1)
+        self.assertEqual(captured[0]["oracle"], "owner_defined_oracle")
+        self.assertEqual(captured[0]["objectives"], ["지표를 검증한다"])
+        self.assertEqual(captured[0]["state_refs"], ["synthetic.local.1"])
+        self.assertEqual(captured[0]["permissions"], ["pure", "local.read"])
+        self.assertFalse((self.bridge.state_root / "drafts").exists())
 
     def test_seven_pages_composer_resize_and_keyboard(self):
         layouts = (
