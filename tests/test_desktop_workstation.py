@@ -241,6 +241,55 @@ class WorkstationContractTests(unittest.TestCase):
         self.assertFalse(held["preview_only"])
         self.assertFalse((self.root / "drafts").exists())
 
+    def test_v32_owner_search_budget_and_displayed_tradeoffs_are_revalidated(self):
+        """A Player review must not silently widen the Architect owner budget."""
+        w = self.fixture()
+        source = json.loads(w.problem.read_text(encoding="utf-8"))
+        source.update(goal="원래 탐색 상한을 보존하는 계획 검토", risk="LOW",
+                      oracle="owner.local.oracle", state_refs=["synthetic.local.1"],
+                      hard_constraints=["forbid:unsafe.operation"],
+                      objectives=["계획 출처와 안내된 대안 검토"],
+                      permissions=["pure", "local.read"])
+        report = self.bridge.architect_reviewed_goal(
+            source, w.library, owner_reviewed=True, max_expansions=2)
+        self.assertEqual(report["status"], "TWO_PLANS_ADVISORY_UNVERIFIED")
+        self.assertEqual(report["search_budget_expansions"], 2)
+        selected = next(iter(report["plan_specs"]))
+        original = DesktopBridge.architect_reviewed_goal
+        observed = []
+
+        def track(*args, **kwargs):
+            observed.append(kwargs.get("max_expansions"))
+            return original(*args, **kwargs)
+
+        with patch.object(DesktopBridge, "architect_reviewed_goal",
+                          side_effect=track):
+            policy = self.bridge.inspect_reviewed_selection(
+                source, report, selected, w.library)
+        self.assertEqual(observed, [2])
+        self.assertEqual(policy["status"], "PURE_SYNTHETIC_PREVIEW_ONLY")
+        self.assertFalse(policy["can_execute_real_actions"])
+
+        misleading = dict(report, comparison=[
+            dict(report["comparison"][0], tradeoffs=["FORGED_RISK_FREE"]),
+            *report["comparison"][1:],
+        ])
+        held = self.bridge.inspect_reviewed_selection(
+            source, misleading, selected, w.library)
+        self.assertEqual(held["status"], "HOLD_PLAN_CHANGED")
+        self.assertEqual(held["reasons"], ["ARCHITECT_OR_SOURCE_CHANGED"])
+        for forged in (
+            dict(report, truth_status="VERIFIED"),
+            dict(report, evidence_review_required=False),
+            dict(report, search_budget_expansions=False),
+            dict(report, search_budget_expansions=9),
+            dict(report, search_budget_expansions="2"),
+        ):
+            with self.subTest(budget=forged.get("search_budget_expansions"),
+                              truth=forged.get("truth_status")):
+                self.assertEqual(self.bridge.inspect_reviewed_selection(
+                    source, forged, selected, w.library)["status"], "HOLD_PLAN_CHANGED")
+
     def test_v32_pure_player_replay_boundaries_cancel_and_no_consent(self):
         w = self.fixture()
         source = json.loads(w.problem.read_text(encoding="utf-8"))

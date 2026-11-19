@@ -220,8 +220,11 @@ class DesktopBridge:
         Player, use cloud, save an original or mark semantic evidence verified.
         """
         problem = ProblemSpec.validate(raw)
+        if type(max_expansions) is not int or not 1 <= max_expansions <= 8:
+            raise ValueError("invalid bounded search budget")
         digest = problem.digest()
         base = {"kind": "REVIEWED_GOAL_ARCHITECT", "problem_sha256": digest,
+                "search_budget_expansions": max_expansions,
                 "execution": "NOT_EXECUTED", "model": "LOCAL_CPU_ONLY",
                 "independent_verification": "NOT_ESTABLISHED", "can_execute": False,
                 "plan_specs": {}, "alternatives": [], "external_actions": 0}
@@ -340,17 +343,29 @@ class DesktopBridge:
                 design.get("problem_sha256") != digest or
                 type(selected_id) is not str or
                 type(design.get("plan_specs")) is not dict or
-                selected_id not in design["plan_specs"]):
+                selected_id not in design["plan_specs"] or
+                type(design.get("search_budget_expansions")) is not int or
+                not 1 <= design["search_budget_expansions"] <= 8):
             return dict(base, reasons=["STALE_OR_UNREVIEWED_DESIGN"])
         if axnode_root is None or "local.read" not in problem.permissions:
             return dict(base, reasons=["LOCAL_SOURCE_READ_NOT_AUTHORIZED"])
         # Re-read every candidate hash/contract from the *selected* library.
         fresh = DesktopBridge.architect_reviewed_goal(
-            problem_raw, axnode_root, owner_reviewed=True)
+            problem_raw, axnode_root, owner_reviewed=True,
+            max_expansions=design["search_budget_expansions"])
+        # The choice was made from displayed tradeoffs and search constraints.
+        # Re-pinning only plan bytes would accept a misleading edited preview.
+        advisory_fields = (
+            "comparison", "truth_status", "evidence_review_required",
+            "blockers", "engine_status", "uncertainty", "expansions",
+            "search_budget_expansions",
+        )
         if (fresh.get("status") != "TWO_PLANS_ADVISORY_UNVERIFIED" or
                 fresh.get("plan_specs") != design.get("plan_specs") or
                 fresh.get("source_sets") != design.get("source_sets") or
-                fresh.get("alternatives") != design.get("alternatives")):
+                fresh.get("alternatives") != design.get("alternatives") or
+                any(fresh.get(field) != design.get(field)
+                    for field in advisory_fields)):
             return dict(base, reasons=["ARCHITECT_OR_SOURCE_CHANGED"])
         from .policy_gate import evaluate_problem_review_policy, plan_digest
         selected = PlanSpec.validate(fresh["plan_specs"][selected_id])
