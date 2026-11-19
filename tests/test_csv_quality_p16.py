@@ -125,37 +125,45 @@ class CsvQualityTests(unittest.TestCase):
     def test_extra_command_and_float_bounds_denied(self):
         raw=specification()
         raw['write_to']='data.csv'
-        with self.assertRaises(ValueError):self.run_goal(raw)
+        with self.assertRaises(ValueError):
+            self.run_goal(raw)
         raw=specification()
         raw['numeric_rules'][0]['min']=0.0
-        with self.assertRaises(ValueError):self.run_goal(raw)
+        with self.assertRaises(ValueError):
+            self.run_goal(raw)
 
     def test_unknown_column_and_duplicate_range_denied(self):
         raw=specification()
         raw['numeric_rules'][0]['column']='missing'
-        with self.assertRaisesRegex(ValueError,'unknown column'):self.run_goal(raw)
+        with self.assertRaisesRegex(ValueError,'unknown column'):
+            self.run_goal(raw)
         raw=specification()
         raw['numeric_rules'].append(deepcopy(raw['numeric_rules'][0]))
-        with self.assertRaisesRegex(ValueError,'duplicate numeric'):self.run_goal(raw)
+        with self.assertRaisesRegex(ValueError,'duplicate numeric'):
+            self.run_goal(raw)
 
     def test_reversed_range_denied(self):
         raw=specification()
         raw['numeric_rules'][0]['min']='1001'
-        with self.assertRaisesRegex(ValueError,'minimum exceeds'):self.run_goal(raw)
+        with self.assertRaisesRegex(ValueError,'minimum exceeds'):
+            self.run_goal(raw)
 
     def test_unique_by_must_be_required(self):
         raw=specification()
         raw['required']=['amount']
-        with self.assertRaisesRegex(ValueError,'also be required'):self.run_goal(raw)
+        with self.assertRaisesRegex(ValueError,'also be required'):
+            self.run_goal(raw)
 
     def test_duplicate_or_unknown_csv_headers_denied(self):
         for content in ('rowid,rowid,amount\nA,A,10\n',
                         'rowid,ROWID,amount\nA,A,10\n',
                         'rowid,amount,amount\nA,10,10\n'):
             self.source.write_text(content)
-            with self.subTest(content=content),self.assertRaises(ValueError):self.run_goal()
+            with self.subTest(content=content),self.assertRaises(ValueError):
+                self.run_goal()
         self.source.write_text('other,amount\nA,10\n')
-        with self.assertRaisesRegex(ValueError,'unknown column'):self.run_goal()
+        with self.assertRaisesRegex(ValueError,'unknown column'):
+            self.run_goal()
 
     def test_wrong_field_count_and_bad_csv_rejected(self):
         for text in ('rowid,amount,category\nA,10\n',
@@ -167,30 +175,37 @@ class CsvQualityTests(unittest.TestCase):
 
     def test_bounded_max_rows_and_field_length(self):
         self.source.write_text('rowid,amount,category\n'+'A,1,ok\n'*20001)
-        with self.assertRaisesRegex(ValueError,'20000'):self.run_goal()
+        with self.assertRaisesRegex(ValueError,'20000'):
+            self.run_goal()
         self.source.write_text('rowid,amount,category\nA,1,'+'z'*4097+'\n')
-        with self.assertRaises((ValueError,__import__('csv').Error)):self.run_goal()
+        with self.assertRaises((ValueError,__import__('csv').Error)):
+            self.run_goal()
 
     def test_bounded_max_file_size(self):
         self.source.write_bytes(b'a'*(5*1024*1024+1))
-        with self.assertRaisesRegex(ValueError,'5MiB'):self.run_goal()
+        with self.assertRaisesRegex(ValueError,'5MiB'):
+            self.run_goal()
 
     def test_parent_and_absolute_source_paths_denied(self):
         for invalid in ('../private.csv','/tmp/private.csv','C:\\secret.csv'):
             raw=specification()
             raw['source']=invalid
-            with self.subTest(path=invalid),self.assertRaises(ValueError):self.run_goal(raw)
+            with self.subTest(path=invalid),self.assertRaises(ValueError):
+                self.run_goal(raw)
 
     def test_symlink_escape_denied(self):
         outside=self.root.parent/(self.root.name+'.external.csv')
         outside.write_text(GOOD_CSV)
         try:
             link=self.root/'link.csv'
-            try:link.symlink_to(outside)
-            except (OSError,NotImplementedError):self.skipTest('symlinks not supported')
+            try:
+                link.symlink_to(outside)
+            except (OSError,NotImplementedError):
+                self.skipTest('symlinks not supported')
             raw=specification()
             raw['source']='link.csv'
-            with self.assertRaisesRegex(ValueError,'escapes'):self.run_goal(raw)
+            with self.assertRaisesRegex(ValueError,'escapes'):
+                self.run_goal(raw)
         finally:
             outside.unlink(missing_ok=True)
 
@@ -204,7 +219,8 @@ class CsvQualityTests(unittest.TestCase):
                 self.source.write_text(self.source.read_text()+' ')
             return result
         with patch('eai.csv_quality.source_snapshot',side_effect=tamper):
-            with self.assertRaisesRegex(ValueError,'source changed'):self.run_goal()
+            with self.assertRaisesRegex(ValueError,'source changed'):
+                self.run_goal()
 
     def test_independent_guard_rejects_source_after_solver(self):
         goal=validate_quality_goal(specification(),self.spec)
@@ -235,7 +251,8 @@ class CsvQualityTests(unittest.TestCase):
             result['counts']['DUPLICATE_KEY']=0
             return result
         with patch('eai.goal_dispatch.execute_quality_goal',side_effect=forge):
-            with self.assertRaisesRegex(ValueError,'quality receipt'):self.run_goal()
+            with self.assertRaisesRegex(ValueError,'quality receipt'):
+                self.run_goal()
 
     def test_batch_quality_conflict_is_review_not_success(self):
         manifest=build_goal_manifest('batch',self.root,['quality=quality.json'])

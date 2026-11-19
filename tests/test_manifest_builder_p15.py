@@ -135,8 +135,10 @@ class ManifestBuilderTests(unittest.TestCase):
         outside.write_text(json.dumps(choice()))
         try:
             link=self.dir/'link.json'
-            try:link.symlink_to(outside)
-            except (OSError,NotImplementedError):self.skipTest('Symlinks restricted by OS')
+            try:
+                link.symlink_to(outside)
+            except (OSError,NotImplementedError):
+                self.skipTest('Symlinks restricted by OS')
             with self.assertRaisesRegex(ValueError,'escapes'):
                 build_goal_manifest('batch',self.dir,['x=link.json'])
         finally:

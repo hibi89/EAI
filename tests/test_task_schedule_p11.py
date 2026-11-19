@@ -53,7 +53,8 @@ class ScheduleTaskTests(unittest.TestCase):
         self.assertEqual(out['verification']['status'],'PASS')
 
     def test_missed_deadline_is_unavailable_with_diagnostic(self):
-        raw=goal_fixture();raw['deadline_hours']='9.5'
+        raw=goal_fixture()
+        raw['deadline_hours']='9.5'
         out=self.run_goal(raw)
         self.assertEqual(out['status'],'UNAVAILABLE')
         self.assertEqual(out['result']['deadline_margin_hours'],'-0.5')
@@ -102,58 +103,78 @@ class ScheduleTaskTests(unittest.TestCase):
 
     def test_unknown_self_and_cyclic_dependency_denied(self):
         for req in ('no','extract'):
-            raw=goal_fixture();raw['tasks'][0]['requires']=[req]
-            with self.subTest(req=req),self.assertRaises(ValueError):self.run_goal(raw)
+            raw=goal_fixture()
+            raw['tasks'][0]['requires']=[req]
+            with self.subTest(req=req),self.assertRaises(ValueError):
+                self.run_goal(raw)
         raw=goal_fixture()
         raw['tasks'][0]['requires']=['models']
-        with self.assertRaisesRegex(ValueError,'cyclic'):self.run_goal(raw)
+        with self.assertRaisesRegex(ValueError,'cyclic'):
+            self.run_goal(raw)
 
     def test_duplicates_denied(self):
         raw=goal_fixture()
         raw['tasks'][0]['requires']=['ship','ship']
-        with self.assertRaises(ValueError):self.run_goal(raw)
+        with self.assertRaises(ValueError):
+            self.run_goal(raw)
         raw=goal_fixture()
         raw['tasks'][1]['id']='extract'
-        with self.assertRaises(ValueError):self.run_goal(raw)
+        with self.assertRaises(ValueError):
+            self.run_goal(raw)
 
     def test_untrusted_extra_actions_denied(self):
-        raw=goal_fixture();raw['execute']='shell'
-        with self.assertRaises(ValueError):self.run_goal(raw)
-        raw=goal_fixture();raw['tasks'][0]['write']='yes'
-        with self.assertRaises(ValueError):self.run_goal(raw)
+        raw=goal_fixture()
+        raw['execute']='shell'
+        with self.assertRaises(ValueError):
+            self.run_goal(raw)
+        raw=goal_fixture()
+        raw['tasks'][0]['write']='yes'
+        with self.assertRaises(ValueError):
+            self.run_goal(raw)
 
     def test_float_negative_and_boolean_denied(self):
         for invalid in (2.0,-1,True):
-            raw=goal_fixture();raw['tasks'][0]['hours']=invalid
-            with self.subTest(value=invalid),self.assertRaises(ValueError):self.run_goal(raw)
-        raw=goal_fixture();raw['deadline_hours']='-0.1'
-        with self.assertRaises(ValueError):self.run_goal(raw)
+            raw=goal_fixture()
+            raw['tasks'][0]['hours']=invalid
+            with self.subTest(value=invalid),self.assertRaises(ValueError):
+                self.run_goal(raw)
+        raw=goal_fixture()
+        raw['deadline_hours']='-0.1'
+        with self.assertRaises(ValueError):
+            self.run_goal(raw)
 
     def test_oversized_task_list_denied(self):
         raw=goal_fixture()
         raw['tasks']=[{'id':'t'+str(i),'hours':'1','requires':[]} for i in range(25)]
-        with self.assertRaises(ValueError):self.run_goal(raw)
+        with self.assertRaises(ValueError):
+            self.run_goal(raw)
 
     def test_forced_fake_early_time_rejected(self):
         goal=validate_schedule_goal(goal_fixture())
         out=execute_schedule_goal(goal)
         next(x for x in out['tasks'] if x['id']=='ship')['earliest_start']='2'
-        with self.assertRaisesRegex(ValueError,'영수증'):verify_goal_receipt('schedule_tasks',goal,out)
+        with self.assertRaisesRegex(ValueError,'영수증'):
+            verify_goal_receipt('schedule_tasks',goal,out)
 
     def test_forged_critical_path_rejected(self):
         goal=validate_schedule_goal(goal_fixture())
         out=execute_schedule_goal(goal)
         out['critical_path']=['extract','docs','ship']
-        with self.assertRaisesRegex(ValueError,'영수증'):verify_goal_receipt('schedule_tasks',goal,out)
+        with self.assertRaisesRegex(ValueError,'영수증'):
+            verify_goal_receipt('schedule_tasks',goal,out)
 
     def test_forged_slack_and_deadline_rejected(self):
         goal=validate_schedule_goal(goal_fixture())
         for key,value in [('deadline_margin_hours','9'),('minimum_finish_hours','2')]:
             with self.subTest(key=key):
-                out=execute_schedule_goal(goal);out[key]=value
-                with self.assertRaisesRegex(ValueError,'영수증'):verify_goal_receipt('schedule_tasks',goal,out)
-        out=execute_schedule_goal(goal);out['tasks'][0]['slack']='-1'
-        with self.assertRaisesRegex(ValueError,'영수증'):verify_goal_receipt('schedule_tasks',goal,out)
+                out=execute_schedule_goal(goal)
+                out[key]=value
+                with self.assertRaisesRegex(ValueError,'영수증'):
+                    verify_goal_receipt('schedule_tasks',goal,out)
+        out=execute_schedule_goal(goal)
+        out['tasks'][0]['slack']='-1'
+        with self.assertRaisesRegex(ValueError,'영수증'):
+            verify_goal_receipt('schedule_tasks',goal,out)
 
     def test_original_file_preserved_no_network_or_model(self):
         self.path.write_text(json.dumps(goal_fixture()),encoding='utf-8')
@@ -166,7 +187,8 @@ class ScheduleTaskTests(unittest.TestCase):
     def test_cli_json_and_unavailable_status(self):
         root=Path(__file__).resolve().parent.parent
         for limit, expected_exit, expected_status in [('10',0,'DECIDED'),('9',3,'UNAVAILABLE')]:
-            raw=goal_fixture();raw['deadline_hours']=limit
+            raw=goal_fixture()
+            raw['deadline_hours']=limit
             self.path.write_text(json.dumps(raw),encoding='utf-8')
             process=subprocess.run([sys.executable,'-m','eai','solve-goal',str(self.path),'--json'],
                                    cwd=root,capture_output=True,text=True,timeout=20)

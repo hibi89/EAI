@@ -71,39 +71,65 @@ class TaskPortfolioTests(unittest.TestCase):
         self.assertEqual(r['verification']['diagnostics']['type'],'NO_FEASIBLE_POSITIVE_PLAN')
     def test_zero_valued_work_not_recommended(self):
         raw=fixture()
-        for t in raw['tasks']:t['value']='0'
+        for t in raw['tasks']:
+            t['value']='0'
         self.assertEqual(self.run_goal(raw)['status'],'UNAVAILABLE')
     def test_invalid_and_cyclic_dependencies(self):
         for req in ('missing','A'):
-            raw=fixture();raw['tasks'][0]['requires']=[req]
-            with self.subTest(req=req),self.assertRaises(ValueError):self.run_goal(raw)
-        raw=fixture();raw['tasks'][0]['requires']=['B'];raw['tasks'][1]['requires']=['A']
-        with self.assertRaisesRegex(ValueError,'cyclic'):self.run_goal(raw)
+            raw=fixture()
+            raw['tasks'][0]['requires']=[req]
+            with self.subTest(req=req),self.assertRaises(ValueError):
+                self.run_goal(raw)
+        raw=fixture()
+        raw['tasks'][0]['requires']=['B']
+        raw['tasks'][1]['requires']=['A']
+        with self.assertRaisesRegex(ValueError,'cyclic'):
+            self.run_goal(raw)
     def test_unknown_fields_or_float_denied(self):
-        raw=fixture();raw['exec']='shell'
-        with self.assertRaises(ValueError):self.run_goal(raw)
-        raw=fixture();raw['tasks'][0]['cost']=3.2
-        with self.assertRaises(ValueError):self.run_goal(raw)
+        raw=fixture()
+        raw['exec']='shell'
+        with self.assertRaises(ValueError):
+            self.run_goal(raw)
+        raw=fixture()
+        raw['tasks'][0]['cost']=3.2
+        with self.assertRaises(ValueError):
+            self.run_goal(raw)
     def test_more_than_twelve_denied(self):
         raw=fixture()
         raw['tasks']=[{'id':'t'+str(i),'hours':'1','cost':'1','value':'1','requires':[]}
                       for i in range(13)]
-        with self.assertRaises(ValueError):self.run_goal(raw)
+        with self.assertRaises(ValueError):
+            self.run_goal(raw)
     def test_forged_winner_denied(self):
-        g=validate_task_goal(fixture());r=execute_task_goal(g);r['selected']=['A']
-        with self.assertRaisesRegex(ValueError,'영수증'):verify_goal_receipt('plan_tasks',g,r)
+        g=validate_task_goal(fixture())
+        r=execute_task_goal(g)
+        r['selected']=['A']
+        with self.assertRaisesRegex(ValueError,'영수증'):
+            verify_goal_receipt('plan_tasks',g,r)
     def test_forged_best_value_denied(self):
-        g=validate_task_goal(fixture());r=execute_task_goal(g);r['best_value']='100'
-        with self.assertRaisesRegex(ValueError,'영수증'):verify_goal_receipt('plan_tasks',g,r)
+        g=validate_task_goal(fixture())
+        r=execute_task_goal(g)
+        r['best_value']='100'
+        with self.assertRaisesRegex(ValueError,'영수증'):
+            verify_goal_receipt('plan_tasks',g,r)
     def test_forged_resources_denied(self):
-        g=validate_task_goal(fixture());r=execute_task_goal(g);r['max_cost']='100'
-        with self.assertRaisesRegex(ValueError,'영수증'):verify_goal_receipt('plan_tasks',g,r)
+        g=validate_task_goal(fixture())
+        r=execute_task_goal(g)
+        r['max_cost']='100'
+        with self.assertRaisesRegex(ValueError,'영수증'):
+            verify_goal_receipt('plan_tasks',g,r)
     def test_forged_candidate_count_denied(self):
-        g=validate_task_goal(fixture());r=execute_task_goal(g);r['candidate_count']=100
-        with self.assertRaisesRegex(ValueError,'영수증'):verify_goal_receipt('plan_tasks',g,r)
+        g=validate_task_goal(fixture())
+        r=execute_task_goal(g)
+        r['candidate_count']=100
+        with self.assertRaisesRegex(ValueError,'영수증'):
+            verify_goal_receipt('plan_tasks',g,r)
     def test_forged_candidate_evidence_denied(self):
-        g=validate_task_goal(fixture());r=execute_task_goal(g);r['candidates'][0]['hours']='0'
-        with self.assertRaisesRegex(ValueError,'영수증'):verify_goal_receipt('plan_tasks',g,r)
+        g=validate_task_goal(fixture())
+        r=execute_task_goal(g)
+        r['candidates'][0]['hours']='0'
+        with self.assertRaisesRegex(ValueError,'영수증'):
+            verify_goal_receipt('plan_tasks',g,r)
     def test_original_bytes_preserved_no_network(self):
         self.path.write_text(json.dumps(fixture()),encoding='utf-8')
         before=self.path.read_bytes()

@@ -43,7 +43,8 @@ class CsvSchemaDriftTests(unittest.TestCase):
         self.spec.write_text(json.dumps(raw,ensure_ascii=False),encoding='utf-8')
 
     def run_goal(self,raw=None):
-        if raw is not None:self.write(raw)
+        if raw is not None:
+            self.write(raw)
         return execute_goal_document(self.spec)
 
     def test_synthetic_schema_change_and_guard(self):
@@ -145,15 +146,18 @@ class CsvSchemaDriftTests(unittest.TestCase):
         for source in ('base.csv','../private.csv','/tmp/private.csv','C:\\private.csv'):
             raw=drift_spec()
             raw['current']=source
-            with self.subTest(source=source),self.assertRaises(ValueError):self.run_goal(raw)
+            with self.subTest(source=source),self.assertRaises(ValueError):
+                self.run_goal(raw)
 
     def test_rejects_extra_actions_and_invalid_encoding(self):
         raw=drift_spec()
         raw['execute']='rm'
-        with self.assertRaises(ValueError):self.run_goal(raw)
+        with self.assertRaises(ValueError):
+            self.run_goal(raw)
         raw=drift_spec()
         raw['encoding']='latin-1'
-        with self.assertRaisesRegex(ValueError,'encoding'):self.run_goal(raw)
+        with self.assertRaisesRegex(ValueError,'encoding'):
+            self.run_goal(raw)
 
     def test_rejects_duplicate_or_invalid_headers(self):
         for source in ('id,id,status\nA,1,x\n',
@@ -161,7 +165,8 @@ class CsvSchemaDriftTests(unittest.TestCase):
                        'id,amount,\nA,1,x\n',
                        'id,amount,status,extra,STATUS\nA,1,x,y,z\n'):
             self.left.write_text(source)
-            with self.subTest(source=source),self.assertRaises(ValueError):self.run_goal()
+            with self.subTest(source=source),self.assertRaises(ValueError):
+                self.run_goal()
 
     def test_rejects_malformed_row_and_quoted_csv(self):
         for text in ('id,amount,status\nA,1\n',
@@ -173,22 +178,28 @@ class CsvSchemaDriftTests(unittest.TestCase):
 
     def test_enforces_max_rows_file_and_cell(self):
         self.left.write_text('id,amount,status\n'+'A,1,x\n'*20001)
-        with self.assertRaisesRegex(ValueError,'bound'):self.run_goal()
+        with self.assertRaisesRegex(ValueError,'bound'):
+            self.run_goal()
         self.left.write_text('id,amount,status\nA,1,'+'x'*4097+'\n')
-        with self.assertRaises((ValueError,__import__('csv').Error)):self.run_goal()
+        with self.assertRaises((ValueError,__import__('csv').Error)):
+            self.run_goal()
         self.left.write_bytes(b'x'*(5*1024*1024+1))
-        with self.assertRaisesRegex(ValueError,'5MiB'):self.run_goal()
+        with self.assertRaisesRegex(ValueError,'5MiB'):
+            self.run_goal()
 
     def test_symlink_escape_denied_if_supported(self):
         outside=self.root.parent/(self.root.name+'.outside.csv')
         outside.write_text(BASE)
         try:
             link=self.root/'link.csv'
-            try:link.symlink_to(outside)
-            except (OSError,NotImplementedError):self.skipTest('symlinks restricted')
+            try:
+                link.symlink_to(outside)
+            except (OSError,NotImplementedError):
+                self.skipTest('symlinks restricted')
             raw=drift_spec()
             raw['current']='link.csv'
-            with self.assertRaisesRegex(ValueError,'escapes'):self.run_goal(raw)
+            with self.assertRaisesRegex(ValueError,'escapes'):
+                self.run_goal(raw)
         finally:
             outside.unlink(missing_ok=True)
 
@@ -214,7 +225,8 @@ class CsvSchemaDriftTests(unittest.TestCase):
                 self.left.write_text(self.left.read_text()+' ')
             return raw
         with patch('eai.csv_schema_drift.source_snapshot',side_effect=mutate):
-            with self.assertRaisesRegex(ValueError,'input changed during scan'):self.run_goal()
+            with self.assertRaisesRegex(ValueError,'input changed during scan'):
+                self.run_goal()
 
     def test_independent_guard_detects_source_changed(self):
         goal=validate_drift_goal(drift_spec(),self.spec)
@@ -230,7 +242,8 @@ class CsvSchemaDriftTests(unittest.TestCase):
             result['changes']['added']=[]
             return result
         with patch('eai.goal_dispatch.execute_drift_goal',side_effect=fake):
-            with self.assertRaisesRegex(ValueError,'schema drift receipt'):self.run_goal()
+            with self.assertRaisesRegex(ValueError,'schema drift receipt'):
+                self.run_goal()
 
     def test_batch_conflict_requires_review(self):
         manifest=build_goal_manifest('batch',self.root,['drift=drift.json'])

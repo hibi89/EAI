@@ -140,8 +140,10 @@ class GoalBatchTests(unittest.TestCase):
         outside.write_text(json.dumps(sample_choice()))
         try:
             link=self.root/'link.json'
-            try:link.symlink_to(outside)
-            except (OSError,NotImplementedError):self.skipTest('symlink permission unavailable')
+            try:
+                link.symlink_to(outside)
+            except (OSError,NotImplementedError):
+                self.skipTest('symlink permission unavailable')
             items=deepcopy(self.entries)
             items[0]['goal']='link.json'
             items[0]['sha256']=hashlib.sha256(outside.read_bytes()).hexdigest()

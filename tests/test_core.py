@@ -143,7 +143,8 @@ class Tests(unittest.TestCase):
         self.assertIn('Qwen model release', answer.text)
 
     def test_invalid_question_no_record(self):
-        with self.assertRaises(ValueError): EAIRunner(self.store).ask('')
+        with self.assertRaises(ValueError):
+            EAIRunner(self.store).ask('')
         self.assertEqual(self.store.recent_turns(), [])
 
     def test_health_no_network_is_separate_cli(self):
@@ -154,7 +155,8 @@ class Tests(unittest.TestCase):
         self.assertEqual(local_base_url('http://127.0.0.1:11434'), 'http://127.0.0.1:11434')
         for invalid in ['https://127.0.0.1:11434', 'http://example.org:8080',
                         'http://user:pass@localhost:8080', 'http://localhost:8080/x']:
-            with self.assertRaises(ValueError): local_base_url(invalid)
+            with self.assertRaises(ValueError):
+                local_base_url(invalid)
 
     def test_fetch_json_denies_remote_and_ambiguous_urls_before_transport(self):
         invalid = (

@@ -73,13 +73,15 @@ class GoalRoutingTests(unittest.TestCase):
     def test_invalid_or_arbitrary_goal_kind_is_denied(self):
         invalid_kinds: tuple[object, ...] = ('shell.execute', 'arbitrary', None, [], 1)
         for kind in invalid_kinds:
-            raw=deepcopy(self.options);raw['kind']=kind
+            raw=deepcopy(self.options)
+            raw['kind']=kind
             self.write(raw)
             with self.subTest(kind=kind),self.assertRaises(ValueError):
                 execute_goal_document(self.path)
 
     def test_extra_parameters_must_not_be_ignored(self):
-        raw=deepcopy(self.options);raw['exec']='python evil.py'
+        raw=deepcopy(self.options)
+        raw['exec']='python evil.py'
         self.write(raw)
         with self.assertRaises(ValueError):
             execute_goal_document(self.path)
