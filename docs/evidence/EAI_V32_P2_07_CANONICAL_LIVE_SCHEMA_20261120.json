@@ -1,0 +1,68 @@
+{
+  "schema": "eai.p2.evidence.v1",
+  "date_kst": "2026-11-20",
+  "repository": "hibi89/EAI",
+  "branch": "feature/eai-v32-owner-rebuild-20261119",
+  "source_sha": "65f59413619d66130d414a92f46198f6d0710304",
+  "previous_head": "de4e6d20b5bca79b46e54e8785616b98432efb4b",
+  "commits": [
+    "6fbdc94bba98a9557c3586e7df6ef9f9a645f9d0",
+    "65f59413619d66130d414a92f46198f6d0710304"
+  ],
+  "gate": "EAI-P2-07",
+  "acceptance": "PARTIAL",
+  "findings": [
+    "pre-existing live-send SQLite only checked object/column names and could reopen weaker same-name table constraints",
+    "unapproved additional index was not included in existing sqlite_master object checks"
+  ],
+  "fix": [
+    "compare existing table sqlite_master.sql with exact factory-authored DDL",
+    "reject unexpected noninternal SQLite indexes/views/triggers before reservation"
+  ],
+  "regressions": [
+    "test_live_ledger_refuses_foreign_same_column_weak_schema",
+    "test_live_ledger_refuses_extra_index_before_external_reservation"
+  ],
+  "checks": {
+    "linux": {
+      "run_id": 44566481332,
+      "source_sha": "65f59413619d66130d414a92f46198f6d0710304",
+      "status": "SUCCESS",
+      "tests": 1196,
+      "pass": 1176,
+      "skip": 20,
+      "fail": 0,
+      "ruff": "PASS",
+      "mypy_source_files": 237,
+      "new_regressions": "PASS"
+    },
+    "windows_server": {
+      "run_id": 44566481255,
+      "source_sha": "65f59413619d66130d414a92f46198f6d0710304",
+      "status": "in_progress",
+      "conclusion": null,
+      "tests": null,
+      "skip": null,
+      "physical_owner_windows_11": "NOT_RUN"
+    },
+    "initial_insertion_failure": {
+      "run_id": 44566361956,
+      "source_sha": "6fbdc94bba98a9557c3586e7df6ef9f9a645f9d0",
+      "conclusion": "FAIL",
+      "repaired_in": "65f59413619d66130d414a92f46198f6d0710304"
+    }
+  },
+  "p1": "60/60 PROVISIONAL",
+  "p2": "8/14 ACCEPTED UNWEIGHTED",
+  "weighted_rates": "UNASSESSED",
+  "holds": [
+    "REAL_LIVE_HYDROGEN_GO",
+    "RIGHTS_CLEAN_REAL_OOD",
+    "OWNER_PHYSICAL_WIN11",
+    "INDEPENDENT_AUDITS",
+    "PRODUCTION",
+    "RELEASE"
+  ],
+  "external_calls": 0,
+  "customer_original_writes": 0
+}
