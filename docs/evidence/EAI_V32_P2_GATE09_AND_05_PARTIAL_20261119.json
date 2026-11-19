@@ -1,0 +1,91 @@
+{
+  "schema": "eai.p2.synthetic_evidence.v1",
+  "date_kst": "2026-11-19",
+  "repo": "hibi89/EAI",
+  "branch": "feature/eai-v32-owner-rebuild-20261119",
+  "functional_sha": "d0dd58839fa16c1e6cb2a27f1e0c93250b81c979",
+  "p2_09": {
+    "gate": "EAI-P2-09",
+    "disposition": "PASS_CLI_SYNTHETIC_CI",
+    "browser": "NOT_APPLICABLE_NO_BROWSER_FRONTEND",
+    "terminal_cli_privacy": {
+      "raw_exception_handlers_sanitized": 15,
+      "argparse_reflection": "BLOCKED",
+      "error_exit_code": 1,
+      "argparse_exit_code": 2
+    },
+    "modules": {
+      "test_p2_cli_private_errors": 5,
+      "test_goal_dispatch": 16,
+      "test_player_cli": 5,
+      "test_approved_run_p26": 12,
+      "test_csv_analysis": 10,
+      "test_quick_goal_p28": 15,
+      "test_offline_doctor_p13": 14,
+      "test_offline_journey": 31
+    },
+    "owner_windows11_keyboard_ime_dpi": "NOT_RUN"
+  },
+  "p2_05": {
+    "gate": "EAI-P2-05",
+    "disposition": "PARTIAL_PASS_SYNTHETIC_SCENARIO_TRANSFER",
+    "source_paths": [
+      "eai/synthetic_curriculum.py",
+      "eai/synthetic_scenario_transfer.py",
+      "eai/strategy_learner.py"
+    ],
+    "focused_tests": {
+      "test_strategy_research_ranker": 12
+    },
+    "scenario_types": [
+      "negative_signed_decimals",
+      "multiple_key_and_value_changes"
+    ],
+    "new_scenario_types_checked": 2,
+    "real_world_ood": "NOT_RUN",
+    "trusted_training": "HOLD",
+    "active_promotion": "HOLD",
+    "accepted": false
+  },
+  "checks": {
+    "linux": {
+      "run_id": 44506398664,
+      "status": "SUCCESS",
+      "total": 1163,
+      "pass": 1146,
+      "skip": 17,
+      "fail": 0,
+      "focused_gui_xvfb": 33
+    },
+    "windows": {
+      "run_id": 44506398646,
+      "status": "SUCCESS",
+      "total": 1163,
+      "pass": 1162,
+      "skip": 1,
+      "fail": 0,
+      "unsigned_exe_selfcheck": "PASS_UNSIGNED_BUNDLE_IMPORTS",
+      "artifact_id": 14519852683,
+      "artifact_digest": "sha256:81bac2fbc6b1412230fbce25c76b52c22f19c127c0e8679f0f8fc2f01fcd74ca"
+    }
+  },
+  "accepted": [
+    "EAI-P2-02",
+    "EAI-P2-03",
+    "EAI-P2-04",
+    "EAI-P2-06",
+    "EAI-P2-09",
+    "EAI-V32-P2-UX02"
+  ],
+  "p2_total": 14,
+  "unweighted_p2_percent": 42.86,
+  "p1_source_candidates": {
+    "complete": 60,
+    "total": 60,
+    "provisional": true
+  },
+  "official_implementation_rate": "UNASSESSED",
+  "official_verification_rate": "UNASSESSED",
+  "independent_audit": "NOT_RUN",
+  "release": "HOLD"
+}
