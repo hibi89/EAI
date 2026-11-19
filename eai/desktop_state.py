@@ -11,7 +11,8 @@ from .local_files import local_path
 
 
 PAGES = ("home", "architect", "atlas", "player", "verifier", "history", "settings")
-OPERATIONS = ("command", "example", "draft_open", "draft_save", "design", "catalog",
+OPERATIONS = ("command", "example", "draft_open", "draft_save", "discover",
+              "create_library", "import_candidate", "design", "catalog",
               "node", "plan", "simulate", "verify", "settings", "journey")
 OUTCOMES = {
     "OK", "ERROR", "DENIED", "UNAVAILABLE", "INPUT_INVALID", "FILE_UNAVAILABLE",
@@ -24,6 +25,12 @@ OUTCOMES = {
     "NODE_DIGEST_MATCH", "PURE_SYNTHETIC_PREVIEW_ONLY", "PURE_SYNTHETIC_INTERPRETED_UNVERIFIED",
     "PURE_SYNTHETIC_CANCELLED_NOT_EXECUTED", "LOCAL_JOURNEY_DIGEST_INTEGRITY_UNVERIFIED",
     "RECEIPT_DIGEST_MISMATCH", "RECEIPT_CONTRACT_REJECTED", "SETTINGS_SAVED",
+    "TYPED_DOMAIN_MATCH_UNVERIFIED", "NO_TYPED_CPU_MATCH",
+    "PRIVATE_EMPTY_LIBRARY_CREATED", "PRIVATE_CANDIDATE_IMPORTED_UNVERIFIED",
+    "HOLD_PRIVATE_LIBRARY_CONSENT", "HOLD_PRIVATE_IMPORT_CONSENT",
+    "TWO_PLANS_ADVISORY_UNVERIFIED", "HOLD_OWNER_REVIEW_REQUIRED",
+    "HOLD_INCOMPLETE_PROBLEM", "HOLD_LOCAL_READ_NOT_APPROVED",
+    "HOLD_LOCAL_LIBRARY_REQUIRED", "HOLD_DISTINCT_PLANS_NOT_ESTABLISHED",
 }
 
 

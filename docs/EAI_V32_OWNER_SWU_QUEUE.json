@@ -13,7 +13,7 @@
     "historic_evidence": "docs/EAI_P1_SWU_QUEUE.json;docs/EAI_DESKTOP_P1_SWU_QUEUE.json"
   },
   "new_swu_count": 12,
-  "new_source_candidates": 4,
+  "new_source_candidates": 5,
   "tracked_swu_total": 60,
   "official_implementation_rate": "UNASSESSED",
   "official_verification_rate": "UNASSESSED",
@@ -142,15 +142,20 @@
       "allowed_paths": [
         "eai/desktop_bridge.py",
         "eai/architect_runtime.py",
-        "eai/logic_synthesis.py"
+        "eai/logic_synthesis.py",
+        "eai/desktop_app.py",
+        "eai/desktop_presentation.py",
+        "eai/desktop_views.py",
+        "eai/desktop_state.py",
+        "tests/test_desktop_workstation.py"
       ],
-      "acceptance": "At least 2 genuinely distinct bounded alternatives when viable, or exact blocker; no mere fixture presented as goal reasoning; stable evidence hashes.",
-      "status": "READY",
-      "p1_source_candidate": false,
+      "acceptance": "At least 2 genuinely distinct bounded alternatives when viable, or exact blocker; no mere fixture presented as goal reasoning; stable evidence hashes. Owner-confirmed unpersisted ProblemSpec → in-memory typed real DesignEngine/HierarchicalPlanner; two distinct source-pinned plans only; exact blockers for missing owner review/evidence/permission/library/contradictions/unsupported domain/cancellation; no execution or original writes.",
+      "status": "IMPLEMENTED_UNVERIFIED",
+      "p1_source_candidate": true,
       "risk": "NORMAL",
-      "local_check": "NOT_RUN",
-      "evidence_sha": null,
-      "safety_gate": "P26/ADR-0002/NO_LIVE_IO",
+      "local_check": "Python 3.13.5 compileall PASS. ArchitectRuntimeTests + WorkstationContractTests 20/20 PASS; isolated Linux Xvfb GUI goal, no-file, native library 2/2 PASS after metadata journal fix; native Windows11/EXE and full P2 NOT_RUN. GitHub blobs pre-staged and matched to local bytes.",
+      "evidence_sha": "602f04a1ffc55b3986793b365678f02d04c3f065",
+      "safety_gate": "P26/ADR-0002/OWNER_REVIEWED_READ_ONLY, Player NOT_EXECUTED",
       "p2_status": "NOT_RUN",
       "failure_count_verified": 0,
       "swu_size_scidu": "TO_ASSESS_BEFORE_READY_EXECUTION"
@@ -170,7 +175,7 @@
         "eai/desktop_app.py"
       ],
       "acceptance": "Selectable plans and operator/trade-off/unknown/provenance cards reflect real backend output; no fabricated performance or confidence.",
-      "status": "DEPENDENCY_BLOCKED",
+      "status": "READY",
       "p1_source_candidate": false,
       "risk": "NORMAL",
       "local_check": "NOT_RUN",
@@ -195,7 +200,7 @@
         "eai/policy_gate.py"
       ],
       "acceptance": "P26 exact plan/scope review, rejects changed plan and unsafe permissions, default PURE/READ_LOCAL only.",
-      "status": "DEPENDENCY_BLOCKED",
+      "status": "READY",
       "p1_source_candidate": false,
       "risk": "HIGH",
       "local_check": "NOT_RUN",
@@ -342,12 +347,12 @@
   "metrics": {
     "type": "SWU_SOURCE_CANDIDATE_COVERAGE_NOT_OFFICIAL_ACCEPTANCE",
     "inherited_source_candidates_historical": 48,
-    "new_source_candidates": 4,
+    "new_source_candidates": 5,
     "tracked_total": 60,
-    "combined_candidate_coverage_count": 52,
-    "combined_candidate_coverage_percent_provisional": 86.67,
+    "combined_candidate_coverage_count": 53,
+    "combined_candidate_coverage_percent_provisional": 88.33,
     "inherited_compatibility_reinspection": "PENDING",
-    "new_swu_coverage_percent": 33.33,
+    "new_swu_coverage_percent": 41.67,
     "p2_original_gate_groups": 10,
     "p2_v32_additive_gate_groups": 4,
     "p2_gate_groups_pass_on_current_sha": 0,
@@ -358,10 +363,10 @@
     "disclaimer": "SWU source candidate coverage is NOT an official weighted implementation completion rate. Prior Astra tests are historic on different source SHA; no P2 acceptance passed against this branch. Any unproven baseline SWUs must be downgraded if compatibility review finds gaps.",
     "verification_swu_pass_on_current_sha": 0,
     "verification_swu_pass_rate_provisional_percent": 0,
-    "provisional_implementation_swu_completion_percent": 86.67,
+    "provisional_implementation_swu_completion_percent": 88.33,
     "provisional_verification_swu_completion_percent": 0,
-    "provisional_rate_basis": "Inherited historic source-candidate 48 + new W01..W04 source candidates 4 = 52/60 provisional count; old 48 compatibility reinspection pending. V3.2 P2 acceptance 0/60 source SWUs, 0/14 original + additive groups. Not an official weighted rate.",
+    "provisional_rate_basis": "Historically inherited 48/48 Astra source candidates pending same-branch compatibility review + EAI V3.2 5/12 functional source code candidates = 53/60 (88.33%) unweighted provisional SWU source coverage only; P2 accepted 0/60 SWUs and 0/14 gate groups; official weighted rates UNASSESSED.",
     "independent_security_ui_audit": "NOT_RUN",
-    "evidence_check": "6 current GitHub changed source/test files match locally tested staging text, deterministic checksum+Unicode length; exact frozen P2 SHA not yet set."
+    "evidence_check": "6-file source/test atomic W05 commit 602f04a1 with exact local blob parity; follow-up journal metadata and GUI regression tested on local staging."
   }
 }

@@ -333,6 +333,7 @@ class NativeWorkstationTests(unittest.TestCase):
         self.assertFalse((self.bridge.state_root / "drafts").exists())
         self.assertIsNone(self.app.problem)
         self.assertFalse(data["can_execute"])
+        self.assertEqual(self.app.rows[0][3], "TWO_PLANS_ADVISORY_UNVERIFIED")
 
     def test_v32_gui_consent_creates_only_fresh_private_library(self):
         with patch("eai.desktop_app.messagebox.askyesno", return_value=True):
