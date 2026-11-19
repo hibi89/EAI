@@ -185,6 +185,51 @@ class Tests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 fetch_json("http://127.0.0.1:11434/api", payload={"a": float("nan")})
 
+    def test_fetch_json_rejects_shadowed_fields_and_nonfinite_responses(self):
+        class FakeResponse:
+            headers = {}
+
+            def __init__(self, body):
+                self.body = body
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *_args):
+                return False
+
+            def read(self, _limit):
+                return self.body
+
+        class FakeOpener:
+            def __init__(self, body):
+                self.body = body
+
+            def open(self, _request, timeout):
+                return FakeResponse(self.body)
+
+        malformed = (
+            b'{"message":{"content":"approved","content":"unapproved"}}',
+            b'{"results":[],"results":[{"url":"https://example.org"}]}',
+            b'{"status":"PASS","more":{"status":"REVOKED","status":"PASS"}}',
+            b'{"value":NaN}',
+            b'{"value":Infinity}',
+            b'{"value":-Infinity}',
+            b'{"value":1e999}',
+            b'{"message": [',
+            b'{"invalid": "\xff"}',
+        )
+        for body in malformed:
+            with self.subTest(body=body), patch(
+                    "eai.network.build_opener", return_value=FakeOpener(body)):
+                with self.assertRaises(ValueError):
+                    fetch_json("http://127.0.0.1:11434/api/chat")
+        with patch("eai.network.build_opener", return_value=FakeOpener(
+                b'{"status":"OK","data":{"approved":false,"sequence":[1,2]}}')):
+            self.assertEqual(
+                fetch_json("http://127.0.0.1:11434/api/chat")["data"],
+                {"approved": False, "sequence": [1, 2]})
+
     def test_fetch_json_pins_localhost_to_numeric_loopback_and_preserves_host(self):
         class Response:
             headers = {"Content-Length": "12"}

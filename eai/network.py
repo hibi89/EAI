@@ -10,6 +10,20 @@ MAX_REQUEST_BYTES = 1_048_576
 _MAX_ENDPOINT_CHARS = 4_096
 
 
+def _reject_duplicate_json_fields(pairs: list[tuple[str, object]]) -> dict:
+    """Model and search responses are untrusted; never accept shadowed fields."""
+    values: dict[str, object] = {}
+    for key, value in pairs:
+        if key in values:
+            raise ValueError("duplicate fields in local JSON response")
+        values[key] = value
+    return values
+
+
+def _reject_nonfinite_json(_value: str) -> None:
+    raise ValueError("nonfinite local JSON response value")
+
+
 def _pinned_loopback_endpoint(url: str) -> tuple[str, str]:
     """Check the final request URL, never trust a caller's base URL check.
 
@@ -86,7 +100,14 @@ def fetch_json(url: str, *, payload: dict | None = None, timeout: float = 12.0) 
         raw = response.read(MAX_RESPONSE_BYTES + 1)
         if len(raw) > MAX_RESPONSE_BYTES:
             raise ValueError("response exceeds maximum size")
-        parsed = json.loads(raw.decode("utf-8"))
-    if not isinstance(parsed, dict):
+        try:
+            parsed = json.loads(
+                raw.decode("utf-8"),
+                object_pairs_hook=_reject_duplicate_json_fields,
+                parse_constant=_reject_nonfinite_json,
+            )
+        except (UnicodeError, json.JSONDecodeError, RecursionError) as exc:
+            raise ValueError("invalid local JSON response") from exc
+    if type(parsed) is not dict:
         raise ValueError("expected JSON object response")
     return parsed
