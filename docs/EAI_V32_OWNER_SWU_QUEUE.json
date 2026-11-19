@@ -182,7 +182,7 @@
       "p1_source_candidate": true,
       "risk": "NORMAL",
       "local_check": "Python 3.13 compileall PASS; ArchitectRuntimeTests+WorkstationContractTests 23/23 PASS; isolated Linux Xvfb actual two-panel GUI comparison PASS. Full P2/Windows11 NOT_RUN",
-      "evidence_sha": "PENDING_W06_ATOMIC_COMMIT_SHA",
+      "evidence_sha": "b6c6c6a6aa51cfd9ef200b56e31eab658bba5f09",
       "safety_gate": "P26/ADR-0002/NO_LIVE_IO",
       "p2_status": "NOT_RUN",
       "failure_count_verified": 0,
@@ -209,7 +209,7 @@
       "p1_source_candidate": true,
       "risk": "HIGH",
       "local_check": "Python 3.13 compileall PASS; ArchitectRuntime+WorkstationContractTests 21/21 PASS; isolated native Linux Xvfb W05/W07 2/2 PASS; full integrated CI/Windows11 P2 NOT_RUN",
-      "evidence_sha": "PENDING_ATOMIC_COMMIT_SHA",
+      "evidence_sha": "ee38d69a61a1bfa549f187e91b8e6f9a08d5bf14",
       "safety_gate": "P26/ADR-0002/NO_LIVE_IO",
       "p2_status": "NOT_RUN",
       "failure_count_verified": 0,
@@ -237,7 +237,7 @@
       "p1_source_candidate": true,
       "risk": "HIGH",
       "local_check": "Local Python 3.13 compileall PASS; ArchitectRuntimeTests + WorkstationContractTests 22/22 PASS; 2 isolated Linux Xvfb native GUI W07/W08 PASS. Actual Windows EXE, full CI, P2 security/recovery and independent audits NOT_RUN.",
-      "evidence_sha": "PENDING_W08_ATOMIC_COMMIT",
+      "evidence_sha": "59c8212fbaeaaff69926af14a6e83c1b2ff74994",
       "safety_gate": "P26/ADR-0002/NO_LIVE_IO",
       "p2_status": "NOT_RUN",
       "failure_count_verified": 0,
@@ -375,6 +375,6 @@
     "provisional_verification_swu_completion_percent": 0,
     "provisional_rate_basis": "Inherited 48 historic source candidates (current branch compatibility reinspection pending) + 8 V3.2 implemented source candidates = 56/60 = 93.33% unweighted provisional source SWU coverage. P2 accepted 0/60 SWUs and 0/14 gate groups; official P1 and P2 completion UNASSESSED.",
     "independent_security_ui_audit": "NOT_RUN",
-    "evidence_check": "W08 five code/test Git blobs matched locally tested source; exact W08 commit to be created atomically."
+    "evidence_check": "Exact W05/W06/W07/W08 source commits pinned per SWU; latest W06 source plus prior waves verified on local Linux targeted tests. Overall full current HEAD CI/P2 NOT_RUN."
   }
 }
