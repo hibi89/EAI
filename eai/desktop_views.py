@@ -77,7 +77,7 @@ def home(app, parent):
     center.columnconfigure(1, weight=2, uniform="work")
     console = card(center)
     console.grid(row=0, column=0, sticky="nsew", padx=(0, 7))
-    label(console, "CPU 작업 콘솔", size=12, bold=True).pack(fill="x")
+    label(console, "목표 분석 · CPU 결과", size=12, bold=True).pack(fill="x")
     last = app.results.get("home")
     if last:
         op, data = last
@@ -95,7 +95,8 @@ def home(app, parent):
     quick = card(center, "작업 시작")
     quick.grid(row=0, column=1, sticky="nsew")
     for title, note, action, primary in (
-            ("로컬 예제 열기", "합성 목표 · 노드 3개 · 계획 · 영수증", app.practice, True),
+            ("내 목표 설계 시작", "하단 목표를 검토 가능한 설계 초안으로 변환", app.new_draft, True),
+            ("로컬 예제 열기", "합성 목표 · 노드 3개 · 계획 · 영수증", app.practice, False),
             ("저장한 초안 열기", "지난 목표와 조건을 이어서 편집", lambda: app.open_problem("architect"), False)):
         button(quick, title, action, primary=primary, anchor="w").pack(fill="x", pady=(3, 0))
         label(quick, note, size=9, fg=MUTED, wrap=220).pack(fill="x", pady=(2, 5))
