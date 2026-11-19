@@ -39,11 +39,19 @@
     "windows_server": {
       "run_id": 44566481255,
       "source_sha": "65f59413619d66130d414a92f46198f6d0710304",
-      "status": "in_progress",
-      "conclusion": null,
-      "tests": null,
-      "skip": null,
-      "physical_owner_windows_11": "NOT_RUN"
+      "status": "completed",
+      "conclusion": "success",
+      "tests": 1196,
+      "skip": 1,
+      "physical_owner_windows_11": "NOT_RUN",
+      "pass": 1195,
+      "fail": 0,
+      "new_regressions": "PASS",
+      "unsigned_exe_build": "PASS",
+      "unsigned_exe_self_check": "PASS_UNSIGNED_BUNDLE_IMPORTS",
+      "artifact_zip_id": 14551998403,
+      "artifact_zip_sha256": "ddd7c4fe8eeaf24fc3fcec28f5760a82a7a9df0372e59fd935b314dd3a6e2d40",
+      "bare_exe_sha256": "NOT_RETRIEVED"
     },
     "initial_insertion_failure": {
       "run_id": 44566361956,
