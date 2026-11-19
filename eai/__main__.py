@@ -39,7 +39,7 @@ class _PrivateCLIArgumentParser(argparse.ArgumentParser):
     """
     def error(self, message: str) -> None:
         # The content of message is untrusted and MUST NOT be printed.
-        self.exit(2, f"{self.prog}: error: EAI_ARGUMENT_REJECTED\\n")
+        self.exit(2, f"{self.prog}: error: EAI_ARGUMENT_REJECTED\n")
 
 
 def _public_failure_code(exc: BaseException) -> str:
