@@ -21,7 +21,12 @@ def local_path(value: str | Path, *, private: bool = False) -> Path:
                        for p in path.parts if p != path.anchor)):
             raise ValueError("ordinary local drive selection required")
         import ctypes
-        if ctypes.windll.kernel32.GetDriveTypeW(Path(path.absolute().anchor).as_posix().replace("/", "\\")) not in (2, 3, 6):
+        # ctypes.windll exists only on Windows; fail closed if a purported
+        # Windows host cannot provide the native drive-type verifier.
+        windll = getattr(ctypes, "windll", None)
+        if windll is None:
+            raise ValueError("native local disk verification unavailable")
+        if windll.kernel32.GetDriveTypeW(Path(path.absolute().anchor).as_posix().replace("/", "\\")) not in (2, 3, 6):
             raise ValueError("local disk required")
     path = path.absolute()
     for part in (*reversed(path.parents), path):
@@ -30,7 +35,7 @@ def local_path(value: str | Path, *, private: bool = False) -> Path:
         except FileNotFoundError:
             continue
         if (stat.S_ISLNK(info.st_mode)
-                or getattr(info, "st_file_attributes", 0) & stat.FILE_ATTRIBUTE_REPARSE_POINT
+                or getattr(info, "st_file_attributes", 0) & getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400)
                 or (private and stat.S_ISREG(info.st_mode) and info.st_nlink != 1)):
             raise ValueError("linked local selection denied")
     return path
