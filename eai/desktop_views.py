@@ -127,6 +127,19 @@ def architect(app, parent):
         label(box, d["goal"][:240], wrap=560, bold=True).pack(fill="x")
         label(box, f"{d['domain']}   ·   위험도 {d['risk']}   ·   {d['budget']['max_steps']}단계 / {d['budget']['max_seconds']}초"
               f"   ·   조건 {len(d['hard_constraints'])}개   ·   가정 {len(d['assumptions'])}개", fg=MUTED, wrap=560).pack(fill="x")
+        reviewed = app.bridge.draft_review(d)
+        if reviewed["missing"]:
+            label(box, "확인이 필요한 항목: " + ", ".join({
+                "NO_EVIDENCE_REFS": "실제 근거 참조 미지정",
+                "NO_OBJECTIVES": "성공 조건 미설정",
+                "ORACLE_NOT_DEFINED": "검증 기준 미확정",
+                "NO_EXPLICIT_CONSTRAINTS": "필수 조건 미작성",
+            }[key] for key in reviewed["missing"]), fg=AMBER, wrap=570).pack(fill="x", pady=(6, 1))
+        else:
+            label(box, "필드 형식만 확인됨 · 근거와 진실성 검증 전", fg=TEAL).pack(fill="x", pady=(6, 1))
+        label(box, "권한: " + ", ".join(reviewed["permission_scope"]) +
+              f" · 증거 참조 {reviewed['evidence_ref_count']}개 · 목적 {reviewed['objective_count']}개",
+              fg=MUTED).pack(fill="x")
     else:
         label(box, "하단에 목표를 적고 ‘설계 초안’을 누르거나 저장한 ProblemSpec을 여세요.", fg=MUTED, wrap=570).pack(fill="x")
     row = action_row(box, ("초안 열기", lambda: app.open_problem("architect"), False))
