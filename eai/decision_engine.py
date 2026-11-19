@@ -9,6 +9,8 @@ import re
 from typing import Any
 
 from .analysis import _NUMBER, _render_decimal
+from .contracts import FinalResultSpec, ProblemSpec
+from .design_engine import DesignOutcome
 
 DECISION_VERSION = 'eai.goal.choose_options.v1'
 MAX_CRITERIA = 8
@@ -260,8 +262,6 @@ def render_decision(report: dict) -> str:
 
 
 # EAI P1 SWU 002: separate V3 result path; legacy numeric decisions unchanged.
-from .contracts import FinalResultSpec, ProblemSpec
-from .design_engine import DesignOutcome
 
 
 def finalize_architect_decision(problem: ProblemSpec,
@@ -340,7 +340,6 @@ def finalize_redacted_architect_response(
 
 
 # EAI-SWU-041: independent CPU selection from audited local journey evidence.
-from dataclasses import dataclass
 
 
 @dataclass(frozen=True)

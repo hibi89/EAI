@@ -5,6 +5,7 @@ No executable node, network access, promotion or writes to original EAI DB.
 """
 from __future__ import annotations
 
+from dataclasses import dataclass
 import hashlib
 import os
 from pathlib import Path
@@ -247,9 +248,6 @@ class AXNodeStore:
 
 
 # EAI-SWU-005: explicit additive import -> committed catalog -> fresh reload.
-from dataclasses import dataclass
-
-
 @dataclass(frozen=True)
 class AXNodeReopenReceipt:
     node_sha256: str

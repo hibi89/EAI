@@ -118,6 +118,10 @@ class StrategyResearchRankerTests(unittest.TestCase):
             replace(genuine_shape, permission_to_promote=True),
             replace(genuine_shape, measured_runtime_uplift="CLAIMED"),
             SimpleNamespace(**vars(genuine_shape)),
+            *(replace(genuine_shape, **{field: 2.0})
+              for field in ("train_count", "heldout_count",
+                            "b0_train_matches", "b0_heldout_matches",
+                            "b1_train_compared", "b1_heldout_compared")),
             *(replace(genuine_shape, **{field: forged_false})
               for field in ("external_truth_verified", "permission_to_learn",
                             "permission_to_promote")

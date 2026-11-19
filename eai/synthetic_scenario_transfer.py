@@ -61,6 +61,12 @@ def evaluate_synthetic_scenario_transfer(
         and report.baseline_sha256 == "LEGACY_RECONCILE_CSV_UNPINNED"
         and report.status == "B1_SYNTHETIC_PARITY_WITH_B0_UNVERIFIED"
         and report.candidate_sha256 == candidate.candidate_sha256
+        and type(report.train_count) is int
+        and type(report.heldout_count) is int
+        and type(report.b0_train_matches) is int
+        and type(report.b0_heldout_matches) is int
+        and type(report.b1_train_compared) is int
+        and type(report.b1_heldout_compared) is int
         and report.train_count == len(curriculum.train)
         and report.heldout_count == len(challenge)
         and report.b0_train_matches == len(curriculum.train)

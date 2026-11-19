@@ -7,10 +7,12 @@ AXNODE hits are unverified *candidate references*, not proof of applicability.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from hashlib import sha256
 import re
 
 from .contracts import ProblemSpec
 from .axnode_retrieval import AXNodeRetriever, NodeMatch
+from .intent import OptionalInputParser, QwenIntentParser
 
 _TOKEN = re.compile(r"[a-z][a-z0-9_.-]{0,63}\Z")
 _SHA = re.compile(r"[0-9a-f]{64}\Z")
@@ -106,8 +108,6 @@ class ProblemModeler:
 
 
 # EAI P1 SWU 003: classified input -> bounded CPU-owned V3 ProblemSpec.
-from hashlib import sha256
-from .intent import OptionalInputParser, QwenIntentParser
 
 
 @dataclass(frozen=True)
