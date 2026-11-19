@@ -12,6 +12,7 @@ import threading
 import time
 import tkinter as tk
 import unittest
+from typing import Any, TypeVar, cast
 from unittest.mock import patch
 
 from eai.contracts import canonical_sha256
@@ -21,6 +22,15 @@ from eai.desktop_example import PracticeWorkspace
 from eai.desktop_presentation import PAGES
 from eai.desktop_state import WorkspaceLimits
 from eai.local_files import local_path
+
+_T = TypeVar("_T")
+
+
+def present(value: _T | None, context: str) -> _T:
+    """Make GUI state expectations explicit instead of assuming Optional data."""
+    if value is None:
+        raise AssertionError("expected GUI state missing: " + context)
+    return value
 
 
 class WorkstationContractTests(unittest.TestCase):
@@ -43,9 +53,10 @@ class WorkstationContractTests(unittest.TestCase):
         # A replay receipt can outlive the currently selected goal/plan.
         # Do not prompt for owner approval or attempt dict(None) after it.
         app = EAIDesktopApp.__new__(EAIDesktopApp)
-        notices = []
-        app.ready = lambda: True
-        app.notice = lambda message, color=None: notices.append(message)
+        notices: list[str] = []
+        # This test intentionally replaces methods on an uninitialized widget.
+        setattr(app, "ready", lambda: True)
+        setattr(app, "notice", lambda message, color=None: notices.append(message))
         app.trace_review = {"replay_integrity": True}
         app.draft = None
         app.review = None
@@ -65,7 +76,7 @@ class WorkstationContractTests(unittest.TestCase):
         with closing(Store(self.root / "cli.sqlite")) as store:
             self.assertEqual(answer["text"], EAIRunner(store).ask(question).text)
             self.assertEqual(len(store.recent_turns()), 2)
-        self.assertEqual(self.bridge.ask("기억해: 연습 메모", consent_to_note=1)["status"],
+        self.assertEqual(self.bridge.ask("기억해: 연습 메모", consent_to_note=cast(bool, 1))["status"],
                          "HOLD_EXPLICIT_NOTE_APPROVAL")
         self.bridge.ask("기억해: 연습 메모", consent_to_note=True)
         self.assertIn("연습 메모", DesktopBridge(self.root).ask("메모목록")["text"])
@@ -501,11 +512,13 @@ class NativeWorkstationTests(unittest.TestCase):
         # Tk interpreters must be finalized on their creating UI thread.
         # A later worker-thread GC of a previous test window can crash Tcl
         # with Tcl_AsyncDelete even after the window was visually destroyed.
-        if self.app is not None:
+        app = getattr(self, "app", None)
+        if app is not None:
             self.wait()
-            self.app.close()
-            self.app = None
-        self.root = None
+            app.close()
+            del self.app
+        if hasattr(self, "root"):
+            del self.root
         gc.collect()
 
     def wait(self):
@@ -521,8 +534,8 @@ class NativeWorkstationTests(unittest.TestCase):
         self.app.fill_command(goal)
         self.app.ask()
         self.assertEqual(self.app.page, "architect")
-        self.assertEqual(self.app.draft["goal"], goal)
-        self.assertEqual(self.app.draft["permissions"], ["pure"])
+        self.assertEqual(present(self.app.draft, "draft")["goal"], goal)
+        self.assertEqual(present(self.app.draft, "draft")["permissions"], ["pure"])
         self.assertIsNone(self.app.problem)
         self.assertFalse((self.bridge.state_root / "drafts").exists())
         self.assertIsNone(self.app.review)
@@ -531,8 +544,8 @@ class NativeWorkstationTests(unittest.TestCase):
         self.app.fill_command("제약조건과 근거를 비교해줘")
         self.app.new_draft()
         self.assertEqual(self.app.page, "architect")
-        self.assertEqual(self.app.draft_review["status"], "REVIEW_REQUIRED")
-        self.assertIn("NO_OBJECTIVES", self.app.draft_review["missing"])
+        self.assertEqual(present(self.app.draft_review, "draft review")["status"], "REVIEW_REQUIRED")
+        self.assertIn("NO_OBJECTIVES", present(self.app.draft_review, "draft review")["missing"])
         self.assertFalse((self.bridge.state_root / "drafts").exists())
 
     def test_v32_gui_goal_to_real_architect_without_file_ritual(self):
@@ -541,7 +554,7 @@ class NativeWorkstationTests(unittest.TestCase):
         self.app.fill_command("실제 로컬 전략 후보를 비교해줘")
         self.app.new_draft()
         self.app.library = w.library
-        self.app.draft.update(domain="practice", oracle="owner.local.oracle",
+        present(self.app.draft, "draft").update(domain="practice", oracle="owner.local.oracle",
                               state_refs=["synthetic.local.1"],
                               hard_constraints=["forbid:unsafe.operation"],
                               objectives=["두 후보를 비교"], permissions=["pure", "local.read"])
@@ -563,7 +576,7 @@ class NativeWorkstationTests(unittest.TestCase):
         self.app.fill_command("선택한 순수 전략 검토")
         self.app.new_draft()
         self.app.library = w.library
-        self.app.draft.update(domain="practice", risk="LOW", oracle="owner.local.oracle",
+        present(self.app.draft, "draft").update(domain="practice", risk="LOW", oracle="owner.local.oracle",
                               state_refs=["synthetic.local.1"],
                               hard_constraints=["forbid:unsafe.operation"],
                               objectives=["후보 검토"], permissions=["pure", "local.read"])
@@ -576,8 +589,8 @@ class NativeWorkstationTests(unittest.TestCase):
             self.app.review_alternative()
         self.wait()
         self.assertEqual(self.app.page, "player")
-        self.assertEqual(self.app.review["status"], "PURE_SYNTHETIC_PREVIEW_ONLY")
-        self.assertFalse(self.app.review["can_execute_real_actions"])
+        self.assertEqual(present(self.app.review, "review")["status"], "PURE_SYNTHETIC_PREVIEW_ONLY")
+        self.assertFalse(present(self.app.review, "review")["can_execute_real_actions"])
         self.assertIsNone(self.app.plan)
         self.assertIsNone(self.app.problem)
         self.assertNotIn("simulate", [op for _,_,op,_ in self.app.rows])
@@ -592,7 +605,7 @@ class NativeWorkstationTests(unittest.TestCase):
         self.app.fill_command("순수 단계 관찰")
         self.app.new_draft()
         self.app.library = w.library
-        self.app.draft.update(domain="practice", risk="LOW", oracle="owner.local.oracle",
+        present(self.app.draft, "draft").update(domain="practice", risk="LOW", oracle="owner.local.oracle",
                               state_refs=["synthetic.local.1"],
                               hard_constraints=["forbid:unsafe.operation"],
                               objectives=["영수증 생성"], permissions=["pure", "local.read"])
@@ -602,7 +615,7 @@ class NativeWorkstationTests(unittest.TestCase):
         with patch("eai.desktop_app.messagebox.askyesno", return_value=True):
             self.app.review_alternative()
         self.wait()
-        self.assertEqual(self.app.review["status"], "PURE_SYNTHETIC_PREVIEW_ONLY")
+        self.assertEqual(present(self.app.review, "review")["status"], "PURE_SYNTHETIC_PREVIEW_ONLY")
         with patch("eai.desktop_app.messagebox.askyesno", return_value=True):
             self.app.simulate()
         self.wait()
@@ -620,7 +633,7 @@ class NativeWorkstationTests(unittest.TestCase):
         self.app.fill_command("연습 노드 두 가지 접근을 비교해줘")
         self.app.new_draft()
         self.app.library = w.library
-        self.app.draft.update(domain="practice", risk="LOW", oracle="owner.local.oracle",
+        present(self.app.draft, "draft").update(domain="practice", risk="LOW", oracle="owner.local.oracle",
                               state_refs=["synthetic.local.1"],
                               hard_constraints=["forbid:unsafe.operation"],
                               objectives=["대안 비교"], permissions=["pure", "local.read"])
@@ -643,7 +656,7 @@ class NativeWorkstationTests(unittest.TestCase):
         self.app.fill_command("미검증 경험의 추적 해시")
         self.app.new_draft()
         self.app.library = w.library
-        self.app.draft.update(domain="practice", risk="LOW", oracle="owner.local.oracle",
+        present(self.app.draft, "draft").update(domain="practice", risk="LOW", oracle="owner.local.oracle",
                               state_refs=["synthetic.local.1"],
                               hard_constraints=["forbid:unsafe.operation"],
                               objectives=["추적 검증"], permissions=["pure", "local.read"])
@@ -659,8 +672,8 @@ class NativeWorkstationTests(unittest.TestCase):
         self.app.verify_pure_trace()
         self.wait()
         self.assertEqual(self.app.page, "verifier")
-        self.assertTrue(self.app.trace_review["replay_integrity"])
-        self.assertEqual(self.app.trace_review["semantic_truth"], "UNKNOWN")
+        self.assertTrue(present(self.app.trace_review, "trace review")["replay_integrity"])
+        self.assertEqual(present(self.app.trace_review, "trace review")["semantic_truth"], "UNKNOWN")
         self.assertFalse((self.bridge.state_root / "libraries").exists())
 
     def test_v32_real_stage_navigation_reports_only_actual_status(self):
@@ -672,7 +685,7 @@ class NativeWorkstationTests(unittest.TestCase):
         w = PracticeWorkspace()
         self.addCleanup(w.close)
         self.app.library = w.library
-        self.app.draft.update(domain="practice", risk="LOW", oracle="owner.local.oracle",
+        present(self.app.draft, "draft").update(domain="practice", risk="LOW", oracle="owner.local.oracle",
                               state_refs=["synthetic.local.1"],
                               hard_constraints=["forbid:unsafe.operation"],
                               objectives=["대안 검토"], permissions=["pure", "local.read"])
@@ -706,7 +719,7 @@ class NativeWorkstationTests(unittest.TestCase):
     def test_v32_native_saved_goal_restores_without_authority_or_plan(self):
         self.app.fill_command("제약조건을 저장하고 다음에 이어서 분석하라")
         self.app.new_draft()
-        saved_draft = dict(self.app.draft)
+        saved_draft = dict(present(self.app.draft, "draft"))
         with patch("eai.desktop_app.messagebox.askyesno", return_value=True):
             self.app.save_review_session()
         self.wait()
@@ -730,9 +743,9 @@ class NativeWorkstationTests(unittest.TestCase):
             self.app.create_library()
         self.wait()
         self.assertEqual(self.app.page, "atlas")
-        self.assertTrue(self.app.library.is_dir())
+        self.assertTrue(present(self.app.library, "library").is_dir())
         self.assertEqual(self.app.results["atlas"][1]["status"], "PRIVATE_EMPTY_LIBRARY_CREATED")
-        self.assertEqual(self.bridge.axnode_catalog(self.app.library)["shown"], 0)
+        self.assertEqual(self.bridge.axnode_catalog(present(self.app.library, "library"))["shown"], 0)
 
     def test_v32_discovery_button_runs_local_preview_only(self):
         self.app.fill_command("새로운 서비스 구현 방법을 알려줘")
@@ -748,7 +761,7 @@ class NativeWorkstationTests(unittest.TestCase):
         from tkinter import ttk
         from eai.desktop_widgets import edit_problem
         proposal = self.bridge.make_problem_draft("합성 작업 최적화")
-        captured = []
+        captured: list[dict[str, Any]] = []
         dialog = edit_problem(self.root, proposal, captured.append)
         body = dialog.winfo_children()[0]
         notebook = next(child for child in body.winfo_children() if isinstance(child, ttk.Notebook))
@@ -800,10 +813,10 @@ class NativeWorkstationTests(unittest.TestCase):
         self.app.send.invoke()
         self.wait()
         self.assertEqual(self.app.page, "architect")
-        self.assertEqual(self.app.draft["goal"], "지원 밖 임의 요청")
+        self.assertEqual(present(self.app.draft, "draft")["goal"], "지원 밖 임의 요청")
         self.assertIsNone(self.app.problem)
         self.app.newdraft.invoke()
-        self.assertEqual(self.app.draft["goal"], "지원 밖 임의 요청")
+        self.assertEqual(present(self.app.draft, "draft")["goal"], "지원 밖 임의 요청")
 
     def test_workspace_journey_failure_and_restart(self):
         a = self.app
@@ -819,9 +832,9 @@ class NativeWorkstationTests(unittest.TestCase):
             self.wait()
             self.assertEqual(a.results[page][1]["status"], status)
         a.select("atlas")
-        a.inspect_node(a.catalog_data["nodes"][0]["sha256"])
+        a.inspect_node(present(a.catalog_data, "catalog")["nodes"][0]["sha256"])
         self.wait()
-        self.assertEqual(a.node_data["status"], "NODE_DIGEST_MATCH")
+        self.assertEqual(present(a.node_data, "node detail")["status"], "NODE_DIGEST_MATCH")
         a.select("player")
         with patch("eai.desktop_app.messagebox.askyesno", return_value=True):
             a.simulate()
@@ -830,7 +843,7 @@ class NativeWorkstationTests(unittest.TestCase):
         a.select("architect")
         a.save()
         self.wait()
-        saved = a.problem
+        saved = present(a.problem, "saved problem")
         self.assertEqual(a.bridge.load_draft(saved), a.draft)
         a.select("settings")
         a.limit_vars[0].set("4")
@@ -864,7 +877,10 @@ class NativeWorkstationTests(unittest.TestCase):
             release.wait(2)
             return {"status": "OK", "text": "completed"}
         self.app.run("home", "command", bounded_work)
-        self.root.after(5, lambda: (tick.append(True), self.app.select("history")))
+        def change_page_after_tick():
+            tick.append(True)
+            self.app.select("history")
+        self.root.after(5, change_page_after_tick)
         self.root.after(45, release.set)
         self.wait()
         self.assertTrue(tick)
@@ -874,7 +890,7 @@ class NativeWorkstationTests(unittest.TestCase):
         self.app.close()
         self.root.mainloop()
         self.assertTrue(self.app.closing)
-        self.app = None
+        del self.app
 
     def test_selected_design_reaches_player_and_independent_receipt_check(self):
         a = self.app
@@ -886,7 +902,7 @@ class NativeWorkstationTests(unittest.TestCase):
         a.review_alternative()
         self.wait()
         self.assertEqual(a.page, "player")
-        self.assertEqual(a.review["status"], "PURE_SYNTHETIC_PREVIEW_ONLY")
+        self.assertEqual(present(a.review, "review")["status"], "PURE_SYNTHETIC_PREVIEW_ONLY")
         with patch("eai.desktop_app.messagebox.askyesno", return_value=True):
             a.simulate()
         self.wait()
