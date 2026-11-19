@@ -1,14 +1,14 @@
 name: EAI offline unit and CLI smoke
 on:
   push:
-    branches: [feature/local-first-mvp]
+    branches: [feature/local-first-mvp, feature/eai-v32-owner-rebuild-20261119]
   pull_request:
 permissions:
   contents: read
 jobs:
   offline-checks:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -16,8 +16,16 @@ jobs:
           python-version: '3.11'
       - name: Syntax check
         run: python -m compileall -q eai tests
+      - name: V3.2 Tk GUI regression under virtual display (NOT physical Windows)
+        run: |
+          command -v xvfb-run
+          timeout 180s xvfb-run -a python -m unittest discover -s tests -p 'test_desktop_workstation.py' -v
       - name: Offline unit + fake E2E checks
         run: python -m unittest discover -s tests -v
+      - name: V3.2 source-only offline desktop entry self-check
+        run: |
+          python scripts/eai_desktop_entry.py --self-check --report "${RUNNER_TEMP}/eai-v32-source-check.json"
+          python -c "import json,os; p=json.load(open(os.environ['RUNNER_TEMP']+'/eai-v32-source-check.json', encoding='utf-8')); assert p['status']=='PASS_SOURCE_IMPORTS_ONLY' and p['native_gui_e2e']=='NOT_RUN' and p['real_player']=='NOT_RUN'"
       - name: CLI smoke (no Ollama call)
         run: |
           python -m eai --version
