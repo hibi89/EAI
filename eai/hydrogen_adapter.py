@@ -514,6 +514,21 @@ class _LiveSendLedger:
                 or not p.parent.is_dir()
                 or (p.exists() and not p.is_file())):
             raise PermissionError("explicit private isolated live ledger required")
+        # Exact factory-authored SQLite DDL is the trust boundary. Matching
+        # table/column names alone would allow weaker owner-substituted
+        # constraints or indexes to influence an external-send ledger.
+        expected_ddl = {
+            "eai_live_control": (
+                "CREATE TABLE eai_live_control("
+                "id INTEGER PRIMARY KEY CHECK(id=1), "
+                "project TEXT NOT NULL, owner_key TEXT NOT NULL, "
+                "state TEXT NOT NULL CHECK(state IN ('READY','HOLD')))"),
+            "eai_live_reservations": (
+                "CREATE TABLE eai_live_reservations("
+                "nonce TEXT PRIMARY KEY, utc INTEGER NOT NULL, "
+                "tokens INTEGER NOT NULL, status TEXT NOT NULL)"),
+        }
+        exists = p.exists()
         exists = p.exists()
         if not exists and not allow_create:
             raise PermissionError("live ledger cannot be created implicitly")
@@ -532,13 +547,13 @@ class _LiveSendLedger:
             if exists:
                 if ver != _LIVE_LEDGER_VERSION:
                     raise PermissionError("unexpected live ledger version")
-                objects = {(x[0], x[1]) for x in self.db.execute(
-                    "SELECT type,name FROM sqlite_master "
-                    "WHERE type IN ('table','view','trigger') "
-                    "AND name NOT LIKE 'sqlite_%'")}
-                if objects != {
-                        ("table", "eai_live_control"),
-                        ("table", "eai_live_reservations")}:
+                objects = self.db.execute(
+                    "SELECT type,name,sql FROM sqlite_master "
+                    "WHERE type IN ('table','view','trigger','index') "
+                    "AND name NOT LIKE 'sqlite_%'").fetchall()
+                if (len(objects) != len(expected_ddl)
+                        or any(kind != "table" or sql != expected_ddl.get(name)
+                               for kind, name, sql in objects)):
                     raise PermissionError("unexpected live ledger schema objects")
                 for table, columns in (
                     ("eai_live_control", ("id", "project", "owner_key", "state")),
@@ -551,15 +566,8 @@ class _LiveSendLedger:
             else:
                 self.db.execute("BEGIN IMMEDIATE")
                 try:
-                    self.db.execute(
-                        "CREATE TABLE eai_live_control("
-                        "id INTEGER PRIMARY KEY CHECK(id=1), "
-                        "project TEXT NOT NULL, owner_key TEXT NOT NULL, "
-                        "state TEXT NOT NULL CHECK(state IN ('READY','HOLD')))")
-                    self.db.execute(
-                        "CREATE TABLE eai_live_reservations("
-                        "nonce TEXT PRIMARY KEY, utc INTEGER NOT NULL, "
-                        "tokens INTEGER NOT NULL, status TEXT NOT NULL)")
+                    self.db.execute(expected_ddl["eai_live_control"])
+                    self.db.execute(expected_ddl["eai_live_reservations"])
                     self.db.execute(
                         "INSERT INTO eai_live_control VALUES(1,?,?, 'READY')",
                         (project_id, owner_key_sha256))

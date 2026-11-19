@@ -273,6 +273,50 @@ class HydrogenLiveHttpDiagnosticsTests(unittest.TestCase):
                         "SELECT COUNT(*) FROM eai_live_reservations").fetchone()[0], 0)
 
 
+    def test_live_ledger_refuses_foreign_same_column_weak_schema(self):
+        """Matching names do not authorize weaker source-file constraints."""
+        with TemporaryDirectory() as directory:
+            path = Path(directory) / "live.sqlite"
+            with closing(sqlite3.connect(path)) as db:
+                db.executescript(
+                    "CREATE TABLE eai_live_control("
+                    "id INTEGER PRIMARY KEY, project TEXT NOT NULL, "
+                    "owner_key TEXT NOT NULL, state TEXT NOT NULL);"
+                    "CREATE TABLE eai_live_reservations("
+                    "nonce TEXT PRIMARY KEY, utc INTEGER NOT NULL, "
+                    "tokens INTEGER NOT NULL, status TEXT NOT NULL);")
+                db.execute("INSERT INTO eai_live_control VALUES(1,?,?,?)",
+                           ("eai-test-project", "a" * 64, "READY"))
+                db.execute("PRAGMA user_version=1")
+                db.commit()
+            before = path.read_bytes()
+            with self.assertRaisesRegex(PermissionError,
+                                        "unexpected live ledger schema objects"):
+                _LiveSendLedger(path, project_id="eai-test-project",
+                                owner_key_sha256="a" * 64)
+            self.assertEqual(path.read_bytes(), before)
+
+    def test_live_ledger_refuses_extra_index_before_external_reservation(self):
+        """An unapproved index must not govern a future live quota write."""
+        with TemporaryDirectory() as directory:
+            path = Path(directory) / "live.sqlite"
+            ledger = _LiveSendLedger(
+                path, project_id="eai-test-project",
+                owner_key_sha256="a" * 64, allow_create=True)
+            ledger.close()
+            with closing(sqlite3.connect(path)) as db:
+                db.execute("CREATE UNIQUE INDEX forged_status "
+                           "ON eai_live_reservations(status)")
+                db.commit()
+            before = path.read_bytes()
+            with self.assertRaisesRegex(PermissionError,
+                                        "unexpected live ledger schema objects"):
+                _LiveSendLedger(path, project_id="eai-test-project",
+                                owner_key_sha256="a" * 64)
+            self.assertEqual(path.read_bytes(), before)
+
+    @staticmethod
+    def owner_root_bytes() -> bytes:
     @staticmethod
     def owner_root_bytes() -> bytes:
         return canonical_bytes({
