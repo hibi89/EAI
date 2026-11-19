@@ -1,0 +1,91 @@
+{
+  "schema": "eai.p2.owner_provisional_v1",
+  "date_kst": "2026-11-19",
+  "repo": "hibi89/EAI",
+  "branch": "feature/eai-v32-owner-rebuild-20261119",
+  "verified_functional_sha": "2165685a145173906b7204ad3c4274b29c264673",
+  "ci": {
+    "linux": {
+      "run_id": 44518270001,
+      "conclusion": "SUCCESS",
+      "tests": 1169,
+      "passed": 1152,
+      "skipped": 17,
+      "failed": 0,
+      "xvfb_tk_pass": 34,
+      "ruff": "PASS_E9_F63_F7_F82_E714_E731",
+      "mypy": "PASS_136_eai_and_scripts",
+      "fake_benchmark_flag_subcases": 12,
+      "fake_prior_flag_subcases": 12
+    },
+    "windows": {
+      "run_id": 44518269823,
+      "conclusion": "SUCCESS",
+      "tests": 1169,
+      "passed": 1168,
+      "skipped": 1,
+      "failed": 0,
+      "focused_native_tk_passed": 40,
+      "focused_native_tk_skipped": 1,
+      "exe_check": "PASS_UNSIGNED_BUNDLE_IMPORTS",
+      "artifact_id": 14527875010,
+      "uploaded_artifact_zip_sha256": "983dd871073700103a56a66e0e2e63ed480735f331401144242509bd554341a2",
+      "physical_win11": "NOT_RUN"
+    }
+  },
+  "changes": {
+    "p2_05": "B0/B1 benchmark and synthetic prior recheck strict is False for Boolean no-authority fields",
+    "new_forged_flag_values": [
+      null,
+      0,
+      "",
+      []
+    ],
+    "new_adversarial_subcases": 24,
+    "new_named_test_cases": 0,
+    "tests_updated": [
+      "test_p2_transfer_rejects_forged_success_benchmark_receipts",
+      "test_p2_forged_success_transfer_provenance_never_updates_prior"
+    ],
+    "p2_01": "13 exact goal-type expressions and HTML escaping function; Ruff E714/E731 added"
+  },
+  "ruff": {
+    "baseline_old_warnings": 121,
+    "baseline_sha": "4f02ad270fc6f400dbffacacefc3b55060db273c",
+    "now_rules_pass": "E9,F63,F7,F82,E714,E731",
+    "baseline_rule_categories": {
+      "E701": 75,
+      "E702": 26,
+      "E402": 6,
+      "E714": 13,
+      "E731": 1
+    },
+    "remaining_style_warning_exact_current_count": "NOT_MEASURED",
+    "full_E4_E7": "NOT_VERIFIED"
+  },
+  "p2_gate_acceptance": {
+    "total": 14,
+    "accepted": 7,
+    "accepted_ids": [
+      "EAI-P2-02",
+      "EAI-P2-03",
+      "EAI-P2-04",
+      "EAI-P2-06",
+      "EAI-P2-09",
+      "EAI-V32-P2-UX01",
+      "EAI-V32-P2-UX02"
+    ],
+    "p2_01": "PARTIAL",
+    "p2_05": "PARTIAL"
+  },
+  "p1_source_candidate": {
+    "done": 60,
+    "total": 60,
+    "provisional": true
+  },
+  "weighted_implementation": "UNASSESSED",
+  "weighted_verification": "UNASSESSED",
+  "physical_owner_win11": "NOT_RUN",
+  "independent_audits": "NOT_RUN",
+  "release": "HOLD"
+}
