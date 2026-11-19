@@ -12,20 +12,36 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Offline desktop syntax and isolated tests
+      - name: Offline source syntax and desktop contract tests
         shell: pwsh
         run: |
-          python -m compileall -q eai scripts/eai_desktop_entry.py tests/test_desktop_bridge.py
+          python -m compileall -q eai scripts/eai_desktop_entry.py tests/test_desktop_bridge.py tests/test_desktop_workstation.py
           python -m unittest discover -s tests -p "test_desktop*.py" -v
       - name: Build unsigned Windows GUI binary
         shell: pwsh
         run: |
-          python -m pip install pyinstaller==6.17.0
+          # Tool setup on GitHub runner may use PyPI, never customer data or credentials.
+          python -m pip install --disable-pip-version-check --only-binary=:all: pyinstaller==6.17.0
           python -m PyInstaller --noconfirm --clean scripts/eai_desktop.spec
-      - name: Upload unsigned candidate
+      - name: Validate bundled offline entry and record exact EXE hash
+        shell: pwsh
+        run: |
+          $exe = Join-Path $PWD 'dist/EAI.exe'
+          $report = Join-Path $PWD 'dist/EAI-v32-ci-selfcheck.json'
+          if (!(Test-Path -LiteralPath $exe)) { throw 'Built EXE missing' }
+          if (Test-Path -LiteralPath $report) { throw 'Self-check must not overwrite' }
+          & $exe --self-check --report $report
+          if ($LASTEXITCODE -ne 0 -or !(Test-Path -LiteralPath $report)) { throw 'Unsigned EXE self-check failed' }
+          python -c "import json,sys;p=json.load(open(sys.argv[1],encoding='utf-8'));assert p['status']=='PASS_UNSIGNED_BUNDLE_IMPORTS' and p['original_writes']==0 and p['native_gui_e2e']=='NOT_RUN'" $report
+          if ($LASTEXITCODE -ne 0) { throw 'Self-check report contract invalid' }
+          (Get-FileHash -LiteralPath $exe -Algorithm SHA256).Hash.ToLowerInvariant() | Set-Content -Encoding ascii -Path 'dist/EAI.exe.sha256'
+      - name: Upload unsigned candidate and evidence
         uses: actions/upload-artifact@v4
         with:
           name: EAI-Windows-Unsigned-Development
-          path: dist/EAI.exe
+          path: |
+            dist/EAI.exe
+            dist/EAI.exe.sha256
+            dist/EAI-v32-ci-selfcheck.json
           if-no-files-found: error
           retention-days: 7
