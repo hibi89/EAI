@@ -1,3 +1,9 @@
+## EAI V3.2 P2 handoff — 2026-11-19 KST
+
+- Latest verified functional SHA `21c5e7bf0ad44e8a4f12fc3fc4f8f0f38f2384c5`, feature branch `feature/eai-v32-owner-rebuild-20261119`; Linux [44529088580](https://github.com/hibi89/EAI/actions/runs/44529088580) SUCCESS 1,155 PASS/17 SKIP and Windows Server [44529088565](https://github.com/hibi89/EAI/actions/runs/44529088565) SUCCESS 1,171 PASS/1 SKIP plus unsigned development EXE bundle check. Repaired `network.fetch_json` to reject shadowed nested JSON keys, nonfinite constants and numeric overflow; 9 negative malformed fixtures and valid nested JSON acceptance PASS. Source SHA initial `a17d6415a8135f67ab674647b294ae90b9cc74f0` then proactive numeric overflow fix `21c5e7bf0ad44e8a4f12fc3fc4f8f0f38f2384c5`; evidence `docs/evidence/EAI_V32_P2_01_STRICT_LOCAL_JSON_20261119.json`.
+- Gate tally **P1 60/60 provisional**, **P2 7/14 50% unweighted**, official weighted implementation and verification UNASSESSED. P2-01 and P2-05 PARTIAL; tests mypy/broad style debt, external OOD corpus, owner physical Win11/IME/DPI/RSS and independent technical/security/UX audits still NOT_RUN. Main/Production, customer originals, live Hydrogen/Player/ACTIVE and release HOLD.
+- Next `ㄱ`: latest remote HEAD then prioritize P2-01 remaining test-side full static/type and meaningful actual defects, without mistaking author-run synthetic CI for independent acceptance. Do not silently expand owner privileges, use paid API, or live customer data.
+
 ## EAI V3.2 owner P2 handoff — 2026-11-19 KST
 
 - Verified functional SHA `545d09a1c187ff679bd4654ca0a0783c7e4d23a9`; Linux [44526511953](https://github.com/hibi89/EAI/actions/runs/44526511953) SUCCESS 1,154 PASS/17 SKIP; Windows Server [44526511775](https://github.com/hibi89/EAI/actions/runs/44526511775) SUCCESS 1,170 PASS/1 SKIP; unsigned development EXE selfcheck and ZIP artifact 14531945884 PASS.

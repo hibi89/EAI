@@ -1,0 +1,77 @@
+{
+  "schema": "eai.p2.owner_source_evidence.v1",
+  "date_kst": "2026-11-19",
+  "repo": "hibi89/EAI",
+  "branch": "feature/eai-v32-owner-rebuild-20261119",
+  "verified_functional_sha": "21c5e7bf0ad44e8a4f12fc3fc4f8f0f38f2384c5",
+  "code_commits": [
+    "a17d6415a8135f67ab674647b294ae90b9cc74f0",
+    "21c5e7bf0ad44e8a4f12fc3fc4f8f0f38f2384c5"
+  ],
+  "changes": [
+    "eai/network.py",
+    "tests/test_core.py"
+  ],
+  "scope": {
+    "issue": "HTTP JSON duplicates can shadow intent/proof fields; nonfinite and float exponent overflow permitted by json.loads",
+    "fix": "reject duplicate field names at every level, nonfinite constant and parsed floats, preserving existing Qwen and SearxNG behavior",
+    "negative_input_variants": 9,
+    "network_endpoint": "EXISTING_LOOPBACK_ONLY",
+    "real_external_called": false
+  },
+  "ci": {
+    "linux": {
+      "workflow_run_id": 44529088580,
+      "result": "SUCCESS",
+      "tests": 1172,
+      "passed": 1155,
+      "skipped": 17,
+      "failed": 0,
+      "xvfb_tk_pass": 34,
+      "ruff": "PASS_PINNED_CORE_AND_SOURCE_FLOW",
+      "mypy": "PASS_136_SOURCE_FILES_NORMAL_IMPORTS",
+      "new_response_forgery_regression": "PASS",
+      "offline_unsigned_zip": "PASS"
+    },
+    "windows": {
+      "workflow_run_id": 44529088565,
+      "result": "SUCCESS",
+      "tests": 1172,
+      "passed": 1171,
+      "skipped": 1,
+      "failed": 0,
+      "focused_native_tk_pass": 40,
+      "focused_native_tk_skip": 1,
+      "development_exe": "PASS_UNSIGNED_BUNDLE_IMPORTS",
+      "artifact_zip_id": 14532627997,
+      "artifact_zip_sha256": "b6991586c049ba8efd679bfa45400134c5114cde379c0bf240cd232adcb2dcd3",
+      "physical_owner_win11": "NOT_RUN"
+    }
+  },
+  "p1": {
+    "done": 60,
+    "total": 60,
+    "provisional": true
+  },
+  "p2": {
+    "accepted": 7,
+    "total": 14,
+    "unweighted_percent": 50,
+    "accepted_gate_ids": [
+      "EAI-P2-02",
+      "EAI-P2-03",
+      "EAI-P2-04",
+      "EAI-P2-06",
+      "EAI-P2-09",
+      "EAI-V32-P2-UX01",
+      "EAI-V32-P2-UX02"
+    ],
+    "p2_01": "PARTIAL",
+    "p2_05": "PARTIAL"
+  },
+  "official_weighted_implementation": "UNASSESSED",
+  "official_weighted_verification": "UNASSESSED",
+  "physical_win11": "NOT_RUN",
+  "independent_security_ux_review": "NOT_RUN",
+  "release": "HOLD"
+}
