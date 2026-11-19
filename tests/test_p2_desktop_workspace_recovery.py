@@ -72,6 +72,58 @@ class P2DesktopWorkspaceRecoveryTests(unittest.TestCase):
                 "SELECT 1 FROM sqlite_master WHERE name='limits'").fetchone())
 
 
+    def test_workspace_same_names_weak_schema_is_preserved(self):
+        # A foreign owner file with matching column names is not our journal.
+        with closing(sqlite3.connect(self.path)) as db, db:
+            db.execute("CREATE TABLE events("
+                       "id TEXT, stamp TEXT, page TEXT, op TEXT, status TEXT)")
+            db.execute("CREATE TABLE limits("
+                       "id TEXT, steps TEXT, seconds TEXT, expansions TEXT)")
+            db.execute("INSERT INTO events VALUES('owner','original','home','command','OK')")
+        before = self.path.read_bytes()
+        for operation in (
+            self.state.history,
+            self.state.limits,
+            lambda: self.state.record("home", "command", "OK"),
+            lambda: self.state.set_limits(WorkspaceLimits()),
+        ):
+            with self.subTest(operation=operation.__name__):
+                with self.assertRaisesRegex(ValueError, "preserve source"):
+                    operation()
+                self.assertEqual(self.path.read_bytes(), before)
+        with closing(sqlite3.connect(self.path)) as db:
+            self.assertEqual(db.execute("SELECT id,stamp FROM events").fetchone(),
+                             ("owner", "original"))
+
+    def test_workspace_extra_index_is_not_used_for_owner_writes(self):
+        self.state.record("home", "command", "OK")
+        with closing(sqlite3.connect(self.path)) as db, db:
+            db.execute("CREATE INDEX extra_owner_index ON events(op)")
+        before = self.path.read_bytes()
+        for operation in (
+            self.state.history,
+            lambda: self.state.record("home", "command", "OK"),
+            lambda: self.state.set_limits(WorkspaceLimits(2, 5, 1)),
+        ):
+            with self.subTest(operation=operation.__name__):
+                with self.assertRaisesRegex(ValueError, "preserve source"):
+                    operation()
+                self.assertEqual(self.path.read_bytes(), before)
+        with closing(sqlite3.connect(self.path)) as db:
+            self.assertEqual(db.execute("SELECT COUNT(*) FROM events").fetchone(), (1,))
+
+    def test_existing_zero_byte_workspace_is_preserved(self):
+        self.path.write_bytes(b"")
+        for operation in (
+            self.state.history,
+            lambda: self.state.record("home", "command", "OK"),
+            lambda: self.state.set_limits(WorkspaceLimits()),
+        ):
+            with self.subTest(operation=operation.__name__):
+                with self.assertRaisesRegex(ValueError, "preserve source"):
+                    operation()
+                self.assertEqual(self.path.read_bytes(), b"")
+
     @staticmethod
     def session_draft():
         from eai.desktop_bridge import DesktopBridge

@@ -76,28 +76,53 @@ class DesktopState:
     @contextmanager
     def _connection(self):
         path = private_db(self.root, "workspace.sqlite3")
-        # An existing journal is owner data, not a blank migration target.
-        # Never silently recreate missing tables in a damaged or substituted
-        # database. The process lock closes the first-open race among workers.
+        # Owner data must never be silently initialized from an existing empty
+        # or substituted SQLite file. Reserve creation exclusively, then open
+        # only a file known to exist. Fail closed instead of migrating originals.
+        expected_ddl = {
+            "events": "CREATE TABLE events (id INTEGER PRIMARY KEY, stamp INTEGER, page TEXT, op TEXT, status TEXT)",
+            "limits": "CREATE TABLE limits (id INTEGER PRIMARY KEY CHECK(id=1), steps INTEGER, seconds INTEGER, expansions INTEGER)",
+        }
         with _WORKSPACE_SCHEMA_INIT_LOCK:
-            missing_before_open = not path.exists()
-            db = sqlite3.connect(path, timeout=5)
+            import os
+
+            created = False
+            try:
+                fd = os.open(
+                    path, os.O_CREAT | os.O_EXCL | os.O_WRONLY |
+                    getattr(os, "O_NOFOLLOW", 0), 0o600)
+            except FileExistsError:
+                if not path.is_file() or path.stat().st_size == 0:
+                    raise ValueError("unexpected workspace schema; preserve source")
+            else:
+                os.close(fd)
+                created = True
+            db = sqlite3.connect(
+                path.resolve(strict=True).as_uri() + "?mode=rw",
+                uri=True, timeout=5)
             try:
                 db.execute("PRAGMA trusted_schema=OFF")
                 with db:
                     db.execute("BEGIN IMMEDIATE")
                     objects = db.execute(
-                        "SELECT type,name FROM sqlite_master "
-                        "WHERE type IN ('table','view','trigger')").fetchall()
-                    if missing_before_open and not objects:
-                        db.execute("CREATE TABLE events "
-                                   "(id INTEGER PRIMARY KEY, stamp INTEGER, page TEXT, op TEXT, status TEXT)")
-                        db.execute("CREATE TABLE limits "
-                                   "(id INTEGER PRIMARY KEY CHECK(id=1), steps INTEGER, seconds INTEGER, expansions INTEGER)")
+                        "SELECT type,name,sql FROM sqlite_master "
+                        "WHERE type IN ('table','view','trigger','index') "
+                        "AND name NOT LIKE 'sqlite_%'").fetchall()
+                    if created:
+                        if objects:
+                            raise ValueError("unexpected new workspace schema; preserve source")
+                        for ddl in expected_ddl.values():
+                            db.execute(ddl)
                         objects = db.execute(
-                            "SELECT type,name FROM sqlite_master "
-                            "WHERE type IN ('table','view','trigger')").fetchall()
-                    if set(objects) != {("table", "events"), ("table", "limits")}:
+                            "SELECT type,name,sql FROM sqlite_master "
+                            "WHERE type IN ('table','view','trigger','index') "
+                            "AND name NOT LIKE 'sqlite_%'").fetchall()
+                    # Column names alone do not distinguish a foreign schema:
+                    # types, primary keys, CHECK constraints and extra indexes
+                    # can change what a subsequent record/limits write affects.
+                    if (len(objects) != len(expected_ddl)
+                            or any(kind != "table" or sql != expected_ddl.get(name)
+                                   for kind, name, sql in objects)):
                         raise ValueError("unexpected workspace schema; preserve source")
                     expected = {
                         "events": ("id", "stamp", "page", "op", "status"),
