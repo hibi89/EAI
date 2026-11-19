@@ -1,0 +1,73 @@
+{
+  "schema": "eai.p2.partial_evidence.v1",
+  "date_kst": "2026-11-19",
+  "repo": "hibi89/EAI",
+  "branch": "feature/eai-v32-owner-rebuild-20261119",
+  "functional_sha": "8948a2a73a3270a2b71878d6e800a1da34255774",
+  "code_commits": [
+    "a2b1461838121ba5f77a597a0105d38ac1c750b0",
+    "42e36f2c25f02bd7a9419ab5ad0f697fbcbab6ec",
+    "8948a2a73a3270a2b71878d6e800a1da34255774"
+  ],
+  "checks": {
+    "linux": {
+      "run_id": 44502952700,
+      "result": "SUCCESS",
+      "total": 1154,
+      "passed": 1137,
+      "skipped": 17,
+      "failed": 0
+    },
+    "windows": {
+      "run_id": 44502952670,
+      "result": "SUCCESS",
+      "total": 1154,
+      "passed": 1153,
+      "skipped": 1,
+      "failed": 0,
+      "unsigned_exe_selfcheck": "PASS_UNSIGNED_BUNDLE_IMPORTS",
+      "artifact_id": 14519135244,
+      "artifact_digest": "sha256:b6ffbae1d48720379d03fe7d7c62d3ef13d3601868acf0d5dac548e61e280a3e"
+    }
+  },
+  "groups": {
+    "EAI-P2-05": {
+      "disposition": "PARTIAL_PASS_SIGNED_LOCAL_HELDOUT",
+      "new_tests": 3,
+      "quantified_local_error_and_declared_cost": true,
+      "verified_owner_signed_local_policy_fixture": true,
+      "general_ood": "NOT_RUN",
+      "production_uplift": "NOT_RUN",
+      "accepted": false
+    },
+    "EAI-P2-07": {
+      "disposition": "PARTIAL_PASS_OFF_AND_MOCK_ONLY",
+      "new_tests": 3,
+      "default_off_network_calls": 0,
+      "mocked_429_second_send_blocked": true,
+      "forged_typed_packet_rejected": true,
+      "real_approved_live": "NOT_RUN",
+      "actual_free_tier": "UNVERIFIED",
+      "accepted": false
+    }
+  },
+  "accepted_groups": [
+    "EAI-P2-02",
+    "EAI-P2-03",
+    "EAI-P2-04",
+    "EAI-P2-06",
+    "EAI-V32-P2-UX02"
+  ],
+  "count": {
+    "p1_provisional_source_swu": 60,
+    "p1_total_source_swu": 60,
+    "p2_accepted": 5,
+    "p2_total": 14,
+    "p2_group_unweighted_percent": 35.71
+  },
+  "official_implementation_rate": "UNASSESSED",
+  "official_verification_rate": "UNASSESSED",
+  "owner_win11": "NOT_RUN",
+  "independent_audit": "NOT_RUN",
+  "release": "HOLD"
+}
