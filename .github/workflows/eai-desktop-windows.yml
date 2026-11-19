@@ -29,13 +29,21 @@ jobs:
         shell: pwsh
         run: |
           $exe = Join-Path $PWD 'dist/EAI.exe'
-          $report = Join-Path $PWD 'dist/EAI-v32-ci-selfcheck.json'
+          $report = Join-Path $env:LOCALAPPDATA 'EAI-v32-ci-selfcheck.json'
           if (!(Test-Path -LiteralPath $exe)) { throw 'Built EXE missing' }
           if (Test-Path -LiteralPath $report) { throw 'Self-check must not overwrite' }
-          & $exe --self-check --report $report
-          if ($LASTEXITCODE -ne 0 -or !(Test-Path -LiteralPath $report)) { throw 'Unsigned EXE self-check failed' }
+          # The frozen GUI EXE has no console. Start-Process -Wait is required;
+          # direct '&' invocation can return before one-file extraction finishes.
+          $check = Start-Process -FilePath $exe -ArgumentList @('--self-check', '--report', $report) -PassThru -Wait
+          if (Test-Path -LiteralPath $report) {
+            Get-Content -LiteralPath $report -Raw | Write-Host
+          } else {
+            Write-Host 'Self-check report missing (no contents available)'
+          }
+          if ($check.ExitCode -ne 0 -or !(Test-Path -LiteralPath $report)) { throw 'Unsigned EXE self-check failed' }
           python -c "import json,sys;p=json.load(open(sys.argv[1],encoding='utf-8'));assert p['status']=='PASS_UNSIGNED_BUNDLE_IMPORTS' and p['original_writes']==0 and p['native_gui_e2e']=='NOT_RUN'" $report
           if ($LASTEXITCODE -ne 0) { throw 'Self-check report contract invalid' }
+          Copy-Item -LiteralPath $report -Destination 'dist/EAI-v32-ci-selfcheck.json' -ErrorAction Stop
           (Get-FileHash -LiteralPath $exe -Algorithm SHA256).Hash.ToLowerInvariant() | Set-Content -Encoding ascii -Path 'dist/EAI.exe.sha256'
       - name: Upload unsigned candidate and evidence
         uses: actions/upload-artifact@v4
