@@ -1,0 +1,84 @@
+{
+  "schema": "eai.p2.owner_source_evidence.v1",
+  "date_kst": "2026-11-19",
+  "repository": "hibi89/EAI",
+  "branch": "feature/eai-v32-owner-rebuild-20261119",
+  "verified_functional_sha": "545d09a1c187ff679bd4654ca0a0783c7e4d23a9",
+  "source_changes": [
+    "eai/network.py",
+    "tests/test_core.py"
+  ],
+  "initial_failure": {
+    "source_sha": "330eda466da717d598f510c0223e426b9f3db550",
+    "linux_ci_id": 44526060808,
+    "ci": "FAIL",
+    "reason": "120 second CPU Qwen local inference timeout was narrowed to 30 seconds; malformed whitespace input test and redirect handler class test corrected"
+  },
+  "security": {
+    "status": "PASS_SYNTHETIC_AND_LOCAL_LOOPBACK_TESTS",
+    "vulnerability": "fetch_json accepted unchecked absolute remote URL when called directly",
+    "fix": "validate actual URL before opening socket; pin localhost to IPv4 loopback numeric literal 127.0.0.1 and keep explicit local Host header; prevent URL userinfo/fragment/control, redirect/proxy, bound size/time",
+    "direct_external_http_sent": false,
+    "new_tests": [
+      "test_fetch_json_denies_remote_and_ambiguous_urls_before_transport",
+      "test_fetch_json_pins_localhost_to_numeric_loopback_and_preserves_host"
+    ],
+    "compatibility_tests": [
+      "test_http_redirects_never_followed",
+      "test_ollama_structured_input_only_over_real_local_http",
+      "test_qwen_fake_loopback_input_only_never_auto_runs"
+    ]
+  },
+  "linux": {
+    "run_id": 44526511953,
+    "conclusion": "SUCCESS",
+    "total": 1171,
+    "passed": 1154,
+    "skipped": 17,
+    "failed": 0,
+    "xvfb_tk_passed": 34,
+    "static": "PASS_E9_F63_F7_F82_E714_E731_E402_and_E701_E702_production",
+    "mypy": "PASS_136_SOURCE_FILES_WITH_NORMAL_IMPORTS",
+    "offline_zip_checksum": "PASS"
+  },
+  "windows": {
+    "run_id": 44526511775,
+    "conclusion": "SUCCESS",
+    "total": 1171,
+    "passed": 1170,
+    "skipped": 1,
+    "failed": 0,
+    "focused_native_tk_passed": 40,
+    "focused_native_tk_skipped": 1,
+    "exe_selfcheck": "PASS_UNSIGNED_BUNDLE_IMPORTS",
+    "artifact_id": 14531945884,
+    "uploaded_artifact_zip_sha256": "e90f17b961ea8bb253c6011869b06a06d7cd6f9d18efda46c0034d182744b2f2",
+    "physical_user_windows_11": "NOT_RUN"
+  },
+  "p1": {
+    "source_candidate_swu": 60,
+    "total_swu": 60,
+    "provisional": true
+  },
+  "p2": {
+    "accepted_count": 7,
+    "total": 14,
+    "unweighted_percent": 50,
+    "accepted": [
+      "EAI-P2-02",
+      "EAI-P2-03",
+      "EAI-P2-04",
+      "EAI-P2-06",
+      "EAI-P2-09",
+      "EAI-V32-P2-UX01",
+      "EAI-V32-P2-UX02"
+    ],
+    "P2_01": "PARTIAL",
+    "P2_05": "PARTIAL"
+  },
+  "weighted_implementation": "UNASSESSED",
+  "weighted_verification": "UNASSESSED",
+  "independent_tech_security_ux_audit": "NOT_RUN",
+  "owner_physical_win11": "NOT_RUN",
+  "release": "HOLD"
+}
