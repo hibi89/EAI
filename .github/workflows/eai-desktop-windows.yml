@@ -19,6 +19,13 @@ jobs:
         run: |
           python -m compileall -q eai scripts/eai_desktop_entry.py tests/test_desktop_bridge.py tests/test_desktop_workstation.py
           python -m unittest discover -s tests -p "test_desktop*.py" -v
+      - name: P2 full Windows regression including optional Ed25519 paths
+        shell: pwsh
+        run: |
+          # Synthetic/temporary source tests only; no customer original, real Player, or live provider.
+          python -m pip install --disable-pip-version-check --only-binary=:all: cryptography==46.0.4
+          python -m compileall -q eai tests scripts
+          python -m unittest discover -s tests -v
       - name: Build unsigned Windows GUI binary
         shell: pwsh
         run: |

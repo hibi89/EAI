@@ -1,3 +1,10 @@
+## CURRENT EAI V3.2 P2 HANDOFF — 2026-11-19 KST, owner + web High only
+
+- Branch `feature/eai-v32-owner-rebuild-20261119`; tested functional source/workflow SHA `36aeaa899ee062ad97e9707970582c021937c71d`; latest remote HEAD must be refetched before new `ㄱ`. All code changes are on this branch, main/Production unchanged.
+- Real P2 defect fixes: Tcl wrong-thread interpreter finalization in GUI test cleanup; source-tree EXE entry import path; noninteractive Windows OS focus as SKIP (NOT real native input proof); frozen GUI EXE selfcheck process wait/report handling. Linux full CI (run 44489811436) 1115 PASS/17 SKIP of 1132, Xvfb 33 PASS; Windows Server 2025 desktop CI + unsigned EXE report/hash/artifact (run 44489811557) SUCCESS, 39 PASS/1 SKIP, NOT physical Win11/IME/DPI.
+- Inherited 42 BE + 6 FE + V3.2 W01–W12 source mappings: 57/7/19 unique path subsets, all paths exist, 69 combined unique. Source mapping alone does not fully accept original 48 REQ contracts; 60/60 provisional source candidates, official implementation UNASSESSED. P2 current full-gate count 0/14, official verification UNASSESSED; separate independent audits NOT_RUN, release HOLD.
+- Next wave: high-owned comprehensive Windows full Python+Ed25519 test and focused offline DB recovery/Player/forged evidence; use existing `docs/EAI_V32_OWNER_P2.md` gate matrix, `docs/EAI_V32_OWNER_SWU_QUEUE.json`, AGENTS, P26/ADR-0002. Only user may provide physical machine/permission or release GO; no Codex/Astra worker.
+
 ## CURRENT HANDOFF — EAI V3.2 2026-11-19 KST · P1 V3.2 12/12 new source candidate, P2 NOT_RUN
 
 - **Authority:** User+web GPT-6 High only for design/implementation/FE/integration/P2 functionality/security tests and defect repair. No Codex/Astra/other AI work. Independent audit NOT_RUN, no automatic relaxation of original P26/ADR-0002, no real Player/Hydrogen/ACTIVE/original/paid/Production/main without new GO.
