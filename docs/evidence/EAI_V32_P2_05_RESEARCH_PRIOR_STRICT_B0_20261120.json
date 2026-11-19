@@ -1,0 +1,78 @@
+{
+  "schema": "eai.v32.p2.source_evidence.v1",
+  "date_kst": "2026-11-20",
+  "repo": "hibi89/EAI",
+  "branch": "feature/eai-v32-owner-rebuild-20261119",
+  "verified_functional_sha": "5923005f2ccc08493c152c0915752c304dbd951b",
+  "source_commits": [
+    "80e6257bfe7dc4e8deaf0f6404b3dcebc072eb56",
+    "5923005f2ccc08493c152c0915752c304dbd951b"
+  ],
+  "changed_code": [
+    "eai/strategy_learner.py",
+    "eai/strategy_research_ranker.py",
+    "tests/test_strategy_research_ranker.py"
+  ],
+  "fixes": [
+    "require exact False on 3 research-only authority flags",
+    "require actual SyntheticB1Benchmark type, canonical baseline and exact int 6 B0/B1 counters"
+  ],
+  "new_adversarial_forms": {
+    "prior_falsey_fields": 12,
+    "forged_benchmark_reports": 9,
+    "total": 21
+  },
+  "linux": {
+    "run_id": 44559523260,
+    "status": "SUCCESS",
+    "tests_total": 1190,
+    "pass": 1170,
+    "skip": 20,
+    "fail": 0,
+    "mypy": "237_PYTHON_FILES_PASS",
+    "ruff": "PASS_E4_E7_E9_F63_F7_F82",
+    "new_cases": "2 named tests, 21 malformed forms PASS",
+    "real_ood": "NOT_RUN"
+  },
+  "windows": {
+    "run_id": 44559522767,
+    "status": "SUCCESS",
+    "tests_total": 1190,
+    "pass": 1189,
+    "skip": 1,
+    "fail": 0,
+    "focused_native_tk": "40_PASS_1_UNATTENDED_FOCUS_SKIP",
+    "unsigned_development_exe": "PASS_UNSIGNED_BUNDLE_IMPORTS",
+    "uploaded_zip_artifact_id": 14545778901,
+    "uploaded_zip_sha256": "11d1ca1c71efb37298e7007531bfce23e631b2e319bd8007ff0c4c50134dc0ac",
+    "physical_owner_win11": "NOT_RUN"
+  },
+  "p1": {
+    "source_candidates": 60,
+    "total": 60,
+    "provisional": true
+  },
+  "p2": {
+    "accepted": 8,
+    "total": 14,
+    "unweighted_percent": 57.14,
+    "accepted_ids": [
+      "EAI-P2-01",
+      "EAI-P2-02",
+      "EAI-P2-03",
+      "EAI-P2-04",
+      "EAI-P2-06",
+      "EAI-P2-09",
+      "EAI-V32-P2-UX01",
+      "EAI-V32-P2-UX02"
+    ],
+    "EAI_P2_05": "PARTIAL_SYNTHETIC_ONLY_REAL_OOD_NOT_RUN"
+  },
+  "weighted_implementation": "UNASSESSED",
+  "weighted_verification": "UNASSESSED",
+  "real_owner_ood": "NOT_RUN",
+  "independent_ood_oracle": "NOT_RUN",
+  "physical_win11": "NOT_RUN",
+  "independent_audit": "NOT_RUN",
+  "release": "HOLD"
+}
