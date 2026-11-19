@@ -11,7 +11,7 @@ PAGES = {
     "settings": ("설정 및 보안", "Settings", "\ue713"),
 }
 OPS = {"command": "CPU 명령", "example": "로컬 예제 열기", "draft_open": "설계 초안 열기",
-       "draft_save": "설계 초안 저장", "design": "설계 대안 비교", "catalog": "AXNODE 검색",
+       "draft_save": "설계 초안 저장", "discover": "로컬 능력 확인", "design": "설계 대안 비교", "catalog": "AXNODE 검색",
        "node": "노드 상세", "plan": "계획 검토", "simulate": "순수 시뮬레이션",
        "verify": "영수증 검사", "settings": "예산 저장", "journey": "설계 영수증 재계산"}
 STATUSES = {
@@ -51,6 +51,15 @@ def explain(op, result):
         return result["text"]
     if code in ERROR_TEXT:
         return ERROR_TEXT[code]
+    if op == "discover":
+        lines = ["CPU 입력 도메인: " + (result["matched_typed_domain"] or "자동 매칭 없음"),
+                 "등록된 유형 13개: " + ", ".join(result["available_typed_domains"]),
+                 "AXNODE: " + result["library_status"],
+                 "실제 기능 호출·설계 검증·외부 행동은 수행하지 않았습니다."]
+        for node in result["node_candidates"]:
+            lines.append(node["node_id"] + " · " + node["status"] + " · SHA256 " + node["sha256"])
+        lines.append("다음: " + result["next_step"])
+        return "\n".join(lines)
     if op == "design":
         u = result["uncertainty"]
         lines = [f"검색 확장 {result['expansions']}회   ·   미확인 {u['unknown_count']}건   ·   충돌 {u['contradiction_count']}건",
