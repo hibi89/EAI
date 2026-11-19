@@ -280,7 +280,7 @@ class WorkstationContractTests(unittest.TestCase):
         self.assertEqual(held["reasons"], ["ARCHITECT_OR_SOURCE_CHANGED"])
         for forged in (
             dict(report, truth_status="VERIFIED"),
-            dict(report, evidence_review_required=False),
+            dict(report, evidence_review_required=not report["evidence_review_required"]),
             dict(report, search_budget_expansions=False),
             dict(report, search_budget_expansions=9),
             dict(report, search_budget_expansions="2"),
