@@ -1,0 +1,75 @@
+{
+  "schema": "eai.p2.synthetic_evidence.v1",
+  "date_kst": "2026-11-19",
+  "repository": "hibi89/EAI",
+  "branch": "feature/eai-v32-owner-rebuild-20261119",
+  "functional_sha": "047aff74b9100cd673533864d48f97fd94609e14",
+  "security_fix_sha": "2e988eb21fd86517a0ebf823a8667db4eeaf19ca",
+  "result": "EXACT_SOURCE_CI_PASS_LIMITED",
+  "linux": {
+    "run_id": 44510991168,
+    "conclusion": "SUCCESS",
+    "total": 1167,
+    "passed": 1150,
+    "skipped": 17,
+    "failed": 0,
+    "tk_xvfb_focused_pass": 33,
+    "compile": "PASS",
+    "ruff_correctness_subset": "PASS_E9_F63_F7_F82",
+    "mypy_version": "1.18.2",
+    "mypy": "PASS_7_NAMED_MODULES_ONLY",
+    "typed_modules": [
+      "eai/contracts.py",
+      "eai/player_runtime.py",
+      "eai/goal_dispatch.py",
+      "eai/synthetic_curriculum.py",
+      "eai/synthetic_candidate_benchmark.py",
+      "eai/synthetic_scenario_transfer.py",
+      "eai/strategy_learner.py"
+    ],
+    "whole_repository_typed": "NOT_RUN",
+    "zip_checksum": "PASS_UNSIGNED_REVIEW_CANDIDATE"
+  },
+  "windows_server_2025": {
+    "run_id": 44510991358,
+    "conclusion": "SUCCESS",
+    "total": 1167,
+    "passed": 1166,
+    "skipped": 1,
+    "failed": 0,
+    "focused_native_tk_pass": 39,
+    "focused_native_tk_unattended_focus_skip": 1,
+    "unsigned_exe": "PASS_UNSIGNED_BUNDLE_IMPORTS",
+    "artifact_id": 14524266287,
+    "uploaded_zip_sha256": "f3eab0260f62cc51a5e9cc96f837863e1e4b529c7c98cce620b8bf50c36daa14",
+    "owner_physical_win11": "NOT_RUN"
+  },
+  "p2_01": {
+    "status": "PARTIAL_PASS_TYPED_7_EXPLICIT_MODULES",
+    "whole_gate_accepted": false,
+    "legacy_broad_ruff_warnings": 121,
+    "style_debt_resolved": false
+  },
+  "p2_05": {
+    "status": "PARTIAL_PASS_FORGED_SYNTHETIC_TRANSFER_PROVENANCE",
+    "whole_gate_accepted": false,
+    "negative_tamper_variations": 7,
+    "cross_os_regression": "PASS",
+    "real_world_ood": "NOT_RUN",
+    "trusted_model_uplift": "NOT_ESTABLISHED",
+    "real_player": "HOLD"
+  },
+  "progress": {
+    "p1_source_candidates": 60,
+    "p1_swu_total": 60,
+    "p1_provisional": true,
+    "p2_accepted_groups": 7,
+    "p2_groups_total": 14,
+    "p2_unweighted_percent": 50,
+    "official_weighted_implementation": "UNASSESSED",
+    "official_weighted_verification": "UNASSESSED"
+  },
+  "independent_technical_security_audit": "NOT_RUN",
+  "independent_ux_audit": "NOT_RUN",
+  "release": "HOLD"
+}

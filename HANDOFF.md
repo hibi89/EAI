@@ -1,3 +1,10 @@
+## EAI V3.2 P2 handoff update — 2026-11-19 KST
+
+- Exact verified code/CI SHA: `047aff74b9100cd673533864d48f97fd94609e14`; Linux [44510991168](https://github.com/hibi89/EAI/actions/runs/44510991168) SUCCESS 1,150 PASS/17 SKIP; Windows Server [44510991358](https://github.com/hibi89/EAI/actions/runs/44510991358) SUCCESS 1,166 PASS/1 SKIP, unsigned EXE selfcheck PASS, artifact 14524266287. This is author-run CI, not independent or owner Win11.
+- P2-05 forged-success provenance now fail-closed (candidate SHA, two scenario types, bounded counters, zero unmatched, nonauthorizing scope), negative regression on both OS; still PARTIAL, real OOD NOT_RUN. P2-01 pinned mypy 7 named core modules PASS in Linux (was 3); full type/static still PARTIAL, historical Ruff style debt remains.
+- P1 provisional 60/60 source units; P2 accepted 7/14 groups, unchanged; official weighted P1/P2 UNASSESSED; independent audits and physical Win11 NOT_RUN; external/paid/real Player/Production/release HOLD.
+- Next `ㄱ`: confirm fresh remote branch HEAD then P2-01 wider meaningful typing and P2-05 OOD negative controls; do not promote either gate prematurely. Source proof: `docs/evidence/EAI_V32_P2_01_05_EXPANSION_20261119.json`. No unauthorized owner permission or main merge.
+
 ## EAI V3.2 P2 — UX01 actual local Architect input acceptance + scoped P2-01 static (2026-11-19 KST)
 
 - **Exact CI source SHA** `10f244e0215b65b12834242c927674db0d55265d` (feature branch only). Linux [Actions 44508443620](https://github.com/hibi89/EAI/actions/runs/44508443620) **SUCCESS**: 1,166 tests = **1,149 PASS / 17 SKIP / 0 FAIL**; Tk Xvfb focused 33 PASS. Windows Server 2025 [Actions 44508443643](https://github.com/hibi89/EAI/actions/runs/44508443643) **SUCCESS**: 1,166 = **1,165 PASS / 1 SKIP / 0 FAIL**, native Tk focused 39 PASS / 1 unattended-focus SKIP; unsigned EXE/selfcheck `PASS_UNSIGNED_BUNDLE_IMPORTS`, artifact `14519908796`, uploaded ZIP sha256 `e9e7e0788f2fc929c8f80deefd0851ee93003653ae68925cb1e5f8de818abcd8`. Neither CI runner is the owner's physical Windows 11 session/IME/DPI/RSS.
