@@ -101,6 +101,47 @@ class DesktopBridge:
                 "truth_verified": False, "external_actions": 0}
 
     @staticmethod
+    def discover_goal_capabilities(raw: dict, axnode_root: str | Path | None = None) -> dict:
+        """Discover real pre-registered typed CPU kinds and chosen local AXNODE hints.
+
+        A string description is NOT parsed as a verified typed goal or executable plan.
+        No default library, model, network, action handler or original-data scan.
+        """
+        problem = ProblemSpec.validate(raw)
+        from .goal_dispatch import ROUTED_KINDS, ROUTER_VERSION
+        from .axnode_retrieval import AXNodeRetriever
+        matched = problem.domain if problem.domain in ROUTED_KINDS else None
+        candidates = []
+        library_status = "NO_LIBRARY_SELECTED"
+        if axnode_root is not None:
+            if "local.read" not in problem.permissions:
+                library_status = "HOLD_LOCAL_READ_NOT_APPROVED"
+            else:
+                with AXNodeStore(axnode_root, read_only=True) as store:
+                    candidates = [
+                        {"sha256": node.sha256, "node_id": node.node_id,
+                         "status": node.status, "output_type": node.output_type,
+                         "score": node.score, "provenance": node.provenance}
+                        for node in AXNodeRetriever(store).find(problem.goal[:300], limit=8)
+                    ]
+                library_status = "LOCAL_HINTS_UNVERIFIED" if candidates else "NO_MATCHING_LOCAL_NODES"
+        return {
+            "kind": "GOAL_CAPABILITY_DISCOVERY",
+            "status": "TYPED_DOMAIN_MATCH_UNVERIFIED" if matched else "NO_TYPED_CPU_MATCH",
+            "matched_typed_domain": matched,
+            "available_typed_domains": sorted(ROUTED_KINDS),
+            "route_registry": ROUTER_VERSION,
+            "library_status": library_status,
+            "node_candidates": candidates,
+            "problem_sha256": problem.digest(),
+            "execution": "NOT_EXECUTED",
+            "plan_verified": False, "real_world_verified": False,
+            "external_actions": 0,
+            "next_step": "REVIEW_TYPED_INPUTS_AND_LOCAL_EVIDENCE" if matched or candidates
+                         else "OWNER_MUST_SELECT_SUPPORTED_DOMAIN_OR_PROVIDE_LOCAL_EVIDENCE",
+        }
+
+    @staticmethod
     def load_draft(path: str | Path) -> dict:
         raw = _document(path)
         ProblemSpec.validate(raw)
