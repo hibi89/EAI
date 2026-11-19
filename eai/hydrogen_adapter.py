@@ -320,22 +320,43 @@ def _read_external_owner_trust_root(path) -> tuple[str, str]:
     from pathlib import Path
     import os
     import stat
+    from .local_files import local_path
 
     if path is None:
         raise PermissionError("separate owner trust root not provisioned")
     try:
         p = Path(path)
-        if (not p.is_absolute() or p.is_symlink() or p.parent.is_symlink()
-                or not p.is_file()):
-            raise PermissionError("explicit existing owner trust root required")
+        if not p.is_absolute():
+            raise PermissionError("absolute owner trust root required")
+        # The trust anchor can authorize a real external send. Inspect all
+        # ancestors and refuse linked files/reparse points, not only the final
+        # path and its immediate parent. This does NOT replace Windows ACL review.
+        p = local_path(p, private=True)
+        entry = p.lstat()
+        if not stat.S_ISREG(entry.st_mode) or entry.st_nlink != 1:
+            raise PermissionError("ordinary single-link owner trust root required")
         flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0)
         fd = os.open(p, flags)
         with os.fdopen(fd, "rb") as stream:
             info = os.fstat(stream.fileno())
-            if (not stat.S_ISREG(info.st_mode)
+            if (not stat.S_ISREG(info.st_mode) or info.st_nlink != 1
+                    or (info.st_dev, info.st_ino) !=
+                       (entry.st_dev, entry.st_ino)
                     or (os.name == "posix" and info.st_mode & 0o022)):
-                raise PermissionError("unsafe owner trust file permissions")
+                raise PermissionError("unsafe or substituted owner trust root")
+            if info.st_size > 512:
+                raise PermissionError("owner trust root too large")
             content = stream.read(513)
+            after = os.fstat(stream.fileno())
+            current = p.lstat()
+            if ((after.st_dev, after.st_ino, after.st_size,
+                  after.st_mtime_ns) !=
+                    (info.st_dev, info.st_ino, info.st_size,
+                     info.st_mtime_ns)
+                    or (current.st_dev, current.st_ino) !=
+                       (info.st_dev, info.st_ino)
+                    or local_path(p, private=True) != p):
+                raise PermissionError("owner trust root changed during read")
         if len(content) > 512:
             raise PermissionError("owner trust root too large")
         data = strict_json(content, max_bytes=512)

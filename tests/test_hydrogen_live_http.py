@@ -16,7 +16,8 @@ from eai.contracts import canonical_bytes
 from eai.hydrogen_packet import ResearchPacket
 from eai.hydrogen_adapter import (
     _LiveSendLedger, _ledger_failure_status, _live_request_id,
-    _provider_http_failure_reason, build_hydrogen_request_preview,
+    _provider_http_failure_reason, _read_external_owner_trust_root,
+    build_hydrogen_request_preview,
     dispatch_live_hydrogen, SignedLiveSendPermit,
 )
 from eai.research_policy import ResearchMode, ResearchPolicy
@@ -178,6 +179,88 @@ class HydrogenLiveHttpDiagnosticsTests(unittest.TestCase):
                         .fetchone(), ("READY",))
                     self.assertEqual(db.execute(
                         "SELECT COUNT(*) FROM eai_live_reservations").fetchone()[0], 0)
+
+
+    @staticmethod
+    def owner_root_bytes() -> bytes:
+        return canonical_bytes({
+            "schema": "eai.hydrogen.owner.root.v1",
+            "project_id": "eai-test-project",
+            "owner_key_sha256": "a" * 64,
+        })
+
+    def test_owner_trust_root_requires_absolute_ordinary_single_link(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            trust = root / "trusted-root.json"
+            trust.write_bytes(self.owner_root_bytes())
+            self.assertEqual(
+                _read_external_owner_trust_root(trust),
+                ("eai-test-project", "a" * 64))
+            with self.assertRaises(PermissionError):
+                _read_external_owner_trust_root(Path("trusted-root.json"))
+            with self.assertRaises(PermissionError):
+                _read_external_owner_trust_root(root / "missing-root.json")
+            aliased = root / "linked-root.json"
+            try:
+                os.link(trust, aliased)
+            except (OSError, NotImplementedError):
+                self.skipTest("hardlinks unavailable on this filesystem")
+            with self.assertRaises(PermissionError):
+                _read_external_owner_trust_root(aliased)
+            with self.assertRaises(PermissionError):
+                _read_external_owner_trust_root(trust)
+            self.assertEqual(trust.read_bytes(), self.owner_root_bytes())
+
+    def test_owner_trust_root_rejects_symlinked_grandparent_before_send(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            canonical_dir = root / "actual" / "child"
+            canonical_dir.mkdir(parents=True)
+            trust = canonical_dir / "trusted-root.json"
+            trust.write_bytes(self.owner_root_bytes())
+            alias = root / "alias"
+            try:
+                alias.symlink_to(root / "actual", target_is_directory=True)
+            except (OSError, NotImplementedError):
+                self.skipTest("directory symlinks unavailable on this host")
+            forged_path = alias / "child" / "trusted-root.json"
+            with self.assertRaises(PermissionError):
+                _read_external_owner_trust_root(forged_path)
+            packet = self.packet()
+            baseline = object()
+            coordinator = ResearchCoordinator(ResearchPolicy(
+                mode=ResearchMode.RESEARCH_OPT_IN,
+                external_sends_approved=True, free_tier_verified=True))
+            ledger = root / "must-not-exist.sqlite"
+            with patch("eai.hydrogen_adapter.http.client.HTTPSConnection",
+                       side_effect=AssertionError("network must remain closed")):
+                result = dispatch_live_hydrogen(
+                    packet, baseline, coordinator=coordinator,
+                    api_key="A" * 32, owner_permit=None,
+                    owner_trust_root_path=forged_path,
+                    live_ledger_path=ledger, allow_ledger_create=True)
+            self.assertEqual(result.status, "HOLD_OWNER_TRUST_NOT_PROVISIONED")
+            self.assertIs(result.baseline, baseline)
+            self.assertEqual(result.requests_attempted, 0)
+            self.assertFalse(ledger.exists())
+            self.assertEqual(trust.read_bytes(), self.owner_root_bytes())
+
+    def test_owner_trust_root_oversized_or_noncanonical_is_untrusted(self):
+        with TemporaryDirectory() as directory:
+            path = Path(directory) / "owner-root.json"
+            for data in (b"x" * 513,
+                         b'{"owner_key_sha256":"' + b"a" * 64
+                         + b'","project_id":"eai-test-project","schema":'
+                         + b'"eai.hydrogen.owner.root.v1"}\\n',
+                         b'{"schema":"eai.hydrogen.owner.root.v1",'
+                         + b'"project_id":"eai-test-project",'
+                         + b'"owner_key_sha256":"b","owner_key_sha256":"'
+                         + b"a" * 64 + b'"}'):
+                with self.subTest(data=data[:24]):
+                    path.write_bytes(data)
+                    with self.assertRaises(PermissionError):
+                        _read_external_owner_trust_root(path)
 
     def test_missing_per_send_consent_holds_before_network_or_ledger_create(self):
         packet = self.packet()
