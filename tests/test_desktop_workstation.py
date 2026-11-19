@@ -1,6 +1,7 @@
 """Real CPU, disposable SQLite and native Tk. Only file/confirmation dialogs are scripted."""
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import closing
+import gc
 import hashlib
 import json
 from pathlib import Path
@@ -479,9 +480,15 @@ class NativeWorkstationTests(unittest.TestCase):
         self.wait()
 
     def cleanup_window(self):
+        # Tk interpreters must be finalized on their creating UI thread.
+        # A later worker-thread GC of a previous test window can crash Tcl
+        # with Tcl_AsyncDelete even after the window was visually destroyed.
         if self.app is not None:
             self.wait()
             self.app.close()
+            self.app = None
+        self.root = None
+        gc.collect()
 
     def wait(self):
         start = time.monotonic()
