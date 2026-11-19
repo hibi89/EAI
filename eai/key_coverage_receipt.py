@@ -30,7 +30,7 @@ def _independent(path, column, encoding):
                 len({x.casefold() for x in names}) != len(names) or
                 column not in names or "__overflow__" in names):
             raise ValueError("invalid independent CSV keys/header")
-        keys = []
+        keys: list[str] = []
         for record in reader:
             if (len(keys) >= MAX_ROWS or "__overflow__" in record or
                     None in record or any(type(x) is not str or

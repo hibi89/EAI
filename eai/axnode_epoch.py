@@ -85,7 +85,7 @@ def _copy_checkpoint_database(
 def _file_identity(path: Path) -> tuple[int, int]:
     info = path.lstat()
     if (not stat.S_ISREG(info.st_mode)
-            or getattr(info, "st_file_attributes", 0) & stat.FILE_ATTRIBUTE_REPARSE_POINT):
+            or getattr(info, "st_file_attributes", 0) & getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400)):
         raise ValueError("checkpoint requires regular, unlinked databases")
     return info.st_dev, info.st_ino
 

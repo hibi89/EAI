@@ -845,7 +845,11 @@ def read_local_windows_hydrogen_api_key() -> str:
             ("TargetAlias", wintypes.LPWSTR), ("UserName", wintypes.LPWSTR),
         ]
 
-    advapi = ctypes.WinDLL("Advapi32", use_last_error=True)
+    # Never fall back to environment secrets or a simulated credential.
+    win_dll = getattr(ctypes, "WinDLL", None)
+    if win_dll is None:
+        raise PermissionError("Windows Credential Manager unavailable")
+    advapi = win_dll("Advapi32", use_last_error=True)
     read = advapi.CredReadW
     read.argtypes = [wintypes.LPCWSTR, wintypes.DWORD, wintypes.DWORD,
                      ctypes.POINTER(ctypes.POINTER(_CREDENTIALW))]

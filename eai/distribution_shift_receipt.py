@@ -24,7 +24,7 @@ def _other_scan(path, goal):
             raise ValueError("invalid independent headers")
         if not set(goal.columns)<=set(fields):
             raise ValueError("independent column missing")
-        arrays={name:[] for name in goal.columns}
+        arrays: dict[str, list[Decimal]] = {name: [] for name in goal.columns}
         total,invalid=0,0
         for row in reader:
             total+=1

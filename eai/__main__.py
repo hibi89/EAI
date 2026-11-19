@@ -7,6 +7,7 @@ import json
 import sqlite3
 from pathlib import Path
 import sys
+from typing import NoReturn
 
 from . import __version__
 from .intent import QwenIntentParser
@@ -37,7 +38,7 @@ class _PrivateCLIArgumentParser(argparse.ArgumentParser):
     Preserve standard exit-code 2 without revealing the rejected input,
     filesystem path, command text or pasted secret in stderr.
     """
-    def error(self, message: str) -> None:
+    def error(self, message: str) -> NoReturn:
         # The content of message is untrusted and MUST NOT be printed.
         self.exit(2, f"{self.prog}: error: EAI_ARGUMENT_REJECTED\n")
 

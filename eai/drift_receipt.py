@@ -20,7 +20,8 @@ def _independent_profile(path,encoding):
             len({x.casefold() for x in headers})!=len(headers)
         ):
             raise ValueError('schema drift receipt missing or duplicate header')
-        tally=defaultdict(lambda:{'numeric_count':0,'text_count':0,'missing_count':0})
+        tally: dict[str, dict[str, int]] = defaultdict(
+            lambda: {'numeric_count': 0, 'text_count': 0, 'missing_count': 0})
         total=0
         for row in parser:
             total+=1
