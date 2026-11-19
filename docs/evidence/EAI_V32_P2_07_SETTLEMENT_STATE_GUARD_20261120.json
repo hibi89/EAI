@@ -1,0 +1,68 @@
+{
+  "schema": "eai.v32.p2.source_ci_evidence.v1",
+  "event_utc": "2026-11-19T15:01:19Z",
+  "date_kst": "2026-11-20",
+  "repo": "hibi89/EAI",
+  "branch": "feature/eai-v32-owner-rebuild-20261119",
+  "verified_functional_sha": "333db6fd4ee43bda9604d2a9839e4abd42f68ef9",
+  "changes": [
+    "eai/hydrogen_adapter.py",
+    "tests/test_hydrogen_live_http.py"
+  ],
+  "bug": "SQL UPDATE of live reservation status could affect zero rows while settle() still returned success",
+  "fix": "BEGIN IMMEDIATE checks READY, one pending RESERVED_UNKNOWN_DELIVERY nonce, affected-row count; missing/tampered/replayed/revoked nonce causes permanent HOLD and PermissionError",
+  "negative_tests": [
+    "test_live_settlement_requires_unmodified_pending_row",
+    "test_live_settlement_deleted_row_or_replayed_result_stays_hold",
+    "test_live_failure_settlement_requires_reservation_and_holds"
+  ],
+  "linux": {
+    "run_id": 44549410361,
+    "conclusion": "SUCCESS",
+    "tests": 1181,
+    "pass": 1164,
+    "skip": 17,
+    "fail": 0,
+    "ruff": "PASS_FULL_E4_E7_E9_F63_F7_F82",
+    "mypy": "PASS_236_FILES",
+    "focused_Xvfb_gui": "34_PASS",
+    "synthetic_no_external_data": true
+  },
+  "windows": {
+    "run_id": 44549410413,
+    "conclusion": "SUCCESS",
+    "tests": 1181,
+    "pass": 1180,
+    "skip": 1,
+    "fail": 0,
+    "native_tk_focus": "40_PASS_1_UNATTENDED_FOCUS_SKIP",
+    "unsigned_exe_selfcheck": "PASS_UNSIGNED_BUNDLE_IMPORTS",
+    "uploaded_artifact_zip_id": 14542510710,
+    "uploaded_zip_sha256": "47a8eef035c1cb52e996162469f1f2fe66aa607ba4a1fd5969b56d1770ce3eca",
+    "physical_owner_win11": "NOT_RUN"
+  },
+  "progress": {
+    "p1_provisional_swu_done": 60,
+    "p1_swu_total": 60,
+    "p2_accepted": 8,
+    "p2_gate_total": 14,
+    "unweighted_percent": 57.14,
+    "p2_accepted_ids": [
+      "EAI-P2-01",
+      "EAI-P2-02",
+      "EAI-P2-03",
+      "EAI-P2-04",
+      "EAI-P2-06",
+      "EAI-P2-09",
+      "EAI-V32-P2-UX01",
+      "EAI-V32-P2-UX02"
+    ],
+    "p2_07": "PARTIAL"
+  },
+  "official_weighted_implementation": "UNASSESSED",
+  "official_weighted_verification": "UNASSESSED",
+  "independent_audits": "NOT_RUN",
+  "owner_physical_windows11": "NOT_RUN",
+  "external_real_provider": "NOT_RUN",
+  "release": "HOLD"
+}
