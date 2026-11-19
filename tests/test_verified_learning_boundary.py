@@ -87,7 +87,7 @@ class VerifiedLearningBoundaryTests(unittest.TestCase):
         }
 
     def compose(self, name, count, *, author="fixture.producer", pre=()):
-        hashes = []
+        hashes: list[str] = []
         for index in range(count):
             inputs = {"source": "csv_ref"}
             if index:
@@ -199,7 +199,10 @@ class VerifiedLearningBoundaryTests(unittest.TestCase):
         self.assertFalse(m.production_accuracy_established)
         self.assertFalse(m.permits_active_promotion)
         self.assertNotIn("Disposable reconciliation", str(m))
-        self.assertEqual(self.journal.current_verified_selection().candidate_sha256,
+        selection = self.journal.current_verified_selection()
+        self.assertIsNotNone(selection)
+        assert selection is not None
+        self.assertEqual(selection.candidate_sha256,
                          result.advisory_candidate_sha256)
 
     def test_p2_signed_heldout_regression_is_counted_but_not_selected(self):
@@ -240,7 +243,10 @@ class VerifiedLearningBoundaryTests(unittest.TestCase):
         self.assertEqual(dict(result.held_out_errors)[self.challenger.candidate_sha256], 1)
         self.assertEqual(result.status, "ROLLBACK_HELD_OUT_REGRESSION")
         self.assertEqual(result.advisory_candidate_sha256, self.baseline.candidate_sha256)
-        self.assertEqual(self.journal.current_verified_selection().candidate_sha256,
+        selection = self.journal.current_verified_selection()
+        self.assertIsNotNone(selection)
+        assert selection is not None
+        self.assertEqual(selection.candidate_sha256,
                          self.baseline.candidate_sha256)
 
     def test_a_strictly_correct_challenger_recovers_from_unreliable_baseline(self):

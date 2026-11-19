@@ -117,6 +117,8 @@ class CandidateEvidenceReviewTests(unittest.TestCase):
             self.assertFalse(result.permits_promotion)
         with CandidateReviewJournal(path) as journal:
             entry = journal.entry_at(1)
+            self.assertIsNotNone(entry)
+            assert entry is not None
             self.assertEqual(entry.entry_sha256, result.journal_entry_sha256)
             self.assertEqual(entry.evidence_sha256, result.independent_review_sha256)
             self.assertEqual(entry.detached_binding_sha256, result.detached_binding_sha256)

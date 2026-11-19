@@ -111,8 +111,10 @@ class CandidateReviewJournalTests(unittest.TestCase):
             journal.record(self.review, state="QUARANTINED")
             with self.assertRaisesRegex(ValueError, "cannot self-reinstate"):
                 journal.record(self.review, state="REVIEW_HOLD")
-            self.assertEqual(journal.latest_for(self.review.candidate_sha256).state,
-                             "QUARANTINED")
+            latest = journal.latest_for(self.review.candidate_sha256)
+            self.assertIsNotNone(latest)
+            assert latest is not None
+            self.assertEqual(latest.state, "QUARANTINED")
 
     def test_withdrawn_review_is_terminal_even_if_user_supplies_new_claim(self):
         with CandidateReviewJournal(self.path, create=True) as journal:
@@ -136,8 +138,10 @@ class CandidateReviewJournalTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "ACTIVE pointer evidence changed"):
                 journal.record(self.review, state="QUARANTINED",
                                previous_active_sha256="b" * 64)
-            self.assertEqual(journal.latest_for(self.review.candidate_sha256).
-                             previous_active_sha256, "a" * 64)
+            latest = journal.latest_for(self.review.candidate_sha256)
+            self.assertIsNotNone(latest)
+            assert latest is not None
+            self.assertEqual(latest.previous_active_sha256, "a" * 64)
 
     def test_untrusted_receipt_cannot_enter_review_hold(self):
         bad = replace(self.review,
@@ -147,8 +151,10 @@ class CandidateReviewJournalTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "untrusted review"):
                 journal.record(bad, state="REVIEW_HOLD")
             journal.record(bad, state="QUARANTINED")
-            self.assertEqual(journal.latest_for(bad.candidate_sha256).state,
-                             "QUARANTINED")
+            latest = journal.latest_for(bad.candidate_sha256)
+            self.assertIsNotNone(latest)
+            assert latest is not None
+            self.assertEqual(latest.state, "QUARANTINED")
 
     def test_existing_file_not_overwritten_on_create(self):
         self.path.write_bytes(b"original")
