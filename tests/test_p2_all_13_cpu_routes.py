@@ -119,6 +119,33 @@ class AllThirteenOfflineRoutesTests(unittest.TestCase):
                  for p in self.root.iterdir() if p.is_file()}
         self.assertEqual(after, baseline, "CPU route changed input or created a file")
 
+    def test_symlinked_goal_or_csv_and_parent_traversal_fail_closed(self):
+        goal = self.root / self.SAMPLE_GOALS["csv_audit"]
+        source = self.root / "sample_sales.csv"
+        source_digest = hashlib.sha256(source.read_bytes()).hexdigest()
+        raw = json.loads(goal.read_text(encoding="utf-8"))
+        modified = self.root / "untrusted.csv_audit.json"
+        modified.write_text(json.dumps(dict(raw, left="../sample_sales.csv")),
+                            encoding="utf-8")
+        with self.assertRaises(ValueError):
+            execute_goal_document(modified)
+        self.assertEqual(hashlib.sha256(source.read_bytes()).hexdigest(), source_digest)
+        # Windows symlink privileges can be unavailable; traversal denial is
+        # required on either platform irrespective of symlink capability.
+        link = self.root / "linked_source.csv"
+        try:
+            link.symlink_to(source)
+        except (OSError, NotImplementedError):
+            return
+        modified.write_text(json.dumps(dict(raw, left=link.name)), encoding="utf-8")
+        with self.assertRaises(ValueError):
+            execute_goal_document(modified)
+        goal_link = self.root / "linked_goal.json"
+        goal_link.symlink_to(goal)
+        with self.assertRaises(ValueError):
+            execute_goal_document(goal_link)
+        self.assertEqual(hashlib.sha256(source.read_bytes()).hexdigest(), source_digest)
+
     def test_invalid_synthetic_sqlite_and_goal_kind_fail_before_any_execution(self):
         goal = self.root / "sqlite_table_audit.json"
         before = (self.root / "synthetic.sqlite3").read_bytes()

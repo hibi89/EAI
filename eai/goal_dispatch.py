@@ -17,6 +17,7 @@ from .resource_schedule import validate_resource_goal, execute_resource_goal, re
 from .csv_robust_outliers import validate_outlier_goal, execute_outlier_goal, render_outliers
 from .csv_distribution_shift import validate_shift_goal, execute_shift_goal, render_shift
 from .csv_key_coverage import validate_key_coverage_goal, execute_key_coverage_goal, render_key_coverage
+from .local_files import local_path
 
 MAX_GOAL_BYTES = 64 * 1024
 ROUTER_VERSION = 'eai.goal.dispatch.v1'
@@ -52,7 +53,12 @@ def _path_relative_to_spec(spec: Path, supplied: object) -> Path:
     if type(supplied) is not str or not 1 <= len(supplied) <= 512 or '\x00' in supplied:
         raise ValueError('CSV paths must be explicitly provided as short strings')
     path = Path(supplied).expanduser()
-    return (spec.parent / path).resolve(strict=True) if not path.is_absolute() else path.resolve(strict=True)
+    # Never follow caller-controlled symlinks or parent traversal into a
+    # different file. Explicit absolute ordinary local files remain allowed.
+    selected = local_path(spec.parent / path if not path.is_absolute() else path)
+    if not selected.is_file():
+        raise ValueError('explicit ordinary local CSV source required')
+    return selected
 
 
 def _compile_csv_goal(spec: Path, data: dict) -> AuditGoal:
@@ -74,7 +80,7 @@ def _compile_csv_goal(spec: Path, data: dict) -> AuditGoal:
 
 def execute_goal_document(path: str | Path) -> dict:
     """Dispatch fixed goal types only, preserve source hash and verify final receipt."""
-    source_path = Path(path).expanduser().resolve(strict=True)
+    source_path = local_path(path)
     data, before = _read_spec(source_path)
     kind = data.get('kind')
     if type(kind) is not str or kind not in ROUTED_KINDS:
