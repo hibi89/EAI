@@ -102,7 +102,7 @@ def inspect_csv(path: str | Path, *, encoding: str = 'utf-8-sig') -> dict:
 
 
 def render_csv_summary(report: dict) -> str:
-    lines = [f"EAI 로컬 CSV 요약 — {report['rows']}행, {report['columns']}열"]
+    lines = [f"EAI 로컬 CSV 요약 ({report['rows']}행, {report['columns']}열)"]
     for state in report['stats']:
         desc = f"{state['name']}: {state['type']}, 누락 {state['missing']}"
         if state['type'] == 'numeric':

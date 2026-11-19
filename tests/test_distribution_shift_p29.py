@@ -97,8 +97,9 @@ class ShiftP29Tests(unittest.TestCase):
         self.assertEqual(original1,self.after.read_bytes())
 
     def test_non_ascii_no_values_printed(self):
-        self.before.write_text("매출\n"+"\n".join(str(v) for v in range(1,10))+"\n")
-        self.after.write_text("매출\n"+"\n".join(str(v) for v in range(1,10))+"\n")
+        data = "매출\n" + "\n".join(str(v) for v in range(1,10)) + "\n"
+        self.before.write_text(data, encoding="utf-8-sig")
+        self.after.write_text(data, encoding="utf-8-sig")
         raw=goal()
         raw["columns"]=["매출"]
         self.write(raw)

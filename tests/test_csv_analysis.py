@@ -1,5 +1,6 @@
 """File-opt-in CSV test matrix: streaming, privacy, bounds and exact numbers."""
 import csv
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -79,6 +80,17 @@ class CSVTests(unittest.TestCase):
         self.assertEqual(done.returncode, 0, done.stderr)
         self.assertIn('합계 4', done.stdout)
         self.assertIn('평균 3', done.stdout)
+
+    def test_redirected_korean_code_page_preserves_numbers_and_escapes_unicode(self):
+        self.file.write_text('매출📊\n12\n', encoding='utf-8')
+        done = subprocess.run(
+            [sys.executable, '-m', 'eai', 'analyze-csv', str(self.file)],
+            cwd=Path(__file__).resolve().parents[1],
+            env={**os.environ, 'PYTHONIOENCODING': 'cp949:strict'},
+            capture_output=True, encoding='cp949', timeout=10)
+        self.assertEqual(done.returncode, 0, done.stderr)
+        self.assertIn(r'매출\U0001f4ca', done.stdout)
+        self.assertIn('합계 12', done.stdout)
 
 
 if __name__ == '__main__':

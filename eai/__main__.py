@@ -1,6 +1,7 @@
 """EAI independent engine CLI: works without Ollama for known narrow tasks."""
 import argparse
 import csv
+import io
 import os
 import json
 import sqlite3
@@ -31,6 +32,11 @@ from .tools import SearxNGSearch
 
 
 def main(argv: list[str] | None = None) -> int:
+    if argv is None:
+        # Pipes can inherit a legacy code page even when the CSV input is UTF-8.
+        for stream in (sys.stdout, sys.stderr):
+            if isinstance(stream, io.TextIOWrapper) and stream.errors == 'strict':
+                stream.reconfigure(errors='backslashreplace')
     p = argparse.ArgumentParser(prog='eai', description='Independent, CPU-first EAI MVP')
     p.add_argument('--version', action='version', version=__version__)
     p.add_argument('--db', default=os.environ.get('EAI_DB', str(Path.home() / '.eai' / 'eai.sqlite3')))
