@@ -1,6 +1,7 @@
 """Fake HTTP diagnostics and preservation of prior live-ledger rows."""
 from __future__ import annotations
 
+from contextlib import closing
 import http.client
 import json
 import os
@@ -163,14 +164,15 @@ class HydrogenLiveHttpDiagnosticsTests(unittest.TestCase):
                     path, project_id="eai-test-project",
                     owner_key_sha256="a" * 64, allow_create=True)
                 ledger.close()
-                with sqlite3.connect(path) as db:
+                with closing(sqlite3.connect(path)) as db:
                     db.execute(object_ddl)
+                    db.commit()
                 with self.assertRaisesRegex(PermissionError,
                                              "unexpected live ledger schema objects"):
                     _LiveSendLedger(
                         path, project_id="eai-test-project",
                         owner_key_sha256="a" * 64)
-                with sqlite3.connect(path) as db:
+                with closing(sqlite3.connect(path)) as db:
                     self.assertEqual(
                         db.execute("SELECT state FROM eai_live_control WHERE id=1")
                         .fetchone(), ("READY",))
