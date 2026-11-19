@@ -1,0 +1,80 @@
+{
+  "schema": "eai.v32.p2.ci_evidence.v1",
+  "date_kst": "2026-11-19",
+  "repo": "hibi89/EAI",
+  "branch": "feature/eai-v32-owner-rebuild-20261119",
+  "verified_functional_sha": "f980e3a9c7f43ccdd2e203e3fb0a0c21828b4038",
+  "source_commits": [
+    "84b6fcfb3c26579d0620a862eec75280503c550c",
+    "f980e3a9c7f43ccdd2e203e3fb0a0c21828b4038"
+  ],
+  "source_files": [
+    "eai/hydrogen_adapter.py",
+    "tests/test_hydrogen_live_http.py"
+  ],
+  "adversarial_cases": [
+    "existing hardlinked live SQLite must not modify owner original",
+    "hardlinked WAL,SHM,journal sidecar blocks before create",
+    "unexpected SQL trigger/view blocks on reopen with preserved state"
+  ],
+  "security_status": "PASS_OFFLINE_LOCAL_SYNTHETIC_ONLY",
+  "first_windows_failed_run": {
+    "run_id": 44540437118,
+    "result": "FAIL",
+    "reason": "test fixture used sqlite3.connect context manager which did not close Windows file handle; WinError32 cleanup"
+  },
+  "linux": {
+    "run_id": 44541344660,
+    "result": "SUCCESS",
+    "tests_total": 1175,
+    "passed": 1158,
+    "skipped": 17,
+    "failed": 0,
+    "xvfb_gui_passed": 34,
+    "ruff_all": "PASS_E4_E7_E9_F63_F7_F82",
+    "mypy": "PASS_236_PYTHON_FILES",
+    "build_offline_review": "PASS",
+    "review_zip_artifact_id": 14539346932,
+    "review_zip_sha256": "8e0bcfba8f304276f2e6b90367cc791a7ac55df605cc675bbcea3591d50a78c6"
+  },
+  "windows": {
+    "run_id": 44541344286,
+    "result": "SUCCESS",
+    "tests_total": 1175,
+    "passed": 1174,
+    "skipped": 1,
+    "failed": 0,
+    "native_tk_focus_passed": 40,
+    "native_tk_focus_skipped": 1,
+    "unsigned_dev_exe_bundle_selfcheck": "PASS_UNSIGNED_BUNDLE_IMPORTS",
+    "uploaded_zip_artifact_id": 14538312748,
+    "uploaded_zip_sha256": "83a4f9515669823478082cc457e83c5f0a7984ce20054ed4bf5c80cb17c10b14",
+    "owner_physical_windows11": "NOT_RUN"
+  },
+  "p1_provisional": {
+    "done": 60,
+    "total": 60
+  },
+  "p2": {
+    "done": 8,
+    "total": 14,
+    "simple_count_percent": 57.14,
+    "accepted": [
+      "EAI-P2-01",
+      "EAI-P2-02",
+      "EAI-P2-03",
+      "EAI-P2-04",
+      "EAI-P2-06",
+      "EAI-P2-09",
+      "EAI-V32-P2-UX01",
+      "EAI-V32-P2-UX02"
+    ],
+    "p2_07": "PARTIAL_NO_REAL_LIVE_GO"
+  },
+  "official_weighted_implementation": "UNASSESSED",
+  "official_weighted_verification": "UNASSESSED",
+  "physical_win11": "NOT_RUN",
+  "independent_audits": "NOT_RUN",
+  "real_provider_send": "NOT_RUN",
+  "release": "HOLD"
+}
