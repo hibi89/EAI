@@ -100,6 +100,50 @@ class DesktopBridge:
                 "problem_sha256": problem.digest(),
                 "truth_verified": False, "external_actions": 0}
 
+    def create_fresh_private_library(self, *, owner_approved: bool = False) -> dict:
+        """Create only a new EAI-private empty AXNODE library, never touch old data."""
+        if owner_approved is not True:
+            return {"status": "HOLD_PRIVATE_LIBRARY_CONSENT", "created": False}
+        root = local_path(self.state_root, private=True)
+        if not root.is_dir():
+            root.mkdir(parents=True, exist_ok=True, mode=0o700)
+        folder = local_path(root / "libraries", private=True)
+        folder.mkdir(mode=0o700, exist_ok=True)
+        for _ in range(4):
+            target = local_path(folder / ("library_" + uuid4().hex[:16]), private=True)
+            try:
+                target.mkdir(mode=0o700)
+                break
+            except FileExistsError:
+                continue
+        else:
+            raise FileExistsError("no unique library path available")
+        with AXNodeStore(target) as library:
+            if library.db.execute("PRAGMA integrity_check").fetchone() != ("ok",):
+                raise ValueError("new private library integrity failure")
+        return {"status": "PRIVATE_EMPTY_LIBRARY_CREATED", "created": True,
+                "path": target, "node_count": 0, "original_writes": 0,
+                "external_actions": 0}
+
+    def import_private_candidate(self, library_root: str | Path, source_path: str | Path,
+                                 *, owner_approved: bool = False) -> dict:
+        """Copy one owner-reviewed bounded AXNODE into a new *private* candidate index."""
+        if owner_approved is not True:
+            return {"status": "HOLD_PRIVATE_IMPORT_CONSENT", "imported": False}
+        private_libraries = local_path(self.state_root / "libraries", private=True)
+        selected = local_path(library_root, private=True)
+        if selected.parent != private_libraries or not selected.name.startswith("library_"):
+            raise ValueError("only new EAI-private libraries accept imports")
+        from .axnode_schema import MAX_NODE_BYTES
+        payload = read_bytes(source_path, MAX_NODE_BYTES)
+        with AXNodeStore(selected) as store:
+            digest = store.import_node(payload)
+            total = store.db.execute("SELECT COUNT(*) FROM nodes").fetchone()[0]
+        return {"status": "PRIVATE_CANDIDATE_IMPORTED_UNVERIFIED", "imported": True,
+                "sha256": digest, "node_count": total,
+                "original_writes": 0, "external_actions": 0,
+                "authority": "DRAFT_OR_CANDIDATE_ONLY_NO_ACTIVE"}
+
     @staticmethod
     def discover_goal_capabilities(raw: dict, axnode_root: str | Path | None = None) -> dict:
         """Discover real pre-registered typed CPU kinds and chosen local AXNODE hints.
