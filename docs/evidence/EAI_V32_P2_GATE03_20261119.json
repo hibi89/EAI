@@ -1,0 +1,89 @@
+{
+  "schema": "eai.p2.synthetic_evidence.v1",
+  "date_kst": "2026-11-19",
+  "repo": "hibi89/EAI",
+  "branch": "feature/eai-v32-owner-rebuild-20261119",
+  "exact_source_sha": "b41ea71c655d5400968176360b2f13e22c86783b",
+  "gate_id": "EAI-P2-03",
+  "disposition": "PASS_SYNTHETIC_OFFLINE",
+  "source_code_commits": [
+    "7cfc4811279b87981811bf02e000a3122de771a4",
+    "b41ea71c655d5400968176360b2f13e22c86783b"
+  ],
+  "local_domains_count": 13,
+  "domain_source": "eai.goal_dispatch.ROUTED_KINDS",
+  "registered_handlers_actually_executed": true,
+  "fixture_origins": "11_EXAMPLES_PLUS_2_DISPOSABLE_SYNTHETIC",
+  "source_hash_parity": "PASS",
+  "no_original_mutation": "PASS",
+  "network_calls": 0,
+  "test_modules_passing_on_both_platforms": {
+    "test_p2_all_13_cpu_routes": 3,
+    "test_goal_dispatch": 16,
+    "test_architect_runtime": 9,
+    "test_design_engine": 10,
+    "test_hierarchical_planner": 11,
+    "test_solver_reference_check": 10
+  },
+  "checks": {
+    "linux": {
+      "run_id": 44499324979,
+      "conclusion": "SUCCESS",
+      "total": 1148,
+      "passed": 1131,
+      "skipped": 17,
+      "failed": 0,
+      "xvfb_gui_pass": 33
+    },
+    "windows": {
+      "run_id": 44499324876,
+      "conclusion": "SUCCESS",
+      "total": 1148,
+      "passed": 1147,
+      "skipped": 1,
+      "failed": 0,
+      "native_gui_focused_pass": 39,
+      "native_gui_focused_skip": 1,
+      "unsigned_exe_selfcheck": "PASS_UNSIGNED_BUNDLE_IMPORTS",
+      "unsigned_artifact_id": 14515419907,
+      "artifact_zip_digest": "sha256:9c502e8cb7df8d320bb6f5667cbd4e85fd8aa5132f580bc59ca5e92431a4e5c4"
+    }
+  },
+  "p2_05_partial_only": {
+    "passed_modules": {
+      "test_verified_learning_boundary": 18,
+      "test_synthetic_holdout": 10,
+      "test_synthetic_curriculum": 5,
+      "test_experience_admission": 12
+    },
+    "measured_ood_no_regression": "NOT_RUN",
+    "gate_accepted": false
+  },
+  "accepted_gates": [
+    "EAI-P2-02",
+    "EAI-P2-03",
+    "EAI-P2-04",
+    "EAI-P2-06",
+    "EAI-V32-P2-UX02"
+  ],
+  "accepted_count": 5,
+  "total_groups": 14,
+  "unweighted_group_percent": 35.71,
+  "source_candidate_swu": {
+    "count": 60,
+    "total": 60,
+    "scope": "PROVISIONAL_UNWEIGHTED_INHERITED_48_SEMANTICS_PENDING"
+  },
+  "official_implementation_rate": "UNASSESSED",
+  "official_verification_rate": "UNASSESSED",
+  "independent_audit": "NOT_RUN",
+  "owner_physical_win11": "NOT_RUN",
+  "release": "HOLD",
+  "scope_not_validated": [
+    "REAL_CUSTOMER_DATA",
+    "SEMANTIC_TRUTH",
+    "REAL_PLAYER",
+    "EXTERNAL_SERVICES",
+    "INDEPENDENT_SECURITY_OR_UX_AUDIT"
+  ]
+}
