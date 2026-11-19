@@ -4,6 +4,7 @@ import json
 import os
 import socket
 import unittest
+from typing import Any, cast
 from unittest.mock import patch
 
 from eai.research_policy import ResearchMode, ResearchPolicy
@@ -40,7 +41,7 @@ class ResearchOfflineTests(unittest.TestCase):
             {"free_tier_verified": "yes"},
         ]:
             with self.subTest(config=raw), self.assertRaises(ValueError):
-                ResearchPolicy(**raw)
+                ResearchPolicy(**cast(Any, raw))
 
     def test_on_without_verified_tier_or_consent_remains_offline(self):
         for approved, verified in [(False, False), (True, False), (False, True),

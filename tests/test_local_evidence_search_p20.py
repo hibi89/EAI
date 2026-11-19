@@ -7,6 +7,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from typing import Any, cast
 from unittest.mock import patch
 
 from eai.goal_dispatch import execute_goal_document
@@ -139,13 +140,13 @@ class LocalEvidenceSearchP20Tests(unittest.TestCase):
         self.assertEqual(result["result"]["matches"][0]["filename"], "b.txt")
 
     def test_rejects_extra_instruction_or_nonbool_and_nonint(self):
-        for extra in (
+        for extra in cast(tuple[dict[str, Any], ...], (
             {"command": "delete everything"}, {"kind": "shell"}, {"version": True},
             {"include_snippets": 1}, {"max_results": True}, {"max_results": 0},
             {"max_results": 21}, {"terms": []}, {"terms": ["x"]*6},
             {"terms": ["RISK", "risk"]}, {"terms": ["risk script()"]},
             {"sources": []}, {"sources": ["a.md"]*2}
-        ):
+        )):
             obj = spec()
             obj.update(extra)
             with self.subTest(extra=extra), self.assertRaises(ValueError):

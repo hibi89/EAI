@@ -6,6 +6,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from typing import cast
 from unittest.mock import patch
 
 from eai.plan_engine import (AuditGoal, CPUPlanExecutor, PLAN_VERSION,
@@ -186,7 +187,7 @@ class PlanEngineTests(unittest.TestCase):
 
     def test_unsupported_goal_input_rejected_without_unsafe_dispatch(self):
         with self.assertRaises(ValueError):
-            self.planner.compile('import os; os.system("rm -rf /")')
+            self.planner.compile(cast(AuditGoal, 'import os; os.system("rm -rf /")'))
 
     def test_cpu_workflow_does_not_require_ollama(self):
         r = self.cli('--values', 'sales', '--json')

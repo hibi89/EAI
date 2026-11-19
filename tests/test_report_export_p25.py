@@ -6,6 +6,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from typing import Any, cast
 from unittest.mock import patch
 
 from eai.report_export import build_report, render_report_html
@@ -30,7 +31,7 @@ class ReportExportP25Tests(unittest.TestCase):
 
     def manifest(self, pipeline=False):
         name = "goal_pipeline" if pipeline else "goal_batch"
-        entry = {
+        entry: dict[str, Any] = {
             "id":"task", "goal":"goal.json",
             "sha256":hashlib.sha256(self.goal.read_bytes()).hexdigest()
         }

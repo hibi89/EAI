@@ -7,6 +7,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from typing import Any, cast
 from unittest.mock import patch
 
 from eai.csv_robust_outliers import (
@@ -155,13 +156,13 @@ class RobustOutlierP22Tests(unittest.TestCase):
         self.assertEqual(saved, (self.source.read_bytes(), self.goal.read_bytes()))
 
     def test_invalid_action_and_number_contract_rejected(self):
-        for extra in (
+        for extra in cast(tuple[dict[str, Any], ...], (
             {"command": "exec"}, {"version": True}, {"kind": "shell"},
             {"threshold": 4}, {"threshold": "0.5"}, {"threshold": "21"},
             {"threshold": "NaN"}, {"threshold": "1e2"}, {"min_rows": True},
             {"min_rows": 4}, {"columns": []}, {"columns": ["revenue"]*2},
             {"encoding": "latin-1"}
-        ):
+        )):
             obj = spec()
             obj.update(extra)
             with self.subTest(extra=extra), self.assertRaises(ValueError):

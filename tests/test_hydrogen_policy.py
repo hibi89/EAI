@@ -3,6 +3,7 @@ from dataclasses import replace
 import json
 import socket
 import unittest
+from typing import Any, cast
 from unittest.mock import patch
 
 from eai.hydrogen_packet import ResearchPacket
@@ -48,7 +49,7 @@ class HydrogenResearchPolicyTests(unittest.TestCase):
             {"nonce":"bad"},
             {"extra":"hidden"}
         ]:
-            raw=dict(self.sample(),**changes)
+            raw=dict(self.sample(),**cast(Any, changes))
             with self.subTest(change=changes), self.assertRaises(ValueError):
                 ResearchPacket.validate(raw)
         with self.assertRaises(ValueError):

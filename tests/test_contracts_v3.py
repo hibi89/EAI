@@ -2,6 +2,7 @@
 import copy
 import json
 import unittest
+from typing import cast
 
 from eai.contracts import (
     CognitiveResult, DesignSpec, PlanSpec, ProblemSpec,
@@ -54,7 +55,7 @@ class ContractV3Tests(unittest.TestCase):
             b'\xff', b'x'*32769
         ]:
             with self.subTest(bad=repr(bad)[:30]), self.assertRaises(ValueError):
-                strict_json(bad)
+                strict_json(cast(str | bytes, bad))
 
     def test_two_options_and_blocked_design(self):
         h = ProblemSpec.validate(self.problem()).digest()

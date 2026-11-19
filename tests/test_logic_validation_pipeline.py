@@ -5,6 +5,7 @@ from pathlib import Path
 import socket
 import tempfile
 import unittest
+from typing import cast
 from unittest.mock import patch
 
 from eai.axnode_store import AXNodeStore
@@ -93,7 +94,7 @@ class ValidationPipelineTests(unittest.TestCase):
 
     def test_wrong_type_and_empty_fixtures_fail_closed(self):
         with self.assertRaises(ValueError):
-            review_synthesis_candidate(self.store,self.problem,self.candidate,[])
+            review_synthesis_candidate(self.store,self.problem,self.candidate,cast(tuple[SyntheticComparison, ...], []))
         with self.assertRaises(ValueError):
             review_synthesis_candidate(self.store,self.problem,self.candidate,())
 

@@ -8,6 +8,7 @@ from pathlib import Path
 import socket
 import tempfile
 import unittest
+from typing import cast
 from unittest.mock import patch
 
 from eai.axnode_store import AXNodeStore
@@ -109,7 +110,7 @@ class ArchitectRuntimeTests(unittest.TestCase):
             replace(validated, permissions=("local.read", "write.original")),
             replace(validated, budget=(999, 60)),
             replace(validated, version=True),
-            replace(validated, hard_constraints=(42,)),
+            replace(validated, hard_constraints=cast(tuple[str, ...], (42,))),
         ):
             with self.subTest(forged=forged):
                 # A forged typed object must fail *before* the store is opened.

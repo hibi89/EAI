@@ -1,6 +1,7 @@
 """C18 reproducible, split-clean synthetic-only research fixtures."""
 from dataclasses import replace
 import unittest
+from typing import cast
 
 from eai.synthetic_curriculum import generate_synthetic_curriculum
 from eai.synthetic_holdout import _fixture_hash
@@ -27,7 +28,7 @@ class SyntheticCurriculumTests(unittest.TestCase):
     def test_invalid_seed_types_fail_closed(self):
         for bad in (-1, 10001, True, 1.5, "123", None):
             with self.subTest(seed=bad), self.assertRaises(ValueError):
-                generate_synthetic_curriculum(bad)
+                generate_synthetic_curriculum(cast(int, bad))
 
     def test_train_and_heldout_distinct_even_when_numeric_values_normalized(self):
         a = generate_synthetic_curriculum(1)
