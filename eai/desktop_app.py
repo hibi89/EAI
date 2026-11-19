@@ -310,6 +310,11 @@ class EAIDesktopApp:
         except ValueError:
             self.notice("명령 길이와 형식을 확인하세요. 최대 4,000자입니다.", RED)
             return
+        # Unsupported freeform goals are staged for owner review, not executed.
+        # The original command remains a local draft until explicitly saved.
+        if intent.task == "unsupported":
+            self.new_draft()
+            return
         self.select("home")
         consent = False
         if intent.task == "remember":
