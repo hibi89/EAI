@@ -67,7 +67,8 @@ def render_report_html(summary: dict) -> str:
     """Static offline HTML. Every input-derived string is escaped."""
     if summary.get("version") != VERSION or summary.get("verification") != "PASS":
         raise ValueError("cannot render an unverified summary")
-    e = lambda x: escape(str(x), quote=True)
+    def e(value: object) -> str:
+        return escape(str(value), quote=True)
     items = "".join(
         "<tr>" +
         "".join("<td>" + e(row[col]) + "</td>" for col in

@@ -221,8 +221,9 @@ def advance_bounded_research_prior(
             or type(p.b0_checked) is not int or p.b0_checked != 2
             or type(p.b1_checked) is not int or p.b1_checked != 2
             or type(p.b1_unmatched) is not int or p.b1_unmatched != 0
-            or p.permits_learning or p.permits_promotion
-            or p.independently_verified_real_world
+            or p.permits_learning is not False
+            or p.permits_promotion is not False
+            or p.independently_verified_real_world is not False
             for candidate, p in zip(candidates, challenged)
     ):
         checked_count = sum(

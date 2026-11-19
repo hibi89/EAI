@@ -67,9 +67,9 @@ def evaluate_synthetic_scenario_transfer(
         and report.b0_heldout_matches == len(challenge)
         and report.b1_train_compared == len(curriculum.train)
         and report.b1_heldout_compared == len(challenge)
-        and not report.external_truth_verified
-        and not report.permission_to_learn
-        and not report.permission_to_promote
+        and report.external_truth_verified is False
+        and report.permission_to_learn is False
+        and report.permission_to_promote is False
         and report.measured_runtime_uplift == "NOT_MEASURED"
     )
     return SyntheticScenarioTransfer(

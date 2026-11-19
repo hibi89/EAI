@@ -253,55 +253,55 @@ def verify_goal_receipt(kind: str, goal: GoalSpec, report: object) -> dict:
         raise ValueError('EAI 영수증 검증 실패: ' + '지원하지 않는 판정 영수증')
     _check(report.get('status') in ALLOWED_STATUS[kind], '목표에 맞지 않는 상태 코드')
     if kind == 'choose_options':
-        if not (type(goal) is ChoiceGoal):
+        if type(goal) is not ChoiceGoal:
             raise ValueError('EAI 영수증 검증 실패: ' + '선택지 원본 계약 오류')
         checks, diag = _verify_choice(goal, report)
     elif kind == 'csv_audit':
-        if not (type(goal) is AuditGoal):
+        if type(goal) is not AuditGoal:
             raise ValueError('EAI 영수증 검증 실패: ' + 'CSV 원본 계약 오류')
         checks, diag = _verify_csv(goal, report)
     elif kind == 'plan_tasks':
-        if not (type(goal) is TaskGoal):
+        if type(goal) is not TaskGoal:
             raise ValueError('EAI 영수증 검증 실패: ' + '작업 포트폴리오 원본 계약 오류')
         checks, diag = verify_task_receipt(goal, report)
     elif kind == 'schedule_tasks':
-        if not (type(goal) is ScheduleGoal):
+        if type(goal) is not ScheduleGoal:
             raise ValueError('EAI 영수증 검증 실패: ' + '임계 경로 원본 계약 오류')
         checks, diag = verify_schedule_receipt(goal, report)
     elif kind == 'csv_quality':
-        if not (type(goal) is QualityGoal):
+        if type(goal) is not QualityGoal:
             raise ValueError('EAI 영수증 검증 실패: ' + 'CSV 품질 원본 계약 오류')
         checks, diag = verify_quality_receipt(goal, report)
     elif kind == 'csv_schema_drift':
-        if not (type(goal) is DriftGoal):
+        if type(goal) is not DriftGoal:
             raise ValueError('EAI 영수증 검증 실패: ' + 'CSV 스키마 원본 계약 오류')
         checks, diag = verify_drift_receipt(goal, report)
     elif kind == 'sqlite_table_audit':
-        if not (type(goal) is SqliteTableGoal):
+        if type(goal) is not SqliteTableGoal:
             raise ValueError('EAI 영수증 검증 실패: ' + 'SQLite 원본 계약 오류')
         checks, diag = verify_sqlite_receipt(goal, report)
     elif kind == 'csv_relationships':
-        if not (type(goal) is RelationshipGoal):
+        if type(goal) is not RelationshipGoal:
             raise ValueError('EAI 영수증 검증 실패: ' + 'CSV 상관관계 원본 계약 오류')
         checks, diag = verify_relationship_receipt(goal, report)
     elif kind == 'local_evidence_search':
-        if not (type(goal) is EvidenceSearchGoal):
+        if type(goal) is not EvidenceSearchGoal:
             raise ValueError('EAI 영수증 검증 실패: ' + '로컬 증거 검색 계약 오류')
         checks, diag = verify_search_receipt(goal, report)
     elif kind == 'resource_schedule':
-        if not (type(goal) is ResourceGoal):
+        if type(goal) is not ResourceGoal:
             raise ValueError('EAI 영수증 검증 실패: ' + '자원 제약 일정 계약 오류')
         checks, diag = verify_resource_receipt(goal, report)
     elif kind == 'csv_robust_outliers':
-        if not (type(goal) is OutlierGoal):
+        if type(goal) is not OutlierGoal:
             raise ValueError('EAI 영수증 검증 실패: ' + '강건 이상치 원본 계약 오류')
         checks, diag = verify_outlier_receipt(goal, report)
     elif kind == 'csv_distribution_shift':
-        if not (type(goal) is ShiftGoal):
+        if type(goal) is not ShiftGoal:
             raise ValueError('EAI 영수증 검증 실패: ' + '분포 변화 원본 계약 오류')
         checks, diag = verify_shift_receipt(goal, report)
     else:
-        if not (type(goal) is KeyCoverageGoal):
+        if type(goal) is not KeyCoverageGoal:
             raise ValueError('EAI 영수증 검증 실패: ' + '참조키 검증 원본 계약 오류')
         checks, diag = verify_key_coverage_receipt(goal, report)
     return {'version': GUARD_VERSION, 'status': 'PASS', 'checks': checks,

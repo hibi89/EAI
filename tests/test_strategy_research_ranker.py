@@ -118,6 +118,10 @@ class StrategyResearchRankerTests(unittest.TestCase):
             replace(genuine_shape, permission_to_promote=True),
             replace(genuine_shape, measured_runtime_uplift="CLAIMED"),
             SimpleNamespace(**vars(genuine_shape)),
+            *(replace(genuine_shape, **{field: forged_false})
+              for field in ("external_truth_verified", "permission_to_learn",
+                            "permission_to_promote")
+              for forged_false in (None, 0, "", [])),
         )
         for false_result in forged:
             with self.subTest(false_result=repr(false_result)), patch(
@@ -189,6 +193,10 @@ class StrategyResearchRankerTests(unittest.TestCase):
             replace(real, scenario_types=("renamed_seed", "renamed_seed")),
             replace(real, semantic_scope="REAL_WORLD_OOD"),
             replace(real, independently_verified_real_world=True),
+            *(replace(real, **{field: forged_false})
+              for field in ("independently_verified_real_world",
+                            "permits_learning", "permits_promotion")
+              for forged_false in (None, 0, "", [])),
             "not-a-report",
         )
         for forged in forged_reports:
