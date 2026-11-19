@@ -1,3 +1,9 @@
+## 2026-11-19 KST · 독립 기술·보안 감사 인계
+
+감사 기준 소스·테스트는 `3f5efeb810aa0675476f551913d3b6a8d5f7b591`이다. Windows EXE SHA-256은 `8e9c7c7d6171d7e59b039f34a784aef1bda67ed3a16018f17a91e1fdcc58e0f3`이다. Windows 전체 1,092 PASS/18 SKIP, Ubuntu 1,085 PASS/25 SKIP. 두 플랫폼에서 모두 생략된 테스트는 없다. 네이티브 실행, 실제 계산, 재시작과 예산·기록 보존 및 합성 DB 검사를 완료했다.
+
+다음 담당자는 고정 SHA의 저장소 읽기·파일 경합, 학습 승격, Player 권한과 복구 경계부터 독립 검토하고, 미검증 항목과 함께 웹 High에 인계한다. Hydrogen 실제 송신, 원본 DB, 원본 브랜치 병합 및 사용자 실사용 GO는 별도 승인 대상이다. [재현 절차·환경·차단 항목](docs/ASTRA_WINDOWS_HANDOFF.md) · [C01–C36·SWU·P2 증거](docs/ASTRA_P2_COVERAGE.md) · [PR #3](https://github.com/hibi89/EAI/pull/3)
+
 ## 2026-11-18 KST — owner-approved native EAI desktop frontend P1 candidate
 - Owner explicitly requested the dark AX Dev Factory V1 workstation style **as a native EAI Windows EXE**, with a permanent bottom natural-language command composer. Reference: `hibi89/Freelancer@feature/axdev-owner-product-ui-20261117/docs/design/AXDEV_DESKTOP_REFERENCE_20261117.webp`.
 - Actual EAI source: `eai/desktop_bridge.py` (local-only typed CPU, draft, AXNODE read-only, Architect, Verifier, pure Player), `eai/desktop_app.py` (Tkinter shell, navigation, secure file pickers, async status output, edit/save ProblemSpec, local graph, command composer), `scripts/eai_desktop_entry.py`, `RUN_EAI_DESKTOP.cmd`, `BUILD_EAI_EXE.cmd`, `tests/test_desktop_bridge.py`, manual `.github/workflows/eai-desktop-windows.yml`. Source SHA for portable SQLite URI fix `6db927198b18b7fb7ca6b9e666f5edcb146cd4aa`; code evidence by FE SWU in `docs/EAI_DESKTOP_P1_SWU_QUEUE.json`.

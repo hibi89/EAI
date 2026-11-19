@@ -1,0 +1,9 @@
+P1_SYNTAX_PASS 53
+P1_TARGETED_TESTS 403 FAIL 0 ERROR 0 SKIP 5
+Python 3.11.9 · SQLite 3.45.1 · Tcl/Tk 8.6.12 · cryptography 50.0.1 (test environment)
+compileall eai scripts tests: PASS
+mypy 1.18.2, target interpreter with optional cryptography, eai: 127 source files, 0 errors
+mypy --check-untyped-defs --follow-imports=silent, desktop modules + local_files: 8 files, 0 errors
+CLI version: 0.1.0.dev0
+CLI health: CPU rules, CPU_ECO, search disabled
+NTFS junction, synthetic directory: ValueError, linked local selection denied

@@ -1,0 +1,70 @@
+{
+  "status": "PASS",
+  "verified_nodes": 243,
+  "displayed_nodes": 200,
+  "metrics": {
+    "startup_source": {
+      "wall_ms": 421,
+      "cpu_ms": 250,
+      "peak_sampled_rss_mib": 48.0,
+      "max_event_pump_gap_ms": 406,
+      "pumps": 1
+    },
+    "command": {
+      "wall_ms": 547,
+      "cpu_ms": 453,
+      "peak_sampled_rss_mib": 50.1,
+      "max_event_pump_gap_ms": 532,
+      "pumps": 1
+    },
+    "practice": {
+      "wall_ms": 500,
+      "cpu_ms": 344,
+      "peak_sampled_rss_mib": 50.6,
+      "max_event_pump_gap_ms": 343,
+      "pumps": 36
+    },
+    "architect": {
+      "wall_ms": 516,
+      "cpu_ms": 438,
+      "peak_sampled_rss_mib": 50.7,
+      "max_event_pump_gap_ms": 500,
+      "pumps": 1
+    },
+    "inspect_plan": {
+      "wall_ms": 188,
+      "cpu_ms": 125,
+      "peak_sampled_rss_mib": 50.8,
+      "max_event_pump_gap_ms": 172,
+      "pumps": 1
+    },
+    "pure_simulation": {
+      "wall_ms": 203,
+      "cpu_ms": 172,
+      "peak_sampled_rss_mib": 50.8,
+      "max_event_pump_gap_ms": 157,
+      "pumps": 11
+    },
+    "verify": {
+      "wall_ms": 172,
+      "cpu_ms": 125,
+      "peak_sampled_rss_mib": 50.8,
+      "max_event_pump_gap_ms": 156,
+      "pumps": 1
+    },
+    "catalog_243": {
+      "wall_ms": 329,
+      "cpu_ms": 328,
+      "peak_sampled_rss_mib": 51.1,
+      "max_event_pump_gap_ms": 329,
+      "pumps": 1
+    },
+    "save_new_draft": {
+      "wall_ms": 171,
+      "cpu_ms": 172,
+      "peak_sampled_rss_mib": 51.4,
+      "max_event_pump_gap_ms": 125,
+      "pumps": 7
+    }
+  }
+}

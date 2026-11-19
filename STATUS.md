@@ -1,3 +1,9 @@
+## 2026-11-19 KST · Astra Windows 자체 검증
+
+리뷰 브랜치의 제품·검증 기준은 `3f5efeb810aa0675476f551913d3b6a8d5f7b591`이다. 7개 네이티브 화면, 실제 CPU 실행, 읽기 전용 Atlas, 선택한 설계의 Player·Verifier 연결과 재시작 보존을 구현·검사했다. Windows에서 1,110건 중 1,092 PASS, 18 SKIP, 실패·오류 0건이다. Ubuntu CI에서는 1,085 PASS, 25 SKIP이다. 동일 EXE를 실제 노트북과 오프라인 Windows Sandbox에서 두 번씩 열고 정상 종료했다.
+
+P1 소스 후보 48/48, 공식 가중 P1/P2 `UNASSESSED`. 기본 Qwen 대상 부재·대체 모델 선택 보류, 물리 OS 125% 및 실제 IME, 독립 감사·High·사용자 실사용 GO가 남아 있다. 아래는 이전 브랜치의 시점별 기록이다. [Astra 인계 및 EXE SHA](docs/ASTRA_WINDOWS_HANDOFF.md) · [SWU·REQ 대조](docs/ASTRA_P2_COVERAGE.md) · [PR #3](https://github.com/hibi89/EAI/pull/3)
+
 ## 2026-11-18 KST — owner-approved native EAI desktop frontend P1 candidate
 - Owner explicitly requested the dark AX Dev Factory V1 workstation style **as a native EAI Windows EXE**, with a permanent bottom natural-language command composer. Reference: `hibi89/Freelancer@feature/axdev-owner-product-ui-20261117/docs/design/AXDEV_DESKTOP_REFERENCE_20261117.webp`.
 - Actual EAI source: `eai/desktop_bridge.py` (local-only typed CPU, draft, AXNODE read-only, Architect, Verifier, pure Player), `eai/desktop_app.py` (Tkinter shell, navigation, secure file pickers, async status output, edit/save ProblemSpec, local graph, command composer), `scripts/eai_desktop_entry.py`, `RUN_EAI_DESKTOP.cmd`, `BUILD_EAI_EXE.cmd`, `tests/test_desktop_bridge.py`, manual `.github/workflows/eai-desktop-windows.yml`. Source SHA for portable SQLite URI fix `6db927198b18b7fb7ca6b9e666f5edcb146cd4aa`; code evidence by FE SWU in `docs/EAI_DESKTOP_P1_SWU_QUEUE.json`.
