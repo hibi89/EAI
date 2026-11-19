@@ -18,7 +18,7 @@ def _pinned_loopback_endpoint(url: str) -> tuple[str, str]:
     original local HTTP Host header for a loopback virtual host.
     """
     if (type(url) is not str or not 1 <= len(url) <= _MAX_ENDPOINT_CHARS
-            or any(ord(char) < 32 or ord(char) == 127 for char in url)):
+            or any(char.isspace() or ord(char) == 127 for char in url)):
         raise ValueError("invalid local HTTP endpoint")
     try:
         parts = urlsplit(url)
@@ -63,7 +63,7 @@ def fetch_json(url: str, *, payload: dict | None = None, timeout: float = 12.0) 
     """Read only a bounded JSON payload, without following redirects."""
     pinned_url, host_header = _pinned_loopback_endpoint(url)
     if (type(timeout) not in (int, float) or not math.isfinite(timeout)
-            or not 0 < timeout <= 30):
+            or not 0 < timeout <= 120):
         raise ValueError("invalid bounded local HTTP timeout")
     try:
         body = (json.dumps(payload, ensure_ascii=False, allow_nan=False)

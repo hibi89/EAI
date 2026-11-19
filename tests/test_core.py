@@ -168,7 +168,7 @@ class Tests(unittest.TestCase):
             "http://2130706433:8080/api",
             "http://[::1]:8080/api",
             "http://localhost:8080//other-host/path",
-            "http://localhost:8080/ok\\r\\nInjected: yes",
+            "http://localhost:8080/ok\r\nInjected: yes",
             " http://127.0.0.1:8080/api",
             "http://127.0.0.1:8080/api ",
         )
@@ -177,7 +177,7 @@ class Tests(unittest.TestCase):
             for url in invalid:
                 with self.subTest(url=url), self.assertRaises(ValueError):
                     fetch_json(url)
-            for timeout in (0, -1, True, float("nan"), float("inf"), 31):
+            for timeout in (0, -1, True, float("nan"), float("inf"), 121):
                 with self.subTest(timeout=timeout), self.assertRaises(ValueError):
                     fetch_json("http://127.0.0.1:11434/api", timeout=timeout)
             with self.assertRaises(ValueError):
@@ -218,11 +218,14 @@ class Tests(unittest.TestCase):
         self.assertEqual(request.get_header("Host"), "localhost:8080")
         self.assertEqual(request.get_method(), "GET")
         self.assertEqual(len(builder.call_args.args), 2)
-        from eai.network import NoRedirect
-        from urllib.request import ProxyHandler
+        from urllib.request import HTTPRedirectHandler, ProxyHandler
         self.assertIsInstance(builder.call_args.args[0], ProxyHandler)
         self.assertEqual(builder.call_args.args[0].proxies, {})
-        self.assertIsInstance(builder.call_args.args[1], NoRedirect)
+        redirect_handler = builder.call_args.args[1]
+        self.assertTrue(issubclass(redirect_handler, HTTPRedirectHandler))
+        self.assertEqual(redirect_handler.__name__, "NoRedirect")
+        self.assertIsNone(redirect_handler().redirect_request(
+            None, None, 302, "", {}, "https://example.org/blocked"))
 
     def test_searx_mock_parsing(self):
         with patch('eai.tools.fetch_json', return_value={'results': [
