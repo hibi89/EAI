@@ -182,6 +182,12 @@ class DesktopState:
         import os
 
         path = private_db(self.root, "review_sessions.sqlite3")
+        # Session column metadata alone cannot attest constraints or rowid
+        # semantics. Preserve any existing differently-authored owner file.
+        session_ddl = (
+            "CREATE TABLE sessions(id INTEGER PRIMARY KEY, "
+            "stamp INTEGER NOT NULL, sha256 TEXT NOT NULL, "
+            "payload BLOB NOT NULL)")
         with _WORKSPACE_SCHEMA_INIT_LOCK:
             existed = path.exists()
             if existed:
@@ -200,13 +206,13 @@ class DesktopState:
                 db.execute("PRAGMA busy_timeout=2000")
                 version = db.execute("PRAGMA user_version").fetchone()[0]
                 objects = {
-                    (row[0], row[1]) for row in db.execute(
-                        "SELECT type,name FROM sqlite_master "
+                    (row[0], row[1], row[2]) for row in db.execute(
+                        "SELECT type,name,sql FROM sqlite_master "
                         "WHERE type IN ('table','view','trigger','index') "
                         "AND name NOT LIKE 'sqlite_%'")
                 }
                 if existed:
-                    if version != 1 or objects != {("table", "sessions")}:
+                    if version != 1 or objects != {("table", "sessions", session_ddl)}:
                         raise ValueError("unexpected session schema; preserve source")
                     columns = tuple(
                         (row[1], row[2].upper(), row[3], row[5])
@@ -222,9 +228,7 @@ class DesktopState:
                     if version != 0 or objects:
                         raise ValueError("unexpected new session schema; preserve source")
                     with db:
-                        db.execute("CREATE TABLE sessions(id INTEGER PRIMARY KEY, "
-                                   "stamp INTEGER NOT NULL, sha256 TEXT NOT NULL, "
-                                   "payload BLOB NOT NULL)")
+                        db.execute(session_ddl)
                         db.execute("PRAGMA user_version=1")
                 if db.execute("PRAGMA quick_check").fetchone() != ("ok",):
                     raise ValueError("damaged session database; preserve source")

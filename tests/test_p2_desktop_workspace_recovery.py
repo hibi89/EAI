@@ -166,6 +166,32 @@ class P2DesktopWorkspaceRecoveryTests(unittest.TestCase):
                 "SELECT payload FROM sessions WHERE id=1").fetchone()[0],
                 "original")
 
+    def test_session_same_columns_extra_constraint_preserves_owner_file(self):
+        # An impostor schema with the expected visible columns can impose
+        # other SQLite constraints and is not an EAI-created review journal.
+        session_path = self.root / "review_sessions.sqlite3"
+        with closing(sqlite3.connect(session_path)) as db, db:
+            db.execute("CREATE TABLE sessions("
+                       "id INTEGER PRIMARY KEY, stamp INTEGER NOT NULL, "
+                       "sha256 TEXT NOT NULL, payload BLOB NOT NULL, "
+                       "CHECK(length(sha256) >= 4))")
+            db.execute("PRAGMA user_version=1")
+            db.execute("INSERT INTO sessions(stamp,sha256,payload) "
+                       "VALUES(1,'owner-check',?)", (b"original owner data",))
+        before = session_path.read_bytes()
+        for operation in (
+            self.state.load_session,
+            lambda: self.state.save_session(
+                self.session_draft(), owner_approved=True),
+        ):
+            with self.subTest(operation=operation.__name__):
+                with self.assertRaisesRegex(ValueError, "preserve source"):
+                    operation()
+                self.assertEqual(session_path.read_bytes(), before)
+        with closing(sqlite3.connect(session_path)) as db:
+            self.assertEqual(db.execute("SELECT COUNT(*) FROM sessions").fetchone(),
+                             (1,))
+
     def test_extra_session_schema_objects_block_save_without_mutating_history(self):
         for ddl in (
             "CREATE VIEW forged_session AS SELECT payload FROM sessions",
