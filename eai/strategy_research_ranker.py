@@ -10,7 +10,7 @@ from .candidate_review_journal import CandidateReviewJournal
 from .contracts import ProblemSpec
 from .experience_admission import _admitting_verified_episodes
 from .logic_synthesis import LogicSynthesizer, SynthesisCandidate
-from .synthetic_candidate_benchmark import benchmark_synthetic_candidate
+from .synthetic_candidate_benchmark import SyntheticB1Benchmark, benchmark_synthetic_candidate
 from .synthetic_curriculum import SyntheticCurriculum, generate_synthetic_curriculum
 from .strategy_learner import (
     BoundedResearchPrior, VerifiedStrategyUpdate, _fit_verified_strategy,
@@ -82,9 +82,18 @@ def rank_synthetic_strategy_previews(
                              "LOCAL_SYNTHETIC_BENCHMARK_RESOURCE_BUDGET"))
                 continue
             measured_ms = (elapsed_cpu_ns + 999_999) // 1_000_000
+            # A plugin/test-double or stale interpreter result may carry
+            # 2.0 == 2 or a different claimed B0 engine. A synthetic PASS
+            # label alone must not enter cumulative research ranking.
             valid = (
-                report.status == "B1_SYNTHETIC_PARITY_WITH_B0_UNVERIFIED"
+                type(report) is SyntheticB1Benchmark
+                and report.status == "B1_SYNTHETIC_PARITY_WITH_B0_UNVERIFIED"
                 and report.candidate_sha256 == candidate.candidate_sha256
+                and report.baseline_sha256 == "LEGACY_RECONCILE_CSV_UNPINNED"
+                and all(type(value) is int for value in (
+                    report.train_count, report.heldout_count,
+                    report.b0_train_matches, report.b0_heldout_matches,
+                    report.b1_train_compared, report.b1_heldout_compared))
                 and report.train_count == len(curriculum.train)
                 and report.heldout_count == len(curriculum.heldout)
                 and report.b0_train_matches == len(curriculum.train)

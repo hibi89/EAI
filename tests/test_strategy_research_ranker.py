@@ -90,6 +90,40 @@ class StrategyResearchRankerTests(unittest.TestCase):
         self.assertEqual(first.ranked[0].measured_synthetic_cpu_ms, 37)
 
 
+    def test_p2_synthetic_ranker_denies_forged_b0_b1_count_or_identity(self):
+        # Even a synthetic-only cost preview cannot use a substituted B0
+        # engine, floating-point counts, or a different runtime report type.
+        from eai.synthetic_candidate_benchmark import SyntheticB1Benchmark
+        from types import SimpleNamespace
+        legitimate = SyntheticB1Benchmark(
+            "B1_SYNTHETIC_PARITY_WITH_B0_UNVERIFIED", 2, 2, 2, 2, 2, 2,
+            self.candidate.candidate_sha256)
+        with patch("eai.strategy_research_ranker.benchmark_synthetic_candidate",
+                   return_value=legitimate):
+            accepted = self.rank()
+        self.assertEqual(len(accepted.ranked), 1)
+        forged = (
+            replace(legitimate, baseline_sha256="OTHER_UNREVIEWED_B0"),
+            replace(legitimate, candidate_sha256="f" * 64),
+            SimpleNamespace(**vars(legitimate)),
+            *(replace(legitimate, **cast(Any, {key: 2.0}))
+              for key in ("train_count", "heldout_count", "b0_train_matches",
+                          "b0_heldout_matches", "b1_train_compared",
+                          "b1_heldout_compared")),
+        )
+        for report in forged:
+            with self.subTest(report=repr(report)), patch(
+                    "eai.strategy_research_ranker.benchmark_synthetic_candidate",
+                    return_value=report):
+                rejected = self.rank()
+                self.assertEqual(rejected.ranked, ())
+                self.assertEqual(
+                    rejected.held[0][1],
+                    "INDEPENDENT_SYNTHETIC_PARITY_NOT_ESTABLISHED")
+                self.assertFalse(rejected.learner_trained)
+                self.assertFalse(rejected.permits_promotion)
+                self.assertFalse(rejected.permits_real_execution)
+
     def test_p2_new_scenario_classes_are_disjoint_and_quantitatively_compared(self):
         from eai.synthetic_holdout import _fixture_hash
         probes = generate_synthetic_transfer_families(0)
