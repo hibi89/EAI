@@ -26,6 +26,12 @@ STATUSES = {
     "DRAFT_SAVED": "새 초안 저장됨", "EXAMPLE_READY": "연습 자료 준비됨",
     "CANDIDATES_UNVERIFIED": "설계 대안 생성 · 검토 필요", "PARTIAL_UNVERIFIED": "일부 대안만 생성됨",
     "BLOCKED": "설계 보류", "BLOCKED_EVIDENCE_DISPUTE": "근거 충돌 · 설계 보류",
+    "TWO_PLANS_ADVISORY_UNVERIFIED": "서로 다른 로컬 설계 후보 2개 · 미검증",
+    "HOLD_OWNER_REVIEW_REQUIRED": "사용자 목표·권한 확인 필요",
+    "HOLD_INCOMPLETE_PROBLEM": "목표·근거·검증 기준 미완성",
+    "HOLD_LOCAL_READ_NOT_APPROVED": "로컬 근거 읽기 권한 필요",
+    "HOLD_LOCAL_LIBRARY_REQUIRED": "로컬 AXNODE 라이브러리 선택 필요",
+    "HOLD_DISTINCT_PLANS_NOT_ESTABLISHED": "독립적인 설계 대안 2개 부족",
     "CANCELLED": "탐색 중단됨", "LOCAL_CATALOG_UNVERIFIED": "읽기 전용 목록",
     "NODE_DIGEST_MATCH": "노드 원문 SHA 일치",
     "PRIVATE_EMPTY_LIBRARY_CREATED": "개인 라이브러리 생성됨",
@@ -66,7 +72,22 @@ def explain(op, result):
             lines.append(node["node_id"] + " · " + node["status"] + " · SHA256 " + node["sha256"])
         lines.append("다음: " + result["next_step"])
         return "\n".join(lines)
+    if op == "design" and result.get("kind") == "REVIEWED_GOAL_ARCHITECT":
+        lines = ["사용자 확인한 목표 · CPU 로컬 Architect 분석", "결과: " + caption(code),
+                 "목표 SHA-256: " + result["problem_sha256"],
+                 "실제 실행/외부 전송 없음 · 의미적 사실 검증 전"]
+        if code == "TWO_PLANS_ADVISORY_UNVERIFIED":
+            for index, item in enumerate(result["alternatives"], 1):
+                lines += ["", "설계 " + str(index) + ": " + item["alternative_id"],
+                          "규칙 단계: " + str(item["step_count"]),
+                          "연산자: " + ", ".join(item["operator_ids"]),
+                          *["근거 SHA-256: " + h for h in item["source_sha256"]]]
+        else:
+            lines += ["", "해결해야 할 차단 조건:", *result.get("blockers", [])]
+        return "\n".join(lines)
     if op == "design":
+        if "uncertainty" not in result:
+            return "설계 분석을 시작하지 않았습니다. " + caption(code)
         u = result["uncertainty"]
         lines = [f"검색 확장 {result['expansions']}회   ·   미확인 {u['unknown_count']}건   ·   충돌 {u['contradiction_count']}건",
                  "로컬 자료에서 제안한 설계입니다. 가정과 현실 적합성은 별도 검토가 필요합니다."]

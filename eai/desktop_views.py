@@ -156,7 +156,8 @@ def architect(app, parent):
     files.pack(fill="x", pady=(9, 0))
     selection(files, "AXNODE 저장소", app.library, app.choose_library)
     button(files, "개인 AXNODE 라이브러리 만들기", app.create_library).pack(anchor="w", pady=3)
-    label(files, "저장한 목표와 선택한 저장소에서 후보를 찾습니다.", size=9, fg=MUTED).pack(fill="x")
+    label(files, "검토한 목표를 실제 로컬 Architect로 분석합니다. 근거가 부족하면 이유를 표시합니다.",
+          size=9, fg=MUTED).pack(fill="x")
     row = action_row(files, ("대안 비교", app.design, True))
     if app.busy and app.cancel_event:
         button(row, "탐색 중단 요청", app.request_cancel).pack(side="left")

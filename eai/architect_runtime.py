@@ -21,19 +21,32 @@ def preview_architecture(problem_file: str | Path, axnode_root: str | Path, *,
     hash-checked at their source. Opening a preview never builds source indexes.
     """
     source = local_path(problem_file)
-    root = local_path(axnode_root)
     if source.is_symlink() or not source.is_file():
         raise ValueError("explicit ordinary local problem file required")
     if source.stat().st_size > MAX_DOCUMENT_BYTES:
         raise ValueError("problem file exceeds strict JSON byte limit")
+    raw = strict_json(read_bytes(source, MAX_DOCUMENT_BYTES))
+    problem = ProblemSpec.validate(raw)
+    return preview_architecture_problem(problem, axnode_root,
+                                        max_expansions=max_expansions, cancelled=cancelled)
+
+
+def preview_architecture_problem(problem: ProblemSpec, axnode_root: str | Path, *,
+                                 max_expansions: int = 8, cancelled=None) -> dict:
+    """In-memory, owner-reviewed ProblemSpec to the existing *real* Architect.
+
+    No temp ProblemSpec or library write, no implicit library creation, and no
+    generative approximation of strategy evidence. Existing safety checks stay.
+    """
+    if type(problem) is not ProblemSpec:
+        raise ValueError("typed validated ProblemSpec required")
+    root = local_path(axnode_root)
     if (root.is_symlink() or not root.is_dir() or
             not (root / "axnodes.sqlite").is_file() or
             (root / "axnodes.sqlite").is_symlink() or
             (root / "nodes").is_symlink() or
             not (root / "nodes").is_dir()):
         raise ValueError("existing explicit AXNODE library required; no auto-create")
-    raw = strict_json(read_bytes(source, MAX_DOCUMENT_BYTES))
-    problem = ProblemSpec.validate(raw)
     with AXNodeStore(root, read_only=True) as store:
         designer = DesignEngine(ProblemModeler(AXNodeRetriever(store)))
         design = designer.propose(problem)

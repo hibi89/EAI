@@ -211,6 +211,72 @@ class DesktopBridge:
         return target
 
     @staticmethod
+    def architect_reviewed_goal(raw: dict, axnode_root: str | Path | None, *,
+                                owner_reviewed: bool = False,
+                                max_expansions: int = 8, cancelled=None) -> dict:
+        """Explicitly reviewed goal -> real, hash-pinned Architect alternatives.
+
+        A review is consent to *read the selected library*, never to execute
+        Player, use cloud, save an original or mark semantic evidence verified.
+        """
+        problem = ProblemSpec.validate(raw)
+        digest = problem.digest()
+        base = {"kind": "REVIEWED_GOAL_ARCHITECT", "problem_sha256": digest,
+                "execution": "NOT_EXECUTED", "model": "LOCAL_CPU_ONLY",
+                "independent_verification": "NOT_ESTABLISHED", "can_execute": False,
+                "plan_specs": {}, "alternatives": [], "external_actions": 0}
+        if owner_reviewed is not True:
+            return dict(base, status="HOLD_OWNER_REVIEW_REQUIRED",
+                        blockers=["OWNER_REVIEW_NOT_CONFIRMED"])
+        review = DesktopBridge.draft_review(raw)
+        if review["status"] != "FORM_COMPLETE_UNVERIFIED":
+            return dict(base, status="HOLD_INCOMPLETE_PROBLEM",
+                        blockers=review["missing"])
+        if "local.read" not in problem.permissions:
+            return dict(base, status="HOLD_LOCAL_READ_NOT_APPROVED",
+                        blockers=["LOCAL_READ_PERMISSION_REQUIRED"])
+        if axnode_root is None:
+            return dict(base, status="HOLD_LOCAL_LIBRARY_REQUIRED",
+                        blockers=["EXPLICIT_AXNODE_LIBRARY_REQUIRED"])
+        from .architect_runtime import preview_architecture_problem
+        from .trace_renderer import render_architect_explanation
+        report = preview_architecture_problem(problem, axnode_root,
+                                              max_expansions=max_expansions,
+                                              cancelled=cancelled)
+        result = render_architect_explanation(report)
+        if result["problem_sha256"] != digest:
+            raise ValueError("cross-goal Architect response")
+        sources = []
+        plans = {}
+        for choice in report["advisory_plans"]:
+            candidate = {"version": 1, "problem_sha256": digest,
+                         "steps": choice["plan_steps"],
+                         "budget": {"max_steps": problem.budget[0],
+                                    "max_seconds": problem.budget[1]}}
+            PlanSpec.validate(candidate)
+            plans[choice["alternative_id"]] = candidate
+            sources.append(tuple(choice["node_hashes"]))
+        # One valid branch does not demonstrate a genuine two-way decision.
+        if (report["status"] != "CANDIDATES_UNVERIFIED"
+                or len(plans) != 2 or len(set(sources)) != 2):
+            return dict(base, status="HOLD_DISTINCT_PLANS_NOT_ESTABLISHED",
+                        engine_status=report["status"],
+                        blockers=([report["design_blocked_reason"]] if
+                                  report["design_blocked_reason"] else []) +
+                                 [item["reason"] for item in report["blocked_alternatives"]] +
+                                 (["TWO_DISTINCT_BOUNDED_PLANS_REQUIRED"] if len(plans) != 2 else []),
+                        unknown_count=len(report["analysis"]["unknowns"]),
+                        expansions=report["plan_search_expansions"])
+        return dict(base, status="TWO_PLANS_ADVISORY_UNVERIFIED",
+                    engine_status=report["status"],
+                    plan_specs=plans, alternatives=result["alternatives"],
+                    uncertainty=result["uncertainty"],
+                    evidence_review_required=report["evidence_review_required"],
+                    source_sets=[list(hashes) for hashes in sources],
+                    expansions=report["plan_search_expansions"],
+                    blockers=[item["reason"] for item in report["blocked_alternatives"]])
+
+    @staticmethod
     def architect(problem_file, axnode_root, *, max_expansions=8, cancelled=None) -> dict:
         from .architect_runtime import preview_architecture
         from .trace_renderer import render_architect_explanation

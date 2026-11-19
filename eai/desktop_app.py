@@ -466,12 +466,34 @@ class EAIDesktopApp:
         self.run("home", "example", open_example)
 
     def design(self):
-        if not self.problem or not self.library:
-            self.notice("초안을 저장하거나 열고 AXNODE 저장소를 선택하세요.")
+        if not self.ready():
+            return
+        if self.draft is None:
+            self.notice("먼저 목표 초안을 작성하세요.", AMBER)
+            return
+        if not self.library:
+            self.results["architect"] = ("design", {"status": "HOLD_LOCAL_LIBRARY_REQUIRED",
+                "blockers": ["EXPLICIT_AXNODE_LIBRARY_REQUIRED"], "plan_specs": {}})
+            self.render()
+            self.notice("본인이 선택한 로컬 AXNODE 저장소가 필요합니다.", AMBER)
+            return
+        # The bundled example has a separate historic file-backed preview.
+        # Never silently treat the example as the owner's new live goal.
+        if self.example is not None and self.problem == self.example.problem:
+            signal = threading.Event()
+            p, lib, limit = self.problem, self.library, self.limits.expansions
+            self.run("architect", "design", lambda: self.bridge.architect(
+                p, lib, max_expansions=limit, cancelled=signal.is_set), cancel=signal)
+            return
+        if not messagebox.askyesno("설계 목표·근거 읽기 검토",
+                 "현재 편집한 목표와 권한을 확인했습니까?\n선택한 AXNODE 저장소를 읽기 전용으로 분석합니다.\n설계 후보는 검증 전이며 실행되지 않습니다.", parent=self.root):
+            self.notice("설계 분석이 취소됐습니다. 읽기·실행 없음.", AMBER)
             return
         signal = threading.Event()
-        p, lib, limit = self.problem, self.library, self.limits.expansions
-        self.run("architect", "design", lambda: self.bridge.architect(p, lib, max_expansions=limit, cancelled=signal.is_set), cancel=signal)
+        raw, lib, limit = dict(self.draft), self.library, self.limits.expansions
+        self.run("architect", "design", lambda: self.bridge.architect_reviewed_goal(
+            raw, lib, owner_reviewed=True, max_expansions=limit,
+            cancelled=signal.is_set), cancel=signal)
 
     def request_cancel(self):
         if self.cancel_event:

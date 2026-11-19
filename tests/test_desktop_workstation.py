@@ -115,6 +115,66 @@ class WorkstationContractTests(unittest.TestCase):
         w.receipt.write_text(json.dumps(data), encoding="utf-8")
         self.assertEqual(self.bridge.verify_journey(w.receipt)["status"], "RECEIPT_CONTRACT_REJECTED")
 
+    def test_v32_reviewed_goal_to_real_two_distinct_architect_plans(self):
+        w = self.fixture()
+        source = json.loads(w.problem.read_text(encoding="utf-8"))
+        source.update(goal="로컬 후보의 검토 단계를 비교하라", oracle="owner.local.oracle",
+                      state_refs=["synthetic.local.1"],
+                      hard_constraints=["forbid:unsafe.operation"],
+                      objectives=["검증 가능한 두 경로 확인"], permissions=["pure", "local.read"])
+        before = {p.relative_to(w.library): hashlib.sha256(p.read_bytes()).digest()
+                  for p in w.library.rglob("*") if p.is_file()}
+        with patch.object(socket.socket, "connect", side_effect=AssertionError("network blocked")):
+            out = self.bridge.architect_reviewed_goal(source, w.library, owner_reviewed=True)
+        self.assertEqual(out["status"], "TWO_PLANS_ADVISORY_UNVERIFIED")
+        self.assertEqual(out["engine_status"], "CANDIDATES_UNVERIFIED")
+        self.assertEqual(len(out["plan_specs"]), 2)
+        self.assertNotEqual(tuple(out["source_sets"][0]), tuple(out["source_sets"][1]))
+        self.assertEqual({p.relative_to(w.library): hashlib.sha256(p.read_bytes()).digest()
+                          for p in w.library.rglob("*") if p.is_file()}, before)
+        self.assertFalse((self.root / "drafts").exists())
+        self.assertNotIn(source["goal"], json.dumps(out, ensure_ascii=False))
+        self.assertFalse(out["can_execute"])
+        self.assertEqual(out["external_actions"], 0)
+        self.assertEqual(out["execution"], "NOT_EXECUTED")
+        for plan in out["plan_specs"].values():
+            self.assertEqual(plan["problem_sha256"], out["problem_sha256"])
+            self.assertTrue(all(step["operator"] == "synthetic.noop.v1" for step in plan["steps"]))
+
+    def test_v32_reviewed_goal_missing_inputs_and_integrity_fail_closed(self):
+        w = self.fixture()
+        source = json.loads(w.problem.read_text(encoding="utf-8"))
+        source.update(oracle="owner.local.oracle", state_refs=["synthetic.local.1"],
+                      hard_constraints=["forbid:unsafe.operation"], permissions=["pure", "local.read"])
+        self.assertEqual(self.bridge.architect_reviewed_goal(source, w.library)["status"],
+                         "HOLD_OWNER_REVIEW_REQUIRED")
+        self.assertEqual(self.bridge.architect_reviewed_goal(
+            dict(source, oracle="owner_review_required"), w.library,
+            owner_reviewed=True)["status"], "HOLD_INCOMPLETE_PROBLEM")
+        self.assertEqual(self.bridge.architect_reviewed_goal(
+            dict(source, permissions=["pure"]), w.library,
+            owner_reviewed=True)["status"], "HOLD_LOCAL_READ_NOT_APPROVED")
+        self.assertEqual(self.bridge.architect_reviewed_goal(
+            source, None, owner_reviewed=True)["status"], "HOLD_LOCAL_LIBRARY_REQUIRED")
+        conflict = self.bridge.architect_reviewed_goal(
+            dict(source, hard_constraints=["must:practice.review", "forbid:practice.review"]),
+            w.library, owner_reviewed=True)
+        self.assertEqual(conflict["status"], "HOLD_DISTINCT_PLANS_NOT_ESTABLISHED")
+        self.assertIn("CONTRADICTORY_HARD_CONSTRAINTS", conflict["blockers"])
+        self.assertEqual(conflict["plan_specs"], {})
+        unsupported = self.bridge.architect_reviewed_goal(
+            dict(source, domain="absent"), w.library, owner_reviewed=True)
+        self.assertEqual(unsupported["status"], "HOLD_DISTINCT_PLANS_NOT_ESTABLISHED")
+        self.assertIn("INSUFFICIENT_DISTINCT_LOCAL_STRATEGIES", unsupported["blockers"])
+        cancelled = self.bridge.architect_reviewed_goal(source, w.library, owner_reviewed=True,
+                                                       cancelled=lambda: True)
+        self.assertEqual(cancelled["status"], "HOLD_DISTINCT_PLANS_NOT_ESTABLISHED")
+        self.assertEqual(cancelled["engine_status"], "CANCELLED")
+        with self.assertRaises(ValueError):
+            self.bridge.architect_reviewed_goal(source, self.root / "not_created",
+                                                owner_reviewed=True)
+        self.assertFalse((self.root / "not_created").exists())
+
     def test_v32_private_library_creation_and_node_import_do_not_mutate_original(self):
         self.assertEqual(self.bridge.create_fresh_private_library()["status"], "HOLD_PRIVATE_LIBRARY_CONSENT")
         self.assertFalse((self.root / "libraries").exists())
@@ -252,6 +312,27 @@ class NativeWorkstationTests(unittest.TestCase):
         self.assertEqual(self.app.draft_review["status"], "REVIEW_REQUIRED")
         self.assertIn("NO_OBJECTIVES", self.app.draft_review["missing"])
         self.assertFalse((self.bridge.state_root / "drafts").exists())
+
+    def test_v32_gui_goal_to_real_architect_without_file_ritual(self):
+        w = PracticeWorkspace()
+        self.addCleanup(w.close)
+        self.app.fill_command("실제 로컬 전략 후보를 비교해줘")
+        self.app.new_draft()
+        self.app.library = w.library
+        self.app.draft.update(domain="practice", oracle="owner.local.oracle",
+                              state_refs=["synthetic.local.1"],
+                              hard_constraints=["forbid:unsafe.operation"],
+                              objectives=["두 후보를 비교"], permissions=["pure", "local.read"])
+        with patch("eai.desktop_app.messagebox.askyesno", return_value=True):
+            self.app.design()
+        self.wait()
+        self.assertEqual(self.app.results["architect"][0], "design")
+        data = self.app.results["architect"][1]
+        self.assertEqual(data["status"], "TWO_PLANS_ADVISORY_UNVERIFIED")
+        self.assertEqual(len(data["plan_specs"]), 2)
+        self.assertFalse((self.bridge.state_root / "drafts").exists())
+        self.assertIsNone(self.app.problem)
+        self.assertFalse(data["can_execute"])
 
     def test_v32_gui_consent_creates_only_fresh_private_library(self):
         with patch("eai.desktop_app.messagebox.askyesno", return_value=True):
