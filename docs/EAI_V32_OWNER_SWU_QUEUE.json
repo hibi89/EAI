@@ -1,0 +1,326 @@
+{
+  "schema": "eai.v32.owner.p1.swu.v1",
+  "date_kst": "2026-11-19",
+  "repo": "hibi89/EAI",
+  "branch": "feature/eai-v32-owner-rebuild-20261119",
+  "base_review_sha": "e44977fc4f615fa6a368ff64ec4361ceee99e7b4",
+  "active_owner": "WEB_GPT6_SOL_HIGH",
+  "inherited": {
+    "backend_swu": 42,
+    "frontend_swu": 6,
+    "source_candidates_historical": 48,
+    "official_rate": "UNASSESSED",
+    "historic_evidence": "docs/EAI_P1_SWU_QUEUE.json;docs/EAI_DESKTOP_P1_SWU_QUEUE.json"
+  },
+  "new_swu_count": 12,
+  "new_source_candidates": 1,
+  "tracked_swu_total": 60,
+  "official_implementation_rate": "UNASSESSED",
+  "official_verification_rate": "UNASSESSED",
+  "independent_audit": "NOT_RUN",
+  "release": "HOLD",
+  "safety": "No real Player, ACTIVE, external Hydrogen, paid services, owner/customer originals, secret access, main merge or Production without separate approval. P26 and ADR-0002 preserved.",
+  "tasks": [
+    {
+      "swu_id": "EAI-V32-W01",
+      "req_ids": [
+        "EAI-V32-UX01"
+      ],
+      "depends_on": [],
+      "description": "Direct freeform GUI goal to review-only ProblemSpec without external or original writes",
+      "allowed_paths": [
+        "eai/desktop_app.py",
+        "eai/desktop_views.py",
+        "tests/test_desktop_workstation.py"
+      ],
+      "acceptance": "Unsupported validated text opens Architect draft with pure permission, no file save or execution; literal 13 CPU commands and note consent retain prior routing.",
+      "status": "IMPLEMENTED_UNVERIFIED",
+      "p1_source_candidate": true,
+      "risk": "NORMAL",
+      "local_check": "py_compile PASS; focused Linux Xvfb 9/9 PASS; full combined GUI run Python/Tk abort (unresolved)",
+      "evidence_sha": "dc464fac7d50493e237fadb3f72909753e6534a7",
+      "safety_gate": "P26/ADR-0002/NO_LIVE_IO",
+      "p2_status": "NOT_RUN",
+      "failure_count_verified": 0,
+      "swu_size_scidu": "TO_ASSESS_BEFORE_READY_EXECUTION"
+    },
+    {
+      "swu_id": "EAI-V32-W02",
+      "req_ids": [
+        "EAI-V32-UX02"
+      ],
+      "depends_on": [
+        "EAI-V32-W01"
+      ],
+      "description": "Guided ProblemSpec edit session and explicit unknown/evidence/constraints/oracle summary",
+      "allowed_paths": [
+        "eai/desktop_app.py",
+        "eai/desktop_widgets.py",
+        "eai/desktop_bridge.py"
+      ],
+      "acceptance": "Goal, bounds, facts/assumptions, user permissions, missing oracle editable without raw JSON; invalid fields denied and local private save explicit.",
+      "status": "READY",
+      "p1_source_candidate": false,
+      "risk": "NORMAL",
+      "local_check": "NOT_RUN",
+      "evidence_sha": null,
+      "safety_gate": "P26/ADR-0002/NO_LIVE_IO",
+      "p2_status": "NOT_RUN",
+      "failure_count_verified": 0,
+      "swu_size_scidu": "TO_ASSESS_BEFORE_READY_EXECUTION"
+    },
+    {
+      "swu_id": "EAI-V32-W03",
+      "req_ids": [
+        "EAI-V32-UX03"
+      ],
+      "depends_on": [
+        "EAI-V32-W02"
+      ],
+      "description": "Real local CPU-skill and AXNODE evidence discovery for owner-provided goal",
+      "allowed_paths": [
+        "eai/desktop_bridge.py",
+        "eai/goal_dispatch.py",
+        "eai/axnode_retrieval.py"
+      ],
+      "acceptance": "List only actual available typed CPU skills/AXNODE references, source and nonmatches; unsupported goal returns gap/UNKNOWN, no invented plan.",
+      "status": "DEPENDENCY_BLOCKED",
+      "p1_source_candidate": false,
+      "risk": "NORMAL",
+      "local_check": "NOT_RUN",
+      "evidence_sha": null,
+      "safety_gate": "P26/ADR-0002/NO_LIVE_IO",
+      "p2_status": "NOT_RUN",
+      "failure_count_verified": 0,
+      "swu_size_scidu": "TO_ASSESS_BEFORE_READY_EXECUTION"
+    },
+    {
+      "swu_id": "EAI-V32-W04",
+      "req_ids": [
+        "EAI-V32-UX04"
+      ],
+      "depends_on": [
+        "EAI-V32-W02"
+      ],
+      "description": "Opt-in private local AXNODE library creation/bootstrap from vetted local sources",
+      "allowed_paths": [
+        "eai/desktop_bridge.py",
+        "eai/axnode_store.py",
+        "eai/desktop_state.py"
+      ],
+      "acceptance": "Explicitly choose a fresh private root; no mutation of existing libraries; empty library handled honestly; no ACTIVE promotion.",
+      "status": "DEPENDENCY_BLOCKED",
+      "p1_source_candidate": false,
+      "risk": "HIGH",
+      "local_check": "NOT_RUN",
+      "evidence_sha": null,
+      "safety_gate": "P26/ADR-0002/NO_LIVE_IO",
+      "p2_status": "NOT_RUN",
+      "failure_count_verified": 0,
+      "swu_size_scidu": "TO_ASSESS_BEFORE_READY_EXECUTION"
+    },
+    {
+      "swu_id": "EAI-V32-W05",
+      "req_ids": [
+        "EAI-V32-UX05"
+      ],
+      "depends_on": [
+        "EAI-V32-W03",
+        "EAI-V32-W04"
+      ],
+      "description": "Connect ordinary reviewed goal to real Architect alternatives/fallback",
+      "allowed_paths": [
+        "eai/desktop_bridge.py",
+        "eai/architect_runtime.py",
+        "eai/logic_synthesis.py"
+      ],
+      "acceptance": "At least 2 genuinely distinct bounded alternatives when viable, or exact blocker; no mere fixture presented as goal reasoning; stable evidence hashes.",
+      "status": "DEPENDENCY_BLOCKED",
+      "p1_source_candidate": false,
+      "risk": "NORMAL",
+      "local_check": "NOT_RUN",
+      "evidence_sha": null,
+      "safety_gate": "P26/ADR-0002/NO_LIVE_IO",
+      "p2_status": "NOT_RUN",
+      "failure_count_verified": 0,
+      "swu_size_scidu": "TO_ASSESS_BEFORE_READY_EXECUTION"
+    },
+    {
+      "swu_id": "EAI-V32-W06",
+      "req_ids": [
+        "EAI-V32-UX06"
+      ],
+      "depends_on": [
+        "EAI-V32-W05"
+      ],
+      "description": "Compare Architect options and present assumptions, proof gaps and costs",
+      "allowed_paths": [
+        "eai/desktop_views.py",
+        "eai/desktop_presentation.py",
+        "eai/desktop_app.py"
+      ],
+      "acceptance": "Selectable plans and operator/trade-off/unknown/provenance cards reflect real backend output; no fabricated performance or confidence.",
+      "status": "DEPENDENCY_BLOCKED",
+      "p1_source_candidate": false,
+      "risk": "NORMAL",
+      "local_check": "NOT_RUN",
+      "evidence_sha": null,
+      "safety_gate": "P26/ADR-0002/NO_LIVE_IO",
+      "p2_status": "NOT_RUN",
+      "failure_count_verified": 0,
+      "swu_size_scidu": "TO_ASSESS_BEFORE_READY_EXECUTION"
+    },
+    {
+      "swu_id": "EAI-V32-W07",
+      "req_ids": [
+        "EAI-V32-UX07"
+      ],
+      "depends_on": [
+        "EAI-V32-W05"
+      ],
+      "description": "Safe selected-plan handoff from Architect to exact-hash PolicyGate/Player preview",
+      "allowed_paths": [
+        "eai/desktop_bridge.py",
+        "eai/desktop_app.py",
+        "eai/policy_gate.py"
+      ],
+      "acceptance": "P26 exact plan/scope review, rejects changed plan and unsafe permissions, default PURE/READ_LOCAL only.",
+      "status": "DEPENDENCY_BLOCKED",
+      "p1_source_candidate": false,
+      "risk": "HIGH",
+      "local_check": "NOT_RUN",
+      "evidence_sha": null,
+      "safety_gate": "P26/ADR-0002/NO_LIVE_IO",
+      "p2_status": "NOT_RUN",
+      "failure_count_verified": 0,
+      "swu_size_scidu": "TO_ASSESS_BEFORE_READY_EXECUTION"
+    },
+    {
+      "swu_id": "EAI-V32-W08",
+      "req_ids": [
+        "EAI-V32-UX08"
+      ],
+      "depends_on": [
+        "EAI-V32-W07"
+      ],
+      "description": "Bounded Player observation/receipt flow from approved pure simulation",
+      "allowed_paths": [
+        "eai/desktop_bridge.py",
+        "eai/player_runtime.py",
+        "eai/desktop_app.py"
+      ],
+      "acceptance": "Operator sees steps, cancellation, factual no-op label, generated trace/digest, no external side effect or original write.",
+      "status": "DEPENDENCY_BLOCKED",
+      "p1_source_candidate": false,
+      "risk": "HIGH",
+      "local_check": "NOT_RUN",
+      "evidence_sha": null,
+      "safety_gate": "P26/ADR-0002/NO_LIVE_IO",
+      "p2_status": "NOT_RUN",
+      "failure_count_verified": 0,
+      "swu_size_scidu": "TO_ASSESS_BEFORE_READY_EXECUTION"
+    },
+    {
+      "swu_id": "EAI-V32-W09",
+      "req_ids": [
+        "EAI-V32-UX09"
+      ],
+      "depends_on": [
+        "EAI-V32-W08"
+      ],
+      "description": "Independent verification result and gated experience/AXNODE candidate entry",
+      "allowed_paths": [
+        "eai/desktop_bridge.py",
+        "eai/axnode_memory_review.py",
+        "eai/desktop_views.py"
+      ],
+      "acceptance": "Integrity explicitly differs from semantic truth; wrong/forged/unknown rejected; nonverified candidates cannot become ACTIVE.",
+      "status": "DEPENDENCY_BLOCKED",
+      "p1_source_candidate": false,
+      "risk": "HIGH",
+      "local_check": "NOT_RUN",
+      "evidence_sha": null,
+      "safety_gate": "P26/ADR-0002/NO_LIVE_IO",
+      "p2_status": "NOT_RUN",
+      "failure_count_verified": 0,
+      "swu_size_scidu": "TO_ASSESS_BEFORE_READY_EXECUTION"
+    },
+    {
+      "swu_id": "EAI-V32-W10",
+      "req_ids": [
+        "EAI-V32-UX10"
+      ],
+      "depends_on": [
+        "EAI-V32-W06"
+      ],
+      "description": "Goal/alternative/trace-focused native frontend information architecture",
+      "allowed_paths": [
+        "eai/desktop_app.py",
+        "eai/desktop_views.py",
+        "eai/desktop_widgets.py"
+      ],
+      "acceptance": "Actual goal → compare → player → verification → AXNODE navigation with persistent composer, keyboard and honest status; reference visual direction retained.",
+      "status": "DEPENDENCY_BLOCKED",
+      "p1_source_candidate": false,
+      "risk": "NORMAL",
+      "local_check": "NOT_RUN",
+      "evidence_sha": null,
+      "safety_gate": "P26/ADR-0002/NO_LIVE_IO",
+      "p2_status": "NOT_RUN",
+      "failure_count_verified": 0,
+      "swu_size_scidu": "TO_ASSESS_BEFORE_READY_EXECUTION"
+    },
+    {
+      "swu_id": "EAI-V32-W11",
+      "req_ids": [
+        "EAI-V32-UX11"
+      ],
+      "depends_on": [
+        "EAI-V32-W08"
+      ],
+      "description": "Owner-private resumable sessions, cancellation and actionable error/retry states",
+      "allowed_paths": [
+        "eai/desktop_state.py",
+        "eai/desktop_app.py",
+        "eai/desktop_bridge.py"
+      ],
+      "acceptance": "Restart restores only allowed private metadata/review state with hashes; stale or missing files HOLD; original DB and failed nonce unchanged.",
+      "status": "DEPENDENCY_BLOCKED",
+      "p1_source_candidate": false,
+      "risk": "HIGH",
+      "local_check": "NOT_RUN",
+      "evidence_sha": null,
+      "safety_gate": "P26/ADR-0002/NO_LIVE_IO",
+      "p2_status": "NOT_RUN",
+      "failure_count_verified": 0,
+      "swu_size_scidu": "TO_ASSESS_BEFORE_READY_EXECUTION"
+    },
+    {
+      "swu_id": "EAI-V32-W12",
+      "req_ids": [
+        "EAI-V32-UX12"
+      ],
+      "depends_on": [
+        "EAI-V32-W10",
+        "EAI-V32-W11"
+      ],
+      "description": "Reproducible redesigned native Windows EXE source packaging and smoke gate",
+      "allowed_paths": [
+        "scripts/eai_desktop_entry.py",
+        "BUILD_EAI_EXE.cmd",
+        "RUN_EAI_DESKTOP.cmd",
+        ".github/workflows/eai-desktop-windows.yml"
+      ],
+      "acceptance": "Clean offline unsigned Windows executable build route, package/license inventory and self-check; actual Win11 EXE acceptance remains P2.",
+      "status": "DEPENDENCY_BLOCKED",
+      "p1_source_candidate": false,
+      "risk": "NORMAL",
+      "local_check": "NOT_RUN",
+      "evidence_sha": null,
+      "safety_gate": "P26/ADR-0002/NO_LIVE_IO",
+      "p2_status": "NOT_RUN",
+      "failure_count_verified": 0,
+      "swu_size_scidu": "TO_ASSESS_BEFORE_READY_EXECUTION"
+    }
+  ]
+}
