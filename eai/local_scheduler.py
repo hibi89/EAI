@@ -83,8 +83,13 @@ def observe_own_process_rss_bytes() -> int | None:
                 ]
             memory = ProcessMemoryCounters()
             memory.cb = ctypes.sizeof(memory)
-            kernel = ctypes.WinDLL("kernel32", use_last_error=True)
-            psapi = ctypes.WinDLL("psapi", use_last_error=True)
+            # WinDLL is Windows-only; absence must never produce a fake
+            # memory measurement or an approving resource verdict.
+            win_dll = getattr(ctypes, "WinDLL", None)
+            if win_dll is None:
+                return None
+            kernel = win_dll("kernel32", use_last_error=True)
+            psapi = win_dll("psapi", use_last_error=True)
             kernel.GetCurrentProcess.restype = ctypes.c_void_p
             psapi.GetProcessMemoryInfo.argtypes = [
                 ctypes.c_void_p, ctypes.POINTER(ProcessMemoryCounters),
