@@ -1,0 +1,116 @@
+{
+  "schema": "eai.p2.synthetic_evidence.v1",
+  "date_kst": "2026-11-19",
+  "repo": "hibi89/EAI",
+  "branch": "feature/eai-v32-owner-rebuild-20261119",
+  "verified_functional_sha": "409d0e16fdf50fcabcb2f80cd72ffd1dcd43476b",
+  "linux": {
+    "run_id": 44515731548,
+    "conclusion": "SUCCESS",
+    "total": 1169,
+    "passed": 1152,
+    "skipped": 17,
+    "failed": 0,
+    "focused_tk_xvfb_passed": 34,
+    "python_compile": "PASS",
+    "ruff_correctness": "PASS_E9_F63_F7_F82",
+    "mypy_version": "1.18.2",
+    "mypy_result": "PASS_136_SOURCE_FILES",
+    "mypy_command": "python -m mypy --python-version 3.11 --follow-imports=skip --ignore-missing-imports --check-untyped-defs eai scripts",
+    "eai_module_count": 128,
+    "script_count": 8,
+    "tests_mypy": "NOT_RUN",
+    "zip_checksum": "PASS"
+  },
+  "windows_server": {
+    "run_id": 44515731379,
+    "conclusion": "SUCCESS",
+    "total": 1169,
+    "passed": 1168,
+    "skipped": 1,
+    "failed": 0,
+    "focused_tk_passed": 40,
+    "focused_tk_skipped": 1,
+    "windows_exe": "PASS_UNSIGNED_BUNDLE_IMPORTS",
+    "artifact_id": 14525762254,
+    "uploaded_artifact_zip_sha256": "7fc37b05299c1417c37a67910b2eaea7aab8e4eae26550f9fea84b348f4b03fe",
+    "owner_physical_win11": "NOT_RUN"
+  },
+  "source_progress": {
+    "start_sha": "6ae46bb3f86c7a81cd9420125f574301b3f1c9bb",
+    "typed_steps": [
+      {
+        "sha": "3fa81c280f415aacdfd712e9b1b776bd604c8b4a",
+        "count": 26,
+        "static": "PASS"
+      },
+      {
+        "sha": "5746a39f1ad1fe89dbf7be86cb1cc9887f73215b",
+        "count": 50,
+        "static": "FAIL",
+        "errors": 5
+      },
+      {
+        "sha": "b54d62f6ba028e306c1458533ce5d4a48a48ca57",
+        "count": 50,
+        "static": "PASS"
+      },
+      {
+        "sha": "870bce0471ee4d57f796411dadc29da51620db8e",
+        "count": 75,
+        "static": "FAIL",
+        "errors": 2
+      },
+      {
+        "sha": "fb7e5b6fd8c5e5c84ff7d44bc32764f061596386",
+        "count": 75,
+        "static": "PASS"
+      },
+      {
+        "sha": "75aeba94ff316c15e7c87009f8155f61b67ec92e",
+        "count": 128,
+        "static": "FAIL",
+        "errors": 6
+      },
+      {
+        "sha": "61e575f0b43aacce18d572f1f22c1a7b111fd7f7",
+        "count": 128,
+        "static": "PASS"
+      },
+      {
+        "sha": "465771676e13cb50399abd1282986e9190f12cd4",
+        "count": 136,
+        "static": "FAIL",
+        "errors": 1
+      },
+      {
+        "sha": "409d0e16fdf50fcabcb2f80cd72ffd1dcd43476b",
+        "count": 136,
+        "static": "PASS"
+      }
+    ]
+  },
+  "new_functional_regression": "test_remember_pure_trace_requires_original_review_before_dialog",
+  "p2_01": {
+    "status": "PARTIAL_PASS_136_MODULE_TYPED_AND_EXE_CI",
+    "whole_gate_accepted": false,
+    "full_repo_tests_mypy": "NOT_RUN",
+    "follow_imports": "skip",
+    "broader_ruff_style_warnings_historical": 121,
+    "ruff_style_debt_fixed": false
+  },
+  "dashboard": {
+    "p1_source_candidates": 60,
+    "p1_total_swu": 60,
+    "p1_provisional": true,
+    "p2_accepted_groups": 7,
+    "p2_total_groups": 14,
+    "p2_unweighted_percent": 50,
+    "weighted_implementation": "UNASSESSED",
+    "weighted_verification": "UNASSESSED"
+  },
+  "physical_win11": "NOT_RUN",
+  "independent_technical_security_audit": "NOT_RUN",
+  "independent_ux_audit": "NOT_RUN",
+  "release": "HOLD"
+}
