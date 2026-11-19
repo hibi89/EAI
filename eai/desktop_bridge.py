@@ -80,6 +80,27 @@ class DesktopBridge:
         return raw
 
     @staticmethod
+    def draft_review(raw: dict) -> dict:
+        """Bounded missing-evidence report; not evidence discovery or truth validation."""
+        problem = ProblemSpec.validate(raw)
+        missing = []
+        if not problem.state_refs:
+            missing.append("NO_EVIDENCE_REFS")
+        if not problem.objectives:
+            missing.append("NO_OBJECTIVES")
+        if problem.oracle == "owner_review_required":
+            missing.append("ORACLE_NOT_DEFINED")
+        if not problem.hard_constraints:
+            missing.append("NO_EXPLICIT_CONSTRAINTS")
+        return {"kind": "PROBLEM_DRAFT_REVIEW", "status": "REVIEW_REQUIRED" if missing else "FORM_COMPLETE_UNVERIFIED",
+                "missing": missing, "permission_scope": list(problem.permissions),
+                "assumption_count": len(problem.assumptions),
+                "evidence_ref_count": len(problem.state_refs),
+                "objective_count": len(problem.objectives),
+                "problem_sha256": problem.digest(),
+                "truth_verified": False, "external_actions": 0}
+
+    @staticmethod
     def load_draft(path: str | Path) -> dict:
         raw = _document(path)
         ProblemSpec.validate(raw)
