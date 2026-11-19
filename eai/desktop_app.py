@@ -286,6 +286,13 @@ class EAIDesktopApp:
             self.clear_plan()
             if op == "draft_open" and self.page == "home":
                 self.select("architect")
+        elif code == "PRIVATE_EMPTY_LIBRARY_CREATED":
+            self.library = data["path"]
+            self.clear_library()
+            self.results["atlas"] = (op, data)
+        elif code == "PRIVATE_CANDIDATE_IMPORTED_UNVERIFIED":
+            self.clear_library()
+            self.results["atlas"] = (op, data)
         elif code == "LOCAL_CATALOG_UNVERIFIED":
             self.catalog_data, self.node_data = data, None
         elif code == "NODE_DIGEST_MATCH":
@@ -400,6 +407,29 @@ class EAIDesktopApp:
         self.catalog_data = self.node_data = None
         self.results.pop("atlas", None)
         self.results.pop("architect", None)
+
+    def create_library(self):
+        if not self.ready():
+            return
+        if not messagebox.askyesno("새 개인 라이브러리", "EAI의 개인 폴더에 빈 AXNODE 저장소를 새로 만들까요?\n기존 자료는 변경하지 않습니다.", parent=self.root):
+            return
+        self.select("atlas")
+        self.run("atlas", "create_library", lambda: self.bridge.create_fresh_private_library(owner_approved=True))
+
+    def import_candidate(self):
+        if not self.ready() or not self.library:
+            self.notice("새로 만든 개인 AXNODE 라이브러리를 선택하세요.", AMBER)
+            return
+        source = filedialog.askopenfilename(parent=self.root, title="로컬 AXNODE 후보 파일 가져오기",
+                                             filetypes=[("AXNODE candidate", "*.axnode")])
+        if not source:
+            return
+        if not messagebox.askyesno("개인 후보 복사", "선택한 로컬 노드 1개를 개인 라이브러리의 후보로 복사할까요?\n기존 원본과 ACTIVE 상태는 변경하지 않습니다.", parent=self.root):
+            return
+        self.select("atlas")
+        library = self.library
+        self.run("atlas", "import_candidate", lambda: self.bridge.import_private_candidate(
+            library, Path(source), owner_approved=True))
 
     def choose_library(self):
         if not self.ready():
