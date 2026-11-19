@@ -115,7 +115,9 @@ class QuickP28Tests(unittest.TestCase):
              "--terms","risk","mitigation"]
         proc=subprocess.run(cmd,capture_output=True,text=True,timeout=20)
         self.assertEqual(proc.returncode,0,proc.stderr)
-        self.assertIn("로컬 증거 검색",proc.stdout)
+        expected = "로컬 증거 검색"
+        escaped = expected.encode('unicode_escape').decode('ascii')
+        self.assertTrue(expected in proc.stdout or escaped in proc.stdout, proc.stdout[:500])
 
     def test_cli_wrong_contract_fails_closed(self):
         cmd=[sys.executable,"-m","eai","quick-goal","--kind","csv_relationships",

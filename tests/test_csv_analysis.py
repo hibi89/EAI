@@ -78,8 +78,11 @@ class CSVTests(unittest.TestCase):
         done = subprocess.run([sys.executable, '-m', 'eai', 'analyze-csv', str(self.file)],
                               cwd=root, capture_output=True, text=True, timeout=10)
         self.assertEqual(done.returncode, 0, done.stderr)
-        self.assertIn('합계 4', done.stdout)
-        self.assertIn('평균 3', done.stdout)
+        # The chosen Windows pipe code page may lack Hangul; literal reversible
+        # Unicode escapes are valid, but numbers and return codes must survive.
+        for expected in ('합계 4', '평균 3'):
+            escaped = expected.encode('unicode_escape').decode('ascii')
+            self.assertTrue(expected in done.stdout or escaped in done.stdout, done.stdout[:500])
 
     def test_redirected_korean_code_page_preserves_numbers_and_escapes_unicode(self):
         self.file.write_text('매출📊\n12\n', encoding='utf-8')

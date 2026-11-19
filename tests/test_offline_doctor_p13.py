@@ -80,7 +80,9 @@ class OfflineDoctorTests(unittest.TestCase):
         proc=subprocess.run([sys.executable,'-m','eai','doctor'],
                             cwd=root,capture_output=True,text=True,timeout=40)
         self.assertEqual(proc.returncode,0,proc.stderr)
-        self.assertIn('오프라인 자체 진단: PASS',proc.stdout)
+        expected = '오프라인 자체 진단: PASS'
+        escaped = expected.encode('unicode_escape').decode('ascii')
+        self.assertTrue(expected in proc.stdout or escaped in proc.stdout, proc.stdout[:500])
 
     def test_cli_invalid_root_exit_four(self):
         root=Path(__file__).resolve().parent.parent
