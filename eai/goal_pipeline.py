@@ -44,7 +44,7 @@ def _prepare(path: Path, manifest: dict):
            for key,deps in dependencies.items()):
         raise ValueError('pipeline unknown or self prerequisite')
     pending = set(paths)
-    finished = set()
+    finished: set[str] = set()
     order = []
     while pending:
         ready = sorted(key for key in pending if set(dependencies[key]) <= finished)
@@ -101,7 +101,9 @@ def verify_pipeline_receipt(manifest: dict, report: dict, *, original_sha256: st
     ):
         raise ValueError('EAI pipeline receipt mismatch: execution order')
     # The verifier separately reconstructs the canonical topological layers.
-    remaining, confirmed, canonical = set(specification), set(), []
+    remaining = set(specification)
+    confirmed: set[str] = set()
+    canonical: list[str] = []
     while remaining:
         ready = sorted(key for key in remaining
                        if set(specification[key]['requires']) <= confirmed)
@@ -112,7 +114,7 @@ def verify_pipeline_receipt(manifest: dict, report: dict, *, original_sha256: st
         remaining.difference_update(ready)
     if order != canonical:
         raise ValueError('EAI pipeline receipt mismatch: noncanonical execution order')
-    processed = {}
+    processed: dict[str, dict] = {}
     aborted = False
     for key,row in zip(order,rows):
         expected = specification[key]
@@ -174,7 +176,7 @@ def execute_pipeline_document(manifest_file: str | Path) -> dict:
         if _hash_file(target)!=item['sha256']:
             raise ValueError('pipeline preflight SHA256 mismatch: no goals executed')
     outputs = []
-    processed = {}
+    processed: dict[str, dict] = {}
     stopped = False
     for key in order:
         item,target = paths[key]
@@ -273,7 +275,8 @@ def dispatch_explicit_p26_dag(problem, plan, approvals: tuple[dict, ...], *,
             "steps": (), "automatic_authorization": False,
             "v3_player_execution": False,
         }
-    rows, succeeded = [], set()
+    rows: list[dict] = []
+    succeeded: set[str] = set()
     for sid,operator,deps,capability in plan.steps:
         if not set(deps).issubset(succeeded):
             rows.append({"step_id":sid, "status":"HOLD_UNSATISFIED_DEPENDENCY"})

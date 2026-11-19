@@ -1,0 +1,23 @@
+{
+  "os_build": 26200,
+  "sha256": "8e9c7c7d6171d7e59b039f34a784aef1bda67ed3a16018f17a91e1fdcc58e0f3",
+  "bytes": 13024707,
+  "samples": [
+    {
+      "launch": 1,
+      "window_ms": 4685,
+      "idle_working_set_mib": 50.7,
+      "boot_cpu_ms": 3422,
+      "close_ms": 713,
+      "exit_code": 0
+    },
+    {
+      "launch": 2,
+      "window_ms": 2935,
+      "idle_working_set_mib": 51.0,
+      "boot_cpu_ms": 2594,
+      "close_ms": 764,
+      "exit_code": 0
+    }
+  ]
+}

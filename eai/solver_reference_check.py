@@ -152,7 +152,7 @@ def compare_real_cpu_on_synthetic(
                      valid_details and valid_hashes)
             independently_reported_keys = (
                 tuple(sorted(e["key"] for e in reported_details))
-                if agree else ())
+                if agree and isinstance(reported_details, list) else ())
             report_digest = (
                 hashlib.sha256(canonical_bytes({
                     "schema": "eai.synthetic.mismatch.keys.v1",

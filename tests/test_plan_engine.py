@@ -104,8 +104,8 @@ class PlanEngineTests(unittest.TestCase):
         self.assertEqual(result['primary']['counts']['right_only'], 1)
 
     def test_empty_sources_with_different_raw_bytes_are_unavailable(self):
-        self.a.write_text('key,sales,orders\n', encoding='utf-8')
-        self.b.write_text('key,sales,orders\r\n', encoding='utf-8')
+        self.a.write_bytes(b'key,sales,orders\n')
+        self.b.write_bytes(b'key,sales,orders\r\n')
         result = self.executor.execute(self.goal())
         self.assertEqual(result['status'], 'UNAVAILABLE')
 

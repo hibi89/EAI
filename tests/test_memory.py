@@ -1,4 +1,5 @@
 """Real local SQLite note lifecycle and model permission-isolation tests."""
+from contextlib import closing
 from pathlib import Path
 import tempfile
 import unittest
@@ -114,7 +115,7 @@ class LegacyMigrationTests(unittest.TestCase):
         import sqlite3
         with tempfile.TemporaryDirectory() as d:
             db_path = Path(d) / 'original.sqlite3'
-            with sqlite3.connect(db_path) as legacy:
+            with closing(sqlite3.connect(db_path)) as legacy, legacy:
                 legacy.execute('CREATE TABLE turns (id INTEGER PRIMARY KEY, role TEXT, content TEXT, created_at INTEGER)')
                 legacy.execute("INSERT INTO turns VALUES (1, 'user', 'original record', 1)")
             opened = Store(db_path)
@@ -123,7 +124,7 @@ class LegacyMigrationTests(unittest.TestCase):
                 self.assertEqual(opened.list_notes(), [])
                 backups = list(Path(d).glob('original.sqlite3.pre-notes-*.bak'))
                 self.assertEqual(len(backups), 1)
-                with sqlite3.connect(backups[0]) as old:
+                with closing(sqlite3.connect(backups[0])) as old, old:
                     self.assertEqual(old.execute('SELECT content FROM turns').fetchone()[0], 'original record')
                     self.assertIsNone(old.execute(
                         "SELECT 1 FROM sqlite_master WHERE type='table' AND name='user_notes'"

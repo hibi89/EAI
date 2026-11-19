@@ -46,14 +46,14 @@ def validate_search_goal(raw: object, goal_file: Path) -> EvidenceSearchGoal:
     if type(names) is not list or not 1 <= len(names) <= 8:
         raise ValueError("local search requires 1-8 selected text files")
     root = goal_file.parent.resolve(strict=True)
-    paths = []
+    paths: list[Path] = []
     for supplied in names:
         if type(supplied) is not str or not 1 <= len(supplied) <= 512 or any(
             ch in "\\:" or ord(ch) < 32 for ch in supplied
         ):
             raise ValueError("source must be a short local relative filename")
         loc = Path(supplied)
-        if loc.is_absolute() or ".." in loc.parts:
+        if loc.anchor or ".." in loc.parts:
             raise ValueError("source path traversal forbidden")
         if loc.suffix.lower() not in (".md", ".txt"):
             raise ValueError("source must be .txt or .md")

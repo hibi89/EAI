@@ -48,7 +48,7 @@ def validate_outlier_goal(raw: object, spec_path: Path) -> OutlierGoal:
     ):
         raise ValueError("outlier CSV must be a local relative filename")
     rel = Path(value)
-    if rel.is_absolute() or ".." in rel.parts:
+    if rel.anchor or ".." in rel.parts:
         raise ValueError("outlier path escapes owner goal directory")
     root = spec_path.parent.resolve(strict=True)
     source = (root / rel).resolve(strict=True)
@@ -128,7 +128,7 @@ def execute_outlier_goal(goal: OutlierGoal) -> dict:
         raise ValueError("invalid outlier goal instance")
     digest, rows, missing, invalid, valid = _read_selected(goal)
     profiles = []
-    flags = []
+    flags: list[dict] = []
     with localcontext() as ctx:
         ctx.prec = 110
         if len(valid) >= goal.min_rows:

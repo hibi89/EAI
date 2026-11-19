@@ -112,7 +112,10 @@ class AXNodeMemory:
                "captured_at": stamp, "ttl_seconds": ttl_seconds,
                "provenance": "LOCAL_OBSERVATION_UNVERIFIED"}
         payload = self._validate(raw)
-        self.store.get(anchor_sha)  # verified immutable node, not trusted outcome
+        try:
+            self.store.get(anchor_sha)
+        except KeyError as exc:
+            raise ValueError("observation requires an indexed AXNODE source") from exc
         digest = hashlib.sha256(payload).hexdigest()
         with self.db:
             self.db.execute("INSERT OR IGNORE INTO entries VALUES(?,?,?,?,?,?)",

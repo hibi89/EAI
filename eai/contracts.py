@@ -214,7 +214,7 @@ class PlanSpec:
         if type(steps) is not list or not 1 <= len(steps) <= limit[0]:
             raise ValueError("invalid bounded plan steps")
         parsed = []
-        earlier = set()
+        earlier: set[str] = set()
         for step in steps:
             _keys(step, {"id", "operator", "requires", "capability"})
             sid = _name(step["id"])

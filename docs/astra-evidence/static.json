@@ -1,0 +1,15 @@
+{
+  "direct_sensitive_call_sites": 0,
+  "desktop_files": 8,
+  "module_imports": 126,
+  "synthetic_journal_rows": 5,
+  "event_schema": [
+    "id",
+    "stamp",
+    "page",
+    "op",
+    "status"
+  ],
+  "raw_turn_count": 0,
+  "integrity": "ok"
+}

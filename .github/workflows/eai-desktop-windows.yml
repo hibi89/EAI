@@ -16,12 +16,12 @@ jobs:
         shell: pwsh
         run: |
           python -m compileall -q eai scripts/eai_desktop_entry.py tests/test_desktop_bridge.py
-          python -m unittest tests.test_desktop_bridge -v
+          python -m unittest discover -s tests -p "test_desktop*.py" -v
       - name: Build unsigned Windows GUI binary
         shell: pwsh
         run: |
           python -m pip install pyinstaller==6.17.0
-          python -m PyInstaller --noconfirm --clean --onefile --windowed --name EAI --collect-submodules eai scripts/eai_desktop_entry.py
+          python -m PyInstaller --noconfirm --clean scripts/eai_desktop.spec
       - name: Upload unsigned candidate
         uses: actions/upload-artifact@v4
         with:

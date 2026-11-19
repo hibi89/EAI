@@ -1,4 +1,5 @@
 """Safe local GUI->bridge acceptance probes; no Tk display or live services."""
+from contextlib import closing
 import json
 from pathlib import Path
 import sqlite3
@@ -50,7 +51,7 @@ class DesktopBridgeTests(unittest.TestCase):
         store = self.root / 'axnodes'
         (store / 'nodes').mkdir(parents=True)
         sha = 'a' * 64
-        with sqlite3.connect(store / 'axnodes.sqlite') as db:
+        with closing(sqlite3.connect(store / 'axnodes.sqlite')) as db, db:
             db.executescript('''
                 CREATE TABLE nodes(sha256 TEXT PRIMARY KEY, node_id TEXT,
                   version INTEGER, status TEXT, kind TEXT, output_type TEXT,

@@ -83,7 +83,7 @@ def _fingerprint_rows(db: sqlite3.Connection, table: str) -> str:
         if type(raw) is not dict or canonical_bytes(raw) != blob:
             raise ValueError("noncanonical source sidecar payload")
         if table == "entries":
-            metadata = (raw.get("anchor_sha"), raw.get("tier"),
+            metadata: tuple[object, ...] = (raw.get("anchor_sha"), raw.get("tier"),
                         raw.get("label"), raw.get("captured_at"))
             if raw.get("provenance") != "LOCAL_OBSERVATION_UNVERIFIED":
                 raise ValueError("untrusted source memory provenance")
@@ -184,7 +184,7 @@ def _capture_epoch_payload(
     rows: list[tuple], edges: list[tuple],
 ) -> IsolatedEpochPayload:
     assets = []
-    expected_edges = []
+    expected_edges: list[tuple[str, str]] = []
     for digest, *metadata in rows:
         node = store.get(digest)
         raw = node.as_dict()
@@ -206,7 +206,7 @@ def _capture_epoch_payload(
 
 def _restore_stamp(bundle: Path, root: Path) -> tuple[tuple[int, ...], ...]:
     paths = (bundle, root, root / _COMPLETE_MARKER, *(root / name for name in _FILES))
-    stamps = []
+    stamps: list[tuple[int, ...]] = []
     for path in paths:
         try:
             info = path.lstat()

@@ -102,7 +102,7 @@ def preview_offline_journey(
     interpreted_steps_total = 0
     # Reopen only the explicitly selected local source store. Never invoke
     # real tools or assume a prior preview was an approved execution request.
-    with AXNodeStore(axnode_root) as store:
+    with AXNodeStore(axnode_root, read_only=True) as store:
         for option in plans:
             _check_cancel(cancel_check)
             if type(option) is not dict:
@@ -113,17 +113,18 @@ def preview_offline_journey(
                     or len(step_sources) != len(option["plan_steps"])):
                 raise ValueError("unbound plan source inventory")
             bound_steps = set()
-            source_inventory = {pinned: [] for pinned in node_hashes}
+            source_inventory: dict[str, list[tuple[str, str]]] = {pinned: [] for pinned in node_hashes}
             for step, source_item in zip(option["plan_steps"], step_sources):
                 if (type(step) is not dict or type(source_item) is not dict
                         or set(source_item) != {"step", "axnode_sha256"}
+                        or type(step.get("operator")) is not str or type(step.get("capability")) is not str
                         or source_item["step"] != step.get("id")
                         or source_item["step"] in bound_steps
                         or source_item["axnode_sha256"] not in node_hashes):
                     raise ValueError("plan step is not pinned to AXNODE provenance")
                 bound_steps.add(source_item["step"])
                 source_inventory[source_item["axnode_sha256"]].append(
-                    (step.get("operator"), step.get("capability")))
+                    (step["operator"], step["capability"]))
             for pinned in node_hashes:
                 node = store.get(pinned)
                 if node.sha256 != pinned:
@@ -258,6 +259,8 @@ def audit_offline_journey_report(report: dict) -> dict:
             or report["schema"] != "eai.offline.journey.v1"
             or report["network"] != "DISABLED_BY_DESIGN"
             or report["research_mode_status"] not in ("OFF", "PAUSED_POLICY")
+            or any(type(report[k]) is not int for k in ("research_candidates_admitted",
+                   "real_tool_invocations", "original_writes", "live_provider_invocations"))
             or report["research_candidates_admitted"] != 0
             or report["real_tool_invocations"] != 0
             or report["original_writes"] != 0
@@ -321,7 +324,8 @@ def audit_offline_journey_report(report: dict) -> dict:
                 or any(ch not in "abcdefghijklmnopqrstuvwxyz0123456789_.-"
                        for ch in candidate["alternative_id"])
                 or type(candidate["node_hashes"]) is not list
-                or len(set(candidate["node_hashes"])) != len(candidate["node_hashes"])
+                or type(candidate["original_writes"]) is not int
+                or type(candidate["external_actions"]) is not int
                 or candidate["original_writes"] != 0
                 or candidate["external_actions"] != 0
                 or candidate["grants_real_authority"] is not False
@@ -331,6 +335,7 @@ def audit_offline_journey_report(report: dict) -> dict:
                 or not 1 <= len(candidate["node_hashes"]) <= 8
                 or any(type(h) is not str or not _DIGEST.fullmatch(h)
                        for h in candidate["node_hashes"])
+                or len(set(candidate["node_hashes"])) != len(candidate["node_hashes"])
                 or type(candidate["reason_codes"]) is not list
                 or any(type(x) is not str or not x
                        or len(x) > 80 or not x.replace("_", "").isalnum()

@@ -49,7 +49,7 @@ def _validate(path: Path, manifest: object) -> tuple:
         ):
             raise ValueError('batch goal path must be a short relative POSIX path')
         loc = Path(relative)
-        if loc.is_absolute() or '..' in loc.parts:
+        if loc.anchor or '..' in loc.parts:
             raise ValueError('batch path traversal denied')
         if type(digest) is not str or not SHA_RE.fullmatch(digest):
             raise ValueError('batch entry must include lowercase SHA256')

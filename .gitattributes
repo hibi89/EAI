@@ -1,0 +1,2 @@
+# Bundled receipts pin the exact bytes of the examples on every platform.
+examples/** text eol=lf

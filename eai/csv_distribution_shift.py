@@ -50,7 +50,7 @@ def validate_shift_goal(raw: object, goal_file: Path) -> ShiftGoal:
         ):
             raise ValueError("invalid source path")
         loc = Path(value)
-        if loc.is_absolute() or ".." in loc.parts or loc.suffix.lower() != ".csv":
+        if loc.anchor or ".." in loc.parts or loc.suffix.lower() != ".csv":
             raise ValueError("only in-root relative CSV files are permitted")
         result = (base / loc).resolve(strict=True)
         if not result.is_relative_to(base) or result.suffix.lower() != ".csv":

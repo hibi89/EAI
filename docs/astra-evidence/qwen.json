@@ -1,0 +1,19 @@
+{
+  "scope": "P36 synthetic localhost input classifier",
+  "default_model": "qwen2.5:3b",
+  "default_installed": false,
+  "attempted_model": "qwen3:4b-instruct",
+  "expected_id": "references",
+  "attempts": [
+    {
+      "status": "BLOCKED",
+      "code": "LOCAL_MODEL_NOT_VERIFIED"
+    },
+    {
+      "status": "BLOCKED",
+      "code": "LOCAL_MODEL_NOT_VERIFIED"
+    }
+  ],
+  "diagnostic_replay": "Validated local classifier returned empty selected_id.",
+  "synthetic_cpu_receipt_executed": false
+}

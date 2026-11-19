@@ -29,7 +29,7 @@ def verify_outlier_receipt(goal: OutlierGoal, report: object) -> tuple[list[str]
         if not set(goal.columns) <= set(headers):
             raise ValueError("outlier receipt references absent columns")
         rows, missing, invalid = 0, 0, 0
-        values = {name: [] for name in goal.columns}
+        values: dict[str, list[Decimal]] = {name: [] for name in goal.columns}
         indices = []
         for row in reader:
             rows += 1
@@ -48,7 +48,8 @@ def verify_outlier_receipt(goal: OutlierGoal, report: object) -> tuple[list[str]
                 for name, cell in zip(goal.columns, selected):
                     values[name].append(Decimal(cell))
         n = len(indices)
-        profiles, samples = [], []
+        profiles: list[dict] = []
+        samples: list[dict] = []
         with localcontext() as ctx:
             ctx.prec = 110
             for name in goal.columns:

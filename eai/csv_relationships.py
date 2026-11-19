@@ -49,7 +49,7 @@ def validate_relationship_goal(raw: object, spec_file: Path) -> RelationshipGoal
     ):
         raise ValueError("relationship source must be a relative local path")
     relative = Path(path)
-    if relative.is_absolute() or ".." in relative.parts:
+    if relative.anchor or ".." in relative.parts:
         raise ValueError("relationship source path escapes folder")
     base = spec_file.parent.resolve(strict=True)
     source = (base / relative).resolve(strict=True)

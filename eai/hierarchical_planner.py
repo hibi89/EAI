@@ -71,8 +71,8 @@ class HierarchicalPlanner:
         if problem.risk == "HIGH" or design.analysis.contradictions:
             return PlanningOutcome(digest, (), (("design", "REQUIRES_INDEPENDENT_REVIEW"),),
                                    "BLOCKED", 0)
-        candidates = []
-        blocked = []
+        candidates: list[PlanCandidate] = []
+        blocked: list[tuple[str, str]] = []
         known = {item.strategy_id: item for item in design.analysis.evidence}
         expansions = 0
         for alternative_id, refs, _tradeoffs, _verification in design.design.alternatives:
@@ -121,9 +121,9 @@ class HierarchicalPlanner:
                                 raise ValueError("INCOMPATIBLE_PARENT_OUTPUT_TYPE")
                         ordered.append(h)
                         remaining.remove(h)
-                steps = []
+                steps: list[dict] = []
                 sources = []
-                tail = {}
+                tail: dict[str, str] = {}
                 seconds = 0
                 for h in ordered:
                     raw = nodes_by_hash[h]
@@ -146,6 +146,8 @@ class HierarchicalPlanner:
                                       "capability": capability})
                         sources.append((sid, h))
                         prev = sid
+                    if prev is None:
+                        raise ValueError("EMPTY_NODE_PLAN")
                     tail[h] = prev
                 if len(steps) > problem.budget[0] or seconds > problem.budget[1]:
                     raise ValueError("PLAN_RESOURCE_BUDGET_EXCEEDED")

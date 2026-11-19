@@ -1,0 +1,24 @@
+﻿{
+    "status":  "PASS",
+    "sha256":  "8e9c7c7d6171d7e59b039f34a784aef1bda67ed3a16018f17a91e1fdcc58e0f3",
+    "samples":  [
+                    {
+                        "window_ms":  3608,
+                        "launch":  1,
+                        "close_ms":  571,
+                        "idle_working_set_mib":  49.9,
+                        "boot_cpu_ms":  1938,
+                        "exit_code":  0
+                    },
+                    {
+                        "window_ms":  1435,
+                        "launch":  2,
+                        "close_ms":  629,
+                        "idle_working_set_mib":  49.9,
+                        "boot_cpu_ms":  1406,
+                        "exit_code":  0
+                    }
+                ],
+    "python_on_path":  false,
+    "os_build":  26100
+}

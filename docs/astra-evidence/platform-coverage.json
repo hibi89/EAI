@@ -1,0 +1,40 @@
+{
+  "code_commit": "3f5efeb810aa0675476f551913d3b6a8d5f7b591",
+  "windows": {
+    "pass": 1092,
+    "skip": 18,
+    "error": 0,
+    "fail": 0,
+    "suite_seconds": 245.11
+  },
+  "ubuntu": {
+    "pass": 1085,
+    "skip": 25,
+    "error": 0,
+    "fail": 0,
+    "suite_seconds": 20.082,
+    "actions_run": "https://github.com/hibi89/EAI/actions/runs/44463868900/job/135356840325"
+  },
+  "distinct_cases": 1110,
+  "methods_skipped_on_both": [],
+  "windows_skipped_linux_pass": [
+    "test_axnode_recovery.RecoveryPreflightTests.test_symlinked_sidecar_not_opened",
+    "test_axnode_store.AXNodeStoreTests.test_reject_symlinked_root_when_supported",
+    "test_candidate_review_journal.CandidateReviewJournalTests.test_symlinked_journal_rejected",
+    "test_csv_advisor_p23.CsvAdvisorP23Tests.test_symlink_escape_rejected",
+    "test_csv_quality_p16.CsvQualityTests.test_symlink_escape_denied",
+    "test_csv_relationships_p19.RelationshipTests.test_rejects_symlink_escape",
+    "test_csv_schema_drift_p17.CsvSchemaDriftTests.test_symlink_escape_denied_if_supported",
+    "test_customer_review_p32.CustomerReviewTests.test_linked_input_or_output_rejected",
+    "test_episode_replay_fence.EpisodeReplayFenceTests.test_symlink_rejected",
+    "test_goal_batch_p12.GoalBatchTests.test_symlink_escape_denied_if_supported",
+    "test_goal_selector_p24.GoalSelectorP24Tests.test_symlink_escape_from_manifest_denied",
+    "test_key_coverage_p31.KeyCoverageTests.test_symlink_source_refused",
+    "test_local_evidence_search_p20.LocalEvidenceSearchP20Tests.test_symlink_escape_rejected",
+    "test_manifest_builder_p15.ManifestBuilderTests.test_rejects_symlink_escape_if_supported",
+    "test_portable_p27.PortableP27Tests.test_file_symlink_output_refused",
+    "test_robust_outliers_p22.RobustOutlierP22Tests.test_rejects_symlink_outside",
+    "test_sidecar_recovery_audit.SidecarRecoveryAuditTests.test_symlinked_restored_entry_fails_closed",
+    "test_sqlite_table_audit_p18.SqliteTableAuditP18Tests.test_symlink_outside_goal_folder_denied"
+  ]
+}

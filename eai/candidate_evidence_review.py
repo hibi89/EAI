@@ -232,7 +232,7 @@ def review_candidate_evidence(
         reasons.append("COUNTEREXAMPLE_PRESENT")
     status = ("SYNTHETIC_REVIEW_ONLY_NOT_AUTHORIZED" if not reasons
               else "QUARANTINE_UNTRUSTED_SYNTHETIC_RECEIPT")
-    reasons = tuple(sorted(set(reasons)))
+    reason_codes = tuple(sorted(set(reasons)))
     payload = {
         "schema": "eai.candidate.evidence.review.v1",
         "problem_sha256": problem.digest(),
@@ -245,12 +245,12 @@ def review_candidate_evidence(
         "checked_families": list(checked.checked_families),
         "counterexamples": list(checked.counterexample_families),
         "disposition": status,
-        "reasons": list(reasons),
+        "reasons": list(reason_codes),
     }
     review_sha = hashlib.sha256(canonical_bytes(payload)).hexdigest()
     return CandidateEvidenceReview(
         status, problem.digest(), candidate.candidate_sha256,
-        fixture_sha, review_sha, reasons, checked.counterexample_families)
+        fixture_sha, review_sha, reason_codes, checked.counterexample_families)
 
 
 # EAI-SWU-020: external receipt is untrusted until local independent replay.
@@ -309,7 +309,8 @@ def intake_candidate_receipt_for_review(
                 pinned_public_key, pinned_key_sha256)
     detached = None
     if any(value is not None for value in supplied):
-        if any(value is None for value in supplied):
+        if (detached_envelope is None or detached_signature is None or
+                pinned_public_key is None or pinned_key_sha256 is None):
             raise ValueError("partial detached signature inputs rejected")
         detached = verify_detached_candidate_signature(
             review, detached_envelope, detached_signature,
@@ -341,7 +342,7 @@ def intake_candidate_receipt_for_review(
                 or written.detached_binding_sha256 != binding
                 or written.detached_nonce_sha256 != nonce):
             raise ValueError("review journal write/readback diverged")
-    reason = ("INDEPENDENT_EXTERNAL_ORACLE_UNAVAILABLE",)
+    reason: tuple[str, ...] = ("INDEPENDENT_EXTERNAL_ORACLE_UNAVAILABLE",)
     if detached:
         reason += ("REVIEWER_INDEPENDENCE_NOT_PROVEN",)
     return CandidateReceiptIntake(
@@ -474,7 +475,12 @@ def _csv_records(data: bytes) -> dict:
         reader = csv.reader(io.StringIO(data.decode("utf-8"), newline=""), strict=True)
         if next(reader, None) != ["key", "value"]:
             raise ValueError("unsupported reconciliation columns")
-        return _records(tuple(tuple(row) for row in reader))
+        rows = []
+        for row in reader:
+            if len(row) != 2:
+                raise ValueError("expected key and value")
+            rows.append((row[0], row[1]))
+        return _records(tuple(rows))
     except (UnicodeError, csv.Error) as exc:
         raise ValueError("malformed reconciliation source") from exc
 
@@ -500,7 +506,7 @@ def _recompute_reconciliation_cases(
                    for case in cases)
             or len({case.family for case in cases}) != len(cases)):
         raise ValueError("bounded, unique reconciliation families required")
-    sources = {"TRAIN": set(), "HELD_OUT": set()}
+    sources: dict[str, set[str]] = {"TRAIN": set(), "HELD_OUT": set()}
     counts_by_partition = dict.fromkeys(sources, 0)
     semantic_cases, truths = set(), []
     for case in sorted(cases, key=lambda entry: entry.family):

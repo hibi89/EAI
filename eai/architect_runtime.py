@@ -10,17 +10,18 @@ from .design_engine import DesignEngine
 from .problem_model import ProblemModeler
 from .hierarchical_planner import HierarchicalPlanner
 from .evidence_ledger import EvidenceLedger
+from .local_files import local_path, read_bytes
 
 
 def preview_architecture(problem_file: str | Path, axnode_root: str | Path, *,
-                         max_expansions: int = 8) -> dict:
+                         max_expansions: int = 8, cancelled=None) -> dict:
     """Analyze a separately supplied bounded ProblemSpec against one local store.
 
-    The existing AXNODE SQLite/FTS indexes can be locally updated by open/search;
-    no original customer sources, legacy EAI DB, network or tools are accessed.
+    Catalog and evidence queries run on private snapshots. Node bodies are
+    hash-checked at their source. Opening a preview never builds source indexes.
     """
-    source = Path(problem_file).expanduser()
-    root = Path(axnode_root).expanduser()
+    source = local_path(problem_file)
+    root = local_path(axnode_root)
     if source.is_symlink() or not source.is_file():
         raise ValueError("explicit ordinary local problem file required")
     if source.stat().st_size > MAX_DOCUMENT_BYTES:
@@ -31,13 +32,13 @@ def preview_architecture(problem_file: str | Path, axnode_root: str | Path, *,
             (root / "nodes").is_symlink() or
             not (root / "nodes").is_dir()):
         raise ValueError("existing explicit AXNODE library required; no auto-create")
-    raw = strict_json(source.read_bytes())
+    raw = strict_json(read_bytes(source, MAX_DOCUMENT_BYTES))
     problem = ProblemSpec.validate(raw)
-    with AXNodeStore(root) as store:
+    with AXNodeStore(root, read_only=True) as store:
         designer = DesignEngine(ProblemModeler(AXNodeRetriever(store)))
         design = designer.propose(problem)
         plans = HierarchicalPlanner(store).plan(
-            problem, design, max_expansions=max_expansions)
+            problem, design, max_expansions=max_expansions, cancelled=cancelled)
         claim_states = []
         ledger_path = store.root / "evidence_ledger.sqlite"
         if ledger_path.exists() or ledger_path.is_symlink():

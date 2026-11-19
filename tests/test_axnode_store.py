@@ -1,4 +1,5 @@
 """Synthetic-only immutable AXNODE store, migration and tamper regression."""
+from contextlib import closing
 import copy
 import json
 from pathlib import Path
@@ -89,12 +90,12 @@ class AXNodeStoreTests(unittest.TestCase):
     def test_unknown_legacy_db_rejected_unchanged(self):
         self.root.mkdir()
         path = self.root / "axnodes.sqlite"
-        with sqlite3.connect(path) as db:
+        with closing(sqlite3.connect(path)) as db, db:
             db.execute("CREATE TABLE legacy(user_data TEXT)")
             db.execute("INSERT INTO legacy VALUES ('keep')")
         with self.assertRaisesRegex(ValueError,"version"):
             AXNodeStore(self.root)
-        with sqlite3.connect(path) as db:
+        with closing(sqlite3.connect(path)) as db, db:
             self.assertEqual(db.execute("SELECT user_data FROM legacy").fetchone()[0],"keep")
 
     def test_reject_symlinked_root_when_supported(self):

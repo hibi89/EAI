@@ -1,6 +1,7 @@
 """EAI independent engine CLI: works without Ollama for known narrow tasks."""
 import argparse
 import csv
+import io
 import os
 import json
 import sqlite3
@@ -31,6 +32,11 @@ from .tools import SearxNGSearch
 
 
 def main(argv: list[str] | None = None) -> int:
+    if argv is None:
+        # Pipes can inherit a legacy code page even when the CSV input is UTF-8.
+        for stream in (sys.stdout, sys.stderr):
+            if isinstance(stream, io.TextIOWrapper) and stream.errors == 'strict':
+                stream.reconfigure(errors='backslashreplace')
     p = argparse.ArgumentParser(prog='eai', description='Independent, CPU-first EAI MVP')
     p.add_argument('--version', action='version', version=__version__)
     p.add_argument('--db', default=os.environ.get('EAI_DB', str(Path.home() / '.eai' / 'eai.sqlite3')))
@@ -277,7 +283,8 @@ def main(argv: list[str] | None = None) -> int:
         try:
             from dataclasses import asdict
             from .local_scheduler import (
-                LocalResourceBudget, observe_and_evaluate_local_budget)
+                LocalBudgetDecision, LocalPlanPreflight, LocalResourceBudget, observe_and_evaluate_local_budget)
+            decision: LocalBudgetDecision | LocalPlanPreflight
             budget = LocalResourceBudget(
                 max_rss_mib=args.max_rss_mib,
                 max_elapsed_ms=args.max_elapsed_ms,
@@ -336,16 +343,16 @@ def main(argv: list[str] | None = None) -> int:
                 if args.plan_file is not None or not args.axnode_root:
                     raise ValueError('architect requires existing local root')
                 from .architect_runtime import preview_architecture
-                source = preview_architecture(
+                architect_source = preview_architecture(
                     args.problem_file, args.axnode_root,
                     max_expansions=args.max_expansions)
-                summary = render_architect_explanation(source)
+                summary = render_architect_explanation(architect_source)
             else:
                 if args.axnode_root is not None or not args.plan_file:
                     raise ValueError('player requires explicit PlanSpec')
                 from .player_cli import player_preview
-                source = player_preview(args.problem_file, args.plan_file)
-                summary = render_player_explanation(source)
+                player_source = player_preview(args.problem_file, args.plan_file)
+                summary = render_player_explanation(player_source)
             if args.format == 'text':
                 from .trace_renderer import render_explanation_text
                 print(render_explanation_text(summary), end='')

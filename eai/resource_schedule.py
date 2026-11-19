@@ -85,7 +85,9 @@ def validate_resource_goal(raw: object) -> ResourceGoal:
     if any(task.id in task.requires or any(dep not in lookup for dep in task.requires)
            for task in tasks):
         raise ValueError("task has unknown or self dependency")
-    pending, finished, ordered = set(lookup), set(), []
+    pending = set(lookup)
+    finished: set[str] = set()
+    ordered: list[str] = []
     while pending:
         ready = sorted(name for name in pending if set(lookup[name].requires) <= finished)
         if not ready:
@@ -98,7 +100,7 @@ def validate_resource_goal(raw: object) -> ResourceGoal:
 
 
 def _lower_bound(goal: ResourceGoal) -> int:
-    end = {}
+    end: dict[str, int] = {}
     for task in goal.tasks:
         end[task.id] = task.hours + max(
             (end[x] for x in task.requires), default=0
@@ -115,7 +117,8 @@ def _lower_bound(goal: ResourceGoal) -> int:
 def _find_schedule(goal: ResourceGoal, horizon: int, budget: list[int]) -> dict | None:
     caps = dict(goal.capacities)
     occupancy = {name: [0] * horizon for name in caps}
-    starts, ends = {}, {}
+    starts: dict[str, int] = {}
+    ends: dict[str, int] = {}
     tasks = goal.tasks
 
     def explore(index):

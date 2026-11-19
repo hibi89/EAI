@@ -1,4 +1,5 @@
 """Synthetic architect runtime must never treat claims as proof or tool authority."""
+from contextlib import closing
 import json
 from pathlib import Path
 import tempfile
@@ -85,7 +86,7 @@ class EvidenceArchitectTests(unittest.TestCase):
     def test_corrupted_evidence_cannot_be_used_as_fact(self):
         self._append([("SUPPORT","data.first",self.anchors[0],False)])
         path=self.root / "evidence_ledger.sqlite"
-        with __import__("sqlite3").connect(path) as db:
+        with closing(__import__("sqlite3").connect(path)) as db, db:
             db.execute("UPDATE observations SET polarity='REFUTE'")
         with self.assertRaisesRegex(ValueError,"tampered"):
             preview_architecture(self.spec,self.root)
