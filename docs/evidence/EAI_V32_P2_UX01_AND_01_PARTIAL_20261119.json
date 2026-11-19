@@ -1,0 +1,103 @@
+{
+  "schema": "eai.p2.synthetic_evidence.v1",
+  "date_kst": "2026-11-19",
+  "repo": "hibi89/EAI",
+  "branch": "feature/eai-v32-owner-rebuild-20261119",
+  "source_sha": "10f244e0215b65b12834242c927674db0d55265d",
+  "accepted_ux01": {
+    "gate": "EAI-V32-P2-UX01",
+    "state": "PASS_SYNTHETIC_LOCAL_AXNODE",
+    "tested_paths": [
+      "eai/desktop_bridge.py",
+      "eai/architect_runtime.py",
+      "eai/desktop_example.py",
+      "tests/test_p2_ux01_owner_goal_flow.py",
+      "tests/test_desktop_workstation.py"
+    ],
+    "new_cross_os_tests_pass": 3,
+    "observed": "Korean freeform goal -> ProblemSpec draft -> explicit local evidence+owner review -> real local AXNODE CPU Architect -> two SHA-bound bounded plan alternatives + tradeoffs or honest unsupported HOLD",
+    "immutable_source_bytes": true,
+    "actual_customer_input": false,
+    "semantic_truth": "NOT_ESTABLISHED",
+    "network_calls": 0,
+    "real_player_calls": 0,
+    "native_owner_win11": "NOT_RUN"
+  },
+  "p2_01": {
+    "gate": "EAI-P2-01",
+    "state": "PARTIAL_PASS_STATIC_TYPED_CORE",
+    "accepted": false,
+    "full_cross_os_compileall": true,
+    "ruff_version": "0.14.10",
+    "ruff_source_roots": [
+      "eai",
+      "tests",
+      "scripts"
+    ],
+    "ruff_rules": "E9,F63,F7,F82",
+    "ruff_result": "PASS",
+    "mypy_version": "1.18.2",
+    "mypy_result": "PASS_3_MODULES_ONLY",
+    "mypy_targets": [
+      "eai/contracts.py",
+      "eai/player_runtime.py",
+      "eai/goal_dispatch.py"
+    ],
+    "mypy_flags": "--python-version 3.11 --follow-imports=skip --ignore-missing-imports --check-untyped-defs",
+    "entire_repository_typed": "NOT_RUN",
+    "initial_wider_ruff_attempt": {
+      "sha": "4f02ad270fc6f400dbffacacefc3b55060db273c",
+      "status": "FAIL",
+      "warnings": 121,
+      "style_debt_unfixed": true
+    }
+  },
+  "ci": {
+    "linux": {
+      "run_id": 44508443620,
+      "conclusion": "SUCCESS",
+      "total": 1166,
+      "passed": 1149,
+      "skipped": 17,
+      "failed": 0,
+      "tk_xvfb_focused_pass": 33
+    },
+    "windows": {
+      "run_id": 44508443643,
+      "conclusion": "SUCCESS",
+      "total": 1166,
+      "passed": 1165,
+      "skipped": 1,
+      "failed": 0,
+      "tk_unattended_focused_pass": 39,
+      "tk_unattended_focused_skip": 1,
+      "unsigned_exe_selfcheck": "PASS_UNSIGNED_BUNDLE_IMPORTS",
+      "artifact_id": 14519908796,
+      "artifact_digest": "sha256:e9e7e0788f2fc929c8f80deefd0851ee93003653ae68925cb1e5f8de818abcd8"
+    }
+  },
+  "dashboard": {
+    "p1_source_candidates": {
+      "complete": 60,
+      "total": 60,
+      "provisional": true
+    },
+    "p2_accepted_ids": [
+      "EAI-P2-02",
+      "EAI-P2-03",
+      "EAI-P2-04",
+      "EAI-P2-06",
+      "EAI-P2-09",
+      "EAI-V32-P2-UX01",
+      "EAI-V32-P2-UX02"
+    ],
+    "p2_accepted": 7,
+    "p2_total": 14,
+    "p2_unweighted_percent": 50,
+    "official_implementation_rate": "UNASSESSED",
+    "official_verification_rate": "UNASSESSED"
+  },
+  "independent_audit": "NOT_RUN",
+  "physical_win11": "NOT_RUN",
+  "release": "HOLD"
+}
