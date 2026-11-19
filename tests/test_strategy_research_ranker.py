@@ -147,6 +147,37 @@ class StrategyResearchRankerTests(unittest.TestCase):
         self.assertFalse(denied.model_can_execute)
         self.assertFalse(denied.real_world_uplift_verified)
 
+    def test_p2_forged_success_transfer_provenance_never_updates_prior(self):
+        from eai.synthetic_scenario_transfer import SyntheticScenarioTransfer
+        first = advance_bounded_research_prior(
+            self.store, self.problem, (self.candidate,), self.curriculum)
+        self.assertTrue(first.accepted)
+        new_curriculum = generate_synthetic_curriculum(1)
+        real = evaluate_synthetic_scenario_transfer(
+            self.store, self.problem, self.candidate, new_curriculum)
+        self.assertEqual(real.status, "SYNTHETIC_SCENARIO_TRANSFER_MATCH_UNVERIFIED")
+        forged_reports = (
+            replace(real, candidate_sha256="f" * 64),
+            replace(real, challenge_families=1, b0_checked=1, b1_checked=1),
+            replace(real, b1_unmatched=1),
+            replace(real, scenario_types=("renamed_seed", "renamed_seed")),
+            replace(real, semantic_scope="REAL_WORLD_OOD"),
+            replace(real, independently_verified_real_world=True),
+            "not-a-report",
+        )
+        for forged in forged_reports:
+            with self.subTest(forged=repr(forged)), patch(
+                    "eai.synthetic_scenario_transfer.evaluate_synthetic_scenario_transfer",
+                    return_value=forged):
+                denied = advance_bounded_research_prior(
+                    self.store, self.problem, (self.candidate,),
+                    new_curriculum, first.prior)
+                self.assertFalse(denied.accepted)
+                self.assertIs(denied.prior, first.prior)
+                self.assertTrue(denied.synthetic_scenario_regression_rejected)
+                self.assertFalse(denied.real_world_uplift_verified)
+                self.assertFalse(denied.model_can_execute)
+
     def test_p2_forged_synthetic_transfer_fixture_never_enters_baseline(self):
         for seed in (True, -1, 10001, "0"):
             with self.subTest(seed=seed), self.assertRaises(ValueError):

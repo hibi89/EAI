@@ -190,7 +190,9 @@ def advance_bounded_research_prior(
     # Require different synthetic scenario classes and independently replay
     # their actual CPU B0 vs AXNODE interpreter B1 outputs before changing
     # cumulative research state. No promise of genuine general OOD accuracy.
-    from .synthetic_scenario_transfer import evaluate_synthetic_scenario_transfer
+    from .synthetic_scenario_transfer import (
+        SyntheticScenarioTransfer, evaluate_synthetic_scenario_transfer,
+    )
     challenged = []
     try:
         for candidate in candidates:
@@ -203,17 +205,41 @@ def advance_bounded_research_prior(
             prior, ordered(prior), False,
             ("SYNTHETIC_SCENARIO_RECHECK_FAILED",),
             synthetic_scenario_regression_rejected=True)
-    if any(p.status != "SYNTHETIC_SCENARIO_TRANSFER_MATCH_UNVERIFIED"
-           or p.permits_learning or p.permits_promotion
-           or p.independently_verified_real_world or
-           p.b1_checked != p.challenge_families or
-           p.b0_checked != p.challenge_families for p in challenged):
+    # A PASS label alone is not evidence. Bind every rechecked report to its
+    # exact candidate, expected scenario classes and bounded CPU comparisons.
+    # This guards the research-state boundary even if a caller or test double
+    # supplies a forged "successful" dataclass with inconsistent counters.
+    if any(
+            type(p) is not SyntheticScenarioTransfer
+            or p.candidate_sha256 != candidate.candidate_sha256
+            or p.status != "SYNTHETIC_SCENARIO_TRANSFER_MATCH_UNVERIFIED"
+            or p.semantic_scope != "SYNTHETIC_SCENARIO_TRANSFER_NOT_GENERAL_OOD"
+            or p.scenario_types != (
+                "negative_signed_decimals", "multiple_key_and_value_changes")
+            or type(p.challenge_families) is not int
+            or p.challenge_families != 2
+            or type(p.b0_checked) is not int or p.b0_checked != 2
+            or type(p.b1_checked) is not int or p.b1_checked != 2
+            or type(p.b1_unmatched) is not int or p.b1_unmatched != 0
+            or p.permits_learning or p.permits_promotion
+            or p.independently_verified_real_world
+            for candidate, p in zip(candidates, challenged)
+    ):
+        checked_count = sum(
+            p.challenge_families for p in challenged
+            if type(p) is SyntheticScenarioTransfer
+            and type(p.challenge_families) is int
+            and p.challenge_families == 2)
+        matched_count = sum(
+            p.b1_checked for p in challenged
+            if type(p) is SyntheticScenarioTransfer
+            and type(p.b1_checked) is int and 0 <= p.b1_checked <= 2)
         return BoundedResearchUpdate(
             "HOLD_SYNTHETIC_SCENARIO_REGRESSION_RETAIN_PREVIOUS",
             prior, ordered(prior), False,
             ("SYNTHETIC_SCENARIO_TRANSFER_COUNTEREXAMPLE",),
-            synthetic_scenario_families_checked=sum(p.challenge_families for p in challenged),
-            synthetic_scenario_candidate_matches=sum(p.b1_checked for p in challenged),
+            synthetic_scenario_families_checked=checked_count,
+            synthetic_scenario_candidate_matches=matched_count,
             synthetic_scenario_regression_rejected=True)
     next_rows = tuple((
         x, rows[x][0] + 1,
