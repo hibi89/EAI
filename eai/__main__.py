@@ -31,6 +31,25 @@ from .storage import Store
 from .tools import SearxNGSearch
 
 
+def _public_failure_code(exc: BaseException) -> str:
+    """Privacy-safe public CLI category; never echo owner exception contents."""
+    if isinstance(exc, PermissionError):
+        return "LOCAL_ACCESS_DENIED"
+    if isinstance(exc, UnicodeError):
+        return "INPUT_TEXT_ENCODING_REJECTED"
+    if isinstance(exc, TimeoutError):
+        return "LOCAL_RESOURCE_TIMEOUT"
+    if isinstance(exc, csv.Error):
+        return "INVALID_CSV_FORMAT"
+    if isinstance(exc, sqlite3.DatabaseError):
+        return "LOCAL_DATABASE_REJECTED"
+    if isinstance(exc, OSError):
+        return "LOCAL_IO_REJECTED"
+    if isinstance(exc, (ValueError, KeyError)):
+        return "INPUT_CONTRACT_REJECTED"
+    return "LOCAL_OPERATION_REJECTED"
+
+
 def main(argv: list[str] | None = None) -> int:
     if argv is None:
         # Windows redirected streams may use cp1252/cp949 and either
@@ -465,7 +484,7 @@ def main(argv: list[str] | None = None) -> int:
                   else render_quick(report))
             return {'AGREE':0,'CONFLICT':2,'UNAVAILABLE':3}[report['status']]
         except (ValueError,OSError,UnicodeError,csv.Error,TimeoutError) as exc:
-            print('EAI QUICK ERROR:',type(exc).__name__,str(exc),file=sys.stderr)
+            print('EAI QUICK ERROR:',type(exc).__name__,_public_failure_code(exc),file=sys.stderr)
             return 1
     if args.command == 'run-approved':
         try:
@@ -476,7 +495,7 @@ def main(argv: list[str] | None = None) -> int:
             return {'DECIDED':0,'TIE':0,'AGREE':0,
                     'CONFLICT':2,'UNAVAILABLE':3}[report['status']]
         except (ValueError,OSError,UnicodeError,csv.Error,TimeoutError) as exc:
-            print('EAI APPROVAL ERROR:',type(exc).__name__,str(exc),file=sys.stderr)
+            print('EAI APPROVAL ERROR:',type(exc).__name__,_public_failure_code(exc),file=sys.stderr)
             return 1
     if args.command == 'export-report':
         try:
@@ -488,7 +507,7 @@ def main(argv: list[str] | None = None) -> int:
                     'UNAVAILABLE': 3, 'PARTIAL': 3,
                     'FAILED': 1}[summary['status']]
         except (ValueError, OSError, UnicodeError, csv.Error, TimeoutError) as exc:
-            print('EAI EXPORT ERROR:', type(exc).__name__, str(exc), file=sys.stderr)
+            print('EAI EXPORT ERROR:', type(exc).__name__, _public_failure_code(exc), file=sys.stderr)
             return 1
     if args.command == 'select-goal':
         try:
@@ -499,7 +518,7 @@ def main(argv: list[str] | None = None) -> int:
                   else render_selection(report))
             return 0 if report['status'] == 'PROPOSED' else 3
         except (ValueError, OSError, UnicodeError, csv.Error) as exc:
-            print('EAI SELECT ERROR:', type(exc).__name__, str(exc), file=sys.stderr)
+            print('EAI SELECT ERROR:', type(exc).__name__, _public_failure_code(exc), file=sys.stderr)
             return 1
     if args.command == 'advise-csv':
         try:
@@ -508,7 +527,7 @@ def main(argv: list[str] | None = None) -> int:
                   else render_csv_advice(report))
             return 0 if report['status'] == 'DRAFT_READY' else 3
         except (ValueError, OSError, UnicodeError, csv.Error) as exc:
-            print('EAI ADVISOR ERROR:', type(exc).__name__, str(exc), file=sys.stderr)
+            print('EAI ADVISOR ERROR:', type(exc).__name__, _public_failure_code(exc), file=sys.stderr)
             return 1
     if args.command == 'health':
         print('EAI independent CPU-first engine v0.1')
@@ -526,7 +545,7 @@ def main(argv: list[str] | None = None) -> int:
             print(json.dumps(manifest,ensure_ascii=True,indent=2))
             return 0
         except (ValueError,OSError,UnicodeError) as exc:
-            print('EAI MANIFEST ERROR:',type(exc).__name__,str(exc),file=sys.stderr)
+            print('EAI MANIFEST ERROR:',type(exc).__name__,_public_failure_code(exc),file=sys.stderr)
             return 1
     if args.command == 'pipeline-goals':
         try:
@@ -535,7 +554,7 @@ def main(argv: list[str] | None = None) -> int:
                   else render_pipeline(output))
             return {'COMPLETE':0,'REVIEW':2,'PARTIAL':3,'FAILED':1}[output['status']]
         except (ValueError,OSError,UnicodeError,csv.Error,TimeoutError) as exc:
-            print('EAI PIPELINE ERROR:',type(exc).__name__,str(exc),file=sys.stderr)
+            print('EAI PIPELINE ERROR:',type(exc).__name__,_public_failure_code(exc),file=sys.stderr)
             return 1
     if args.command == 'doctor':
         report = run_offline_doctor(args.root)
@@ -549,7 +568,7 @@ def main(argv: list[str] | None = None) -> int:
                   else render_batch(output))
             return {'COMPLETE':0, 'REVIEW':2, 'PARTIAL':3, 'FAILED':1}[output['status']]
         except (ValueError, OSError, UnicodeError, csv.Error, TimeoutError) as exc:
-            print('EAI BATCH ERROR:', type(exc).__name__, str(exc), file=sys.stderr)
+            print('EAI BATCH ERROR:', type(exc).__name__, _public_failure_code(exc), file=sys.stderr)
             return 1
     if args.command == 'solve-goal':
         try:
@@ -559,14 +578,14 @@ def main(argv: list[str] | None = None) -> int:
             return {'DECIDED': 0, 'TIE': 0, 'AGREE': 0,
                     'CONFLICT': 2, 'UNAVAILABLE': 3}[report['status']]
         except (ValueError, OSError, UnicodeError, csv.Error, TimeoutError) as exc:
-            print('EAI GOAL ERROR:', type(exc).__name__, str(exc), file=sys.stderr)
+            print('EAI GOAL ERROR:', type(exc).__name__, _public_failure_code(exc), file=sys.stderr)
             return 1
     if args.command == 'analyze-csv':
         try:
             print(render_csv_summary(inspect_csv(args.path, encoding=args.encoding)))
             return 0
         except (ValueError, OSError, UnicodeError, csv.Error) as exc:
-            print('EAI CSV ERROR:', type(exc).__name__, str(exc), file=sys.stderr)
+            print('EAI CSV ERROR:', type(exc).__name__, _public_failure_code(exc), file=sys.stderr)
             return 1
     if args.command == 'verify-csv':
         try:
@@ -587,7 +606,7 @@ def main(argv: list[str] | None = None) -> int:
                   else render_verification(report))
             return {'VERIFIED': 0, 'CONFLICT': 2, 'UNAVAILABLE': 3}[report['status']]
         except (ValueError, OSError, UnicodeError, csv.Error) as exc:
-            print('EAI VERIFY ERROR:', type(exc).__name__, str(exc), file=sys.stderr)
+            print('EAI VERIFY ERROR:', type(exc).__name__, _public_failure_code(exc), file=sys.stderr)
             return 1
     if args.command == 'solve-csv':
         try:
@@ -599,7 +618,7 @@ def main(argv: list[str] | None = None) -> int:
                   else render_plan_report(report))
             return {'AGREE': 0, 'CONFLICT': 2, 'UNAVAILABLE': 3}[report['status']]
         except (ValueError, OSError, UnicodeError, csv.Error, TimeoutError) as exc:
-            print('EAI PLAN ERROR:', type(exc).__name__, str(exc), file=sys.stderr)
+            print('EAI PLAN ERROR:', type(exc).__name__, _public_failure_code(exc), file=sys.stderr)
             return 1
     if args.command == 'diagnose-csv':
         try:
@@ -609,7 +628,7 @@ def main(argv: list[str] | None = None) -> int:
                   else render_diagnosis(report))
             return {'AGREE': 0, 'CONFLICT': 2, 'UNAVAILABLE': 3}[report['status']]
         except (ValueError, OSError, UnicodeError, csv.Error) as exc:
-            print('EAI DIAGNOSE ERROR:', type(exc).__name__, str(exc), file=sys.stderr)
+            print('EAI DIAGNOSE ERROR:', type(exc).__name__, _public_failure_code(exc), file=sys.stderr)
             return 1
     if args.command == 'reconcile-csv':
         try:
@@ -620,7 +639,7 @@ def main(argv: list[str] | None = None) -> int:
                   else render_reconciliation(report))
             return {'AGREE': 0, 'CONFLICT': 2, 'UNAVAILABLE': 3}[report['status']]
         except (ValueError, OSError, UnicodeError, csv.Error) as exc:
-            print('EAI RECONCILE ERROR:', type(exc).__name__, str(exc), file=sys.stderr)
+            print('EAI RECONCILE ERROR:', type(exc).__name__, _public_failure_code(exc), file=sys.stderr)
             return 1
     try:
         parser = (QwenIntentParser(args.model, args.ollama_url, args.profile)
@@ -654,7 +673,7 @@ def main(argv: list[str] | None = None) -> int:
         finally:
             store.close()
     except Exception as exc:
-        print('EAI ERROR:', type(exc).__name__, str(exc), file=sys.stderr)
+        print('EAI ERROR:', type(exc).__name__, _public_failure_code(exc), file=sys.stderr)
         return 1
     return 0
 
