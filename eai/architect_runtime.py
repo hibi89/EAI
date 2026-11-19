@@ -40,6 +40,11 @@ def preview_architecture_problem(problem: ProblemSpec, axnode_root: str | Path, 
     """
     if type(problem) is not ProblemSpec:
         raise ValueError("typed validated ProblemSpec required")
+    # A frozen dataclass is not itself proof that its fields passed validate():
+    # callers may construct or dataclasses.replace a forged ProblemSpec. Reject
+    # before opening any AXNODE content or evidence sidecar.
+    from .policy_gate import _validated_problem
+    problem = _validated_problem(problem)
     root = local_path(axnode_root)
     if (root.is_symlink() or not root.is_dir() or
             not (root / "axnodes.sqlite").is_file() or

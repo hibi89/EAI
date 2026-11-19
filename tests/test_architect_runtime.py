@@ -1,6 +1,8 @@
 """Local architect-preview wiring tests with disposable synthetic AXNODE files."""
 import io
 import json
+import hashlib
+from dataclasses import replace
 from contextlib import redirect_stdout, redirect_stderr
 from pathlib import Path
 import socket
@@ -9,7 +11,8 @@ import unittest
 from unittest.mock import patch
 
 from eai.axnode_store import AXNodeStore
-from eai.architect_runtime import preview_architecture
+from eai.architect_runtime import preview_architecture, preview_architecture_problem
+from eai.contracts import ProblemSpec
 from eai.__main__ import main
 
 
@@ -98,6 +101,30 @@ class ArchitectRuntimeTests(unittest.TestCase):
         self.assertEqual(status, 0)
         self.assertEqual(json.loads(output.getvalue())["status"], "CANDIDATES_UNVERIFIED")
         self.assertEqual(err.getvalue(), "")
+
+    def test_in_memory_preview_revalidates_forged_problem_before_library_access(self):
+        validated = ProblemSpec.validate(self.problem())
+        original_hash = hashlib.sha256((self.root / "axnodes.sqlite").read_bytes()).hexdigest()
+        for forged in (
+            replace(validated, permissions=("local.read", "write.original")),
+            replace(validated, budget=(999, 60)),
+            replace(validated, version=True),
+            replace(validated, hard_constraints=("must:invalid field",)),
+        ):
+            with self.subTest(forged=forged):
+                # A forged typed object must fail *before* the store is opened.
+                with patch("eai.architect_runtime.AXNodeStore",
+                           side_effect=AssertionError("untrusted library access")):
+                    with self.assertRaises(ValueError):
+                        preview_architecture_problem(forged, self.root)
+        # Valid in-memory direct callers must still reach the real offline
+        # Architect, without mutating the source database.
+        report = preview_architecture_problem(validated, self.root)
+        self.assertEqual(report["status"], "CANDIDATES_UNVERIFIED")
+        self.assertEqual(len(report["advisory_plans"]), 2)
+        self.assertEqual(report["execution"], "NOT_EXECUTED")
+        self.assertEqual(hashlib.sha256(
+            (self.root / "axnodes.sqlite").read_bytes()).hexdigest(), original_hash)
 
     def test_missing_existing_library_denied_without_creating_it(self):
         missing = self.base / "nonexistent-library"
