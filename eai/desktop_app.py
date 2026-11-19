@@ -341,6 +341,14 @@ class EAIDesktopApp:
         self.select("architect")
         self.notice("새 초안 · 조건을 검토하고 저장하세요.", VIOLET)
 
+    def discover(self):
+        if not self.ready() or self.draft is None:
+            return
+        current = dict(self.draft)
+        chosen = self.library
+        self.run("architect", "discover", lambda: self.bridge.discover_goal_capabilities(
+            current, axnode_root=chosen))
+
     def edit(self):
         if not self.ready() or self.draft is None:
             return
