@@ -1,3 +1,13 @@
+## CURRENT HANDOFF — EAI V3.2 owner recovery, 2026-11-19 KST
+
+**Do not resume the old Astra GUI as finished.** Current task is EAI V3.2, repo `hibi89/EAI`, branch `feature/eai-v32-owner-rebuild-20261119`; base `e44977fc4f615fa6a368ff64ec4361ceee99e7b4`; before each `ㄱ` re-fetch remote HEAD, read `AGENTS.md`, `STATUS.md`, `docs/EAI_V32_OWNER_REBUILD_CANONICAL_20261119.md`, `docs/EAI_V32_OWNER_SWU_QUEUE.json`, `docs/EAI_V32_OWNER_P2.md`, original `docs/EAI_FINAL_BLUEPRINT.md` and actual source.
+
+**Lead:** web GPT-6 High personally builds BE/FE, P2 full CI/security/integration/native Windows checks where execution tools actually permit, fixes discovered bugs, then makes final integration decision. Independent audit cannot be self-certified. Objective: honest offline goal→Architect→Player→Verifier→AXNODE user journey, not hard-coded arithmetic demo or hidden JSON ritual.
+
+**Work done this turn:** Branch created from unmerged Astra PR#3. W01 functional GUI route (unsupported natural goal opens typed draft without write; literal commands still handled by RuleIntentParser); `eai/desktop_app.py`, `eai/desktop_views.py`, `tests/test_desktop_workstation.py` committed through SHA `dc464fac7d50493e237fadb3f72909753e6534a7`. Linux Python syntax PASS; focused Xvfb 9/9 PASS. One combined native Linux Tk run produced Python/Tcl abort; full clean-run and actual Win11 are NOT_RUN/P2 issue. No real Windows EXE rebuilt.
+
+**NEXT READY:** W02 user-friendly ProblemSpec, explicit known/unknown and edit/scope workflow; after W02 unlock W03 skill evidence matching and W04 safe fresh private AXNODE. Inspect DAG and prioritize critical path; run 1–6 actual SWUs per `ㄱ`, source code and minimal checks, commit, no docs-only progress cycles. `W01` remains `IMPLEMENTED_UNVERIFIED` pending P2 exact SHA. 48 inherited Astra source units are historical and must be rechecked for V3.2 compatibility; 1/12 new source candidate. Official P1/P2 rates `UNASSESSED`, release HOLD. No independent audit/remote Hydrogen/real Player/costs/credential/Production/main/owner-data writes.
+
 ## 2026-11-19 KST · 독립 기술·보안 감사 인계
 
 감사 기준 소스·테스트는 `3f5efeb810aa0675476f551913d3b6a8d5f7b591`이다. Windows EXE SHA-256은 `8e9c7c7d6171d7e59b039f34a784aef1bda67ed3a16018f17a91e1fdcc58e0f3`이다. Windows 전체 1,092 PASS/18 SKIP, Ubuntu 1,085 PASS/25 SKIP. 두 플랫폼에서 모두 생략된 테스트는 없다. 네이티브 실행, 실제 계산, 재시작과 예산·기록 보존 및 합성 DB 검사를 완료했다.
