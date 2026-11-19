@@ -110,61 +110,94 @@ def setup_style(root):
 
 
 def edit_problem(parent, original, on_apply):
+    """Guided, bounded ProblemSpec editor; no raw JSON needed for normal goals."""
     top = tk.Toplevel(parent, bg=BG)
-    top.title("설계 초안 편집 · ProblemSpec")
+    top.title("설계 초안 · 목표·검증 기준·접근 권한")
     top.transient(parent)
-    top.geometry(f"680x{min(700, parent.winfo_screenheight()-90)}")
-    top.minsize(460, 420)
+    top.geometry(f"770x{min(730, parent.winfo_screenheight()-90)}")
+    top.minsize(530, 430)
     top.grab_set()
     body = frame(top, padx=18, pady=12)
     body.pack(fill="both", expand=True)
-    label(body, "설계 초안 편집", size=16, bold=True).pack(fill="x", pady=(0, 8))
+    label(body, "설계 초안 검토", size=16, bold=True).pack(fill="x", pady=(0, 4))
+    label(body, "저장 또는 설계 실행 전, 근거·검증 기준·읽기 권한을 직접 확인합니다.",
+          fg=MUTED, wrap=680).pack(fill="x", pady=(0, 6))
     tabs = ttk.Notebook(body)
     tabs.pack(fill="both", expand=True)
-    form, advanced = frame(tabs, PANEL, padx=12, pady=8), frame(tabs, PANEL, padx=10, pady=8)
-    tabs.add(form, text="  목표와 조건  ")
-    tabs.add(advanced, text="  전체 ProblemSpec  ")
-    form.columnconfigure(1, weight=1)
+    scope = frame(tabs, PANEL, padx=12, pady=8)
+    evidence = frame(tabs, PANEL, padx=12, pady=8)
+    advanced = frame(tabs, PANEL, padx=10, pady=8)
+    tabs.add(scope, text="  목표·자원  ")
+    tabs.add(evidence, text="  근거·권한·검증  ")
+    tabs.add(advanced, text="  고급 JSON  ")
+    scope.columnconfigure(1, weight=1)
+    evidence.columnconfigure(1, weight=1)
     fields = {}
-    for row, (key, title) in enumerate((("goal", "목표"), ("domain", "도메인 ID"),
-            ("hard_constraints", "필수 조건 · 줄별 입력"), ("assumptions", "가정 · 줄별 입력"),
-            ("risk", "위험도"), ("max_steps", "단계 예산 · 1–64"), ("max_seconds", "시간 예산 · 1–300초"))):
-        label(form, title, fg=MUTED, size=9).grid(row=row, column=0, sticky="nw", padx=(0, 12), pady=4)
-        if key in ("goal", "hard_constraints", "assumptions"):
-            w = textbox(form, 2)
+
+    def field(form, row, key, title, *, multiline=False, choices=None, height=2):
+        label(form, title, fg=MUTED, size=9).grid(row=row, column=0, sticky="nw", padx=(0, 10), pady=5)
+        if multiline:
+            w = textbox(form, height)
             fields[key] = w
         else:
             var = tk.StringVar(top)
             fields[key] = var
-            w = combo(form, var, ("LOW", "MEDIUM", "HIGH")) if key == "risk" else entry(form, var)
-        w.grid(row=row, column=1, sticky="ew", pady=4, ipady=2)
-    label(form, "규칙으로 해석할 수 있는 조건은 must:전략ID 또는 forbid:전략ID입니다.",
-          size=9, fg=MUTED, wrap=480).grid(row=7, columnspan=2, sticky="w", pady=7)
-    raw = textbox(advanced, 13)
+            w = combo(form, var, choices) if choices else entry(form, var)
+        w.grid(row=row, column=1, sticky="ew", pady=3, ipady=2)
+        return w
+
+    field(scope, 0, "goal", "해결하려는 목표", multiline=True, height=4)
+    field(scope, 1, "domain", "작업 도메인 ID")
+    field(scope, 2, "hard_constraints", "절대 지켜야 할 조건 (한 줄에 하나)", multiline=True)
+    field(scope, 3, "risk", "위험 분류", choices=("LOW", "MEDIUM", "HIGH"))
+    field(scope, 4, "max_steps", "최대 단계 (1–64)")
+    field(scope, 5, "max_seconds", "최대 실행시간 (1–300초)")
+    label(scope, "유형화된 규칙은 must:전략ID / forbid:전략ID로 표기합니다.",
+          fg=MUTED, size=9, wrap=510).grid(row=6, column=0, columnspan=2, sticky="w", pady=8)
+
+    field(evidence, 0, "objectives", "성공 조건/목적 (한 줄에 하나)", multiline=True)
+    field(evidence, 1, "oracle", "검증 기준 ID 또는 owner_review_required")
+    field(evidence, 2, "state_refs", "로컬 근거 참조 ID (한 줄에 하나)", multiline=True)
+    field(evidence, 3, "assumptions", "아직 확인하지 않은 가정 (한 줄에 하나)", multiline=True)
+    label(evidence, "기본 권한", fg=MUTED, size=9).grid(row=4, column=0, sticky="w", pady=6)
+    label(evidence, "pure · 외부 행동 및 원본 변경 불가", fg=TEAL, size=9).grid(
+        row=4, column=1, sticky="w")
+    local_read = tk.BooleanVar(top, value=False)
+    tk.Checkbutton(evidence, text="승인한 로컬 근거 읽기 허용 (local.read)", variable=local_read,
+                   bg=PANEL, fg=TEXT, selectcolor=BG, activebackground=PANEL,
+                   activeforeground=TEXT, takefocus=True).grid(row=5, column=1, sticky="w", pady=5)
+    label(evidence, "파일 선택과 실제 실행 권한은 별도입니다. 외부 전송·원본 쓰기는 허용하지 않습니다.",
+          fg=AMBER, size=9, wrap=470).grid(row=6, column=0, columnspan=2, sticky="w", pady=8)
+
+    raw = textbox(advanced, 16)
     raw.pack(fill="both", expand=True)
     error = label(body, "", fg=RED, size=9)
     error.pack(fill="x")
     buttons = frame(body)
     buttons.pack(fill="x", pady=(4, 0))
     base = dict(original)
-    last_tab = [str(form)]
+    last_tab = [str(scope)]
 
     def populate(data):
-        for key, field in fields.items():
+        for key, widget in fields.items():
             value = data["budget"][key] if key.startswith("max_") else data[key]
-            if isinstance(field, tk.Text):
-                field.delete("1.0", "end")
-                field.insert("1.0", "\n".join(value) if isinstance(value, list) else value)
+            if isinstance(widget, tk.Text):
+                widget.delete("1.0", "end")
+                widget.insert("1.0", "\n".join(value) if isinstance(value, list) else value)
             else:
-                field.set(str(value))
+                widget.set(str(value))
+        local_read.set("local.read" in data["permissions"])
 
     def read_form():
         data = dict(base)
         data["budget"] = {key: int(fields[key].get()) for key in ("max_steps", "max_seconds")}
-        data.update(domain=fields["domain"].get().strip(), risk=fields["risk"].get(),
-                    goal=fields["goal"].get("1.0", "end-1c").strip())
-        for key in ("hard_constraints", "assumptions"):
-            data[key] = [x.strip() for x in fields[key].get("1.0", "end-1c").splitlines() if x.strip()]
+        data.update(goal=fields["goal"].get("1.0", "end-1c").strip(),
+                    domain=fields["domain"].get().strip(), risk=fields["risk"].get(),
+                    oracle=fields["oracle"].get().strip(),
+                    permissions=["pure"] + (["local.read"] if local_read.get() else []))
+        for key in ("hard_constraints", "assumptions", "objectives", "state_refs"):
+            data[key] = [line.strip() for line in fields[key].get("1.0", "end-1c").splitlines()
+                         if line.strip()]
         ProblemSpec.validate(data)
         return data
 
@@ -175,36 +208,38 @@ def edit_problem(parent, original, on_apply):
 
     def sync(_event=None):
         selected = tabs.select()
-        if selected == last_tab[0]:
+        previous = last_tab[0]
+        if selected == previous:
             return
-        try:
-            data = read_form() if last_tab[0] == str(form) else read_raw()
-        except (ValueError, TypeError, KeyError):
-            tabs.select(last_tab[0])
-            error.configure(text="목표, ID, 예산, 조건을 확인한 뒤 다시 시도해 주세요.")
-            return
-        base.update(data)
-        if selected == str(advanced):
-            raw.delete("1.0", "end")
-            raw.insert("1.0", json.dumps(data, ensure_ascii=False, indent=2))
-        else:
-            populate(data)
+        if selected == str(advanced) or previous == str(advanced):
+            try:
+                data = read_raw() if previous == str(advanced) else read_form()
+            except (ValueError, TypeError, KeyError):
+                tabs.select(previous)
+                error.configure(text="입력한 목표·근거 ID·예산·검증 기준 또는 JSON 형식을 확인하세요.")
+                return
+            base.update(data)
+            if selected == str(advanced):
+                raw.delete("1.0", "end")
+                raw.insert("1.0", json.dumps(data, ensure_ascii=False, indent=2))
+            else:
+                populate(data)
         last_tab[0] = selected
         error.configure(text="")
 
     def apply():
         try:
-            data = read_form() if tabs.select() == str(form) else read_raw()
+            data = read_raw() if tabs.select() == str(advanced) else read_form()
         except (ValueError, TypeError, KeyError):
-            error.configure(text="형식이 올바르지 않습니다. 목표, ID, 예산 범위를 확인하세요.")
+            error.configure(text="잘못된 입력입니다. 목표, 증거, 검증 기준, 예산과 권한을 확인하세요.")
             return
         on_apply(data)
         top.destroy()
 
     populate(base)
     tabs.bind("<<NotebookTabChanged>>", sync)
-    button(buttons, "초안에 적용", apply, primary=True).pack(side="right")
-    button(buttons, "닫기", top.destroy, quiet=True).pack(side="right", padx=8)
+    button(buttons, "검토한 초안 적용", apply, primary=True).pack(side="right")
+    button(buttons, "취소 · 저장 안 함", top.destroy, quiet=True).pack(side="right", padx=8)
     top.bind("<Escape>", lambda e: top.destroy())
     fields["goal"].focus_set()
     return top
