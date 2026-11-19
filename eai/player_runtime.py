@@ -36,16 +36,35 @@ class PurePlayerPreview:
 def execute_pure_synthetic_preview(
     problem: ProblemSpec, plan: PlanSpec, policy: PlanPolicyDecision,
     *, cancel_before_step: str | None = None,
+    requested_step: str | None = None,
 ) -> PurePlayerPreview:
     assert_pure_preview(problem, plan, policy)
+    # A scoped port may interpret only the selected step and its transitive
+    # parents. Unrelated earlier siblings and all descendants are excluded.
+    # The entire original plan is still validated and SHA-bound by the gate.
+    dependencies = {sid: requires for sid, _op, requires, _cap in plan.steps}
+    if requested_step is not None:
+        if type(requested_step) is not str or requested_step not in dependencies:
+            raise ValueError("requested pure scope step must exist in plan")
+        included: set[str] = set()
+        def collect(sid: str) -> None:
+            if sid not in included:
+                included.add(sid)
+                for parent in dependencies[sid]:
+                    collect(parent)
+        collect(requested_step)
+    else:
+        included = set(dependencies)
     if cancel_before_step is not None and (
             type(cancel_before_step) is not str
-            or cancel_before_step not in {s[0] for s in plan.steps}):
-        raise ValueError("cancellation step must be in plan")
+            or cancel_before_step not in included):
+        raise ValueError("cancellation step must be in selected pure scope")
     visited: dict[str, str] = {}
     receipts = []
     disposition = "PURE_SYNTHETIC_INTERPRETED_UNVERIFIED"
     for sid, op, requires, capability in plan.steps:
+        if sid not in included:
+            continue
         if sid == cancel_before_step:
             disposition = "PURE_SYNTHETIC_CANCELLED_NOT_EXECUTED"
             break
@@ -63,13 +82,18 @@ def execute_pure_synthetic_preview(
         })).hexdigest()
         visited[sid] = receipt_sha
         receipts.append(PureStepReceipt(sid, receipt_sha, deps))
-    trace_sha = hashlib.sha256(canonical_bytes({
+    trace_document = {
         "schema": "eai.player.noop.trace.v1",
         "problem_sha256": problem.digest(),
         "plan_sha256": policy.plan_sha256,
         "status": disposition,
         "receipts": [[r.step_id, r.step_sha256] for r in receipts],
-    })).hexdigest()
+    }
+    # Preserve the original unscoped trace format; for scoped requests,
+    # commit the selected target even when cancellation produced no steps.
+    if requested_step is not None:
+        trace_document["requested_step"] = requested_step
+    trace_sha = hashlib.sha256(canonical_bytes(trace_document)).hexdigest()
     return PurePlayerPreview(problem.digest(), policy.plan_sha256,
                              disposition, tuple(receipts), trace_sha)
 
@@ -86,12 +110,14 @@ class PureTraceAudit:
 def audit_pure_player_trace(
     problem: ProblemSpec, plan: PlanSpec, policy: PlanPolicyDecision,
     claimed: PurePlayerPreview, *, cancel_before_step: str | None = None,
+    requested_step: str | None = None,
 ) -> PureTraceAudit:
     """Recompute all no-op step hashes and cancellation outcome before review."""
     if type(claimed) is not PurePlayerPreview:
         raise ValueError("explicit typed trace required")
     expected = execute_pure_synthetic_preview(
-        problem, plan, policy, cancel_before_step=cancel_before_step)
+        problem, plan, policy, cancel_before_step=cancel_before_step,
+        requested_step=requested_step)
     if claimed != expected:
         return PureTraceAudit("REJECTED_UNREPRODUCIBLE_PURE_TRACE",
                               expected.trace_sha256, 0)

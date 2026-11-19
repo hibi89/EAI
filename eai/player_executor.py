@@ -73,9 +73,11 @@ def dispatch_isolated_pure_player(
             or policy.plan_sha256 != port.plan_sha256):
         raise PermissionError("scoped plan policy changed before synthetic run")
     trace = execute_pure_synthetic_preview(
-        problem, plan, policy, cancel_before_step=cancel_before_step)
+        problem, plan, policy, cancel_before_step=cancel_before_step,
+        requested_step=requested_step)
     audit = audit_pure_player_trace(
-        problem, plan, policy, trace, cancel_before_step=cancel_before_step)
+        problem, plan, policy, trace, cancel_before_step=cancel_before_step,
+        requested_step=requested_step)
     if (audit.status != "PURE_TRACE_REPLAY_MATCH_UNVERIFIED"
             or audit.expected_trace_sha256 != trace.trace_sha256
             or trace.real_world_verified or trace.promotion_authorized
