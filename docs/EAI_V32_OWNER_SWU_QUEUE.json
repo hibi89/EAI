@@ -366,7 +366,7 @@
     "tracked_total": 60,
     "combined_candidate_coverage_count": 60,
     "combined_candidate_coverage_percent_provisional": 100,
-    "inherited_compatibility_reinspection": "PENDING",
+    "inherited_compatibility_reinspection": "REMOTE_TREE_PATHS_87_OF_87_PRESENT__ACTUAL_CROSS_VERSION_FUNCTIONAL_ACCEPTANCE_PENDING",
     "new_swu_coverage_percent": 100,
     "p2_original_gate_groups": 10,
     "p2_v32_additive_gate_groups": 4,
@@ -383,7 +383,10 @@
     "provisional_rate_basis": "All 12 V3.2 new source implementation candidates landed by owner+High, plus inherited 48 historical source candidates = 60/60 (100%) provisional unweighted source-candidate coverage; old 48 need current-HEAD compatibility review and exact SHA P1 intake; not official weighted feature implementation nor P2 acceptance. 0/60 verified SWU, 0/14 P2 gate groups PASS.",
     "independent_security_ui_audit": "NOT_RUN_NO_SEPARATE_AI_ASSIGNED",
     "evidence_check": "V3.2 code W09/10/11 source commit cb312adb1f976076e3f7e36a361d240c8f81b08a (6 blobs exact local Git SHA); W12 code commit 77243e9f719ca6e2e841b2a47ac02cb02032e1c1 (4 blobs exact local Git SHA); source Python compile, 24 local contract tests and explicit selfcheck probes PASS; real Win11 EXE/CI/physical acceptance NOT_RUN.",
-    "p1_final_intake": "PENDING_CURRENT_BRANCH_INHERITED_COMPATIBILITY_REINSPECTION",
-    "p2_stage": "NOT_STARTED"
+    "p1_final_intake": "PROVISIONAL_SOURCE_COVERAGE_60_60__REMOTE_87_87_PATHS_PRESENT__DETAILED_BEHAVIORAL_ACCEPTANCE_PENDING",
+    "p2_stage": "NOT_STARTED__P1_PROVISIONAL_SOURCE_REVIEWED__OWNER_GO_REQUIRED_FOR_ANY_RISKY_LIVE_TEST",
+    "remote_tree_evidence_sha": "b52fe3f821570699bf4cd89e7f1d5179d49a82fe",
+    "remote_tree_sha": "b18506de8e147caa4de22cc08697522d915e6a2d",
+    "local_additional_safety_checks": "Current source staging, targeted axnode-memory-review/policy-player/recovery/desktop-bridge/contracts 36/36 PASS; prior W12 source self-check and workstation/bridge 24/24 PASS, no full CI/Win11."
   }
 }
