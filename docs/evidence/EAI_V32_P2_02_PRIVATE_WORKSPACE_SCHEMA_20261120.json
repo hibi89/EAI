@@ -1,0 +1,75 @@
+{
+  "schema": "eai.v32.p2.owner_sqlite_schema_preservation.v1",
+  "date_kst": "2026-11-20",
+  "repo": "hibi89/EAI",
+  "branch": "feature/eai-v32-owner-rebuild-20261119",
+  "functional_sha": "22502957e8b5b5326073c264f019655d826b1767",
+  "source_commits": [
+    "02e6cdccc8359abbc49460970e836742580c96e0",
+    "22502957e8b5b5326073c264f019655d826b1767"
+  ],
+  "files": [
+    "eai/desktop_state.py",
+    "tests/test_p2_desktop_workspace_recovery.py"
+  ],
+  "issues": [
+    {
+      "component": "DesktopState._connection",
+      "failure": "Existing foreign SQLite workspace with same visible column names, altered DDL or extra index could pass validation and receive writes",
+      "fix": "exclusive creation, reject existing zero-byte, exact canonical DDL and all noninternal table/index/view/trigger object checks"
+    },
+    {
+      "component": "DesktopState._session_connection",
+      "failure": "Same-column sessions table with added CHECK constraint passed partial schema validation",
+      "fix": "require exact session DDL and existing strict version/column/integrity checks"
+    }
+  ],
+  "added_tests": [
+    "test_workspace_same_names_weak_schema_is_preserved",
+    "test_workspace_extra_index_is_not_used_for_owner_writes",
+    "test_existing_zero_byte_workspace_is_preserved",
+    "test_session_same_columns_extra_constraint_preserves_owner_file"
+  ],
+  "tests_local": "NOT_RUN_NO_FULL_REPOSITORY_ON_LOCAL_HOST",
+  "linux_actions": {
+    "run_id": 44564245208,
+    "url": "https://github.com/hibi89/EAI/actions/runs/44564245208",
+    "conclusion": "SUCCESS",
+    "total": 1194,
+    "passed": 1174,
+    "skipped": 20,
+    "failed": 0,
+    "new_regressions": "4_PASS",
+    "mypy_source_count": 237,
+    "ruff": "PASS_REQUIRED_RULES"
+  },
+  "windows_server_actions": {
+    "run_id": 44564245249,
+    "url": "https://github.com/hibi89/EAI/actions/runs/44564245249",
+    "status": "IN_PROGRESS_AT_EVIDENCE_CREATION",
+    "conclusion": "NOT_YET_VERIFIED",
+    "owner_physical_win11": "NOT_RUN"
+  },
+  "p1_source_candidates": "60/60_PROVISIONAL",
+  "p2_accepted_groups": [
+    "EAI-P2-01",
+    "EAI-P2-02",
+    "EAI-P2-03",
+    "EAI-P2-04",
+    "EAI-P2-06",
+    "EAI-P2-09",
+    "EAI-V32-P2-UX01",
+    "EAI-V32-P2-UX02"
+  ],
+  "p2_accepted_count": "8/14_UNWEIGHTED_UNCHANGED",
+  "official_weighted_p1_p2": "UNASSESSED",
+  "external_hydrogen": "HOLD_NO_LIVE_GO",
+  "real_player_active": "HOLD",
+  "release": "HOLD",
+  "limitations": [
+    "Windows Server CI is not owner Windows 11 IME/DPI/cold-warm/RSS acceptance",
+    "Canonical DDL checks are prewrite protections, not atomic resistance against a concurrent malicious filesystem swap",
+    "No real rights-cleared OOD ground truth or independent oracle",
+    "Independent security, architecture and UX audits NOT_RUN"
+  ]
+}
