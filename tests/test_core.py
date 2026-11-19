@@ -5,12 +5,13 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
+from eai.network import fetch_json, local_base_url
+
 from eai.intent import IntentSpec, RuleIntentParser, QwenIntentParser, INTENT_SCHEMA
 from eai.cognition import CognitiveEngine, ResponseEngine, exact_calculate
 from eai.runner import EAIRunner
 from eai.storage import Store
 from eai.tools import SearchHit, SearxNGSearch, ToolRegistry
-from eai.network import local_base_url
 
 
 class FakeSearch:
@@ -154,6 +155,74 @@ class Tests(unittest.TestCase):
         for invalid in ['https://127.0.0.1:11434', 'http://example.org:8080',
                         'http://user:pass@localhost:8080', 'http://localhost:8080/x']:
             with self.assertRaises(ValueError): local_base_url(invalid)
+
+    def test_fetch_json_denies_remote_and_ambiguous_urls_before_transport(self):
+        invalid = (
+            "http://example.org:8000/ingest",
+            "https://127.0.0.1:8080/api",
+            "http://user@localhost:8080/api",
+            "http://localhost:8080#fragment",
+            "http://localhost:0/api",
+            "http://localhost:99999/api",
+            "http://localhost/api",
+            "http://2130706433:8080/api",
+            "http://[::1]:8080/api",
+            "http://localhost:8080//other-host/path",
+            "http://localhost:8080/ok\\r\\nInjected: yes",
+            " http://127.0.0.1:8080/api",
+            "http://127.0.0.1:8080/api ",
+        )
+        with patch("eai.network.build_opener",
+                   side_effect=AssertionError("transport must not open")):
+            for url in invalid:
+                with self.subTest(url=url), self.assertRaises(ValueError):
+                    fetch_json(url)
+            for timeout in (0, -1, True, float("nan"), float("inf"), 31):
+                with self.subTest(timeout=timeout), self.assertRaises(ValueError):
+                    fetch_json("http://127.0.0.1:11434/api", timeout=timeout)
+            with self.assertRaises(ValueError):
+                fetch_json("http://127.0.0.1:11434/api", payload={"a": "x" * 1_048_577})
+            with self.assertRaises(ValueError):
+                fetch_json("http://127.0.0.1:11434/api", payload={"a": float("nan")})
+
+    def test_fetch_json_pins_localhost_to_numeric_loopback_and_preserves_host(self):
+        class Response:
+            headers = {"Content-Length": "12"}
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *_args):
+                return False
+
+            def read(self, limit):
+                self.assert_limit = limit
+                return b'{"ok": true}'
+
+        class Opener:
+            requests = []
+
+            def open(self, request, timeout):
+                self.requests.append((request, timeout))
+                return Response()
+
+        opener = Opener()
+        with patch("eai.network.build_opener", return_value=opener) as builder:
+            output = fetch_json("http://localhost:8080/search?q=korean", timeout=4.0)
+        self.assertEqual(output, {"ok": True})
+        self.assertEqual(len(opener.requests), 1)
+        request, timeout = opener.requests[0]
+        self.assertEqual(timeout, 4.0)
+        self.assertEqual(request.full_url,
+                         "http://127.0.0.1:8080/search?q=korean")
+        self.assertEqual(request.get_header("Host"), "localhost:8080")
+        self.assertEqual(request.get_method(), "GET")
+        self.assertEqual(len(builder.call_args.args), 2)
+        from eai.network import NoRedirect
+        from urllib.request import ProxyHandler
+        self.assertIsInstance(builder.call_args.args[0], ProxyHandler)
+        self.assertEqual(builder.call_args.args[0].proxies, {})
+        self.assertIsInstance(builder.call_args.args[1], NoRedirect)
 
     def test_searx_mock_parsing(self):
         with patch('eai.tools.fetch_json', return_value={'results': [

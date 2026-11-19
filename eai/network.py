@@ -1,10 +1,41 @@
 """Bounded loopback-only HTTP client for Ollama and local SearXNG."""
 import json
-from urllib.parse import urlsplit
+import math
+from urllib.parse import urlsplit, urlunsplit
 from urllib.request import Request, build_opener, HTTPRedirectHandler, ProxyHandler
 
 
 MAX_RESPONSE_BYTES = 1_048_576
+MAX_REQUEST_BYTES = 1_048_576
+_MAX_ENDPOINT_CHARS = 4_096
+
+
+def _pinned_loopback_endpoint(url: str) -> tuple[str, str]:
+    """Check the final request URL, never trust a caller's base URL check.
+
+    All transport goes to literal 127.0.0.1 even if the local hosts file or
+    DNS falsely resolves "localhost" to a remote machine. Preserve the
+    original local HTTP Host header for a loopback virtual host.
+    """
+    if (type(url) is not str or not 1 <= len(url) <= _MAX_ENDPOINT_CHARS
+            or any(ord(char) < 32 or ord(char) == 127 for char in url)):
+        raise ValueError("invalid local HTTP endpoint")
+    try:
+        parts = urlsplit(url)
+        port = parts.port
+        host = parts.hostname
+    except ValueError as exc:
+        raise ValueError("invalid local HTTP endpoint") from exc
+    if (parts.scheme != "http" or host not in {"localhost", "127.0.0.1"}
+            or parts.username is not None or parts.password is not None
+            or port is None or port == 0 or parts.fragment
+            or parts.netloc != f"{host}:{port}"
+            or parts.path.startswith("//")):
+        raise ValueError("only canonical loopback HTTP endpoints are permitted")
+    pinned = urlunsplit(("http", f"127.0.0.1:{port}",
+                         parts.path, parts.query, ""))
+    return pinned, parts.netloc
+
 
 
 class NoRedirect(HTTPRedirectHandler):
@@ -30,11 +61,22 @@ def local_base_url(raw: str) -> str:
 
 def fetch_json(url: str, *, payload: dict | None = None, timeout: float = 12.0) -> dict:
     """Read only a bounded JSON payload, without following redirects."""
-    body = json.dumps(payload, ensure_ascii=False).encode("utf-8") if payload is not None else None
+    pinned_url, host_header = _pinned_loopback_endpoint(url)
+    if (type(timeout) not in (int, float) or not math.isfinite(timeout)
+            or not 0 < timeout <= 30):
+        raise ValueError("invalid bounded local HTTP timeout")
+    try:
+        body = (json.dumps(payload, ensure_ascii=False, allow_nan=False)
+                .encode("utf-8") if payload is not None else None)
+    except (TypeError, ValueError, RecursionError) as exc:
+        raise ValueError("invalid local HTTP JSON request") from exc
+    if body is not None and len(body) > MAX_REQUEST_BYTES:
+        raise ValueError("local HTTP request exceeds byte limit")
     request = Request(
-        url,
+        pinned_url,
         data=body,
-        headers={"Accept": "application/json", "Content-Type": "application/json", "User-Agent": "EAI-local/0.1"},
+        headers={"Accept": "application/json", "Content-Type": "application/json",
+                 "User-Agent": "EAI-local/0.1", "Host": host_header},
         method="POST" if body is not None else "GET",
     )
     with build_opener(ProxyHandler({}), NoRedirect).open(request, timeout=timeout) as response:
