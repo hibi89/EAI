@@ -13,11 +13,11 @@
     "historic_evidence": "docs/EAI_P1_SWU_QUEUE.json;docs/EAI_DESKTOP_P1_SWU_QUEUE.json"
   },
   "new_swu_count": 12,
-  "new_source_candidates": 1,
+  "new_source_candidates": 2,
   "tracked_swu_total": 60,
   "official_implementation_rate": "UNASSESSED",
   "official_verification_rate": "UNASSESSED",
-  "independent_audit": "NOT_RUN",
+  "independent_audit": "NOT_RUN_NO_SEPARATE_AI_ASSIGNED",
   "release": "HOLD",
   "safety": "No real Player, ACTIVE, external Hydrogen, paid services, owner/customer originals, secret access, main merge or Production without separate approval. P26 and ADR-0002 preserved.",
   "tasks": [
@@ -56,14 +56,16 @@
       "allowed_paths": [
         "eai/desktop_app.py",
         "eai/desktop_widgets.py",
-        "eai/desktop_bridge.py"
+        "eai/desktop_bridge.py",
+        "eai/desktop_views.py",
+        "tests/test_desktop_workstation.py"
       ],
-      "acceptance": "Goal, bounds, facts/assumptions, user permissions, missing oracle editable without raw JSON; invalid fields denied and local private save explicit.",
-      "status": "READY",
-      "p1_source_candidate": false,
+      "acceptance": "Goal, bounds, facts/assumptions, user permissions, missing oracle editable without raw JSON; invalid fields denied and local private save explicit. Guided tabs expose objectives, oracle, vetted evidence-ref IDs, assumptions, constraints, pure/local.read, validation denial; no auto-save.",
+      "status": "IMPLEMENTED_UNVERIFIED",
+      "p1_source_candidate": true,
       "risk": "NORMAL",
-      "local_check": "NOT_RUN",
-      "evidence_sha": null,
+      "local_check": "Local staged exact authored Python source: compileall PASS; workstation contract 8/8 PASS; Xvfb selected native GUI W01/W02 3/3 PASS; full CI/real Windows11/EXE NOT_RUN. GitHub source parity not independently rerun.",
+      "evidence_sha": "067bdc59acb3b5a1de6f914b9f12c60c8334bc9b",
       "safety_gate": "P26/ADR-0002/NO_LIVE_IO",
       "p2_status": "NOT_RUN",
       "failure_count_verified": 0,
@@ -322,5 +324,29 @@
       "failure_count_verified": 0,
       "swu_size_scidu": "TO_ASSESS_BEFORE_READY_EXECUTION"
     }
-  ]
+  ],
+  "implementers": [
+    "OWNER_USER",
+    "WEB_GPT6_SOL_HIGH"
+  ],
+  "other_implementation_models": "DISALLOWED_UNLESS_OWNER_EXPLICITLY_REVISES",
+  "p2_executor": "WEB_GPT6_SOL_HIGH",
+  "metrics": {
+    "type": "SWU_SOURCE_CANDIDATE_COVERAGE_NOT_OFFICIAL_ACCEPTANCE",
+    "inherited_source_candidates_historical": 48,
+    "new_source_candidates": 2,
+    "tracked_total": 60,
+    "combined_candidate_coverage_count": 50,
+    "combined_candidate_coverage_percent_provisional": 83.33,
+    "inherited_compatibility_reinspection": "PENDING",
+    "new_swu_coverage_percent": 16.67,
+    "p2_original_gate_groups": 10,
+    "p2_v32_additive_gate_groups": 4,
+    "p2_gate_groups_pass_on_current_sha": 0,
+    "p2_gate_group_pass_rate_provisional_percent": 0,
+    "official_implementation_completion": "UNASSESSED",
+    "official_verification_completion": "UNASSESSED",
+    "release": "HOLD",
+    "disclaimer": "SWU source candidate coverage is NOT an official weighted implementation completion rate. Prior Astra tests are historic on different source SHA; no P2 acceptance passed against this branch. Any unproven baseline SWUs must be downgraded if compatibility review finds gaps."
+  }
 }
