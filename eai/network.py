@@ -24,6 +24,13 @@ def _reject_nonfinite_json(_value: str) -> None:
     raise ValueError("nonfinite local JSON response value")
 
 
+def _finite_json_float(value: str) -> float:
+    parsed = float(value)
+    if not math.isfinite(parsed):
+        raise ValueError("nonfinite local JSON response number")
+    return parsed
+
+
 def _pinned_loopback_endpoint(url: str) -> tuple[str, str]:
     """Check the final request URL, never trust a caller's base URL check.
 
@@ -105,6 +112,7 @@ def fetch_json(url: str, *, payload: dict | None = None, timeout: float = 12.0) 
                 raw.decode("utf-8"),
                 object_pairs_hook=_reject_duplicate_json_fields,
                 parse_constant=_reject_nonfinite_json,
+                parse_float=_finite_json_float,
             )
         except (UnicodeError, json.JSONDecodeError, RecursionError) as exc:
             raise ValueError("invalid local JSON response") from exc
