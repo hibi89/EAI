@@ -169,6 +169,17 @@ class NativeWorkstationTests(unittest.TestCase):
         self.assertFalse(self.app.busy)
         self.root.update()
 
+    def test_freeform_goal_routes_into_reviewable_architect_draft(self):
+        goal = "작업 일정의 제약조건을 분석하고 두 설계를 비교해줘"
+        self.app.fill_command(goal)
+        self.app.ask()
+        self.assertEqual(self.app.page, "architect")
+        self.assertEqual(self.app.draft["goal"], goal)
+        self.assertEqual(self.app.draft["permissions"], ["pure"])
+        self.assertIsNone(self.app.problem)
+        self.assertFalse((self.bridge.state_root / "drafts").exists())
+        self.assertIsNone(self.app.review)
+
     def test_seven_pages_composer_resize_and_keyboard(self):
         layouts = (
             ("1920x1080", 96/72), ("1366x768", 96/72), ("1366x768", 120/72),
@@ -196,7 +207,9 @@ class NativeWorkstationTests(unittest.TestCase):
         self.app.fill_command("지원 밖 임의 요청")
         self.app.send.invoke()
         self.wait()
-        self.assertEqual(self.app.results["home"][1]["status"], "HOLD_UNSUPPORTED_REQUEST")
+        self.assertEqual(self.app.page, "architect")
+        self.assertEqual(self.app.draft["goal"], "지원 밖 임의 요청")
+        self.assertIsNone(self.app.problem)
         self.app.newdraft.invoke()
         self.assertEqual(self.app.draft["goal"], "지원 밖 임의 요청")
 
