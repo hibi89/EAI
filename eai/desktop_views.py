@@ -155,6 +155,7 @@ def architect(app, parent):
     files = card(parent, "설계 대안 비교")
     files.pack(fill="x", pady=(9, 0))
     selection(files, "AXNODE 저장소", app.library, app.choose_library)
+    button(files, "개인 AXNODE 라이브러리 만들기", app.create_library).pack(anchor="w", pady=3)
     label(files, "저장한 목표와 선택한 저장소에서 후보를 찾습니다.", size=9, fg=MUTED).pack(fill="x")
     row = action_row(files, ("대안 비교", app.design, True))
     if app.busy and app.cancel_event:
@@ -175,6 +176,10 @@ def atlas(app, parent):
     box = card(parent, "로컬 라이브러리")
     box.pack(fill="x")
     selection(box, "AXNODE 저장소", app.library, app.choose_library)
+    controls = action_row(box, ("새 개인 라이브러리 만들기", app.create_library, True))
+    button(controls, "로컬 후보 1개 가져오기", app.import_candidate).pack(side="left", padx=(6, 0))
+    label(box, "기존 저장소는 읽기 전용 · 가져오기는 EAI가 새로 만든 개인 저장소만 허용", fg=MUTED,
+          size=9, wrap=540).pack(fill="x")
     row = frame(box)
     row.pack(fill="x", pady=4)
     label(row, "검색", size=9, fg=MUTED).pack(side="left", padx=(0, 7))
