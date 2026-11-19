@@ -35,6 +35,8 @@ _MAX_PAYLOAD_BYTES = _MAX_ARCHIVE_BYTES + 2 * _MAX_DB
 _MAX_REVISIONS = 1024
 _OPERATION_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}\Z")
 _DIGEST = re.compile(r"[0-9a-f]{64}\Z")
+# Fixed Win32 reparse-point bit; defined for Linux static checking as well.
+_REPARSE_POINT = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400)
 _SCHEMA = {
     "source_binding": """CREATE TABLE source_binding (
         singleton INTEGER PRIMARY KEY CHECK (singleton = 1),
@@ -109,7 +111,7 @@ def _private_directory(location: str | Path) -> Path:
     for directory in (*reversed(path.parents), path):
         info = directory.lstat()
         if (not stat.S_ISDIR(info.st_mode)
-                or getattr(info, "st_file_attributes", 0) & stat.FILE_ATTRIBUTE_REPARSE_POINT):
+                or getattr(info, "st_file_attributes", 0) & _REPARSE_POINT):
             raise ValueError("isolated recovery requires unlinked directories")
     return path.resolve(strict=True)
 
@@ -129,7 +131,7 @@ def _private_files(root: Path) -> Path:
                 continue
             raise
         if (entry.name not in allowed or not stat.S_ISREG(info.st_mode) or info.st_nlink != 1
-                or getattr(info, "st_file_attributes", 0) & stat.FILE_ATTRIBUTE_REPARSE_POINT):
+                or getattr(info, "st_file_attributes", 0) & _REPARSE_POINT):
             raise ValueError("unexpected or linked isolated recovery file")
     with database.open("rb") as handle:
         header = handle.read(100)

@@ -5,6 +5,7 @@ trustworthiness of user-provided inputs or amount to general AI reasoning.
 """
 from decimal import Decimal, InvalidOperation, localcontext
 from pathlib import Path
+from typing import TypeAlias
 
 from .decision_engine import ChoiceGoal
 from .plan_engine import AuditGoal, PLAN_VERSION
@@ -242,7 +243,7 @@ def _verify_csv(goal: AuditGoal, report: dict) -> tuple[list[str], dict]:
     return ['plan_version','strategy','provenance','skills','status'],diag
 
 
-GoalSpec = (ChoiceGoal | AuditGoal | TaskGoal | ScheduleGoal | QualityGoal | DriftGoal |
+GoalSpec: TypeAlias = (ChoiceGoal | AuditGoal | TaskGoal | ScheduleGoal | QualityGoal | DriftGoal |
             SqliteTableGoal | RelationshipGoal | EvidenceSearchGoal | ResourceGoal | OutlierGoal | ShiftGoal | KeyCoverageGoal)
 
 

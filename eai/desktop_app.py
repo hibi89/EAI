@@ -682,7 +682,8 @@ class EAIDesktopApp:
             goal, report, policy, observed, library))
 
     def remember_pure_trace(self):
-        if not self.ready() or self.trace_review is None or not self.trace_review.get("replay_integrity"):
+        if (not self.ready() or self.draft is None or self.review is None
+                or self.trace_review is None or not self.trace_review.get("replay_integrity")):
             self.notice("먼저 순수 추적 영수증을 재검사하세요.", AMBER)
             return
         if not messagebox.askyesno("개인 미검증 경험 기록", "현재 추적 SHA를 개인 AXNODE 메타데이터 후보로만 기록할까요?\n현실 검증·학습 승인·ACTIVE 승격을 뜻하지 않습니다.", parent=self.root):
@@ -732,7 +733,9 @@ class EAIDesktopApp:
 def main() -> int:
     if os.name == "nt":
         import ctypes
-        ctypes.windll.user32.SetProcessDPIAware()
+        win_api = getattr(ctypes, "windll", None)
+        if win_api is not None:
+            win_api.user32.SetProcessDPIAware()
     root = tk.Tk()
     if os.name == "nt":
         if getattr(sys, "frozen", False):

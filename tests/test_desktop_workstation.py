@@ -39,6 +39,24 @@ class WorkstationContractTests(unittest.TestCase):
         self.addCleanup(w.close)
         return w
 
+    def test_remember_pure_trace_requires_original_review_before_dialog(self):
+        # A replay receipt can outlive the currently selected goal/plan.
+        # Do not prompt for owner approval or attempt dict(None) after it.
+        app = EAIDesktopApp.__new__(EAIDesktopApp)
+        notices = []
+        app.ready = lambda: True
+        app.notice = lambda message, color=None: notices.append(message)
+        app.trace_review = {"replay_integrity": True}
+        app.draft = None
+        app.review = None
+        with patch("eai.desktop_app.messagebox.askyesno",
+                   side_effect=AssertionError("no owner dialog without goal")):
+            app.remember_pure_trace()
+            self.assertEqual(len(notices), 1)
+            app.draft = {"goal": "disposable"}
+            app.remember_pure_trace()
+            self.assertEqual(len(notices), 2)
+
     def test_command_cli_parity_no_raw_turns_and_confirmed_memo_reopens(self):
         from eai.runner import EAIRunner
         from eai.storage import Store
