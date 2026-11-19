@@ -14,7 +14,9 @@ from .synthetic_curriculum import (
     generate_synthetic_transfer_families,
 )
 from .synthetic_holdout import _fixture_hash
-from .synthetic_candidate_benchmark import benchmark_synthetic_candidate
+from .synthetic_candidate_benchmark import (
+    SyntheticB1Benchmark, benchmark_synthetic_candidate,
+)
 
 
 @dataclass(frozen=True)
@@ -55,7 +57,9 @@ def evaluate_synthetic_scenario_transfer(
     report = benchmark_synthetic_candidate(
         store, problem, candidate, curriculum.train, challenge)
     supported = (
-        report.status == "B1_SYNTHETIC_PARITY_WITH_B0_UNVERIFIED"
+        type(report) is SyntheticB1Benchmark
+        and report.baseline_sha256 == "LEGACY_RECONCILE_CSV_UNPINNED"
+        and report.status == "B1_SYNTHETIC_PARITY_WITH_B0_UNVERIFIED"
         and report.candidate_sha256 == candidate.candidate_sha256
         and report.train_count == len(curriculum.train)
         and report.heldout_count == len(challenge)
@@ -72,6 +76,9 @@ def evaluate_synthetic_scenario_transfer(
         candidate.candidate_sha256,
         "SYNTHETIC_SCENARIO_TRANSFER_MATCH_UNVERIFIED"
         if supported else "HOLD_SYNTHETIC_SCENARIO_COUNTEREXAMPLE",
-        len(challenge), report.b0_heldout_matches, report.b1_heldout_compared,
-        len(challenge) - min(len(challenge), report.b1_heldout_compared),
+        len(challenge),
+        report.b0_heldout_matches if type(report) is SyntheticB1Benchmark else 0,
+        report.b1_heldout_compared if type(report) is SyntheticB1Benchmark else 0,
+        len(challenge) - min(len(challenge), report.b1_heldout_compared)
+        if type(report) is SyntheticB1Benchmark else len(challenge),
         ("negative_signed_decimals", "multiple_key_and_value_changes"))

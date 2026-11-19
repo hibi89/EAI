@@ -105,6 +105,32 @@ class StrategyResearchRankerTests(unittest.TestCase):
         self.assertFalse(proof.permits_promotion)
         self.assertFalse(proof.permits_learning)
 
+    def test_p2_transfer_rejects_forged_success_benchmark_receipts(self):
+        from eai.synthetic_candidate_benchmark import SyntheticB1Benchmark
+        from types import SimpleNamespace
+        genuine_shape = SyntheticB1Benchmark(
+            "B1_SYNTHETIC_PARITY_WITH_B0_UNVERIFIED", 2, 2, 2, 2,
+            2, 2, self.candidate.candidate_sha256)
+        forged = (
+            replace(genuine_shape, baseline_sha256="FORGED_BASELINE"),
+            replace(genuine_shape, external_truth_verified=True),
+            replace(genuine_shape, permission_to_learn=True),
+            replace(genuine_shape, permission_to_promote=True),
+            replace(genuine_shape, measured_runtime_uplift="CLAIMED"),
+            SimpleNamespace(**vars(genuine_shape)),
+        )
+        for false_result in forged:
+            with self.subTest(false_result=repr(false_result)), patch(
+                    "eai.synthetic_scenario_transfer.benchmark_synthetic_candidate",
+                    return_value=false_result):
+                report = evaluate_synthetic_scenario_transfer(
+                    self.store, self.problem, self.candidate, self.curriculum)
+                self.assertEqual(
+                    report.status, "HOLD_SYNTHETIC_SCENARIO_COUNTEREXAMPLE")
+                self.assertFalse(report.permits_learning)
+                self.assertFalse(report.permits_promotion)
+                self.assertFalse(report.independently_verified_real_world)
+
     def test_p2_research_prior_updates_only_after_scenario_transfer(self):
         with patch.object(socket, "socket", side_effect=AssertionError("network")):
             first = advance_bounded_research_prior(
