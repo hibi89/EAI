@@ -336,6 +336,8 @@ class EAIDesktopApp:
             self.problem, self.draft = data.pop("path"), data.pop("draft")
             self.draft_review = self.bridge.draft_review(self.draft)
             self.clear_plan()
+            if op == "draft_open":
+                self.detach_example_library()
             if op == "draft_open" and self.page == "home":
                 self.select("architect")
         elif code == "PRIVATE_EMPTY_LIBRARY_CREATED":
@@ -394,6 +396,7 @@ class EAIDesktopApp:
             self.notice("설계 목표를 1~2,000자로 입력하세요.", RED)
             return
         self.draft, self.problem = proposal, None
+        self.detach_example_library()
         self.draft_review = self.bridge.draft_review(proposal)
         self.clear_plan()
         self.results.pop("architect", None)
@@ -413,6 +416,7 @@ class EAIDesktopApp:
             return
         def apply(data):
             self.draft, self.problem = data, None
+            self.detach_example_library()
             self.draft_review = self.bridge.draft_review(data)
             self.clear_plan()
             self.results.pop("architect", None)
@@ -475,6 +479,12 @@ class EAIDesktopApp:
         self.catalog_data = self.node_data = None
         self.results.pop("atlas", None)
         self.results.pop("architect", None)
+
+    def detach_example_library(self):
+        """A sample workspace is not an owner-selected source for a new goal."""
+        if self.example is not None and self.library == self.example.library:
+            self.library = None
+            self.clear_library()
 
     def create_library(self):
         if not self.ready():

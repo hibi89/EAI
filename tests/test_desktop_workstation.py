@@ -787,6 +787,44 @@ class NativeWorkstationTests(unittest.TestCase):
         self.assertEqual(self.app.results.get("architect", ("",{}))[1].get("status"),
                          "SESSION_RESTORED_REVIEW_REQUIRED")
 
+    def test_v32_new_owner_goal_never_inherits_practice_axnode_library(self):
+        """A disposable example must not silently become a new goal's evidence."""
+        a = self.app
+        a.practice()
+        self.wait()
+        example_library = present(a.library, "practice library")
+        self.assertEqual(example_library, present(a.example, "example").library)
+        a.fill_command("새 고객 목표를 검토하되 예제 근거는 사용하지 않는다")
+        a.new_draft()
+        self.assertIsNone(a.library)
+        a.design()
+        self.assertEqual(a.results["architect"][1]["status"],
+                         "HOLD_LOCAL_LIBRARY_REQUIRED")
+        self.assertIsNone(a.library)
+
+        a.practice()
+        self.wait()
+        self.assertEqual(a.library, example_library)
+        proposal = self.bridge.make_problem_draft("다른 로컬 문제 검토")
+        path = self.bridge.save_new_draft(proposal)
+        with patch("eai.desktop_app.filedialog.askopenfilename",
+                   return_value=str(path)):
+            a.open_problem("architect")
+        self.wait()
+        self.assertEqual(a.draft["goal"], proposal["goal"])
+        self.assertIsNone(a.library)
+
+        a.practice()
+        self.wait()
+        self.assertEqual(a.library, example_library)
+        with patch("eai.desktop_app.edit_problem",
+                   side_effect=lambda root, draft, callback: callback(
+                       dict(draft, goal="편집된 별도 소유자 목표"))):
+            a.edit()
+        self.assertEqual(a.draft["goal"], "편집된 별도 소유자 목표")
+        self.assertIsNone(a.library)
+        self.assertIsNotNone(a.example)  # Reopening the demo stays explicit.
+
     def test_v32_gui_consent_creates_only_fresh_private_library(self):
         with patch("eai.desktop_app.messagebox.askyesno", return_value=True):
             self.app.create_library()
