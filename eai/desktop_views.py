@@ -143,6 +143,10 @@ def architect(app, parent):
     else:
         label(box, "하단에 목표를 적고 ‘설계 초안’을 누르거나 저장한 ProblemSpec을 여세요.", fg=MUTED, wrap=570).pack(fill="x")
     row = action_row(box, ("초안 열기", lambda: app.open_problem("architect"), False))
+    scope = action_row(box, ("현재 가능한 CPU 기능·근거 확인", app.discover, True))
+    if not app.draft:
+        for child in scope.winfo_children():
+            child.configure(state="disabled")
     for name, fn in (("초안 편집", app.edit), ("새 사본 저장", app.save)):
         b = button(row, name, fn)
         b.pack(side="left", padx=(0, 6))
