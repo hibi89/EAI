@@ -65,7 +65,7 @@ class MockResearchTransport:
         self.quota = quota if quota is not None else ResearchQuota()
         if type(self.quota) is not ResearchQuota:
             raise ValueError("mock transport requires local quota")
-        self._used = set()
+        self._used: set[tuple[int, str, str]] = set()
 
     def dispatch(self, packet: ResearchPacket, approval: MockApprovalReceipt | None,
                  baseline: object, *, fixture_http_status: int = 200,

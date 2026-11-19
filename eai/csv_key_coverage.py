@@ -111,7 +111,7 @@ def _read_keys(path: Path, column: str, encoding: str) -> tuple[dict, list[str]]
                 column not in header):
             raise ValueError("invalid bounded CSV headers or missing key")
         index = header.index(column)
-        keys = []
+        keys: list[str] = []
         for row in reader:
             if len(keys) >= MAX_ROWS or len(row) != len(header) or any(
                 len(cell) > MAX_FIELD_CHARS for cell in row

@@ -68,7 +68,7 @@ def build_goal_manifest(
                   'continue_on_error':continue_on_error,'items':entries}
         _validate(base/'.eai_generated_batch_manifest.json',manifest)
     else:
-        deps={entry['id']:[] for entry in entries}
+        deps: dict[str, list[str]] = {entry['id']: [] for entry in entries}
         used=set()
         for dependency_spec in requires:
             child, encoded = _pair(dependency_spec,'requires')

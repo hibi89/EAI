@@ -99,7 +99,7 @@ def reconcile_csv(left: str | Path, right: str | Path, *, key: str, value: str,
 
     counts = {'agree': 0, 'different': 0, 'left_only': 0, 'right_only': 0,
               'non_numeric': 0}
-    details = []
+    details: list[dict] = []
     total_detail = 0
 
     def capture(kind: str, identifier: str, old: str | None, new: str | None,

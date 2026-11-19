@@ -14,7 +14,15 @@ from pathlib import Path
 import re
 import sqlite3
 import time
+from typing import Protocol
 from .local_files import sqlite_snapshot
+from .axnode_schema import AXNode
+
+
+class EvidenceSource(Protocol):
+    root: Path
+
+    def get(self, digest: str) -> AXNode: ...
 
 
 _NAME = re.compile(r"[a-z][a-z0-9_.-]{0,63}\Z")
@@ -73,7 +81,7 @@ class ClaimAssessment:
 class EvidenceLedger:
     """Explicit local sidecar; preview uses read-only mode if one exists."""
 
-    def __init__(self, store: object, *, create: bool = False,
+    def __init__(self, store: EvidenceSource, *, create: bool = False,
                  append_existing: bool = False):
         if type(create) is not bool or type(append_existing) is not bool or (
                 create and append_existing):

@@ -51,14 +51,16 @@ def compare_numeric_observations(payload: str) -> dict:
     with localcontext() as ctx:
         ctx.prec = 90
         ranked = sorted(observations, key=lambda item: item[1], reverse=True)
+        changes: list[dict[str, str | None]] = []
+        notes = ["사용자 제공 숫자만 사용했습니다. 단위와 기간은 검증하지 않았습니다."]
         report = {
             "rows": [{"name": name, "value": _render_decimal(val)} for name, val in observations],
             "ranked": [{"name": name, "value": _render_decimal(val)} for name, val in ranked],
             "max": {"name": ranked[0][0], "value": _render_decimal(ranked[0][1])},
             "min": {"name": ranked[-1][0], "value": _render_decimal(ranked[-1][1])},
             "gap": _render_decimal(ranked[0][1] - ranked[-1][1]),
-            "changes": [],
-            "notes": ["사용자 제공 숫자만 사용했습니다. 단위와 기간은 검증하지 않았습니다."],
+            "changes": changes,
+            "notes": notes,
         }
         for ((prev_name, prev), (name, current)) in zip(observations, observations[1:]):
             diff = current - prev
@@ -66,7 +68,7 @@ def compare_numeric_observations(payload: str) -> dict:
             if prev > 0:
                 pct = (diff / prev) * Decimal(100)
                 change["percent"] = _render_decimal(pct.quantize(Decimal("0.01")))
-            report["changes"].append(change)
-        if any(change["percent"] is None for change in report["changes"]):
-            report["notes"].append("직전 값이 0 이하인 구간은 일반적인 증감률(%)을 표시하지 않았습니다.")
+            changes.append(change)
+        if any(change["percent"] is None for change in changes):
+            notes.append("직전 값이 0 이하인 구간은 일반적인 증감률(%)을 표시하지 않았습니다.")
         return report

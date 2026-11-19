@@ -197,6 +197,15 @@ class AXNodeStore:
         node = parse_axnode(read_bytes(path, MAX_NODE_BYTES) if self.read_only else path.read_bytes())
         if node.sha256 != digest:
             raise ValueError("AXNODE content hash mismatch")
+        if self.read_only:
+            raw = node.as_dict()
+            row = self.db.execute("SELECT node_id,version,status,kind,output_type FROM nodes "
+                                  "WHERE sha256=?", (digest,)).fetchone()
+            parents = tuple(p for p, in self.db.execute("SELECT parent_sha FROM parents "
+                "WHERE child_sha=? ORDER BY parent_sha LIMIT 13", (digest,)))
+            if (row != (raw["id"], raw["version"], raw["status"], raw["kind"], raw["signature"]["output"])
+                    or parents != tuple(sorted(raw["parent_hashes"]))):
+                raise ValueError("AXNODE metadata or lineage differs from its source")
         return node
 
     def hashes(self) -> list[str]:

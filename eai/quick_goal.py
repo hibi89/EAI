@@ -14,7 +14,7 @@ from .csv_robust_outliers import (
 from .local_evidence_search import (
     validate_search_goal, execute_search_goal, render_search
 )
-from .receipt_guard import verify_goal_receipt
+from .receipt_guard import GoalSpec, verify_goal_receipt
 
 VERSION = "eai.quick.v1"
 POLICY = "EXPLICIT_FILES_ONLY;READ_ONLY;NO_REMOTE;NO_AUTOMATIC_REPAIR"
@@ -32,6 +32,7 @@ def quick_goal(kind: str, root: str | Path, *, source: str | None = None,
     folder = Path(root).expanduser().resolve(strict=True)
     if not folder.is_dir():
         raise ValueError("explicit root must be a directory")
+    goal: GoalSpec
     if kind == "csv_relationships":
         if source is None or type(columns) is not list or sources or terms or include_snippets:
             raise ValueError("relationship quick mode requires --source and --columns only")

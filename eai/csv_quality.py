@@ -124,7 +124,8 @@ def execute_quality_goal(goal: QualityGoal) -> dict:
         raise ValueError('quality goal is not validated')
     binary,digest = source_snapshot(goal.source)
     counts = {code:0 for code in CODES}
-    sample,affected,seen = [],set(),set()
+    sample: list[dict] = []
+    affected, seen = set(), set()
     previous = csv.field_size_limit()
     try:
         csv.field_size_limit(MAX_FIELD_CHARS)

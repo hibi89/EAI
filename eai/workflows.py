@@ -29,4 +29,7 @@ class WorkflowRegistry:
         if template.needs_online_consent and not allow_online:
             raise PermissionError("online workflow requires explicit approval")
         search_tool = tools.get(template.tool_id)
-        return search_tool.search(query, limit=template.max_results)
+        search = getattr(search_tool, "search", None)
+        if not callable(search):
+            raise ValueError("registered search tool has no search capability")
+        return search(query, limit=template.max_results)

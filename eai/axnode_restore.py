@@ -283,6 +283,8 @@ def _load_payload(db: sqlite3.Connection, publication: _Transition) -> IsolatedE
     if any(type(name) is not str or type(content) is not bytes for name, content in rows):
         raise ValueError("invalid isolated epoch file types")
     payload = IsolatedEpochPayload(tuple(rows))
+    if publication.checkpoint_sha256 is None:
+        raise ValueError("missing isolated epoch checkpoint")
     if _payload_sha(publication.checkpoint_sha256, payload) != publication.payload_sha256:
         raise ValueError("isolated epoch payload integrity mismatch")
     return payload

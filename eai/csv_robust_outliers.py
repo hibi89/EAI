@@ -128,7 +128,7 @@ def execute_outlier_goal(goal: OutlierGoal) -> dict:
         raise ValueError("invalid outlier goal instance")
     digest, rows, missing, invalid, valid = _read_selected(goal)
     profiles = []
-    flags = []
+    flags: list[dict] = []
     with localcontext() as ctx:
         ctx.prec = 110
         if len(valid) >= goal.min_rows:

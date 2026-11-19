@@ -24,7 +24,7 @@ class PracticeWorkspace:
                        "permissions": ["pure"], "budget": {"max_steps": 8, "max_seconds": 60}}
             self.problem.write_text(json.dumps(problem, ensure_ascii=False), encoding="utf-8")
             with AXNodeStore(self.library) as store:
-                parents = []
+                parents: list[str] = []
                 for label, count in (("baseline", 1), ("review", 2), ("revision", 2)):
                     node = {"schema": "eai.axnode.v1", "id": "practice." + label,
                             "version": 1, "kind": "strategy", "status": "CANDIDATE",

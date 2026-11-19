@@ -89,7 +89,7 @@ def source_digest(source: Path) -> str:
 
 def is_blank(value: object) -> bool:
     return value is None or (
-        type(value) in (str, bytes) and not value.strip()
+        (type(value) is str or type(value) is bytes) and not value.strip()
     )
 
 
@@ -160,7 +160,8 @@ def execute_sqlite_goal(goal: SqliteTableGoal) -> dict:
     columns, rows = _connect_and_read(goal)
     pos = {name: i for i, name in enumerate(columns)}
     counts = {code: 0 for code in CODES}
-    seen, affected, samples = set(), set(), []
+    seen, affected = set(), set()
+    samples: list[dict] = []
 
     def record(index, code, column):
         counts[code] += 1

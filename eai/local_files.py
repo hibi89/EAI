@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from contextlib import contextmanager
+import hashlib
 import os
 from pathlib import Path
 import sqlite3
@@ -62,6 +63,21 @@ def _stamp(path: Path):
     return (info.st_dev, info.st_ino, info.st_size, info.st_mtime_ns, info.st_ctime_ns)
 
 
+def _snapshot_digest(path: Path, size: int, output=None) -> bytes:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        remaining = size
+        while remaining:
+            chunk = stream.read(min(remaining, 256 * 1024))
+            if not chunk:
+                raise ValueError("database changed during snapshot")
+            if output is not None:
+                output.write(chunk)
+            digest.update(chunk)
+            remaining -= len(chunk)
+    return digest.digest()
+
+
 @contextmanager
 def sqlite_snapshot(path: Path):
     """Read committed WAL data without opening SQLite on the original directory.
@@ -80,17 +96,17 @@ def sqlite_snapshot(path: Path):
         raise ValueError("database unavailable, busy or above preview limit")
     with TemporaryDirectory(prefix="eai-read-") as folder:
         target = Path(folder) / "snapshot.sqlite"
+        hashes = {}
         for original, dest, info in zip(files[:2], (target, Path(str(target) + "-wal")), before[:2]):
             if info is None:
                 continue
-            with original.open("rb") as src, dest.open("xb") as out:
-                remaining = info[2]
-                while remaining:
-                    chunk = src.read(min(remaining, 256 * 1024))
-                    if not chunk:
-                        raise ValueError("database changed while reading")
-                    out.write(chunk)
-                    remaining -= len(chunk)
+            with dest.open("xb") as out:
+                hashes[original] = _snapshot_digest(original, info[2], out)
+        # Windows may defer last-write timestamps while a writer is open.
+        # Recheck the bounded source bytes as well as its directory entries.
+        for original, info in zip(files[:2], before[:2]):
+            if info is not None and _snapshot_digest(original, info[2]) != hashes[original]:
+                raise ValueError("database changed during snapshot")
         if tuple(_stamp(item) for item in files) != before:
             raise ValueError("database changed while reading")
         db = sqlite3.connect(target, timeout=1)

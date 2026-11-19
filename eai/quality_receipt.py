@@ -26,8 +26,9 @@ def verify_quality_receipt(goal: QualityGoal, receipt: object) -> tuple[list[str
         if not (set(goal.required)|set(goal.unique_by)|
                 {rule.column for rule in goal.numeric_rules}) <= set(headers):
             raise ValueError('EAI quality receipt failed: unknown columns')
-        issue_counts = Counter()
-        first_samples, affected, encountered = [],set(),set()
+        issue_counts: Counter[str] = Counter()
+        first_samples: list[dict] = []
+        affected, encountered = set(), set()
         records = 0
 
         def append(record, code, column):

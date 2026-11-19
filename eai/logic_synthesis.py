@@ -62,7 +62,7 @@ class LogicSynthesizer:
                 forbidden.add(condition[7:])
             else:
                 raise ValueError("unknown hard constraint requires separate modeling")
-        nodes = []
+        nodes: list[dict] = []
         step_count, seconds = 0, 0
         for index, h in enumerate(node_hashes):
             node = self.store.get(h)
@@ -125,7 +125,7 @@ def compile_bounded_composition(synth: LogicSynthesizer,
     if type(synth) is not LogicSynthesizer:
         raise ValueError("explicit local synthesizer required")
     candidate = synth.compose(problem, node_hashes)
-    statements = []
+    statements: list[TypedCompositionStep] = []
     previous_output = None
     for digest in candidate.node_hashes:
         node = synth.store.get(digest)
@@ -149,8 +149,9 @@ def compile_bounded_composition(synth: LogicSynthesizer,
             statements.append(TypedCompositionStep(
                 digest, op, inputs, output, effect))
         previous_output = output
+    grammar = "sequence.pinned.typed.v1"
     serial = {
-        "grammar": "sequence.pinned.typed.v1",
+        "grammar": grammar,
         "problem_sha256": problem.digest(),
         "statements": [
             {"source": s.node_sha256, "operator": s.operator,
@@ -160,6 +161,6 @@ def compile_bounded_composition(synth: LogicSynthesizer,
         "status": "STRUCTURE_ONLY_UNVERIFIED",
     }
     return BoundedCompositionProgram(
-        serial["grammar"], problem.digest(), tuple(statements),
+        grammar, problem.digest(), tuple(statements),
         candidate.candidate_sha256,
         hashlib.sha256(canonical_bytes(serial)).hexdigest())

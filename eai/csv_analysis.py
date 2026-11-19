@@ -5,6 +5,7 @@ A narrow streaming scan: no row content is persisted or sent to remote services.
 import csv
 from decimal import Decimal, localcontext
 from pathlib import Path
+from typing import TypedDict
 
 from .analysis import _NUMBER, _render_decimal
 
@@ -13,6 +14,16 @@ MAX_ROWS = 20_000
 MAX_COLUMNS = 32
 MAX_FIELD_CHARS = 4096
 ALLOWED_ENCODINGS = frozenset({'utf-8-sig', 'utf-8', 'cp949'})
+
+
+class ColumnStats(TypedDict):
+    name: str
+    empty: int
+    numeric: int
+    text: int
+    min: Decimal | None
+    max: Decimal | None
+    sum: Decimal
 
 
 def inspect_csv(path: str | Path, *, encoding: str = 'utf-8-sig') -> dict:
@@ -40,7 +51,7 @@ def inspect_csv(path: str | Path, *, encoding: str = 'utf-8-sig') -> dict:
             if any(not 1 <= len(head.strip()) <= 60 or any(ord(c) < 32 for c in head)
                    for head in headers) or len({h.strip().casefold() for h in headers}) != len(headers):
                 raise ValueError('빈 열 이름, 중복 열 이름 또는 제어문자는 허용되지 않습니다.')
-            stats = [dict(name=head, empty=0, numeric=0, text=0, min=None, max=None, sum=Decimal(0))
+            stats = [ColumnStats(name=head, empty=0, numeric=0, text=0, min=None, max=None, sum=Decimal(0))
                      for head in headers]
             rows = 0
             with localcontext() as ctx:
@@ -77,8 +88,8 @@ def inspect_csv(path: str | Path, *, encoding: str = 'utf-8-sig') -> dict:
                         'numeric_count': count,
                         'text_count': state['text'],
                         'sum': _render_decimal(state['sum']) if is_numeric else None,
-                        'min': _render_decimal(state['min']) if is_numeric else None,
-                        'max': _render_decimal(state['max']) if is_numeric else None,
+                        'min': _render_decimal(state['min']) if is_numeric and state['min'] is not None else None,
+                        'max': _render_decimal(state['max']) if is_numeric and state['max'] is not None else None,
                         'avg': _render_decimal((state['sum'] / count).quantize(Decimal('0.000001')))
                                if is_numeric else None,
                     })

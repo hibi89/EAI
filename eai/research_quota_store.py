@@ -153,6 +153,8 @@ class DurableMockQuota:
                         cur = self.db.execute(
                             "INSERT INTO reservations(stamp,tokens) VALUES(?,?)",
                             (stamp,input_tokens+output_cap_tokens))
+                        if cur.lastrowid is None:
+                            raise ValueError("reservation ID unavailable")
                         decision = DurableMockQuotaDecision(
                             True, "LOCAL_MOCK_RESERVED_ONLY", cur.lastrowid)
             self.db.execute("COMMIT")

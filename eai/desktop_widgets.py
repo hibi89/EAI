@@ -65,8 +65,13 @@ def textbox(parent, height=3):
                      selectbackground=PRIMARY, relief="flat", bd=0, highlightthickness=1,
                      highlightbackground=LINE, highlightcolor=VIOLET, height=height, width=12,
                      font=(FONT, 10), undo=True)
-    widget.bind("<Tab>", lambda e: (e.widget.tk_focusNext().focus_set(), "break")[1])
-    widget.bind("<Shift-Tab>", lambda e: (e.widget.tk_focusPrev().focus_set(), "break")[1])
+    def traverse(event):
+        target = widget.tk_focusPrev() if event.state & 1 else widget.tk_focusNext()
+        if target is not None:
+            target.focus_set()
+        return "break"
+    widget.bind("<Tab>", traverse)
+    widget.bind("<Shift-Tab>", traverse)
     return widget
 
 
@@ -75,8 +80,13 @@ def result_text(parent, value, height=5):
     area.insert("1.0", value)
     area.configure(state="disabled", highlightthickness=0, bg=parent.cget("bg"), padx=0, pady=0)
     bar = ttk.Scrollbar(parent, command=area.yview)
-    area.configure(yscrollcommand=bar.set)
-    bar.pack(side="right", fill="y")
+    def scrolled(first, last):
+        bar.set(first, last)
+        if float(first) <= 0 and float(last) >= 1:
+            bar.pack_forget()
+        elif not bar.winfo_manager():
+            bar.pack(side="right", fill="y", before=area)
+    area.configure(yscrollcommand=scrolled)
     area.pack(fill="both", expand=True)
     return area
 
@@ -93,8 +103,8 @@ def setup_style(root):
     style.map("Treeview", background=[("selected", PRIMARY)], foreground=[("selected", "white")])
     style.configure("TCombobox", arrowcolor=TEXT, fieldbackground=BG)
     style.map("TCombobox", fieldbackground=[("readonly", BG)], foreground=[("readonly", TEXT)])
-    style.configure("Vertical.TScrollbar", background=LINE, troughcolor=PANEL, arrowcolor=MUTED,
-                    borderwidth=0, arrowsize=11)
+    style.configure("TScrollbar", background=LINE, troughcolor=PANEL, arrowcolor=MUTED,
+                    bordercolor=PANEL, lightcolor=LINE, darkcolor=LINE, borderwidth=0, arrowsize=11)
     root.option_add("*TCombobox*Listbox.background", PANEL)
     root.option_add("*TCombobox*Listbox.foreground", TEXT)
 

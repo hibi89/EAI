@@ -4,7 +4,7 @@ from .resource_schedule import ResourceGoal, VERSION, SCOPE, MAX_STATES
 
 def _bound(goal: ResourceGoal) -> int:
     # Separately reconstruct the critical path and cumulative capacity bounds.
-    finishes = {}
+    finishes: dict[str, int] = {}
     for task in goal.tasks:
         finishes[task.id] = task.hours + max(
             [finishes[parent] for parent in task.requires] or [0])
@@ -23,7 +23,7 @@ def _exists(goal: ResourceGoal, limit: int) -> bool:
         return False
     tasks = goal.tasks
     cap = dict(goal.capacities)
-    starts = {}
+    starts: dict[str, int] = {}
     states = [0]
     def dfs(index):
         states[0] += 1

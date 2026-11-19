@@ -183,12 +183,12 @@ def rank_bounded_strategy_research(
     if update_research:
         # A true bounded CPU update re-evaluates both B0 and B1 independently.
         # Failed/repeated/over-budget rounds return the SAME prior reference.
-        observation = advance_bounded_research_prior(
+        update = advance_bounded_research_prior(
             store, problem, candidates, curriculum, prior)
-        new_prior, change = observation.prior, observation.status
-        if not observation.accepted and prior is not None and new_prior != prior:
+        new_prior, change = update.prior, update.status
+        if not update.accepted and prior is not None and new_prior != prior:
             raise ValueError("failed research update mutated prior")
-        if observation.accepted and (
+        if update.accepted and (
                 new_prior.trusted_training_permitted
                 or new_prior.active_promotion_permitted
                 or new_prior.independent_real_world_truth):

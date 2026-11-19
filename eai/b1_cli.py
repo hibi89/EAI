@@ -38,7 +38,9 @@ def b1_preview(problem_file: str | Path, axnode_root: str | Path,
             set(payload) != {"version","train","heldout"} or
             type(payload["version"]) is not int or payload["version"] != 1):
         raise ValueError("strict synthetic fixture manifest required")
-    train, heldout = [], []
+    from .logic_oracle import SyntheticComparison
+    train: list[SyntheticComparison] = []
+    heldout: list[SyntheticComparison] = []
     for key, group in (("train",train),("heldout",heldout)):
         items=payload[key]
         if type(items) is not list or not 2 <= len(items) <= 12:

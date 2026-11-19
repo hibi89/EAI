@@ -46,7 +46,7 @@ def validate_search_goal(raw: object, goal_file: Path) -> EvidenceSearchGoal:
     if type(names) is not list or not 1 <= len(names) <= 8:
         raise ValueError("local search requires 1-8 selected text files")
     root = goal_file.parent.resolve(strict=True)
-    paths = []
+    paths: list[Path] = []
     for supplied in names:
         if type(supplied) is not str or not 1 <= len(supplied) <= 512 or any(
             ch in "\\:" or ord(ch) < 32 for ch in supplied

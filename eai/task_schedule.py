@@ -100,9 +100,11 @@ def _execute_schedule_goal_precise(goal: ScheduleGoal) -> dict:
     if type(goal) is not ScheduleGoal:
         raise ValueError('unvalidated schedule goal')
     lookup = {task.id: task for task in goal.tasks}
-    done = set()
+    done: set[str] = set()
     order = []
-    starts, finishes, longest_paths = {}, {}, {}
+    starts: dict[str, Decimal] = {}
+    finishes: dict[str, Decimal] = {}
+    longest_paths: dict[str, tuple[str, ...]] = {}
     while len(done) < len(lookup):
         ready = sorted(task_id for task_id, task in lookup.items()
                        if task_id not in done and set(task.requires).issubset(done))
@@ -122,11 +124,12 @@ def _execute_schedule_goal_precise(goal: ScheduleGoal) -> dict:
             order.append(task_id)
             done.add(task_id)
     makespan = max(finishes.values())
-    successors = {task_id: [] for task_id in lookup}
+    successors: dict[str, list[str]] = {task_id: [] for task_id in lookup}
     for task in lookup.values():
         for prerequisite in task.requires:
             successors[prerequisite].append(task.id)
-    latest_starts, latest_finishes = {}, {}
+    latest_starts: dict[str, Decimal] = {}
+    latest_finishes: dict[str, Decimal] = {}
     for task_id in reversed(order):
         finish = min((latest_starts[x] for x in successors[task_id]), default=makespan)
         latest_finishes[task_id] = finish

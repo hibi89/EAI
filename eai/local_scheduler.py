@@ -173,7 +173,10 @@ def inspect_plan_resource_preflight(
     problem: object, plan: object,
     budget: LocalResourceBudget, sample: LocalResourceSample,
 ) -> LocalPlanPreflight:
+    from .contracts import ProblemSpec, PlanSpec
     from .policy_gate import evaluate_plan_policy
+    if type(problem) is not ProblemSpec or type(plan) is not PlanSpec:
+        raise ValueError("typed problem and plan required")
     policy = evaluate_plan_policy(problem, plan)
     observation = evaluate_local_budget(budget, sample)
     reasons = set(policy.reason_codes) | set(observation.reason_codes)

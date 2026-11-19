@@ -17,7 +17,7 @@ def _verify_schedule_receipt_precise(goal: ScheduleGoal, receipt: dict) -> tuple
     if type(goal) is not ScheduleGoal or type(receipt) is not dict:
         raise ValueError('EAI 영수증 검증 실패: invalid schedule receipt')
     data = {item.id: item for item in goal.tasks}
-    children = {name: set() for name in data}
+    children: dict[str, set[str]] = {name: set() for name in data}
     for item in goal.tasks:
         for dependency in item.requires:
             children[dependency].add(item.id)

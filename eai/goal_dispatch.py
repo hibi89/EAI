@@ -5,7 +5,7 @@ from pathlib import Path
 
 from .decision_engine import validate_choice_goal, execute_choice_goal
 from .plan_engine import AuditGoal, CPUPlanExecutor
-from .receipt_guard import verify_goal_receipt
+from .receipt_guard import GoalSpec, verify_goal_receipt
 from .task_portfolio import validate_task_goal, execute_task_goal, render_task_plan
 from .task_schedule import validate_schedule_goal, execute_schedule_goal, render_schedule
 from .csv_quality import validate_quality_goal, execute_quality_goal, render_quality
@@ -79,6 +79,7 @@ def execute_goal_document(path: str | Path) -> dict:
     kind = data.get('kind')
     if type(kind) is not str or kind not in ROUTED_KINDS:
         raise ValueError('unknown goal kind: supported bounded local CPU goals only')
+    goal: GoalSpec
     if kind == 'choose_options':
         goal = validate_choice_goal(data)
         result = execute_choice_goal(goal)

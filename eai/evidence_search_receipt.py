@@ -1,10 +1,20 @@
 """P20 independently reconstruct exact-term local evidence from original bytes."""
 from collections import Counter
 import re
+from typing import TypedDict
 
 from .local_evidence_search import (
     EvidenceSearchGoal, VERSION, SCOPE, source_snapshot, text_lines
 )
+
+
+class EvidenceMatch(TypedDict):
+    file_index: int
+    filename: str
+    line: int
+    score: int
+    excerpt: str | None
+
 
 WORD_PATTERN = re.compile(r"[^\W_]+(?:[_-][^\W_]+)*", re.UNICODE)
 
@@ -13,7 +23,7 @@ def verify_search_receipt(goal: EvidenceSearchGoal, report: object) -> tuple[lis
     if type(goal) is not EvidenceSearchGoal or type(report) is not dict:
         raise ValueError("EAI evidence receipt invalid")
     sources = []
-    all_matches = []
+    all_matches: list[EvidenceMatch] = []
     for file_index, path in enumerate(goal.sources):
         binary, sha = source_snapshot(path)
         lines = text_lines(binary)
@@ -40,7 +50,7 @@ def verify_search_receipt(goal: EvidenceSearchGoal, report: object) -> tuple[lis
     all_matches.sort(key=lambda item: (
         -item["score"], item["file_index"], item["line"]))
     expected_matches = [
-        {key: item[key] for key in ("filename", "line", "score", "excerpt")}
+        {"filename": item["filename"], "line": item["line"], "score": item["score"], "excerpt": item["excerpt"]}
         for item in all_matches[:goal.max_results]
     ]
     for path, entry in zip(goal.sources, sources):

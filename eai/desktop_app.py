@@ -4,6 +4,7 @@ from __future__ import annotations
 import os
 import json
 from pathlib import Path
+from functools import partial
 from queue import Empty, Queue
 import sqlite3
 import sys
@@ -52,7 +53,7 @@ class EAIDesktopApp:
         self.chosen_plan = tk.StringVar(root)
         self.busy = self.closing = False
         self.cancel_event = self.worker = None
-        self.events = Queue()
+        self.events: Queue[tuple] = Queue()
         self.nav = {}
         self.poll_id = None
         root.title("EAI · 로컬 워크스페이스")
@@ -66,7 +67,7 @@ class EAIDesktopApp:
         root.bind("<Control-l>", self.focus_command)
         root.bind("<Control-L>", self.focus_command)
         for i, key in enumerate(PAGES, 1):
-            root.bind(f"<Alt-Key-{i}>", lambda e, k=key: self.select(k))
+            root.bind(f"<Alt-Key-{i}>", partial(self.select, key))
         root.bind_all("<MouseWheel>", self.wheel, add="+")
         self.run("home", "startup", lambda: {"status": "OK", "limits": self.bridge.state.limits()})
         self.poll_id = root.after(30, self.poll)
@@ -95,7 +96,7 @@ class EAIDesktopApp:
             glyph = tk.Label(row, text=icon, bg=RAIL, fg=MUTED,
                              font=("Segoe MDL2 Assets", 13), width=2)
             glyph.pack(side="left")
-            glyph.bind("<Button-1>", lambda e, k=key: self.select(k))
+            glyph.bind("<Button-1>", partial(self.select, key))
             b = button(row, title, lambda k=key: self.select(k), quiet=True, anchor="w", width=12)
             b.pack(side="left", expand=True, fill="x")
             self.nav[key] = (row, glyph, b)
@@ -114,8 +115,13 @@ class EAIDesktopApp:
         viewport.grid(row=1, column=0, sticky="nsew")
         self.canvas = tk.Canvas(viewport, bg=BG, highlightthickness=0, bd=0)
         sb = ttk.Scrollbar(viewport, command=self.canvas.yview)
-        self.canvas.configure(yscrollcommand=sb.set)
-        sb.pack(side="right", fill="y")
+        def scroll_bounds(first, last):
+            sb.set(first, last)
+            if float(first) <= 0 and float(last) >= 1:
+                sb.pack_forget()
+            elif not sb.winfo_manager():
+                sb.pack(side="right", fill="y", before=self.canvas)
+        self.canvas.configure(yscrollcommand=scroll_bounds)
         self.canvas.pack(side="left", fill="both", expand=True)
         self.body = frame(self.canvas, BG)
         self.body_id = self.canvas.create_window(0, 0, anchor="nw", window=self.body)
@@ -169,7 +175,7 @@ class EAIDesktopApp:
         self.command.insert("1.0", value)
         self.focus_command()
 
-    def select(self, page):
+    def select(self, page, _event=None):
         self.page = page
         for key, (row, glyph, b) in self.nav.items():
             color = "#35304f" if key == page else RAIL
@@ -228,7 +234,8 @@ class EAIDesktopApp:
         except Empty:
             pass
         else:
-            self.worker.join()
+            if self.worker is not None:
+                self.worker.join()
             self.busy, self.worker, self.cancel_event = False, None, None
             self.send.configure(state="normal")
             self.newdraft.configure(state="normal")
@@ -471,7 +478,7 @@ class EAIDesktopApp:
         lib, query, state = self.library, self.query.get(), self.filter.get()
         self.run("atlas", "catalog", lambda: self.bridge.axnode_catalog(lib, query=query, status="" if state == "전체" else state))
 
-    def inspect_node(self, digest):
+    def inspect_node(self, digest, _event=None):
         lib = self.library
         self.run("atlas", "node", lambda: self.bridge.node_detail(lib, digest))
 

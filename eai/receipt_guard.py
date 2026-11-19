@@ -57,7 +57,8 @@ def _check(condition: bool, message: str) -> None:
 
 
 def _positive_or_zero_decimal(text: object) -> Decimal:
-    _check(isinstance(text, str) and len(text) <= 64, '점수 형식이 잘못됐습니다')
+    if not isinstance(text, str) or len(text) > 64:
+        raise ValueError('EAI 영수증 검증 실패: 점수 형식이 잘못됐습니다')
     try:
         number = Decimal(text)
     except (InvalidOperation, ValueError, TypeError) as exc:
@@ -108,7 +109,8 @@ def _verify_choice(goal: ChoiceGoal, report: dict) -> tuple[list[str], dict]:
     _check(report.get('kind') == 'choose_options' and report.get('goal') == goal.goal,
            '다른 목표의 결과입니다')
     entries = report.get('options')
-    _check(type(entries) is list and len(entries) == len(goal.options), '후보 개수가 맞지 않습니다')
+    if not (type(entries) is list and len(entries) == len(goal.options)):
+        raise ValueError('EAI 영수증 검증 실패: ' + '후보 개수가 맞지 않습니다')
     indexed = {}
     expected_ids = {o.id for o in goal.options}
     for entry in entries:
@@ -150,6 +152,8 @@ def _verify_choice(goal: ChoiceGoal, report: dict) -> tuple[list[str], dict]:
                 weighted = Decimal(0)
                 for c in goal.criteria:
                     v = option.values[c.id]
+                    if v is None:
+                        raise ValueError('EAI 영수증 검증 실패: 평가 값 누락')
                     component = ((v - c.score_min) / (c.score_max - c.score_min)
                                  if c.direction == 'max' else
                                  (c.score_max - v) / (c.score_max - c.score_min))
@@ -161,8 +165,8 @@ def _verify_choice(goal: ChoiceGoal, report: dict) -> tuple[list[str], dict]:
         else:
             _check(entry.get('score') is None, '제외된 후보에 점수가 붙었습니다')
     ranking, winners, frontier = (report.get(k) for k in ('ranking', 'winners', 'pareto_frontier'))
-    _check(type(ranking) is list and type(winners) is list and type(frontier) is list,
-           '순위 결과 형식 오류')
+    if not (type(ranking) is list and type(winners) is list and type(frontier) is list):
+        raise ValueError('EAI 영수증 검증 실패: ' + '순위 결과 형식 오류')
     _check(len(ranking) == len(feasible) and set(ranking) == set(feasible)
            and len(set(ranking)) == len(ranking), '순위에 빠지거나 추가된 후보가 있습니다')
     _check(len(winners) == len(set(winners)) and set(winners) <= set(feasible),
@@ -200,19 +204,20 @@ def _verify_csv(goal: AuditGoal, report: dict) -> tuple[list[str], dict]:
     _check(report.get('strategy') == ('SINGLE_RECONCILE' if len(goal.values) == 1
                                        else 'MULTI_DIAGNOSE'), '허가되지 않은 실행 전략입니다')
     sources = report.get('sources')
-    _check(type(sources) is list and len(sources) == 2, '근거 파일 목록 형식이 잘못됐습니다')
+    if not (type(sources) is list and len(sources) == 2):
+        raise ValueError('EAI 영수증 검증 실패: ' + '근거 파일 목록 형식이 잘못됐습니다')
     for path, source in zip((goal.left, goal.right), sources):
         _check(type(source) is dict, '원본 기록 형식 오류')
         resolved = Path(path).expanduser().resolve(strict=True)
         _check(source.get('filename') == resolved.name and source.get('sha256') == _file_digest(resolved),
                '원본 파일의 해시가 일치하지 않습니다')
     primary = report.get('primary')
-    _check(type(primary) is dict and primary.get('status') == report['status'],
-           '기본 검증과 최종 상태가 다릅니다')
+    if not (type(primary) is dict and primary.get('status') == report['status']):
+        raise ValueError('EAI 영수증 검증 실패: ' + '기본 검증과 최종 상태가 다릅니다')
     steps = report.get('steps')
-    _check(type(steps) is list and 1 <= len(steps) <= 5 and
-           steps[-1] == {'step': 'verify_receipt', 'skill': 'evidence.verify_receipt.v1', 'status': 'PASS'},
-           '원본 검증 영수증이 없습니다')
+    if not (type(steps) is list and 1 <= len(steps) <= 5 and
+           steps[-1] == {'step': 'verify_receipt', 'skill': 'evidence.verify_receipt.v1', 'status': 'PASS'}):
+        raise ValueError('EAI 영수증 검증 실패: ' + '원본 검증 영수증이 없습니다')
     for event in steps:
         _check(type(event) is dict and event.get('skill') in {
             'csv.sha256.v1','csv.reconcile.v1','csv.diagnose.v1','csv.schema_inspect.v1',
@@ -237,48 +242,66 @@ def _verify_csv(goal: AuditGoal, report: dict) -> tuple[list[str], dict]:
     return ['plan_version','strategy','provenance','skills','status'],diag
 
 
-def verify_goal_receipt(kind: str, goal: ChoiceGoal | AuditGoal | TaskGoal | ScheduleGoal | QualityGoal | DriftGoal | SqliteTableGoal | RelationshipGoal | EvidenceSearchGoal | ResourceGoal | OutlierGoal | ShiftGoal | KeyCoverageGoal, report: object) -> dict:
+GoalSpec = (ChoiceGoal | AuditGoal | TaskGoal | ScheduleGoal | QualityGoal | DriftGoal |
+            SqliteTableGoal | RelationshipGoal | EvidenceSearchGoal | ResourceGoal | OutlierGoal | ShiftGoal | KeyCoverageGoal)
+
+
+def verify_goal_receipt(kind: str, goal: GoalSpec, report: object) -> dict:
     """Fail closed on inconsistent receipt; do not silently retry with weaker rules."""
-    _check(kind in ALLOWED_STATUS and type(report) is dict, '지원하지 않는 판정 영수증')
+    if not (kind in ALLOWED_STATUS and type(report) is dict):
+        raise ValueError('EAI 영수증 검증 실패: ' + '지원하지 않는 판정 영수증')
     _check(report.get('status') in ALLOWED_STATUS[kind], '목표에 맞지 않는 상태 코드')
     if kind == 'choose_options':
-        _check(type(goal) is ChoiceGoal, '선택지 원본 계약 오류')
+        if not (type(goal) is ChoiceGoal):
+            raise ValueError('EAI 영수증 검증 실패: ' + '선택지 원본 계약 오류')
         checks, diag = _verify_choice(goal, report)
     elif kind == 'csv_audit':
-        _check(type(goal) is AuditGoal, 'CSV 원본 계약 오류')
+        if not (type(goal) is AuditGoal):
+            raise ValueError('EAI 영수증 검증 실패: ' + 'CSV 원본 계약 오류')
         checks, diag = _verify_csv(goal, report)
     elif kind == 'plan_tasks':
-        _check(type(goal) is TaskGoal, '작업 포트폴리오 원본 계약 오류')
+        if not (type(goal) is TaskGoal):
+            raise ValueError('EAI 영수증 검증 실패: ' + '작업 포트폴리오 원본 계약 오류')
         checks, diag = verify_task_receipt(goal, report)
     elif kind == 'schedule_tasks':
-        _check(type(goal) is ScheduleGoal, '임계 경로 원본 계약 오류')
+        if not (type(goal) is ScheduleGoal):
+            raise ValueError('EAI 영수증 검증 실패: ' + '임계 경로 원본 계약 오류')
         checks, diag = verify_schedule_receipt(goal, report)
     elif kind == 'csv_quality':
-        _check(type(goal) is QualityGoal, 'CSV 품질 원본 계약 오류')
+        if not (type(goal) is QualityGoal):
+            raise ValueError('EAI 영수증 검증 실패: ' + 'CSV 품질 원본 계약 오류')
         checks, diag = verify_quality_receipt(goal, report)
     elif kind == 'csv_schema_drift':
-        _check(type(goal) is DriftGoal, 'CSV 스키마 원본 계약 오류')
+        if not (type(goal) is DriftGoal):
+            raise ValueError('EAI 영수증 검증 실패: ' + 'CSV 스키마 원본 계약 오류')
         checks, diag = verify_drift_receipt(goal, report)
     elif kind == 'sqlite_table_audit':
-        _check(type(goal) is SqliteTableGoal, 'SQLite 원본 계약 오류')
+        if not (type(goal) is SqliteTableGoal):
+            raise ValueError('EAI 영수증 검증 실패: ' + 'SQLite 원본 계약 오류')
         checks, diag = verify_sqlite_receipt(goal, report)
     elif kind == 'csv_relationships':
-        _check(type(goal) is RelationshipGoal, 'CSV 상관관계 원본 계약 오류')
+        if not (type(goal) is RelationshipGoal):
+            raise ValueError('EAI 영수증 검증 실패: ' + 'CSV 상관관계 원본 계약 오류')
         checks, diag = verify_relationship_receipt(goal, report)
     elif kind == 'local_evidence_search':
-        _check(type(goal) is EvidenceSearchGoal, '로컬 증거 검색 계약 오류')
+        if not (type(goal) is EvidenceSearchGoal):
+            raise ValueError('EAI 영수증 검증 실패: ' + '로컬 증거 검색 계약 오류')
         checks, diag = verify_search_receipt(goal, report)
     elif kind == 'resource_schedule':
-        _check(type(goal) is ResourceGoal, '자원 제약 일정 계약 오류')
+        if not (type(goal) is ResourceGoal):
+            raise ValueError('EAI 영수증 검증 실패: ' + '자원 제약 일정 계약 오류')
         checks, diag = verify_resource_receipt(goal, report)
     elif kind == 'csv_robust_outliers':
-        _check(type(goal) is OutlierGoal, '강건 이상치 원본 계약 오류')
+        if not (type(goal) is OutlierGoal):
+            raise ValueError('EAI 영수증 검증 실패: ' + '강건 이상치 원본 계약 오류')
         checks, diag = verify_outlier_receipt(goal, report)
     elif kind == 'csv_distribution_shift':
-        _check(type(goal) is ShiftGoal, '분포 변화 원본 계약 오류')
+        if not (type(goal) is ShiftGoal):
+            raise ValueError('EAI 영수증 검증 실패: ' + '분포 변화 원본 계약 오류')
         checks, diag = verify_shift_receipt(goal, report)
     else:
-        _check(type(goal) is KeyCoverageGoal, '참조키 검증 원본 계약 오류')
+        if not (type(goal) is KeyCoverageGoal):
+            raise ValueError('EAI 영수증 검증 실패: ' + '참조키 검증 원본 계약 오류')
         checks, diag = verify_key_coverage_receipt(goal, report)
     return {'version': GUARD_VERSION, 'status': 'PASS', 'checks': checks,
             'diagnostics': diag, 'policy': 'READ_ONLY;NO_REMOTE;NO_AUTOMATIC_REPAIR'}

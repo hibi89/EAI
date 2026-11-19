@@ -64,7 +64,7 @@ class VerifiedAdvisorySelection:
     preceding_selection_sha256: str | None = None
 
 
-def _digest(value: str) -> str:
+def _digest(value: object) -> str:
     if type(value) is not str or not _HASH.fullmatch(value):
         raise ValueError("invalid journal hash")
     return value
@@ -256,6 +256,8 @@ class CandidateReviewJournal:
             return None
         if type(high_water) is not int or revision != high_water or revision != count:
             raise ValueError("owner policy revision history diverged")
+        if self._owner_key is None or self._owner_journal_id is None:
+            raise PermissionError("owner journal signing anchor missing")
         policy = _verify_owner_policy(
             document, signature, self._owner_key, self._owner_journal_id)
         if revision != policy.revision:
@@ -281,6 +283,8 @@ class CandidateReviewJournal:
         """
         if self._owner_journal_id is None or self.db.in_transaction:
             raise PermissionError("dedicated owner journal required")
+        if self._owner_key is None or self._owner_journal_id is None:
+            raise PermissionError("owner journal signing anchor missing")
         policy = _verify_owner_policy(
             document, signature, self._owner_key, self._owner_journal_id)
         with self.db:
@@ -332,7 +336,8 @@ class CandidateReviewJournal:
         ).fetchall()
         if len(rows) > _ENTRY_LIMIT:
             raise ValueError("bounded review journal exceeded")
-        return tuple(JournalEntry(*row[:7], detached_binding_sha256=row[7],
+        return tuple(JournalEntry(row[0], row[1], row[2], row[3], row[4], row[5], row[6],
+                                  detached_binding_sha256=row[7],
                                   detached_nonce_sha256=row[8],
                                   verified_fingerprints_sha256=row[9],
                                   owner_policy_sha256=row[10], review_expires_at=row[11])
@@ -521,10 +526,13 @@ class CandidateReviewJournal:
                     or {entries[proof].candidate_sha256 for proof in proofs} != inventory):
                 raise ValueError("verified strategy lacks exact candidate review chain")
             proof_entries = [entries[proof] for proof in proofs]
+            expirations = [entry.review_expires_at for entry in proof_entries if entry.review_expires_at is not None]
+            if len(expirations) != len(proof_entries) or not expirations:
+                raise ValueError("verified proof requires bounded expiry")
             first_sequence = proof_entries[0].sequence
             if (any(entry.sequence != first_sequence + offset
                     for offset, entry in enumerate(proof_entries))
-                    or min(entry.review_expires_at for entry in proof_entries)
+                    or min(expirations)
                     != raw["valid_until"]):
                 raise ValueError("strategy proof entries must be from one admitted batch")
             if selection is None:

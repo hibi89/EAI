@@ -106,11 +106,11 @@ def evaluate_plan_policy(
                 or not _DIGEST.fullmatch(proposed_approval_hash)):
             raise ValueError("invalid advisory approval fingerprint")
         reasons.append("UNTRUSTED_APPROVAL_CANNOT_AUTHORIZE")
-    reasons = tuple(sorted(set(reasons)))
+    reason_codes = tuple(sorted(set(reasons)))
     return PlanPolicyDecision(
         digest, problem.digest(),
         "PURE_SYNTHETIC_PREVIEW_ONLY" if not reasons else "HOLD_POLICY_DENIED",
-        reasons, tuple(step[0] for step in plan.steps) if not reasons else ())
+        reason_codes, tuple(step[0] for step in plan.steps) if not reasons else ())
 
 
 def assert_pure_preview(

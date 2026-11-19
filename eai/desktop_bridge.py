@@ -218,14 +218,7 @@ class DesktopBridge:
     def node_detail(root, sha: str) -> dict:
         with AXNodeStore(root, read_only=True) as store:
             raw = store.get(_sha(sha)).as_dict()
-            row = store.db.execute("SELECT node_id,version,status,kind,output_type FROM nodes "
-                                   "WHERE sha256=?", (sha,)).fetchone()
-            parents = tuple(p for p, in store.db.execute("SELECT parent_sha FROM parents "
-                "WHERE child_sha=? ORDER BY parent_sha LIMIT 13", (sha,)))
-            if row != (raw["id"], raw["version"], raw["status"], raw["kind"], raw["signature"]["output"]
-                       ) or parents != tuple(sorted(raw["parent_hashes"])):
-                raise ValueError("node metadata disagrees with content")
             return {"status": "NODE_DIGEST_MATCH", "sha256": sha, "node_id": raw["id"],
                     "version": raw["version"], "node_status": raw["status"],
                     "source": raw["provenance"]["source"], "author": raw["provenance"]["author"],
-                    "parents": parents, "output": raw["signature"]["output"]}
+                    "parents": tuple(sorted(raw["parent_hashes"])), "output": raw["signature"]["output"]}

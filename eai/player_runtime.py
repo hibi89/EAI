@@ -42,7 +42,7 @@ def execute_pure_synthetic_preview(
             type(cancel_before_step) is not str
             or cancel_before_step not in {s[0] for s in plan.steps}):
         raise ValueError("cancellation step must be in plan")
-    visited = {}
+    visited: dict[str, str] = {}
     receipts = []
     disposition = "PURE_SYNTHETIC_INTERPRETED_UNVERIFIED"
     for sid, op, requires, capability in plan.steps:

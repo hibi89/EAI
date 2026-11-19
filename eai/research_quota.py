@@ -48,7 +48,7 @@ class ResearchQuota:
         self.limits = limits if limits is not None else ResearchLimits()
         if type(self.limits) is not ResearchLimits:
             raise ValueError("invalid research quota")
-        self._requests = deque()
+        self._requests: deque[tuple[float, int]] = deque()
         self._lock = Lock()
         self._pause_until = 0.0
         self._count = 0

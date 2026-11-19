@@ -1,5 +1,6 @@
 """Seven native workstation pages. Each action calls the same desktop controller."""
 import tkinter as tk
+from functools import partial
 from tkinter import ttk
 
 from .desktop_presentation import OPS, PAGES, caption, explain, timestamp
@@ -237,7 +238,7 @@ def draw_graph(app, parent, nodes):
             x, y = points[sha]
             graph.create_oval(x-7, y-7, x+7, y+7, fill=PRIMARY, outline=VIOLET, width=2, tags=sha)
             graph.create_text(x, y+19, text=n["node_id"][:18], fill=TEXT, font=("Consolas", 9), tags=sha)
-            graph.tag_bind(sha, "<Button-1>", lambda e, s=sha: app.inspect_node(s))
+            graph.tag_bind(sha, "<Button-1>", partial(app.inspect_node, sha))
     graph.bind("<Configure>", draw)
 
 
