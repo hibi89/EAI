@@ -12,7 +12,8 @@ PAGES = {
 }
 OPS = {"command": "CPU 명령", "example": "로컬 예제 열기", "draft_open": "설계 초안 열기",
        "draft_save": "설계 초안 저장", "discover": "로컬 능력 확인", "design": "설계 대안 비교", "catalog": "AXNODE 검색",
-       "node": "노드 상세", "plan": "계획 검토", "simulate": "순수 시뮬레이션",
+       "node": "노드 상세", "create_library": "개인 AXNODE 생성", "import_candidate": "개인 후보 복사",
+       "plan": "계획 검토", "simulate": "순수 시뮬레이션",
        "verify": "영수증 검사", "settings": "예산 저장", "journey": "설계 영수증 재계산"}
 STATUSES = {
     "OK": "완료", "ERROR": "입력 계산 실패", "DENIED": "권한 거부", "UNAVAILABLE": "자료 없음",
@@ -26,7 +27,12 @@ STATUSES = {
     "CANDIDATES_UNVERIFIED": "설계 대안 생성 · 검토 필요", "PARTIAL_UNVERIFIED": "일부 대안만 생성됨",
     "BLOCKED": "설계 보류", "BLOCKED_EVIDENCE_DISPUTE": "근거 충돌 · 설계 보류",
     "CANCELLED": "탐색 중단됨", "LOCAL_CATALOG_UNVERIFIED": "읽기 전용 목록",
-    "NODE_DIGEST_MATCH": "노드 원문 SHA 일치", "PURE_SYNTHETIC_PREVIEW_ONLY": "순수 모의 실행 가능",
+    "NODE_DIGEST_MATCH": "노드 원문 SHA 일치",
+    "PRIVATE_EMPTY_LIBRARY_CREATED": "개인 라이브러리 생성됨",
+    "PRIVATE_CANDIDATE_IMPORTED_UNVERIFIED": "로컬 후보 가져옴 · 미검증",
+    "HOLD_PRIVATE_LIBRARY_CONSENT": "라이브러리 생성 승인 필요",
+    "HOLD_PRIVATE_IMPORT_CONSENT": "후보 가져오기 승인 필요",
+    "PURE_SYNTHETIC_PREVIEW_ONLY": "순수 모의 실행 가능",
     "PURE_SYNTHETIC_INTERPRETED_UNVERIFIED": "모의 실행 완료", "PURE_SYNTHETIC_CANCELLED_NOT_EXECUTED": "지정 단계에서 중단",
     "LOCAL_JOURNEY_DIGEST_INTEGRITY_UNVERIFIED": "영수증 무결성 일치", "RECEIPT_DIGEST_MISMATCH": "영수증 SHA 불일치",
     "RECEIPT_CONTRACT_REJECTED": "영수증 계약 거부", "SETTINGS_SAVED": "예산 저장됨",
