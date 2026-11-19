@@ -1,0 +1,97 @@
+{
+  "schema": "eai.p2.synthetic_evidence.v1",
+  "date_kst": "2026-11-19",
+  "repo": "hibi89/EAI",
+  "branch": "feature/eai-v32-owner-rebuild-20261119",
+  "source_sha": "f51320d029a9d285ccfce9d8b6d0a73e9daa3e0b",
+  "initial_widen_sha": "0de4a2a5b3bbcfe85d92a1bcda07e31ab321326c",
+  "initial_widen_failure": {
+    "run_id": 44512015881,
+    "conclusion": "FAILURE",
+    "issues": [
+      "mypy eai/local_files.py ctypes.windll attr-defined",
+      "mypy eai/local_files.py stat.FILE_ATTRIBUTE_REPARSE_POINT attr-defined"
+    ],
+    "repaired_sha": "992c482e8457103c2d331412ce5045d96ccfb67f"
+  },
+  "linux": {
+    "run_id": 44512465391,
+    "conclusion": "SUCCESS",
+    "tests": 1168,
+    "passed": 1151,
+    "skipped": 17,
+    "failed": 0,
+    "tk_xvfb": 33,
+    "ruff_correctness": "PASS_E9_F63_F7_F82",
+    "mypy_14_modules": "PASS",
+    "mypy_flags": "--python-version 3.11 --follow-imports=skip --ignore-missing-imports --check-untyped-defs",
+    "mypy_targets": [
+      "eai/contracts.py",
+      "eai/player_runtime.py",
+      "eai/goal_dispatch.py",
+      "eai/synthetic_curriculum.py",
+      "eai/synthetic_candidate_benchmark.py",
+      "eai/synthetic_scenario_transfer.py",
+      "eai/strategy_learner.py",
+      "eai/synthetic_holdout.py",
+      "eai/logic_oracle.py",
+      "eai/synthetic_candidate_interpreter.py",
+      "eai/synthetic_candidate_verifier.py",
+      "eai/strategy_research_ranker.py",
+      "eai/policy_gate.py",
+      "eai/local_files.py"
+    ],
+    "whole_repository_typed": "NOT_RUN"
+  },
+  "windows_server_2025": {
+    "run_id": 44512465428,
+    "conclusion": "SUCCESS",
+    "tests": 1168,
+    "passed": 1167,
+    "skipped": 1,
+    "failed": 0,
+    "focused_native_tk_passed": 39,
+    "focused_native_tk_skipped": 1,
+    "unsigned_exe_selfcheck": "PASS_UNSIGNED_BUNDLE_IMPORTS",
+    "artifact_id": 14524197168,
+    "uploaded_artifact_zip_sha256": "30e655566cbc653f3fb28d282063f20b3244ed2c4cbbfb5e23595f5dad5b3377",
+    "physical_owner_win11": "NOT_RUN"
+  },
+  "p2_01": {
+    "state": "PARTIAL_PASS_14_MODULE_MYPY",
+    "accepted": false,
+    "full_repo_mypy": "NOT_RUN",
+    "historical_broad_ruff_warnings": 121
+  },
+  "p2_05": {
+    "state": "PARTIAL_PASS_BENCHMARK_ORIGIN_FAIL_CLOSED",
+    "accepted": false,
+    "forged_result_variations": 6,
+    "cross_os_test": "PASS",
+    "real_world_ood": "NOT_RUN",
+    "trusted_model_uplift": "NOT_ESTABLISHED"
+  },
+  "p1_source_candidates": {
+    "complete": 60,
+    "total": 60,
+    "provisional": true
+  },
+  "p2_accepted_groups": {
+    "complete": 7,
+    "total": 14,
+    "accepted_ids": [
+      "EAI-P2-02",
+      "EAI-P2-03",
+      "EAI-P2-04",
+      "EAI-P2-06",
+      "EAI-P2-09",
+      "EAI-V32-P2-UX01",
+      "EAI-V32-P2-UX02"
+    ]
+  },
+  "official_weighted_p1": "UNASSESSED",
+  "official_weighted_p2": "UNASSESSED",
+  "owner_win11": "NOT_RUN",
+  "independent_audits": "NOT_RUN",
+  "release": "HOLD"
+}

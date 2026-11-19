@@ -1,3 +1,9 @@
+## EAI owner P2 handoff — 2026-11-19 KST
+
+- Latest **verified source** `f51320d029a9d285ccfce9d8b6d0a73e9daa3e0b`: Linux CI [44512465391](https://github.com/hibi89/EAI/actions/runs/44512465391) SUCCESS 1,151/17; Windows Server [44512465428](https://github.com/hibi89/EAI/actions/runs/44512465428) SUCCESS 1,167/1 and unsigned EXE artifact 14524197168. Code fixes `eai/local_files.py` (Windows-only mypy cross-platform 2 errors), `eai/synthetic_scenario_transfer.py` (forged benchmark result type/baseline) plus real regression tests. Mandatory mypy targets 14 named modules PASS, full project still unverified. Initial failed SHA `0de4a2a5...` recorded, not hidden. Do not call own tests independent audit.
+- P1 60/60 **provisional**, P2 accepted **7/14 50% simple group count** unchanged. Both official weighted rates UNASSESSED, P2-01 and 05 still PARTIAL, real world OOD and owner physical Win11/IME/DPI/RSS NOT_RUN, independent audits NOT_RUN, release/Hydrogen/Player/Production HOLD.
+- Next `ㄱ`: inspect latest remote HEAD and `docs/evidence/EAI_V32_P2_01_05_WAVE2_20261119.json`, widen actual typed/static coverage or repair another approved P2 defect. P2-05 real owner OOD and Windows physical need explicit evidence/permissions; no fake PASS.
+
 ## EAI V3.2 P2 handoff update — 2026-11-19 KST
 
 - Exact verified code/CI SHA: `047aff74b9100cd673533864d48f97fd94609e14`; Linux [44510991168](https://github.com/hibi89/EAI/actions/runs/44510991168) SUCCESS 1,150 PASS/17 SKIP; Windows Server [44510991358](https://github.com/hibi89/EAI/actions/runs/44510991358) SUCCESS 1,166 PASS/1 SKIP, unsigned EXE selfcheck PASS, artifact 14524266287. This is author-run CI, not independent or owner Win11.
